@@ -62,7 +62,9 @@ export function useApplications(filters: ApplicationFilters) {
     queryKey: keys.applications(filters),
     queryFn: async () => {
       const query = Object.fromEntries(
-        Object.entries(filters).filter(([, v]) => v !== undefined && v !== "" && !(Array.isArray(v) && !v.length)),
+        Object.entries(filters).filter(
+          ([, v]) => v !== undefined && v !== "" && !(Array.isArray(v) && !v.length),
+        ),
       );
       return unwrap(await api.GET("/api/v1/applications", { params: { query } }));
     },
@@ -73,21 +75,31 @@ export function useApplications(filters: ApplicationFilters) {
 export function useApplication(id: string | null) {
   return useQuery({
     queryKey: keys.application(id ?? ""),
-    queryFn: async () => unwrap(await api.GET("/api/v1/applications/{app_id}", { params: { path: { app_id: id! } } })),
+    queryFn: async () =>
+      unwrap(await api.GET("/api/v1/applications/{app_id}", { params: { path: { app_id: id! } } })),
     enabled: !!id,
   });
 }
 
 export function useCompanies() {
-  return useQuery({ queryKey: keys.companies, queryFn: async () => unwrap(await api.GET("/api/v1/companies")) });
+  return useQuery({
+    queryKey: keys.companies,
+    queryFn: async () => unwrap(await api.GET("/api/v1/companies")),
+  });
 }
 
 export function useAgencies() {
-  return useQuery({ queryKey: keys.agencies, queryFn: async () => unwrap(await api.GET("/api/v1/agencies")) });
+  return useQuery({
+    queryKey: keys.agencies,
+    queryFn: async () => unwrap(await api.GET("/api/v1/agencies")),
+  });
 }
 
 export function useContacts() {
-  return useQuery({ queryKey: keys.contacts, queryFn: async () => unwrap(await api.GET("/api/v1/contacts")) });
+  return useQuery({
+    queryKey: keys.contacts,
+    queryFn: async () => unwrap(await api.GET("/api/v1/contacts")),
+  });
 }
 
 export function useRoles() {
@@ -137,7 +149,10 @@ export function useUpdateApplication() {
   return useMutation({
     mutationFn: async (args: { id: string; body: Schemas["ApplicationPatch"] }) =>
       unwrap(
-        await api.PATCH("/api/v1/applications/{app_id}", { params: { path: { app_id: args.id } }, body: args.body }),
+        await api.PATCH("/api/v1/applications/{app_id}", {
+          params: { path: { app_id: args.id } },
+          body: args.body,
+        }),
       ),
     onSuccess: refresh,
     onError: notifyError,
@@ -184,7 +199,9 @@ export function useCreateApplication() {
     mutationFn: async (input: NewApplication) => {
       let companyId = input.companyId;
       if (!companyId) {
-        companyId = unwrap(await api.POST("/api/v1/companies", { body: { name: input.companyName.trim() } })).id;
+        companyId = unwrap(
+          await api.POST("/api/v1/companies", { body: { name: input.companyName.trim() } }),
+        ).id;
       }
       const role = unwrap(
         await api.POST("/api/v1/roles", {
@@ -195,7 +212,9 @@ export function useCreateApplication() {
       let recruiterId = input.recruiterId;
       if (input.route === "agency") {
         if (!agencyId && input.agencyName.trim()) {
-          agencyId = unwrap(await api.POST("/api/v1/agencies", { body: { name: input.agencyName.trim() } })).id;
+          agencyId = unwrap(
+            await api.POST("/api/v1/agencies", { body: { name: input.agencyName.trim() } }),
+          ).id;
         }
         if (!recruiterId && input.recruiterName.trim()) {
           recruiterId = unwrap(

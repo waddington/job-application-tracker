@@ -26,4 +26,9 @@ class ResizeObserverStub {
   disconnect() {}
 }
 window.ResizeObserver = window.ResizeObserver ?? ResizeObserverStub;
+if (!("fonts" in document)) {
+  Object.defineProperty(document, "fonts", {
+    value: { addEventListener: () => {}, removeEventListener: () => {}, ready: Promise.resolve() },
+  });
+}
 window.scrollTo = () => {};

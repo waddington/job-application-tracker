@@ -29,12 +29,21 @@ interface Values {
   tags: string[];
 }
 
-function findByName<T extends { id: string; name: string }>(items: T[] | undefined, name: string): T | undefined {
+function findByName<T extends { id: string; name: string }>(
+  items: T[] | undefined,
+  name: string,
+): T | undefined {
   const needle = name.trim().toLowerCase();
   return needle ? items?.find((i) => i.name.toLowerCase() === needle) : undefined;
 }
 
-export function NewApplicationModal({ opened, onClose }: { opened: boolean; onClose: (id?: string) => void }) {
+export function NewApplicationModal({
+  opened,
+  onClose,
+}: {
+  opened: boolean;
+  onClose: (id?: string) => void;
+}) {
   const { data: workflow } = useWorkflow();
   const { data: companies } = useCompanies();
   const { data: agencies } = useAgencies();
@@ -59,7 +68,9 @@ export function NewApplicationModal({ opened, onClose }: { opened: boolean; onCl
       roleTitle: (v) => (v.trim() ? null : "What's the role?"),
       roleUrl: (v) => (!v || /^https?:\/\//.test(v) ? null : "Links start with http:// or https://"),
       agency: (v, values) =>
-        values.route === "agency" && !v.trim() && !values.recruiter.trim() ? "Add the agency or recruiter" : null,
+        values.route === "agency" && !v.trim() && !values.recruiter.trim()
+          ? "Add the agency or recruiter"
+          : null,
     },
   });
 
@@ -107,7 +118,11 @@ export function NewApplicationModal({ opened, onClose }: { opened: boolean; onCl
               data-autofocus
               {...form.getInputProps("company")}
             />
-            <TextInput label="Role" placeholder="Senior Backend Engineer" {...form.getInputProps("roleTitle")} />
+            <TextInput
+              label="Role"
+              placeholder="Senior Backend Engineer"
+              {...form.getInputProps("roleTitle")}
+            />
           </Group>
           <TextInput label="Job ad link" placeholder="https://…" {...form.getInputProps("roleUrl")} />
           <div>
@@ -137,7 +152,9 @@ export function NewApplicationModal({ opened, onClose }: { opened: boolean; onCl
                 placeholder="Alex Recruiter"
                 data={recruiterOptions}
                 description={
-                  form.values.recruiter && !findByName(contacts, form.values.recruiter) ? "New contact" : undefined
+                  form.values.recruiter && !findByName(contacts, form.values.recruiter)
+                    ? "New contact"
+                    : undefined
                 }
                 {...form.getInputProps("recruiter")}
               />
@@ -150,7 +167,12 @@ export function NewApplicationModal({ opened, onClose }: { opened: boolean; onCl
               allowDeselect={false}
               {...form.getInputProps("stage")}
             />
-            <DateInput label="Applied on" placeholder="Not yet" clearable {...form.getInputProps("appliedOn")} />
+            <DateInput
+              label="Applied on"
+              placeholder="Not yet"
+              clearable
+              {...form.getInputProps("appliedOn")}
+            />
           </Group>
           <TagsInput label="Tags" placeholder="python, fintech, remote…" {...form.getInputProps("tags")} />
           <Group justify="flex-end">

@@ -3,7 +3,12 @@ import createClient from "openapi-fetch";
 import type { components, paths } from "./schema";
 
 /** Typed client for the local API. Types are generated from openapi.json (`pnpm gen:api`). */
-export const api = createClient<paths>({ baseUrl: "" });
+export const api = createClient<paths>({
+  // Same origin as the page (FastAPI serves both); absolute so Request() works outside browsers too.
+  baseUrl: globalThis.location?.origin ?? "",
+  // Look fetch up per call rather than capturing it once, so it can be swapped (tests, polyfills).
+  fetch: (request) => globalThis.fetch(request),
+});
 
 export type Schemas = components["schemas"];
 export type ApplicationRow = Schemas["ApplicationRow"];
