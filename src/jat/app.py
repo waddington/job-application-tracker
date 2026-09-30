@@ -12,6 +12,8 @@ from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 from . import __version__
+from .api.deps import WorkflowCache, WriteNotifier
+from .api.routers import router as api_v1
 from .config import Settings, resolve_data_dir
 from .datadir import CODE_ROOT, check_outside_code_repo, is_git_repo
 from .db import current_revision, db_path, head_revision, make_engine, session_factory
@@ -87,9 +89,12 @@ def create_app(data_dir: Path, *, dist: Path = DEFAULT_DIST, dev: bool = False) 
     app.state.engine = engine
     app.state.sessions = session_factory(engine)
     app.state.jat = AppState(data_dir=data_dir, git_repo=is_git_repo(data_dir))
+    app.state.workflow = WorkflowCache(data_dir)
+    app.state.writes = WriteNotifier()
     if dev:
         app.add_middleware(CORSMiddleware, allow_origins=DEV_ORIGINS, allow_methods=["*"], allow_headers=["*"])
     app.include_router(_api_router())
+    app.include_router(api_v1)
     _mount_frontend(app, dist)
     return app
 
