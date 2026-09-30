@@ -2,8 +2,9 @@
 
 Each application's path is its first stage and then every stage move that wasn't undone, in
 the order they happened. A Sankey diagram can't draw loops, so paths are folded forwards in
-workflow order (active stages, then success and closed ones): a move back to an earlier stage,
-or a reopened Ghosted application, counts as staying at the furthest stage reached. The
+workflow order (active stages, then success and closed ones): a move back to an earlier stage
+counts as staying at the furthest stage reached. A closed stage that was reopened (Ghosted, and
+then they came back) is left out, so the application is drawn along where it really went. The
 history itself is untouched; this is only how the picture is drawn.
 """
 
@@ -30,6 +31,10 @@ class Flow:
     current: Counter[str] = field(default_factory=Counter)  # where they are now (folded)
 
 
+def closed_stages(workflow: Workflow) -> frozenset[str]:
+    return frozenset(s.id for s in workflow.stages if s.kind == "closed")
+
+
 def stage_rank(workflow: Workflow) -> dict[str, int]:
     """Active stages in workflow order first, then success, then closed: a left-to-right order."""
     order = [s for s in workflow.stages if s.is_active]
@@ -48,11 +53,16 @@ def stage_path(events: list[Event]) -> list[str]:
     return [first.to_stage, *(ev.to_stage for ev in moves if ev.to_stage)]
 
 
-def fold_forward(path: list[str], rank: dict[str, int]) -> list[str]:
-    """Keep only moves to a later stage, so the flow has no loops (unknown stages go last)."""
+def fold_forward(path: list[str], rank: dict[str, int], closed: frozenset[str] = frozenset()) -> list[str]:
+    """Keep only moves to a later stage, so the flow has no loops (unknown stages go last).
+
+    `closed` stages count only where the path ends: one that was reopened is skipped.
+    """
     last = len(rank)
     folded: list[str] = []
-    for stage in path:
+    for i, stage in enumerate(path):
+        if stage in closed and i < len(path) - 1:
+            continue
         if not folded or rank.get(stage, last) > rank.get(folded[-1], last):
             folded.append(stage)
     return folded
@@ -77,13 +87,16 @@ def flow(
     ids = list(session.scalars(stmt))
     events: dict[str, list[Event]] = {i: [] for i in ids}
     if ids:
-        for ev in session.scalars(select(Event).where(Event.application_id.in_(ids)).order_by(Event.seq)):
+        for ev in session.scalars(
+            select(Event).where(Event.application_id.in_(ids), Event.kind == STAGE_CHANGE).order_by(Event.seq)
+        ):
             events[ev.application_id].append(ev)
 
     rank = stage_rank(workflow)
+    closed = closed_stages(workflow)
     result = Flow()
     for app_id in ids:
-        path = fold_forward(stage_path(events[app_id]), rank)
+        path = fold_forward(stage_path(events[app_id]), rank, closed)
         if not path:
             continue
         result.applications += 1

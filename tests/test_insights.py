@@ -1,6 +1,6 @@
 from datetime import UTC, datetime, timedelta
 
-from jat.domain.insights import fold_forward, stage_rank
+from jat.domain.insights import closed_stages, fold_forward, stage_rank
 from jat.domain.workflow import DEFAULT_WORKFLOW
 
 from .factories import post
@@ -8,10 +8,12 @@ from .factories import post
 
 def test_fold_forward_keeps_the_flow_acyclic():
     rank = stage_rank(DEFAULT_WORKFLOW)
+    closed = closed_stages(DEFAULT_WORKFLOW)
     # Back from Interviewing to Screen, then on: counted as staying at Interviewing.
     assert fold_forward(["applied", "interviewing", "screen", "final"], rank) == ["applied", "interviewing", "final"]
-    # Ghosted, then they came back: the reopening isn't drawn.
-    assert fold_forward(["applied", "ghosted", "screen"], rank) == ["applied", "ghosted"]
+    # Ghosted, then they came back: drawn along where it really went.
+    assert fold_forward(["applied", "ghosted", "screen"], rank, closed) == ["applied", "screen"]
+    assert fold_forward(["applied", "ghosted"], rank, closed) == ["applied", "ghosted"]
     # Unknown (removed) stages sort last.
     assert fold_forward(["applied", "old_stage"], rank) == ["applied", "old_stage"]
 

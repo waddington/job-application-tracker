@@ -70,8 +70,8 @@ exported emails, and the full timestamped history.
 ## ✨ Features
 
 > 🚧 **Early development, but usable day to day.** Tracking, recruiters, interview rounds,
-> notes, links, files and emails, CV versions, the *Next actions* page and the Sankey diagram
-> all work today. Funnel stats, recruiter scorecards and offer comparison are next. Everything marked ✅ is merged and
+> notes, links, files and emails, CV versions, the *Next actions* page, the Sankey diagram and
+> funnel stats all work today. Recruiter scorecards and offer comparison are next. Everything marked ✅ is merged and
 > running.
 
 | | Feature | Status |
@@ -89,7 +89,8 @@ exported emails, and the full timestamped history.
 | ⏰ | **Next actions** (the home page): follow-ups due, applications gone quiet, interviews and deadlines coming up, and rounds waiting for an outcome | ✅ Available |
 | 😴 | **One-click chasing**: set a follow-up reminder, snooze, or mark Ghosted straight from Next actions | ✅ Available |
 | 📊 | **Sankey diagram** of your funnel: applications → screens → interviews → offers, filtered by date range and route, with counts on hover | ✅ Available |
-| 📈 | **Insights**: conversion per stage, time in stage, direct vs recruiter, recruiter scorecard | Planned |
+| 📈 | **Insights**: conversion per stage, median time in stage, direct vs recruiter outcomes and weekly activity | ✅ Available |
+| 🏅 | **Recruiter scorecard**: roles sent, interview rate and responsiveness per recruiter | Planned |
 | 💷 | **Offer comparison**: salary, bonus, equity, pension, day rate and IR35 for contracts | Planned |
 | 🗓️ | **`.ics` export** of interviews for your calendar | Planned |
 | 💾 | **Backups built in**: automatic git snapshots of your private data folder, readable JSON Lines export, one-command restore | ✅ Available |

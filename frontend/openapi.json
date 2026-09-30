@@ -4015,6 +4015,37 @@
         "title": "RoundSummary",
         "type": "object"
       },
+      "RouteStatsOut": {
+        "properties": {
+          "applications": {
+            "title": "Applications",
+            "type": "integer"
+          },
+          "reached": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Reached",
+            "type": "object"
+          },
+          "route": {
+            "enum": [
+              "direct",
+              "agency",
+              "referral"
+            ],
+            "title": "Route",
+            "type": "string"
+          }
+        },
+        "required": [
+          "route",
+          "applications",
+          "reached"
+        ],
+        "title": "RouteStatsOut",
+        "type": "object"
+      },
       "SentDocumentIn": {
         "additionalProperties": false,
         "properties": {
@@ -4127,6 +4158,102 @@
           "status"
         ],
         "title": "SnapshotResult",
+        "type": "object"
+      },
+      "StageStatsOut": {
+        "properties": {
+          "color": {
+            "title": "Color",
+            "type": "string"
+          },
+          "conversion": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conversion"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "median_days": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Median Days"
+          },
+          "moved_on": {
+            "title": "Moved On",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "reached": {
+            "title": "Reached",
+            "type": "integer"
+          },
+          "stays": {
+            "title": "Stays",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "kind",
+          "color",
+          "reached",
+          "moved_on",
+          "conversion",
+          "median_days",
+          "stays"
+        ],
+        "title": "StageStatsOut",
+        "type": "object"
+      },
+      "StatsOut": {
+        "properties": {
+          "applications": {
+            "title": "Applications",
+            "type": "integer"
+          },
+          "routes": {
+            "items": {
+              "$ref": "#/components/schemas/RouteStatsOut"
+            },
+            "title": "Routes",
+            "type": "array"
+          },
+          "stages": {
+            "items": {
+              "$ref": "#/components/schemas/StageStatsOut"
+            },
+            "title": "Stages",
+            "type": "array"
+          }
+        },
+        "required": [
+          "applications",
+          "stages",
+          "routes"
+        ],
+        "title": "StatsOut",
         "type": "object"
       },
       "ValidationError": {
@@ -4257,6 +4384,40 @@
           }
         },
         "title": "VersionPatch",
+        "type": "object"
+      },
+      "WeekOut": {
+        "properties": {
+          "added": {
+            "title": "Added",
+            "type": "integer"
+          },
+          "applied": {
+            "title": "Applied",
+            "type": "integer"
+          },
+          "interviews": {
+            "title": "Interviews",
+            "type": "integer"
+          },
+          "moves": {
+            "title": "Moves",
+            "type": "integer"
+          },
+          "start": {
+            "format": "date",
+            "title": "Start",
+            "type": "string"
+          }
+        },
+        "required": [
+          "start",
+          "added",
+          "applied",
+          "moves",
+          "interviews"
+        ],
+        "title": "WeekOut",
         "type": "object"
       }
     }
@@ -6668,6 +6829,83 @@
         ]
       }
     },
+    "/api/v1/insights/activity": {
+      "get": {
+        "description": "Activity per week, oldest first. Pass `tz`, your IANA time zone (e.g. Europe/London),\nand `start`, the Monday your first week begins, so weeks are your weeks, clock changes\nincluded. `start` defaults to the Monday that makes the last week this one.",
+        "operationId": "weekly_activity_api_v1_insights_activity_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "start",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Start"
+            }
+          },
+          {
+            "in": "query",
+            "name": "tz",
+            "required": false,
+            "schema": {
+              "default": "UTC",
+              "title": "Tz",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "weeks",
+            "required": false,
+            "schema": {
+              "default": 12,
+              "maximum": 52,
+              "minimum": 1,
+              "title": "Weeks",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WeekOut"
+                  },
+                  "title": "Response Weekly Activity Api V1 Insights Activity Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Weekly Activity",
+        "tags": [
+          "insights"
+        ]
+      }
+    },
     "/api/v1/insights/flow": {
       "get": {
         "description": "Stage-to-stage flows for a Sankey diagram, for applications added in [since, until).",
@@ -6752,6 +6990,74 @@
           }
         },
         "summary": "Stage Flow",
+        "tags": [
+          "insights"
+        ]
+      }
+    },
+    "/api/v1/insights/stats": {
+      "get": {
+        "description": "Conversion and time per stage, and outcomes by route, for applications added in [since, until).",
+        "operationId": "search_stats_api_v1_insights_stats_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "since",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Since"
+            }
+          },
+          {
+            "in": "query",
+            "name": "until",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Until"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Search Stats",
         "tags": [
           "insights"
         ]
