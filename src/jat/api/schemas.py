@@ -253,13 +253,13 @@ class AttachmentPatch(Patch):
     """Rename a file (its display name; the file on disk keeps its path) or move it to something else."""
 
     original_name: str | None = Field(default=None, min_length=1, max_length=300, pattern=r"\S")
-    entity_type: Literal["application", "company", "role", "agency", "contact", "interview"] | None = None
+    entity_type: Literal["application", "company", "role", "agency", "contact", "interview", "document"] | None = None
     entity_id: str | None = Field(default=None, max_length=36)
 
 
 # --- links -------------------------------------------------------------------------------
 
-EntityRef = Literal["application", "company", "role", "agency", "contact", "interview"]
+EntityRef = Literal["application", "company", "role", "agency", "contact", "interview", "document"]
 
 
 class LinkIn(In):
@@ -290,7 +290,7 @@ class LinkOut(Out):
 
 # --- notes -------------------------------------------------------------------------------
 
-NoteLink = Annotated[str, Field(pattern=r"^(application|company|role|agency|contact|interview):\S+$", max_length=80)]
+NoteLink = Annotated[str, Field(pattern=r"^(application|company|role|agency|contact|interview|document):\S+$", max_length=80)]
 
 
 class NoteIn(In):
