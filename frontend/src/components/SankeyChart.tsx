@@ -48,8 +48,9 @@ export function SankeyChart({ flow }: { flow: Flow }) {
           [1, 8],
           [width - LABEL_SPACE, HEIGHT - 8],
         ])({
-        // d3 mutates what it's given.
-        nodes: flow.nodes.map((n) => ({ ...n })),
+        // d3 mutates what it's given. A node is as tall as the applications that reached it,
+        // including those still there, not just the ones that flowed through.
+        nodes: flow.nodes.map((n) => ({ ...n, fixedValue: n.reached })),
         links: flow.links.map((l) => ({ ...l })),
       })
     );
@@ -65,9 +66,10 @@ export function SankeyChart({ flow }: { flow: Flow }) {
       <svg
         width={width}
         height={HEIGHT}
+        viewBox={`0 0 ${width} ${HEIGHT}`}
         role="img"
         aria-label={`Sankey diagram of ${plural(flow.applications)} moving through the stages`}
-        style={{ display: "block", maxWidth: "100%" }}
+        style={{ display: "block", maxWidth: "100%", height: "auto" }}
       >
         <g fill="none">
           {layout.links.map((l) => {
@@ -124,7 +126,7 @@ export function SankeyChart({ flow }: { flow: Flow }) {
           );
         })}
       </svg>
-      <Text size="sm" c={caption ? undefined : "dimmed"} mt="xs" aria-live="polite">
+      <Text size="sm" c={caption ? undefined : "dimmed"} mt="xs">
         {caption ?? "Hover over a stage or a flow to see its numbers."}
       </Text>
     </div>

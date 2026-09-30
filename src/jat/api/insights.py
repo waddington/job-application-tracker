@@ -43,9 +43,13 @@ def stage_flow(
 ):
     """Stage-to-stage flows for a Sankey diagram, for applications added in [since, until)."""
     result = svc.flow(session, workflow, since=since, until=until, route=route)
-    rank = svc._rank(workflow)
+    rank = svc.stage_rank(workflow)
     stages = {s.id: s for s in workflow.stages}
-    order = sorted(result.reached, key=lambda sid: (rank.get(sid, len(rank)), sid))
+
+    def pos(sid: str) -> tuple[int, str]:
+        return (rank.get(sid, len(rank)), sid)  # unknown (removed) stages last
+
+    order = sorted(result.reached, key=pos)
     nodes = [
         FlowNode(
             id=sid,
@@ -59,6 +63,6 @@ def stage_flow(
     ]
     links = [
         FlowLink(source=a, target=b, value=n)
-        for (a, b), n in sorted(result.links.items(), key=lambda kv: (rank.get(kv[0][0], 99), rank.get(kv[0][1], 99)))
+        for (a, b), n in sorted(result.links.items(), key=lambda kv: (pos(kv[0][0]), pos(kv[0][1])))
     ]
     return FlowOut(applications=result.applications, nodes=nodes, links=links)

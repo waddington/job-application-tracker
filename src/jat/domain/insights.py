@@ -30,7 +30,7 @@ class Flow:
     current: Counter[str] = field(default_factory=Counter)  # where they are now (folded)
 
 
-def _rank(workflow: Workflow) -> dict[str, int]:
+def stage_rank(workflow: Workflow) -> dict[str, int]:
     """Active stages in workflow order first, then success, then closed: a left-to-right order."""
     order = [s for s in workflow.stages if s.is_active]
     order += [s for s in workflow.stages if s.kind == "success"]
@@ -80,7 +80,7 @@ def flow(
         for ev in session.scalars(select(Event).where(Event.application_id.in_(ids)).order_by(Event.seq)):
             events[ev.application_id].append(ev)
 
-    rank = _rank(workflow)
+    rank = stage_rank(workflow)
     result = Flow()
     for app_id in ids:
         path = fold_forward(stage_path(events[app_id]), rank)

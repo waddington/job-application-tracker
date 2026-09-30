@@ -1,13 +1,13 @@
 from datetime import UTC, datetime, timedelta
 
-from jat.domain.insights import _rank, fold_forward
+from jat.domain.insights import fold_forward, stage_rank
 from jat.domain.workflow import DEFAULT_WORKFLOW
 
 from .factories import post
 
 
 def test_fold_forward_keeps_the_flow_acyclic():
-    rank = _rank(DEFAULT_WORKFLOW)
+    rank = stage_rank(DEFAULT_WORKFLOW)
     # Back from Interviewing to Screen, then on: counted as staying at Interviewing.
     assert fold_forward(["applied", "interviewing", "screen", "final"], rank) == ["applied", "interviewing", "final"]
     # Ghosted, then they came back: the reopening isn't drawn.
@@ -59,3 +59,20 @@ def test_flow(client, seeded):
         "nodes": [],
         "links": [],
     }
+
+
+def test_flow_folds_backward_moves_and_filters_by_date(client, seeded):
+    role = seeded["role"]["id"]
+    a = post(client, "/api/v1/applications", {"role_id": role, "stage": "applied"})
+    for stage in ("interviewing", "screen", "final"):  # back to Screen, then on to Final
+        _move(client, a["id"], stage)
+
+    flow = client.get("/api/v1/insights/flow").json()
+    links = {(link["source"], link["target"]): link["value"] for link in flow["links"]}
+    assert links == {("applied", "interviewing"): 1, ("interviewing", "final"): 1}
+    assert "screen" not in {n["id"] for n in flow["nodes"]}
+
+    created = client.get(f"/api/v1/applications/{a['id']}").json()["created_at"]
+    # [since, until): an application added exactly at `since` counts, one added at `until` doesn't.
+    assert client.get("/api/v1/insights/flow", params={"since": created}).json()["applications"] == 1
+    assert client.get("/api/v1/insights/flow", params={"until": created}).json()["applications"] == 0
