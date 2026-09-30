@@ -67,8 +67,8 @@ test"), details and the full timestamped history.
 | | Feature | Status |
 |---|---|---|
 | 📋 | **Applications list** with search (company, role, recruiter) and filters (stage, route, agency, "needs chasing", archived) | ✅ Available |
-| 🗂️ | **Kanban board**: drag applications between stages, with only valid moves allowed | ✅ Available |
-| 🔁 | **Configurable workflow**: your stages, your transitions, full timestamped history | ✅ Available |
+| 🗂️ | **Kanban board**: drag applications between any stages, with the usual next stages highlighted | ✅ Available |
+| 🔁 | **Flexible workflow**: move from any stage to any stage (or switch on Jira-style allowed transitions), full timestamped history and undo | ✅ Available |
 | 🧑‍💼 | **Recruiter CRM**: agencies, recruiters, multiple contact details, every role they've sent | ✅ Available |
 | ⚠️ | **Duplicate-submission warning**: know before two agencies put you forward for the same job | ✅ Available |
 | 📝 | **Markdown notes** on recruiters, roles, calls and interviews, plus general notes | Planned |
