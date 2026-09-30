@@ -1,7 +1,7 @@
 import { notifications } from "@mantine/notifications";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { api, unwrap, type ApplicationDetail, type Schemas } from "./client";
+import { api, unwrap, type ApplicationDetail, type ApplicationRow, type Schemas } from "./client";
 
 export interface WorkflowStage {
   id: string;
@@ -120,17 +120,32 @@ function useApplicationInvalidation() {
 }
 
 export function useMoveApplication() {
+  const qc = useQueryClient();
   const refresh = useApplicationInvalidation();
   return useMutation({
-    mutationFn: async (args: { id: string; to_stage: string; note?: string }) =>
+    mutationFn: async (args: { id: string; to_stage: string; note?: string; stageName?: string }) =>
       unwrap(
         await api.POST("/api/v1/applications/{app_id}/move", {
           params: { path: { app_id: args.id } },
           body: { to_stage: args.to_stage, note: args.note ?? null },
         }),
       ),
+    // Move the card straight away (the board would otherwise snap back until the refetch).
+    onMutate: async (args) => {
+      await qc.cancelQueries({ queryKey: ["applications"] });
+      const previous = qc.getQueriesData<ApplicationRow[]>({ queryKey: ["applications"] });
+      qc.setQueriesData<ApplicationRow[]>({ queryKey: ["applications"] }, (rows) =>
+        rows?.map((r) =>
+          r.id === args.id ? { ...r, stage: args.to_stage, stage_name: args.stageName ?? r.stage_name } : r,
+        ),
+      );
+      return { previous };
+    },
+    onError: (error, _args, context) => {
+      context?.previous.forEach(([key, data]) => qc.setQueryData(key, data));
+      notifyError(error);
+    },
     onSuccess: refresh,
-    onError: notifyError,
   });
 }
 

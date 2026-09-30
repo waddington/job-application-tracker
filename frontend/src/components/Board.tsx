@@ -9,6 +9,8 @@ import {
   useSensors,
   type DragEndEvent,
   type DragStartEvent,
+  type Announcements,
+  type UniqueIdentifier,
 } from "@dnd-kit/core";
 import { Badge, Card, Group, Paper, ScrollArea, Stack, Switch, Text } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
@@ -18,6 +20,23 @@ import type { ApplicationRow } from "../api/client";
 import { useMoveApplication, type Workflow } from "../api/hooks";
 import { buildColumns, canDrop, visibleColumns, type Column } from "../utils/board";
 import { ago } from "../utils/time";
+
+// Space picks a card up and drops it; Enter is left free to open the card.
+const KEYBOARD_CODES = { start: ["Space"], cancel: ["Escape"], end: ["Space"] };
+
+/** Screen-reader messages in words (company, stage names) rather than ids. */
+function announcements(rows: ApplicationRow[], names: Map<string, string>): Announcements {
+  const label = (id: UniqueIdentifier) => rows.find((r) => r.id === id)?.company_name ?? "Application";
+  const stage = (id: UniqueIdentifier | undefined) => (id ? (names.get(String(id)) ?? String(id)) : "");
+  return {
+    onDragStart: ({ active }) => `Picked up ${label(active.id)}. Use arrow keys to move, Space to drop.`,
+    onDragOver: ({ active, over }) =>
+      over ? `${label(active.id)} is over ${stage(over.id)}.` : `${label(active.id)} isn't over a stage.`,
+    onDragEnd: ({ active, over }) =>
+      over ? `${label(active.id)} dropped on ${stage(over.id)}.` : `${label(active.id)} dropped.`,
+    onDragCancel: ({ active }) => `Cancelled. ${label(active.id)} stays where it was.`,
+  };
+}
 
 function CardBody({ row }: { row: ApplicationRow }) {
   const via =
@@ -61,10 +80,19 @@ function DraggableCard({ row, onOpen }: { row: ApplicationRow; onOpen: (id: stri
         cursor: "grab",
         borderLeft: row.stale ? "3px solid var(--mantine-color-red-6)" : undefined,
       }}
-      onClick={() => onOpen(row.id)}
       aria-label={`${row.company_name}: ${row.role_title}`}
       {...attributes}
       {...listeners}
+      onClick={() => onOpen(row.id)}
+      // Enter opens the card; Space starts a keyboard drag (see KEYBOARD_CODES).
+      onKeyDown={(e: React.KeyboardEvent<HTMLDivElement>) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          onOpen(row.id);
+          return;
+        }
+        listeners?.onKeyDown?.(e);
+      }}
     >
       <CardBody row={row} />
     </Card>
@@ -128,7 +156,7 @@ export function Board({
   const move = useMoveApplication();
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }), // clicks still open the card
-    useSensor(KeyboardSensor),
+    useSensor(KeyboardSensor, { keyboardCodes: KEYBOARD_CODES }),
   );
   const columns = visibleColumns(buildColumns(workflow, rows), { showClosed, dragging: !!active });
   const names = new Map(workflow.stages.map((s) => [s.id, s.name]));
@@ -148,7 +176,10 @@ export function Board({
       });
       return;
     }
-    move.mutate({ id: row.id, to_stage: to });
+    move.mutate({ id: row.id, to_stage: to, stageName: names.get(to) });
+    if (workflow.stages.find((s) => s.id === to)?.kind !== "active") {
+      notifications.show({ message: `${row.company_name} moved to ${names.get(to) ?? to}` });
+    }
   };
 
   return (
@@ -164,6 +195,7 @@ export function Board({
         onDragStart={onDragStart}
         onDragEnd={onDragEnd}
         onDragCancel={() => setActive(null)}
+        accessibility={{ announcements: announcements(rows, names) }}
       >
         <ScrollArea type="auto" offsetScrollbars>
           <Group align="flex-start" wrap="nowrap" gap="sm" pb="sm">
@@ -183,9 +215,9 @@ export function Board({
             ))}
           </Group>
         </ScrollArea>
-        <DragOverlay>
+        <DragOverlay dropAnimation={null}>
           {active && (
-            <Card withBorder padding="xs" radius="md" shadow="md" w={240}>
+            <Card withBorder padding="xs" radius="md" shadow="md" w={228}>
               <CardBody row={active} />
             </Card>
           )}
