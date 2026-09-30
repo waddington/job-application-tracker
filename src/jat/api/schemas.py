@@ -1,0 +1,259 @@
+"""Pydantic request/response models for the JSON API (FR23)."""
+
+from __future__ import annotations
+
+from datetime import date, datetime
+from typing import Any, Literal
+
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl
+
+WorkMode = Literal["remote", "hybrid", "office"]
+EmploymentType = Literal["permanent", "contract", "fixed_term"]
+IR35 = Literal["inside", "outside", "unknown"]
+Route = Literal["direct", "agency", "referral"]
+DetailKind = Literal["email", "phone", "linkedin", "url", "other"]
+Relation = Literal["recruiter", "hiring_manager", "interviewer", "referrer", "other"]
+ActivityKind = Literal["call", "email", "message", "note", "file", "interview", "manual"]
+
+
+class Out(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+
+class Patch(BaseModel):
+    """Base for partial updates: only fields that were sent are applied."""
+
+
+# --- companies ---------------------------------------------------------------------------
+
+
+class CompanyIn(BaseModel):
+    name: str = Field(min_length=1, max_length=200)
+    website: HttpUrl | None = None
+    description: str | None = None
+
+
+class CompanyPatch(Patch):
+    name: str | None = Field(default=None, min_length=1, max_length=200)
+    website: HttpUrl | None = None
+    description: str | None = None
+
+
+class CompanyOut(Out):
+    id: str
+    name: str
+    website: str | None
+    description: str | None
+    created_at: datetime
+    updated_at: datetime
+
+
+# --- agencies ----------------------------------------------------------------------------
+
+
+class AgencyIn(BaseModel):
+    name: str = Field(min_length=1, max_length=200)
+    website: HttpUrl | None = None
+
+
+class AgencyPatch(Patch):
+    name: str | None = Field(default=None, min_length=1, max_length=200)
+    website: HttpUrl | None = None
+
+
+class AgencyOut(Out):
+    id: str
+    name: str
+    website: str | None
+    created_at: datetime
+    updated_at: datetime
+
+
+# --- contacts ----------------------------------------------------------------------------
+
+
+class ContactDetailIn(BaseModel):
+    kind: DetailKind
+    value: str = Field(min_length=1, max_length=500)
+    label: str | None = Field(default=None, max_length=100)
+
+
+class ContactDetailOut(Out):
+    id: str
+    kind: str
+    value: str
+    label: str | None
+    position: int
+
+
+class ContactIn(BaseModel):
+    name: str = Field(min_length=1, max_length=200)
+    title: str | None = None
+    agency_id: str | None = None
+    company_id: str | None = None
+    details: list[ContactDetailIn] = []
+
+
+class ContactPatch(Patch):
+    name: str | None = Field(default=None, min_length=1, max_length=200)
+    title: str | None = None
+    agency_id: str | None = None
+    company_id: str | None = None
+    details: list[ContactDetailIn] | None = None  # replaces all details when sent
+
+
+class ContactOut(Out):
+    id: str
+    name: str
+    title: str | None
+    agency_id: str | None
+    company_id: str | None
+    details: list[ContactDetailOut] = []
+    created_at: datetime
+    updated_at: datetime
+
+
+# --- roles -------------------------------------------------------------------------------
+
+
+class RoleFields(BaseModel):
+    url: HttpUrl | None = None
+    location: str | None = None
+    work_mode: WorkMode | None = None
+    employment_type: EmploymentType | None = None
+    salary_min: int | None = Field(default=None, ge=0)
+    salary_max: int | None = Field(default=None, ge=0)
+    currency: str | None = Field(default=None, min_length=3, max_length=3)
+    day_rate: int | None = Field(default=None, ge=0)
+    ir35: IR35 | None = None
+    description: str | None = None
+
+
+class RoleIn(RoleFields):
+    company_id: str
+    title: str = Field(min_length=1, max_length=300)
+
+
+class RolePatch(RoleFields, Patch):
+    company_id: str | None = None
+    title: str | None = Field(default=None, min_length=1, max_length=300)
+
+
+class RoleOut(Out):
+    id: str
+    company_id: str
+    title: str
+    url: str | None
+    location: str | None
+    work_mode: str | None
+    employment_type: str | None
+    salary_min: int | None
+    salary_max: int | None
+    currency: str | None
+    day_rate: int | None
+    ir35: str | None
+    description: str | None
+    created_at: datetime
+    updated_at: datetime
+
+
+# --- applications ------------------------------------------------------------------------
+
+
+class ApplicationIn(BaseModel):
+    role_id: str
+    route: Route = "direct"
+    agency_id: str | None = None
+    recruiter_id: str | None = None
+    stage: str | None = None  # defaults to the workflow's initial stage
+    applied_on: date | None = None
+    follow_up_on: date | None = None
+    tags: list[str] = []
+
+
+class ApplicationPatch(Patch):
+    """Stage is changed with POST /applications/{id}/move, not here."""
+
+    role_id: str | None = None
+    route: Route | None = None
+    agency_id: str | None = None
+    recruiter_id: str | None = None
+    applied_on: date | None = None
+    follow_up_on: date | None = None
+    snoozed_until: date | None = None
+    tags: list[str] | None = None
+    archived: bool | None = None
+
+
+class ApplicationOut(Out):
+    id: str
+    role_id: str
+    route: str
+    agency_id: str | None
+    recruiter_id: str | None
+    stage: str
+    applied_on: date | None
+    follow_up_on: date | None
+    snoozed_until: date | None
+    last_activity_at: datetime
+    tags: list[str]
+    archived: bool
+    created_at: datetime
+    updated_at: datetime
+
+
+class ApplicationRow(ApplicationOut):
+    """An application with the names the list and board need."""
+
+    role_title: str
+    company_id: str
+    company_name: str
+    agency_name: str | None
+    recruiter_name: str | None
+    stage_name: str
+    stage_kind: str
+    days_since_activity: int
+    stale: bool
+
+
+class MoveIn(BaseModel):
+    to_stage: str
+    occurred_at: datetime | None = None
+    note: str | None = None
+
+
+class ActivityIn(BaseModel):
+    kind: ActivityKind
+    summary: str | None = None
+    occurred_at: datetime | None = None
+    data: dict[str, Any] = {}
+
+
+class EventOut(Out):
+    id: str
+    application_id: str
+    kind: str
+    occurred_at: datetime
+    from_stage: str | None
+    to_stage: str | None
+    summary: str | None
+    data: dict[str, Any]
+    created_at: datetime
+
+
+class ApplicationContactIn(BaseModel):
+    contact_id: str
+    relation: Relation
+
+
+class ApplicationContactOut(Out):
+    id: str
+    application_id: str
+    contact_id: str
+    relation: str
+
+
+class ApplicationDetail(ApplicationRow):
+    events: list[EventOut]
+    contacts: list[ApplicationContactOut]
+    allowed_next: list[str]
