@@ -19,6 +19,7 @@ import { api, unwrap, type ApplicationRow } from "../api/client";
 import { stageLookup, useUpdateApplication, useWorkflow } from "../api/hooks";
 import { useSaveInterview, type Interview } from "../api/interviewHooks";
 import { ApplicationDrawer } from "../components/ApplicationDrawer";
+import { ChaseActions } from "../components/ChaseActions";
 import { StageBadge } from "../components/StageBadge";
 import { ago, formatDate, formatDateTime } from "../utils/time";
 
@@ -197,13 +198,16 @@ export function NextActionsPage() {
                 onOpen={setOpenId}
                 detail={`due ${formatDate(r.follow_up_on)}`}
                 action={
-                  <Button
-                    size="compact-xs"
-                    variant="light"
-                    onClick={() => update.mutate({ id: r.id, body: { follow_up_on: null } })}
-                  >
-                    Done
-                  </Button>
+                  <Group gap={4} wrap="nowrap">
+                    <Button
+                      size="compact-xs"
+                      variant="light"
+                      onClick={() => update.mutate({ id: r.id, body: { follow_up_on: null } })}
+                    >
+                      Done
+                    </Button>
+                    <ChaseActions row={r} />
+                  </Group>
                 }
               />
             ))}
@@ -215,7 +219,13 @@ export function NextActionsPage() {
           </Section>
           <Section title="Gone quiet" count={data.stale.length} hint="Past their stage's threshold">
             {data.stale.map((r) => (
-              <AppLine key={r.id} row={r} onOpen={setOpenId} detail={ago(r.days_since_activity)} />
+              <AppLine
+                key={r.id}
+                row={r}
+                onOpen={setOpenId}
+                detail={ago(r.days_since_activity)}
+                action={<ChaseActions row={r} />}
+              />
             ))}
           </Section>
         </>

@@ -110,4 +110,48 @@ describe("next actions", () => {
     renderHome();
     expect(await screen.findByText("All caught up")).toBeInTheDocument();
   });
+
+  it("snoozes, sets a follow-up or marks a quiet application ghosted in one click", async () => {
+    const ghosted = {
+      id: "ghosted",
+      name: "Ghosted",
+      kind: "closed",
+      stale_after_days: null,
+      color: "dark",
+      next: [],
+      allowed_next: [],
+      suggested_next: [],
+    };
+    vi.stubGlobal("confirm", () => true);
+    const calls = mockApi({
+      "/api/v1/workflow": { ...WORKFLOW, stages: [...WORKFLOW.stages, ghosted] },
+      "/api/v1/next-actions": {
+        follow_ups: [],
+        stale: [row({ id: "a3", company_name: "Litware", days_since_activity: 12 })],
+        upcoming: [],
+        awaiting_outcome: [],
+        today: "2026-09-30",
+      },
+      "PATCH /api/v1/applications/a3": row({ id: "a3" }),
+      "POST /api/v1/applications/a3/move": { ...row({ id: "a3", stage: "ghosted" }), events: [] },
+      "/api/v1/health": {},
+    });
+    renderHome();
+    fireEvent.click(await screen.findByRole("button", { name: "Snooze Litware" }));
+    fireEvent.click(await screen.findByText("1 week"));
+    await waitFor(() => {
+      const patch = calls.find((c) => c.method === "PATCH");
+      expect((patch?.body as { snoozed_until: string }).snoozed_until).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Follow up on Litware" }));
+    fireEvent.click(await screen.findByText("Tomorrow"));
+    await waitFor(() => expect(calls.filter((c) => c.method === "PATCH")).toHaveLength(2));
+    expect(calls.filter((c) => c.method === "PATCH")[1]!.body).toHaveProperty("follow_up_on");
+
+    fireEvent.click(screen.getByRole("button", { name: /Ghosted/ }));
+    await waitFor(() =>
+      expect(calls.find((c) => c.method === "POST")?.body).toEqual({ to_stage: "ghosted", note: "No reply" }),
+    );
+  });
 });
