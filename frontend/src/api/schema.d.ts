@@ -383,6 +383,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/backup/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download Archive
+         * @description The whole data directory as one zip (fresh export, notes, files, config), to keep anywhere.
+         *     Unzip it and run `jat restore` to get the tracker back.
+         *
+         *     A GET, so it works as a plain download link; but it does real work (an export and a zip),
+         *     so another site can't set it off: cross-site requests are refused.
+         */
+        get: operations["download_archive_api_v1_backup_archive_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/backup/push": {
         parameters: {
             query?: never;
@@ -3367,6 +3391,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BackupStatus"];
+                };
+            };
+        };
+    };
+    download_archive_api_v1_backup_archive_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The data directory as a zip */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/zip": unknown;
                 };
             };
         };
