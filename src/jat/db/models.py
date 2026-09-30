@@ -258,6 +258,7 @@ ENTITY_MODELS: dict[str, type[Base]] = {
     "agency": Agency,
     "contact": Contact,
     "interview": Interview,
+    "document": Document,
 }
 
 

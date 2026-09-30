@@ -255,13 +255,91 @@ class AttachmentPatch(Patch):
     """Rename a file (its display name; the file on disk keeps its path) or move it to something else."""
 
     original_name: str | None = Field(default=None, min_length=1, max_length=300, pattern=r"\S")
-    entity_type: Literal["application", "company", "role", "agency", "contact", "interview"] | None = None
+    entity_type: Literal["application", "company", "role", "agency", "contact", "interview", "document"] | None = None
     entity_id: str | None = Field(default=None, max_length=36)
+
+
+# --- documents (CVs and cover letters) ---------------------------------------------------
+
+DocumentKind = Literal["cv", "cover_letter", "other"]
+
+
+class DocumentIn(In):
+    kind: DocumentKind = "cv"
+    name: str = Field(min_length=1, max_length=200, pattern=r"\S")
+
+
+class DocumentPatch(Patch):
+    not_null = frozenset({"kind", "name"})
+
+    kind: DocumentKind | None = None
+    name: str | None = Field(default=None, min_length=1, max_length=200, pattern=r"\S")
+
+
+class VersionPatch(Patch):
+    not_null = frozenset({"label"})
+
+    label: str | None = Field(default=None, min_length=1, max_length=100, pattern=r"\S")
+    notes: str | None = Field(default=None, max_length=2000)
+
+
+class VersionOut(BaseModel):
+    id: str
+    document_id: str
+    label: str
+    notes: str | None
+    created_at: datetime
+    file: AttachmentOut | None
+    used_in: int  # how many applications it was sent with
+
+
+class DocumentOut(BaseModel):
+    id: str
+    kind: str
+    name: str
+    created_at: datetime
+    updated_at: datetime
+    versions: list[VersionOut]  # newest first
+
+
+class DocumentUsage(BaseModel):
+    """One application a version of this document was sent with."""
+
+    link_id: str
+    application_id: str
+    company_name: str
+    role_title: str
+    stage_name: str
+    version_id: str
+    version_label: str
+    sent_on: date | None
+
+
+class DocumentDetail(DocumentOut):
+    used_in: list[DocumentUsage]
+
+
+class SentDocumentIn(In):
+    document_version_id: str
+    sent_on: date | None = None
+
+
+class SentDocumentOut(BaseModel):
+    """A document version sent with an application."""
+
+    id: str
+    document_id: str
+    document_name: str
+    kind: str
+    version_id: str
+    version_label: str
+    sent_on: date | None
+    file_url: str | None
 
 
 # --- links -------------------------------------------------------------------------------
 
-EntityRef = Literal["application", "company", "role", "agency", "contact", "interview"]
+EntityRef = Literal["application", "company", "role", "agency", "contact", "interview", "document"]
 
 
 class LinkIn(In):
@@ -292,7 +370,9 @@ class LinkOut(Out):
 
 # --- notes -------------------------------------------------------------------------------
 
-NoteLink = Annotated[str, Field(pattern=r"^(application|company|role|agency|contact|interview):\S+$", max_length=80)]
+NoteLink = Annotated[
+    str, Field(pattern=r"^(application|company|role|agency|contact|interview|document):\S+$", max_length=80)
+]
 
 
 class NoteIn(In):
@@ -498,6 +578,7 @@ class ApplicationDetail(ApplicationRow):
     suggested_next: list[str]  # the usual next stages; with transitions = "any", allowed_next is every stage
     can_undo: bool
     duplicates: list[DuplicateOut]
+    documents: list[SentDocumentOut]  # CV and cover-letter versions sent with it
 
 
 class QuickApplicationIn(In):

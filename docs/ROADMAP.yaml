@@ -58,7 +58,7 @@ phases:
       - {id: links, name: "External links such as Google Docs", owner: lead, status: done, estimate_h: 1, depends: [detail-pages], prd: docs/prd/tracker.md}
       - {id: attachments, name: "File attachments stored in the data directory", owner: lead, status: done, estimate_h: 3, depends: [detail-pages], prd: docs/prd/tracker.md}
       - {id: eml-import, name: "Email export (.eml) parsing into the timeline", owner: lead, status: done, estimate_h: 2, depends: [attachments], prd: docs/prd/tracker.md}
-      - {id: documents, name: "Versioned CVs and cover letters, with where each was used", owner: lead, status: planned, estimate_h: 2, depends: [attachments], prd: docs/prd/tracker.md}
+      - {id: documents, name: "Versioned CVs and cover letters, with where each was used", owner: lead, status: done, estimate_h: 2, depends: [attachments], prd: docs/prd/tracker.md}
       - {id: interviews, name: "Interviews and coding tasks: numbered rounds with a description (Round 2 · System design), shown on board and list; schedule, prep, debrief, questions", owner: lead, status: done, estimate_h: 3, depends: [detail-pages], prd: docs/prd/tracker.md}
 
   - id: P4

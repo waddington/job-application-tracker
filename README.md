@@ -74,7 +74,7 @@ test"), details and the full timestamped history.
 | 📝 | **Markdown notes** on applications, companies, agencies and people, plus general notes: real `.md` files you can edit anywhere | ✅ Available |
 | 🔗 | **Links** on applications, companies and agencies: job ads, Google Docs, take-home repos, with icons and default titles | ✅ Available |
 | 📎 | **Files and emails**: drop PDFs, images or exported emails (`.eml`) on an application, company or agency; emails land on the timeline at the time they were sent | ✅ Available |
-| 📄 | **CV and cover-letter versions**: see exactly what you sent where | Planned |
+| 📄 | **CV and cover-letter versions**: every tailored version with its file, which one each application got, and where each was used | ✅ Available |
 | 💻 | **Interview rounds and coding tasks**: numbered rounds in your own words ("Round 2 · System design test") shown on the board, plus times, interviewers, prep, debrief, questions asked and take-home briefs | ✅ Available |
 | ⏰ | **Next actions**: stale applications, follow-ups, snooze, upcoming interviews, offer deadlines | Planned |
 | 📊 | **Sankey diagram** of your funnel: applications → screens → interviews → offers | Planned |

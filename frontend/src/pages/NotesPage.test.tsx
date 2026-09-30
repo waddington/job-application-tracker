@@ -27,6 +27,7 @@ const detail = {
   allowed_next: [],
   suggested_next: [],
   can_undo: false,
+  documents: [],
   duplicates: [],
 };
 

@@ -11,7 +11,7 @@ from fastapi.responses import FileResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from ..db.models import Application, Attachment
+from ..db.models import Application, Attachment, DocumentVersion
 from ..domain import applications as svc
 from ..storage import eml
 from ..storage.files import FileError, FileStore, TooLarge
@@ -184,6 +184,10 @@ def update_attachment(attachment_id: str, body: S.AttachmentPatch, session: Sess
 @router.delete("/{attachment_id}", status_code=204)
 def delete_attachment(attachment_id: str, request: Request, session: SessionDep):
     att = get_or_404(session, Attachment, attachment_id)
+    version = session.scalar(select(DocumentVersion).where(DocumentVersion.attachment_id == att.id).limit(1))
+    if version is not None:
+        # A CV's file is part of its version (and what you sent): delete the version instead.
+        raise HTTPException(409, f"This is the file of version {version.label!r}; delete that version instead.")
     path = att.path
     session.delete(att)
     session.commit()  # the record goes first: a failed commit must not leave it pointing at nothing
