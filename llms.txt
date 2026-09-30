@@ -14,8 +14,9 @@ Status: early development, usable day to day. Available now: a Next actions home
 and Ghosted), applications list and Kanban board (move between any stages), application,
 company, recruiter and agency pages, recruiter CRM, numbered interview rounds, duplicate
 warnings, Markdown notes as real files, links, file attachments and `.eml` import onto the
-timeline, versioned CVs and cover letters, a Sankey diagram of stage flows, and git-backed snapshots with restore. Planned
-next: insights (funnel stats, recruiter scorecard), offers, `.ics` export and search.
+timeline, versioned CVs and cover letters, a Sankey diagram of stage flows, funnel stats (conversion and median time per stage, direct vs
+recruiter, weekly activity), and git-backed snapshots with restore. Planned
+next: a recruiter scorecard, offers, `.ics` export and search.
 
 Stack: Python 3.12, FastAPI, SQLAlchemy, Alembic and SQLite (with a JSON Lines export
 committed to the user's private data repo); React 19, TypeScript, Mantine and TanStack
