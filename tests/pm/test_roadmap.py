@@ -73,8 +73,9 @@ class LiveTests(unittest.TestCase):
         self.assertEqual(roadmap.task("b").commits_ahead, 3)
 
     def test_open_pr_beats_older_merged(self):
-        live = Live(prs=[PullRequest(1, "a", "MERGED", "worktree-a", "u"),
-                         PullRequest(5, "a2", "OPEN", "worktree-a", "u")])
+        live = Live(
+            prs=[PullRequest(1, "a", "MERGED", "worktree-a", "u"), PullRequest(5, "a2", "OPEN", "worktree-a", "u")]
+        )
         self.assertEqual(apply_live(sample(), live).task("a").status, "review")
 
     def test_next_up_and_summary(self):
