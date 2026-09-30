@@ -9,24 +9,12 @@ from collections.abc import Iterable
 from datetime import datetime
 
 from sqlalchemy import func, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, load_only
 
 from jat.db.models import Application, Interview
 
 from . import applications as svc
 
-KINDS = (
-    "screen",
-    "hiring_manager",
-    "technical",
-    "coding_task",
-    "system_design",
-    "pairing",
-    "behavioural",
-    "onsite",
-    "final",
-    "other",
-)
 KIND_NAMES = {
     "screen": "Screen",
     "hiring_manager": "Hiring manager",
@@ -39,7 +27,6 @@ KIND_NAMES = {
     "final": "Final",
     "other": "Interview",
 }
-STATUSES = ("scheduled", "done", "cancelled")
 
 
 def label(interview: Interview) -> str:
@@ -63,7 +50,18 @@ def current_rounds(session: Session, application_ids: Iterable[str]) -> dict[str
     if not ids:
         return {}
     by_app: dict[str, list[Interview]] = {}
-    for interview in session.scalars(select(Interview).where(Interview.application_id.in_(ids))):
+    # Only what the summary needs: prep, debrief and questions can be long.
+    columns = load_only(
+        Interview.application_id,
+        Interview.round,
+        Interview.title,
+        Interview.kind,
+        Interview.status,
+        Interview.starts_at,
+        Interview.deadline_at,
+        Interview.created_at,
+    )
+    for interview in session.scalars(select(Interview).options(columns).where(Interview.application_id.in_(ids))):
         by_app.setdefault(interview.application_id, []).append(interview)
     out: dict[str, Interview] = {}
     for app_id, interviews in by_app.items():

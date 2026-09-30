@@ -4870,7 +4870,7 @@
     },
     "/api/v1/interviews": {
       "get": {
-        "description": "Interviews, soonest first. `upcoming` keeps scheduled ones from today on (or with no date yet).",
+        "description": "Interviews, soonest first.\n\n`upcoming` keeps scheduled ones from `since` on, plus those with no date yet. Pass the start\nof your local day as `since`; it defaults to the start of today in UTC.",
         "operationId": "list_interviews_api_v1_interviews_get",
         "parameters": [
           {
@@ -4918,6 +4918,23 @@
               "default": false,
               "title": "Upcoming",
               "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "since",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Since"
             }
           }
         ],

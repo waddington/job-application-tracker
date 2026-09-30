@@ -1,4 +1,4 @@
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime, timedelta, timezone
 
 from .factories import post
 
@@ -102,3 +102,61 @@ def test_interviews_go_with_their_application(client, seeded):
     made = post(client, f"/api/v1/applications/{app['id']}/interviews", {"title": "Screen"})
     assert client.delete(f"/api/v1/applications/{app['id']}").status_code == 204
     assert client.get(f"/api/v1/interviews/{made['id']}").status_code == 404
+
+
+def _interview_events(client, app_id):
+    detail = client.get(f"/api/v1/applications/{app_id}").json()
+    return [e["summary"] for e in detail["events"] if e["kind"] == "interview"]
+
+
+def test_patch_clears_replaces_and_logs_only_real_reschedules(client, seeded):
+    app = _app(client, seeded)
+    other = post(client, "/api/v1/contacts", {"name": "Riley Chen"})
+    made = post(
+        client,
+        f"/api/v1/applications/{app['id']}/interviews",
+        {"title": "Pairing", "starts_at": _iso(3), "interviewer_ids": [seeded["recruiter"]["id"]]},
+    )
+    url = f"/api/v1/interviews/{made['id']}"
+
+    # Same instant in another offset, with fractions: stored as the same time, so no event.
+    same = datetime.fromisoformat(made["starts_at"]).astimezone(timezone(timedelta(hours=2)))
+    r = client.patch(url, json={"starts_at": same.replace(microsecond=250000).isoformat()})
+    assert r.json()["starts_at"] == made["starts_at"]
+    assert "Round 1 · Pairing rescheduled" not in _interview_events(client, app["id"])
+
+    r = client.patch(url, json={"starts_at": _iso(4), "interviewer_ids": [other["id"]], "title": None})
+    assert r.json()["interviewer_ids"] == [other["id"]]
+    assert r.json()["title"] is None and r.json()["label"] == "Round 1 · Technical"
+    assert "Round 1 · Technical rescheduled" in _interview_events(client, app["id"])
+
+    # Clearing the time isn't a reschedule.
+    client.patch(url, json={"starts_at": None})
+    assert _interview_events(client, app["id"]).count("Round 1 · Technical rescheduled") == 1
+
+
+def test_upcoming_skips_cancelled_done_and_past(client, seeded):
+    app = _app(client, seeded)
+    url = f"/api/v1/applications/{app['id']}/interviews"
+    keep = post(client, url, {"title": "Take-home", "kind": "coding_task", "deadline_at": _iso(2)})
+    post(client, url, {"title": "Old", "starts_at": _iso(-2)})  # still "scheduled" but in the past
+    post(client, url, {"title": "Off", "starts_at": _iso(2), "status": "cancelled"})
+    post(client, url, {"title": "Held", "starts_at": _iso(1), "status": "done"})
+    ids = [i["id"] for i in client.get("/api/v1/interviews", params={"upcoming": True}).json()]
+    assert ids == [keep["id"]]
+    # A caller's own "start of today" (e.g. local midnight) moves the cut-off.
+    since = (datetime.now(UTC) - timedelta(days=3)).isoformat()
+    ids = [i["id"] for i in client.get("/api/v1/interviews", params={"upcoming": True, "since": since}).json()]
+    assert len(ids) == 2
+
+
+def test_delete_is_logged_and_moves_the_current_round(client, seeded):
+    app = _app(client, seeded)
+    url = f"/api/v1/applications/{app['id']}/interviews"
+    post(client, url, {"title": "Screen", "status": "done", "starts_at": _iso(-5)})
+    second = post(client, url, {"title": "Onsite", "starts_at": _iso(5)})
+    assert client.get(f"/api/v1/applications/{app['id']}").json()["current_round"]["round"] == 2
+    assert client.delete(f"/api/v1/interviews/{second['id']}").status_code == 204
+    detail = client.get(f"/api/v1/applications/{app['id']}").json()
+    assert detail["current_round"]["label"] == "Round 1 · Screen"
+    assert "Round 2 · Onsite removed" in _interview_events(client, app["id"])

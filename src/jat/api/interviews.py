@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 
 from fastapi import APIRouter, HTTPException, Response
+from pydantic import AwareDatetime
 from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 
@@ -75,19 +76,24 @@ def list_interviews(
     application_id: str | None = None,
     status: S.InterviewStatus | None = None,
     upcoming: bool = False,
+    since: AwareDatetime | None = None,
 ):
-    """Interviews, soonest first. `upcoming` keeps scheduled ones from today on (or with no date yet)."""
+    """Interviews, soonest first.
+
+    `upcoming` keeps scheduled ones from `since` on, plus those with no date yet. Pass the start
+    of your local day as `since`; it defaults to the start of today in UTC.
+    """
     stmt = _query()
     if application_id:
         stmt = stmt.where(Interview.application_id == application_id)
     if status:
         stmt = stmt.where(Interview.status == status)
     if upcoming:
-        start_of_today = datetime.now(UTC).replace(hour=0, minute=0, second=0, microsecond=0)
+        start = since or datetime.now(UTC).replace(hour=0, minute=0, second=0, microsecond=0)
         stmt = stmt.where(
             Interview.status == "scheduled",
             (Interview.starts_at.is_(None) & Interview.deadline_at.is_(None))
-            | (func.coalesce(Interview.starts_at, Interview.deadline_at) >= start_of_today),
+            | (func.coalesce(Interview.starts_at, Interview.deadline_at) >= start.astimezone(UTC)),
         )
     return _outs(session, session.execute(stmt.order_by(_WHEN, Interview.round, Interview.id)))
 
@@ -136,6 +142,7 @@ def update_interview(interview_id: str, body: S.InterviewPatch, session: Session
     for key, value in data.items():
         setattr(interview, key, value)
     session.flush()
+    session.refresh(interview)  # stored values: times in UTC, whole seconds
     if interviewer_ids is not None:
         _set_interviewers(session, interview, interviewer_ids)
     app = session.get(Application, interview.application_id)
@@ -146,13 +153,19 @@ def update_interview(interview_id: str, body: S.InterviewPatch, session: Session
             interview,
             {"scheduled": "back on", "done": "done", "cancelled": "cancelled"}[interview.status],
         )
-    elif interview.status == "scheduled" and interview.starts_at != before[1] and before[1] is not None:
+    elif (
+        interview.status == "scheduled"
+        and None not in (before[1], interview.starts_at)  # adding or clearing a time isn't a reschedule
+        and interview.starts_at != before[1]
+    ):
         svc.record(session, app, interview, "rescheduled")
     return _out(session, interview.id)
 
 
 @router.delete("/interviews/{interview_id}", status_code=204)
 def delete_interview(interview_id: str, session: SessionDep):
-    session.delete(get_or_404(session, Interview, interview_id))
+    interview = get_or_404(session, Interview, interview_id)
+    svc.record(session, session.get(Application, interview.application_id), interview, "removed")
+    session.delete(interview)
     session.flush()
     return Response(status_code=204)
