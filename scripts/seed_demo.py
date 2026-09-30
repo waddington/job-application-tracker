@@ -15,9 +15,10 @@ from pathlib import Path
 
 from jat.datadir import init_data_dir
 from jat.db import db_path, make_engine, migrate, session_factory
-from jat.db.models import Agency, Company, Contact, ContactDetail, Interview, Role
+from jat.db.models import Agency, Application, Company, Contact, ContactDetail, Interview, Role
 from jat.domain.applications import create_application, history, log_activity, move
 from jat.domain.workflow import DEFAULT_WORKFLOW as W
+from jat.storage.notes import NoteStore
 
 NOW = datetime.now(UTC).replace(microsecond=0)
 
@@ -117,6 +118,7 @@ def seed(path: Path) -> None:
         agencies: dict[str, Agency] = {}
         recruiters: dict[str, Contact] = {}
         companies: dict[str, Company] = {}
+        first_app: dict[str, Application] = {}
         for company, title, route, agency_name, recruiter_name, path_, tags in APPLICATIONS:
             if company not in companies:
                 companies[company] = Company(
@@ -198,6 +200,24 @@ def seed(path: Path) -> None:
                         meeting_url="https://meet.example.com/demo",
                     )
                 )
+            first_app.setdefault(company, app)
+        # Notes are Markdown files under notes/, indexed in the database.
+        store = NoteStore(path)
+        for title, body, links in [
+            (
+                "Call with Alex about Contoso",
+                "## Role\n\n- Payments platform, **Python + Kafka**\n- Hybrid, 2 days in London\n\n"
+                "## Money\n\n| | |\n|---|---|\n| Day rate | £650 |\n| IR35 | Outside |\n\n"
+                "- [ ] Send updated CV\n- [x] Confirm availability\n",
+                [f"application:{first_app['Contoso'].id}", f"company:{companies['Contoso'].id}"],
+            ),
+            (
+                "Job search plan",
+                "Focus on **fintech** and **platform** roles.\n\n1. Five applications a week\n2. Chase after 7 days\n",
+                [],
+            ),
+        ]:
+            store.index(s, store.create(title, body, links))
     engine.dispose()
     print(f"Seeded {len(APPLICATIONS)} demo applications in {path}")
 
