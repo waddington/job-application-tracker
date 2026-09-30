@@ -801,6 +801,94 @@
         "title": "ApplicationRow",
         "type": "object"
       },
+      "BackupStatus": {
+        "properties": {
+          "debounce_seconds": {
+            "title": "Debounce Seconds",
+            "type": "number"
+          },
+          "dirty": {
+            "title": "Dirty",
+            "type": "boolean"
+          },
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "has_remote": {
+            "title": "Has Remote",
+            "type": "boolean"
+          },
+          "last_commit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Commit"
+          },
+          "last_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Error"
+          },
+          "last_push_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Push At"
+          },
+          "last_snapshot_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Snapshot At"
+          },
+          "unpushed_commits": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unpushed Commits"
+          }
+        },
+        "required": [
+          "enabled",
+          "dirty",
+          "debounce_seconds",
+          "last_snapshot_at",
+          "last_commit",
+          "last_error",
+          "unpushed_commits",
+          "has_remote",
+          "last_push_at"
+        ],
+        "title": "BackupStatus",
+        "type": "object"
+      },
       "CompanyIn": {
         "properties": {
           "description": {
@@ -1340,6 +1428,23 @@
         "title": "MoveIn",
         "type": "object"
       },
+      "PushResult": {
+        "properties": {
+          "output": {
+            "title": "Output",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/BackupStatus"
+          }
+        },
+        "required": [
+          "output",
+          "status"
+        ],
+        "title": "PushResult",
+        "type": "object"
+      },
       "RoleIn": {
         "properties": {
           "company_id": {
@@ -1809,6 +1914,30 @@
           }
         },
         "title": "RolePatch",
+        "type": "object"
+      },
+      "SnapshotResult": {
+        "properties": {
+          "commit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Commit"
+          },
+          "status": {
+            "$ref": "#/components/schemas/BackupStatus"
+          }
+        },
+        "required": [
+          "commit",
+          "status"
+        ],
+        "title": "SnapshotResult",
         "type": "object"
       },
       "ValidationError": {
@@ -2762,6 +2891,69 @@
         "summary": "Undo App",
         "tags": [
           "applications"
+        ]
+      }
+    },
+    "/api/v1/backup": {
+      "get": {
+        "operationId": "backup_status_api_v1_backup_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BackupStatus"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Backup Status",
+        "tags": [
+          "backup"
+        ]
+      }
+    },
+    "/api/v1/backup/push": {
+      "post": {
+        "operationId": "push_api_v1_backup_push_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Push",
+        "tags": [
+          "backup"
+        ]
+      }
+    },
+    "/api/v1/backup/snapshot": {
+      "post": {
+        "operationId": "snapshot_api_v1_backup_snapshot_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SnapshotResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Snapshot",
+        "tags": [
+          "backup"
         ]
       }
     },
