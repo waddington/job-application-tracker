@@ -8,11 +8,10 @@ from fastapi import APIRouter
 from pydantic import AwareDatetime, BaseModel
 from sqlalchemy import func
 
-from ..db.models import Interview
+from ..db.models import Application, Interview
 from . import schemas as S
 from .deps import SessionDep, WorkflowDep
 from .interviews import _outs, _query
-from .routers import list_applications
 
 router = APIRouter(tags=["next actions"])
 
@@ -28,13 +27,25 @@ class NextActions(BaseModel):
 
 
 @router.get("/next-actions", response_model=NextActions)
-def next_actions(session: SessionDep, workflow: WorkflowDep, since: AwareDatetime | None = None):
-    """Pass `since` as the start of your local day so "today" means your today (default: UTC)."""
+def next_actions(
+    session: SessionDep,
+    workflow: WorkflowDep,
+    today: date | None = None,
+    since: AwareDatetime | None = None,
+):
+    """Pass your local `today` (YYYY-MM-DD) and `since` (the start of your local day, with its
+    offset) so "today" means your today. Both default to UTC's.
+
+    Only open applications count: archived ones, and ones in a closed or success stage, are done.
+    """
+    from .routers import list_applications  # routers includes this module's router
+
     now = datetime.now(UTC)
     start = (since or now.replace(hour=0, minute=0, second=0, microsecond=0)).astimezone(UTC)
-    today = (since or now).date()
+    today = today or (since.date() if since else now.date())
+    active = [s.id for s in workflow.stages if s.is_active]
 
-    rows = list_applications(session, workflow)
+    rows = [r for r in list_applications(session, workflow) if r.stage_kind == "active"]
     follow_ups = [
         r
         for r in rows
@@ -50,16 +61,16 @@ def next_actions(session: SessionDep, workflow: WorkflowDep, since: AwareDatetim
     )
 
     when = func.coalesce(Interview.starts_at, Interview.deadline_at)
-    scheduled = _query().where(Interview.status == "scheduled")
-    booked = _outs(
-        session,
-        session.execute(
-            scheduled.where(when >= start, when < start + timedelta(days=UPCOMING_DAYS)).order_by(when, Interview.id)
-        ),
+    scheduled = _query().where(
+        Interview.status == "scheduled",
+        Application.archived.is_(False),
+        Application.stage.in_(active),
     )
+    window = scheduled.where(when >= min(start, now), when < start + timedelta(days=UPCOMING_DAYS))
+    booked = _outs(session, session.execute(window.order_by(when, Interview.id)))
     unbooked = _outs(session, session.execute(scheduled.where(when.is_(None)).order_by(Interview.created_at)))
     past = _outs(session, session.execute(scheduled.where(when < now).order_by(when.desc(), Interview.id)))
-    # Something from earlier today counts as upcoming until its time has passed.
+    # Earlier today counts as upcoming until its time has passed; then it's awaiting an outcome.
     upcoming = [i for i in booked if (i.starts_at or i.deadline_at) >= now]
     return NextActions(
         follow_ups=follow_ups,

@@ -7021,9 +7021,26 @@
     },
     "/api/v1/next-actions": {
       "get": {
-        "description": "Pass `since` as the start of your local day so \"today\" means your today (default: UTC).",
+        "description": "Pass your local `today` (YYYY-MM-DD) and `since` (the start of your local day, with its\noffset) so \"today\" means your today. Both default to UTC's.\n\nOnly open applications count: archived ones, and ones in a closed or success stage, are done.",
         "operationId": "next_actions_api_v1_next_actions_get",
         "parameters": [
+          {
+            "in": "query",
+            "name": "today",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Today"
+            }
+          },
           {
             "in": "query",
             "name": "since",

@@ -223,13 +223,12 @@ def _with_rounds(session: Session, rows: list[S.ApplicationRow]) -> list[S.Appli
     not on them. (One with an undated round still counts, so it doesn't hide forever.)
     """
     current = interviews_svc.current_rounds(session, (r.id for r in rows))
-    now = datetime.now(UTC)
+    booked = interviews_svc.booked_ahead(session, (r.id for r in rows), datetime.now(UTC))
     for r in rows:
         if (interview := current.get(r.id)) is not None:
             r.current_round = _round_summary(interview)
-            when = interview.starts_at or interview.deadline_at
-            if interview.status == "scheduled" and when is not None and when >= now:
-                r.stale = False
+        if r.id in booked:  # any round still to come, even if an earlier one is awaiting an outcome
+            r.stale = False
     return rows
 
 
