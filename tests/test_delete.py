@@ -7,9 +7,9 @@ def test_company_with_applications_cant_be_deleted_but_its_roles_go_with_it(clie
 
     r = client.delete(f"/api/v1/companies/{company}")
     assert r.status_code == 409
-    assert r.json()["detail"] == "Contoso has 1 application. Delete them first, or archive them instead."
+    assert r.json()["detail"] == "Contoso has an application. Delete it first, or archive it instead."
     r = client.delete(f"/api/v1/roles/{role}")
-    assert r.status_code == 409 and "Senior Backend Engineer has 1 application" in r.json()["detail"]
+    assert r.status_code == 409 and "Senior Backend Engineer has an application" in r.json()["detail"]
 
     assert client.delete(f"/api/v1/applications/{app['id']}").status_code == 204
     # A second role with nothing on it goes too.

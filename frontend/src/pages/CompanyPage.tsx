@@ -90,7 +90,7 @@ export function CompanyPage() {
           name={company.name}
           blocked={
             applications.length
-              ? `${company.name} still has ${applications.length === 1 ? "an application" : `${applications.length} applications`}. Delete them first, or archive them instead.`
+              ? `${company.name} still has ${applications.length === 1 ? "an application. Delete it first, or archive it instead." : `${applications.length} applications. Delete them first, or archive them instead.`}`
               : null
           }
           confirm={`Delete ${company.name} and its roles? Its people stay, without a company.`}

@@ -33,18 +33,17 @@ def _count_applications(session: Session, *where) -> int:
     return session.scalar(select(func.count()).select_from(Application).join(Role).where(*where)) or 0
 
 
-def _plural(n: int, word: str) -> str:
-    return f"{n} {word}{'' if n == 1 else 's'}"
+def _still_used(name: str, n: int) -> str:
+    if n == 1:
+        return f"{name} has an application. Delete it first, or archive it instead."
+    return f"{name} has {n} applications. Delete them first, or archive them instead."
 
 
 def _before_company_delete(session: Session, company: Company) -> None:
     """A company with applications can't go (delete or move those first); its roles go with it."""
     n = _count_applications(session, Role.company_id == company.id)
     if n:
-        raise HTTPException(
-            409,
-            f"{company.name} has {_plural(n, 'application')}. Delete them first, or archive them instead.",
-        )
+        raise HTTPException(409, _still_used(company.name, n))
     for role in session.scalars(select(Role).where(Role.company_id == company.id)):
         session.delete(role)
     session.flush()
@@ -53,9 +52,7 @@ def _before_company_delete(session: Session, company: Company) -> None:
 def _before_role_delete(session: Session, role: Role) -> None:
     n = _count_applications(session, Application.role_id == role.id)
     if n:
-        raise HTTPException(
-            409, f"{role.title} has {_plural(n, 'application')}. Delete them first, or archive them instead."
-        )
+        raise HTTPException(409, _still_used(role.title, n))
 
 
 router.include_router(
