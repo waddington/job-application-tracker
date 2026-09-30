@@ -8,7 +8,7 @@ CRM, interview rounds, Markdown notes, CV versions, a *"who should I chase today
 Sankey diagram of your whole funnel.
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
-![Status: early development](https://img.shields.io/badge/status-early%20development-orange)
+![Status: v1 release candidate](https://img.shields.io/badge/status-v1%20release%20candidate-blue)
 ![Local-first](https://img.shields.io/badge/data-100%25%20local-brightgreen)
 ![No tracking](https://img.shields.io/badge/telemetry-none-brightgreen)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-blueviolet.svg)](#-contributing)
@@ -44,10 +44,10 @@ No job-board scraping. No SaaS. No account. **Your job search stays on your disk
 
 *All names and companies below are made-up demo data (`scripts/seed_demo.py`).*
 
-![A quick tour: Next actions, the Kanban board, an application page and Insights](docs/screenshots/demo.gif)
+![A quick tour: Next actions, the Kanban board, offers side by side, Insights and search](docs/screenshots/demo.gif)
 
-**Next actions, your home page.** What to chase today, what's coming up, and interviews
-waiting for an outcome. Follow up, snooze or mark Ghosted in one click.
+**Next actions, your home page.** Offers to answer, what to chase today, what's coming up,
+and interviews waiting for an outcome. Follow up, snooze or mark Ghosted in one click.
 
 ![Next actions: follow-ups due, interviews coming up and applications gone quiet](docs/screenshots/next-actions.png)
 
@@ -80,13 +80,17 @@ recruiters send roles that go somewhere.
 </tr>
 <tr>
 <td width="50%"><b>CV and cover-letter versions</b>, and where each one was sent<br><img src="docs/screenshots/documents.png" width="100%" alt="A CV with two versions, one sent"></td>
+<td width="50%"><b>Offers side by side</b>: a salary package against a contract day rate, worth-a-year first<br><img src="docs/screenshots/offers.png" width="100%" alt="Two offers compared: a permanent salary package and a contract day rate"></td>
+</tr>
+<tr>
+<td width="50%"><b>Search everything</b> (press <kbd>/</kbd>): applications, people, notes, debriefs, emails<br><img src="docs/screenshots/search.png" width="100%" alt="Search results for python across applications and notes"></td>
 <td width="50%"></td>
 </tr>
 </table>
 
 ## ✨ Features
 
-> 🚧 **Early development, but usable day to day.** Tracking, recruiters, interview rounds,
+> ✅ **Feature-complete for v1 (release candidate).** See the [changelog](CHANGELOG.md). Tracking, recruiters, interview rounds,
 > notes, links, files and emails, CV versions, the *Next actions* page, insights (Sankey
 > diagram, funnel stats, recruiter scorecards), offer comparison, one-click backups and
 > full-text search all work today. Everything marked ✅ is merged and running.
@@ -171,7 +175,7 @@ Later, from another terminal, `uv run jat push` sends the snapshots to your priv
 (never forced). Run `jat` from the repo root, where it reads `.env`.
 
 The server only listens on `127.0.0.1` by default. `uv run jat --help` lists the other
-commands (`export`, `restore`, `snapshot`, `migrate`, `info`).
+commands (`archive`, `export`, `restore`, `snapshot`, `migrate`, `info`).
 
 **Project dashboard.** `python3 -m tools.pm` (→ http://127.0.0.1:8767) shows the roadmap,
 progress and live PR status of the build itself. It needs nothing but Python; the
