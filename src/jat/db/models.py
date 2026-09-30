@@ -250,6 +250,40 @@ def assign_event_seq(session: Session, flush_context, instances) -> None:
         obj.seq = current + offset
 
 
+# Things notes and links can be attached to, by the type name used in the API.
+ENTITY_MODELS: dict[str, type[Base]] = {
+    "application": Application,
+    "company": Company,
+    "role": Role,
+    "agency": Agency,
+    "contact": Contact,
+    "interview": Interview,
+}
+
+
+@event.listens_for(Session, "before_flush")
+def remove_orphan_links(session: Session, flush_context, instances) -> None:
+    """Links point at their entity by type and id (no foreign key), so delete them with it.
+
+    Deleting an application also removes its interviews in the database (ON DELETE CASCADE),
+    out of the ORM's sight, so their links are collected here too.
+    """
+    kinds = {model: kind for kind, model in ENTITY_MODELS.items()}
+    targets: list[tuple[str, str]] = []
+    with session.no_autoflush:
+        for obj in list(session.deleted):
+            kind = kinds.get(type(obj))
+            if kind is None:
+                continue
+            targets.append((kind, obj.id))
+            if kind == "application":
+                for interview_id in session.scalars(select(Interview.id).where(Interview.application_id == obj.id)):
+                    targets.append(("interview", interview_id))
+        for kind, entity_id in targets:
+            for link in session.scalars(select(Link).where(Link.entity_type == kind, Link.entity_id == entity_id)):
+                session.delete(link)
+
+
 # Tables whose rows are exported to export/*.jsonl, in foreign-key-safe order.
 DERIVED_TABLES = {"note_index"}
 

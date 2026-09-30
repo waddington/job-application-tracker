@@ -12,6 +12,7 @@ from fastapi import Depends, HTTPException, Request
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from ..db.models import ENTITY_MODELS  # noqa: F401  (re-exported for the routers)
 from ..domain.workflow import Workflow, WorkflowError, load_workflow
 
 log = logging.getLogger(__name__)

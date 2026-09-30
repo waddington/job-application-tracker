@@ -9,22 +9,13 @@ from fastapi import APIRouter, HTTPException, Request, Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from ..db.models import Agency, Application, Company, Contact, Interview, NoteIndex, Role
+from ..db.models import Application, NoteIndex
 from ..domain import applications as svc
 from ..storage.notes import Note, NoteError, NoteStore
 from . import schemas as S
-from .deps import SessionDep
+from .deps import ENTITY_MODELS, SessionDep
 
 router = APIRouter(prefix="/notes", tags=["notes"])
-
-_MODELS = {
-    "application": Application,
-    "company": Company,
-    "role": Role,
-    "agency": Agency,
-    "contact": Contact,
-    "interview": Interview,
-}
 
 
 # Index writes happen one at a time, each in its own short transaction, so two requests that
@@ -86,7 +77,7 @@ def _check_links(session: Session, links: list[str]) -> list[str]:
     unique = list(dict.fromkeys(links))
     for link in unique:
         kind, _, target = link.partition(":")
-        if session.get(_MODELS[kind], target) is None:
+        if session.get(ENTITY_MODELS[kind], target) is None:
             raise HTTPException(422, f"links: {kind} {target} not found")
     return unique
 

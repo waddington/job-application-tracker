@@ -609,6 +609,9 @@ from .interviews import router as interviews_router  # noqa: E402
 
 router.include_router(interviews_router)
 
+from .links import router as links_router  # noqa: E402
+
+router.include_router(links_router)
 from .notes import router as notes_router  # noqa: E402
 
 router.include_router(notes_router)

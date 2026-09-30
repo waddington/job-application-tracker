@@ -232,6 +232,37 @@ class ApplicationOut(Out):
     updated_at: datetime
 
 
+# --- links -------------------------------------------------------------------------------
+
+EntityRef = Literal["application", "company", "role", "agency", "contact", "interview"]
+
+
+class LinkIn(In):
+    """An external link (a Google Doc, the job ad, a repo…) on something. Title defaults from the URL."""
+
+    entity_type: EntityRef
+    entity_id: str = Field(min_length=1, max_length=36)
+    url: HttpUrl
+    title: str | None = Field(default=None, max_length=300)
+
+
+class LinkPatch(Patch):
+    not_null = frozenset({"url"})
+
+    url: HttpUrl | None = None
+    title: str | None = Field(default=None, max_length=300)
+
+
+class LinkOut(Out):
+    id: str
+    entity_type: str
+    entity_id: str
+    url: str
+    title: str | None
+    kind: str  # google_doc | google_sheet | google_slides | google_drive | github | linkedin | web
+    created_at: datetime
+
+
 # --- notes -------------------------------------------------------------------------------
 
 NoteLink = Annotated[str, Field(pattern=r"^(application|company|role|agency|contact|interview):\S+$", max_length=80)]

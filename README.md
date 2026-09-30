@@ -72,7 +72,8 @@ test"), details and the full timestamped history.
 | 🧑‍💼 | **Recruiter CRM**: agencies, recruiters, multiple contact details, every role they've sent | ✅ Available |
 | ⚠️ | **Duplicate-submission warning**: know before two agencies put you forward for the same job | ✅ Available |
 | 📝 | **Markdown notes** on applications, companies, agencies and people, plus general notes: real `.md` files you can edit anywhere | ✅ Available |
-| 📎 | **Attachments and links**: PDFs, Google Docs, exported emails (`.eml`) added to the timeline | Planned |
+| 🔗 | **Links** on applications, companies and agencies: job ads, Google Docs, take-home repos, with icons and default titles | ✅ Available |
+| 📎 | **Attachments**: PDFs, images and exported emails (`.eml`) stored in your data folder and added to the timeline | Planned |
 | 📄 | **CV and cover-letter versions**: see exactly what you sent where | Planned |
 | 💻 | **Interview rounds and coding tasks**: numbered rounds in your own words ("Round 2 · System design test") shown on the board, plus times, interviewers, prep, debrief, questions asked and take-home briefs | ✅ Available |
 | ⏰ | **Next actions**: stale applications, follow-ups, snooze, upcoming interviews, offer deadlines | Planned |
