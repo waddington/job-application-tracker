@@ -4,8 +4,7 @@
 
 **Stop losing track of your job hunt.**
 A self-hosted, local-first job application tracker for software engineers, with a recruiter
-CRM, interview rounds, duplicate warnings and git-backed backups. Notes, CV tracking and a
-*"who should I chase today?"* page are next.
+CRM, interview rounds, Markdown notes, CV versions and a *"who should I chase today?"* page.
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 ![Status: early development](https://img.shields.io/badge/status-early%20development-orange)
@@ -41,28 +40,39 @@ No job-board scraping. No SaaS. No account. **Your job search stays on your disk
 
 *All names and companies below are made-up demo data (`scripts/seed_demo.py`).*
 
+**Next actions, your home page.** What to chase today, what's coming up, and interviews
+waiting for an outcome. Follow up, snooze or mark Ghosted in one click.
+
+![Next actions: follow-ups due, interviews coming up and applications gone quiet](docs/screenshots/next-actions.png)
+
 **Kanban board.** Drag applications between stages, see who's gone quiet (red) and which
 interview round each one is at.
 
 ![Kanban board of job applications by stage, with interview round badges](docs/screenshots/board.png)
 
-**Application page.** Stage, interview rounds in your own words ("Round 3 · System design
-test"), details and the full timestamped history.
+**Everything about an application in one place.** Interview rounds in your own words
+("Round 3 · System design test"), the CV version you sent, Markdown notes, links, files and
+exported emails, and the full timestamped history.
 
-![An application page showing three interview rounds](docs/screenshots/application.png)
+![An application page with interview rounds, the CV sent, notes, links and files](docs/screenshots/application.png)
 
 <table>
 <tr>
 <td width="50%"><b>Applications list</b> with filters, route, stage, round and staleness<br><img src="docs/screenshots/list.png" width="100%" alt="Applications list with filters"></td>
 <td width="50%"><b>Recruiter CRM</b>: agencies, recruiters and every way to reach them<br><img src="docs/screenshots/recruiters.png" width="100%" alt="Recruiters grouped by agency"></td>
 </tr>
+<tr>
+<td width="50%"><b>CV and cover-letter versions</b>, and where each one was sent<br><img src="docs/screenshots/documents.png" width="100%" alt="A CV with two versions, one sent"></td>
+<td width="50%"></td>
+</tr>
 </table>
 
 ## ✨ Features
 
-> 🚧 **Early development, but usable.** Tracking works today: list, board, application pages,
-> recruiters, interview rounds, duplicate warnings and git-backed backups. Notes, documents
-> and the *Next actions* page are next. Everything marked ✅ is merged and running.
+> 🚧 **Early development, but usable day to day.** Tracking, recruiters, interview rounds,
+> notes, links, files and emails, CV versions and the *Next actions* page all work today.
+> Insights (Sankey, stats) and offer comparison are next. Everything marked ✅ is merged and
+> running.
 
 | | Feature | Status |
 |---|---|---|
@@ -94,8 +104,8 @@ The full plan is in the [product requirements](docs/prd/tracker.md) and the
 | Your data stays on your machine | Sometimes | ❌ | ✅ |
 | Recruiters with several roles | Manual | Partial | ✅ First-class |
 | Real stage workflow and history | ❌ | Partial | ✅ |
-| Notes, files, emails and CV versions per application | Messy | Partial | 🚧 Next up |
-| "Who do I chase today?" | ❌ | Partial | 🚧 Planned |
+| Notes, files, emails and CV versions per application | Messy | Partial | ✅ |
+| "Who do I chase today?" | ❌ | Partial | ✅ |
 | Free and open source | ✅ | ❌ | ✅ Apache-2.0 |
 
 It's also deliberately **not** a job-search engine. There's no scraping and there are no
