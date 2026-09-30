@@ -12,7 +12,7 @@ from fastapi import Depends, HTTPException, Request
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from ..db.models import Agency, Application, Company, Contact, Interview, Role
+from ..db.models import ENTITY_MODELS  # noqa: F401  (re-exported for the routers)
 from ..domain.workflow import Workflow, WorkflowError, load_workflow
 
 log = logging.getLogger(__name__)
@@ -97,14 +97,3 @@ def require(session: Session, model, obj_id: str | None, field: str) -> None:
     """422 if a referenced id doesn't exist (clearer than a foreign-key error)."""
     if obj_id is not None and session.get(model, obj_id) is None:
         raise HTTPException(status_code=422, detail=f"{field}: {model.__name__} {obj_id} not found")
-
-
-# Things notes and links can be attached to, by the type name used in the API.
-ENTITY_MODELS = {
-    "application": Application,
-    "company": Company,
-    "role": Role,
-    "agency": Agency,
-    "contact": Contact,
-    "interview": Interview,
-}

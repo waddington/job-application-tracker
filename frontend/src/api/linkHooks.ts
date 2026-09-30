@@ -25,9 +25,10 @@ export function useLinks(entityType: EntityType, entityId: string) {
 
 function useRefreshLinks() {
   const qc = useQueryClient();
-  return () => {
-    void qc.invalidateQueries({ queryKey: ["links"] });
-    invalidateApplicationViews(qc); // a link on an application goes on its timeline
+  return (link?: { entity_type: string; entity_id: string }) => {
+    void qc.invalidateQueries({ queryKey: link ? ["links", link.entity_type, link.entity_id] : ["links"] });
+    // Adding a link to an application puts it on the timeline.
+    if (link?.entity_type === "application") invalidateApplicationViews(qc);
   };
 }
 
@@ -35,7 +36,7 @@ export function useAddLink() {
   const refresh = useRefreshLinks();
   return useMutation({
     mutationFn: async (body: Schemas["LinkIn"]) => unwrap(await api.POST("/api/v1/links", { body })),
-    onSuccess: refresh,
+    onSuccess: (link) => refresh(link),
     onError: notifyError,
   });
 }
@@ -50,7 +51,7 @@ export function useUpdateLink() {
           body: args.body,
         }),
       ),
-    onSuccess: refresh,
+    onSuccess: () => refresh(),
     onError: notifyError,
   });
 }
@@ -62,7 +63,7 @@ export function useDeleteLink() {
       const { error } = await api.DELETE("/api/v1/links/{link_id}", { params: { path: { link_id: id } } });
       if (error) throw new Error("Couldn't remove the link");
     },
-    onSuccess: refresh,
+    onSuccess: () => refresh(),
     onError: notifyError,
   });
 }
