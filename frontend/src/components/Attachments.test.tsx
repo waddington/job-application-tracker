@@ -17,6 +17,7 @@ const att = (overrides: Record<string, unknown> = {}) => ({
   created_at: "2026-09-30T10:00:00Z",
   url: "/api/v1/attachments/f1/file",
   inline: true,
+  meta: {},
   ...overrides,
 });
 
@@ -53,6 +54,19 @@ describe("attachments", () => {
         }
         const list = [
           att(),
+          att({
+            id: "f4",
+            original_name: "next steps.eml",
+            content_type: "message/rfc822",
+            inline: false,
+            meta: {
+              email: true,
+              subject: "Contoso - next steps",
+              from: ["Alex Morgan <alex.morgan@northwind.example.com>"],
+              date: "2026-09-29T13:05:07Z",
+              snippet: "Contoso would like to book a system design round.",
+            },
+          }),
           att({ id: "f3", original_name: "notes.html", content_type: "text/html", inline: false }),
         ];
         return new Response(JSON.stringify(list), {
@@ -66,7 +80,14 @@ describe("attachments", () => {
     expect(pdf).toHaveAttribute("href", "/api/v1/attachments/f1/file");
     expect(pdf).toHaveAttribute("target", "_blank");
     expect(screen.getByRole("link", { name: "notes.html" })).toHaveAttribute("download", "notes.html");
-    expect(screen.getAllByText(/180 KB/)).toHaveLength(2);
+    expect(screen.getAllByText(/180 KB/)).toHaveLength(3);
+    // An exported email shows its subject, sender and a snippet.
+    expect(screen.getByRole("link", { name: "Contoso - next steps" })).toHaveAttribute(
+      "download",
+      "next steps.eml",
+    );
+    expect(screen.getByText(/^Alex Morgan <alex.morgan@northwind.example.com> · /)).toBeInTheDocument();
+    expect(screen.getByText("Contoso would like to book a system design round.")).toBeInTheDocument();
 
     const file = new File(["%PDF"], "brief.pdf", { type: "application/pdf" });
     const card = screen.getByRole("heading", { name: "Files" }).closest(".mantine-Card-root")!;
