@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import Any, ClassVar, Literal
+from typing import Annotated, Any, ClassVar, Literal
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, HttpUrl, model_validator
 
@@ -230,6 +230,41 @@ class ApplicationOut(Out):
     archived: bool
     created_at: datetime
     updated_at: datetime
+
+
+# --- notes -------------------------------------------------------------------------------
+
+NoteLink = Annotated[str, Field(pattern=r"^(application|company|role|agency|contact|interview):\S+$", max_length=80)]
+
+
+class NoteIn(In):
+    """A Markdown note. `links` attach it to things, e.g. ["application:<id>"]; none makes it a general note."""
+
+    title: str = Field(min_length=1, max_length=300)
+    body: str = Field(default="", max_length=200_000)
+    links: list[NoteLink] = []
+
+
+class NotePatch(Patch):
+    not_null = frozenset({"title", "body", "links"})
+
+    title: str | None = Field(default=None, min_length=1, max_length=300)
+    body: str | None = Field(default=None, max_length=200_000)
+    links: list[NoteLink] | None = None
+
+
+class NoteSummary(BaseModel):
+    id: str
+    title: str
+    links: list[str]
+    path: str  # under notes/ in the data directory
+    excerpt: str
+    created_at: datetime
+    updated_at: datetime
+
+
+class NoteOut(NoteSummary):
+    body: str
 
 
 # --- interviews --------------------------------------------------------------------------
