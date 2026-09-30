@@ -22,11 +22,20 @@ async function remove(kind: Deletable, id: string) {
 }
 
 /** Delete an application, company, agency, person or role, then refresh everything that shows them. */
-export function useDeleteEntity(kind: Deletable) {
+export function useDeleteEntity(kind: Deletable, onDeleted?: () => void) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => remove(kind, id),
-    onSuccess: () => {
+    onSuccess: (_data, id) => {
+      // Leave the page that no longer exists first, and forget it, so refreshing the views
+      // below doesn't refetch it (a 404 and a flash of "Couldn't load").
+      onDeleted?.();
+      const own = {
+        application: ["application", id],
+        company: ["company-summary", id],
+        agency: ["agency-summary", id],
+      };
+      if (kind in own) qc.removeQueries({ queryKey: own[kind as keyof typeof own] });
       for (const key of [
         keys.companies,
         keys.agencies,

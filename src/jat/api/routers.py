@@ -46,7 +46,7 @@ def _before_company_delete(session: Session, company: Company) -> None:
         raise HTTPException(409, _still_used(company.name, n))
     for role in session.scalars(select(Role).where(Role.company_id == company.id)):
         session.delete(role)
-    session.flush()
+    session.flush()  # roles first: the ORM doesn't know companies own roles, so it can't order them
 
 
 def _before_role_delete(session: Session, role: Role) -> None:

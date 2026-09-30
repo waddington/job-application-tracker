@@ -26,11 +26,11 @@ export function DeleteButton({
   blocked?: string | null;
   compact?: boolean;
 }) {
-  const remove = useDeleteEntity(kind);
+  const remove = useDeleteEntity(kind, onDeleted);
   const label = `Delete ${name}`;
   const run = () => {
     if (blocked) window.alert(blocked);
-    else if (window.confirm(confirm)) remove.mutate(id, { onSuccess: () => onDeleted?.() });
+    else if (window.confirm(confirm)) remove.mutate(id);
   };
   return compact ? (
     <Tooltip label={label}>

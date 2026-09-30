@@ -75,7 +75,7 @@ export function ContactCard({ contact, onEdit }: { contact: Contact; onEdit?: ()
               kind="contact"
               id={contact.id}
               name={contact.name}
-              confirm={`Delete ${contact.name}? Applications they sent stay, without a recruiter.`}
+              confirm={`Delete ${contact.name}? They come off the applications and interviews they're on; the applications themselves stay.`}
             />
           </Group>
         )}

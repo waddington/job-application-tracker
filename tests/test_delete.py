@@ -45,3 +45,23 @@ def test_deleting_an_application_takes_its_history_with_it(client, seeded):
     # The note stays (it's your file) and can still be edited.
     r = client.patch(f"/api/v1/notes/{note['id']}", json={"body": "still here", "links": note["links"]})
     assert r.status_code == 200, r.text
+
+
+def test_deleting_a_company_removes_its_links_and_a_person_leaves_their_interviews(client, seeded):
+    company, role, recruiter = seeded["company"]["id"], seeded["role"]["id"], seeded["recruiter"]["id"]
+    link = post(
+        client,
+        "/api/v1/links",
+        {"entity_type": "role", "entity_id": role, "url": "https://jobs.example.com/1", "title": "Job ad"},
+    )
+    app = post(client, "/api/v1/applications", {"role_id": role})
+    interview = post(
+        client, f"/api/v1/applications/{app['id']}/interviews", {"round": 1, "interviewer_ids": [recruiter]}
+    )
+    assert client.delete(f"/api/v1/contacts/{recruiter}").status_code == 204
+    assert client.get(f"/api/v1/interviews/{interview['id']}").json()["interviewer_ids"] == []
+
+    assert client.delete(f"/api/v1/applications/{app['id']}").status_code == 204
+    assert client.delete(f"/api/v1/companies/{company}").status_code == 204
+    links = client.get("/api/v1/links", params={"entity_type": "role", "entity_id": role}).json()
+    assert link["id"] not in {x["id"] for x in links}
