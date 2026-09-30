@@ -1,5 +1,5 @@
 import {
-  Anchor,
+  Alert,
   Badge,
   Button,
   Divider,
@@ -44,6 +44,10 @@ const ACTIVITY_ICONS: Record<string, typeof IconNote> = {
   note: IconNote,
   stage_change: IconProgress,
 };
+
+function newestFirst(events: ApiEvent[]): ApiEvent[] {
+  return [...events].sort((a, b) => b.occurred_at.localeCompare(a.occurred_at));
+}
 
 function eventTitle(event: ApiEvent, names: Map<string, string>): string {
   if (event.kind === "stage_change") {
@@ -99,17 +103,20 @@ function LogActivity({ id }: { id: string }) {
 }
 
 export function ApplicationDrawer({ id, onClose }: { id: string | null; onClose: () => void }) {
-  const { data: app, isLoading } = useApplication(id);
+  const { data: app, isLoading, isError, error } = useApplication(id);
   const { data: workflow } = useWorkflow();
   const stages = stageLookup(workflow);
   const names = new Map([...stages.values()].map((s) => [s.id, s.name]));
   const move = useMoveApplication();
   const undo = useUndoMove();
-  const moves = app?.events.filter((e) => e.kind === "stage_change" && e.from_stage) ?? [];
 
   return (
     <Drawer opened={!!id} onClose={onClose} position="right" size="lg" title="Application">
-      {isLoading || !app ? (
+      {isError ? (
+        <Alert color="red" title="Couldn't load this application">
+          {error instanceof Error ? error.message : "Something went wrong."}
+        </Alert>
+      ) : isLoading || !app ? (
         <Loader />
       ) : (
         <Stack>
@@ -155,7 +162,7 @@ export function ApplicationDrawer({ id, onClose }: { id: string | null; onClose:
               size="xs"
               variant="default"
               leftSection={<IconArrowBackUp size={14} />}
-              disabled={!moves.length}
+              disabled={!app.can_undo}
               loading={undo.isPending}
               onClick={() => undo.mutate(app.id)}
             >
@@ -186,11 +193,11 @@ export function ApplicationDrawer({ id, onClose }: { id: string | null; onClose:
           </Stack>
 
           <Divider label="Log activity" labelPosition="left" />
-          <LogActivity id={app.id} />
+          <LogActivity key={app.id} id={app.id} />
 
           <Divider label="Timeline" labelPosition="left" />
           <Timeline active={app.events.length} bulletSize={22} lineWidth={2}>
-            {[...app.events].reverse().map((event) => {
+            {newestFirst(app.events).map((event) => {
               const Icon = ACTIVITY_ICONS[event.kind] ?? IconNote;
               return (
                 <Timeline.Item key={event.id} bullet={<Icon size={12} />} title={eventTitle(event, names)}>
@@ -207,9 +214,9 @@ export function ApplicationDrawer({ id, onClose }: { id: string | null; onClose:
               );
             })}
           </Timeline>
-          <Anchor size="xs" c="dimmed">
+          <Text size="xs" c="dimmed">
             The full application page (notes, interviews, documents) is coming with later roadmap tasks.
-          </Anchor>
+          </Text>
         </Stack>
       )}
     </Drawer>
