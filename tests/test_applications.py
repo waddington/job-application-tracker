@@ -115,6 +115,38 @@ def test_rapid_moves_in_same_second_keep_order(session, role):
         assert app.stage == expected
 
 
+def test_undo_restores_last_activity(session, role):
+    app = create_application(session, W, role_id=role.id)
+    idle_since = datetime(2026, 8, 1, 9, 0, tzinfo=UTC)
+    log_activity(session, app, "email", occurred_at=idle_since)
+    app.last_activity_at = idle_since  # pretend it's been quiet since August
+    for ev in history(session, app.id):
+        ev.occurred_at = min(ev.occurred_at, idle_since)
+    session.flush()
+    move(session, W, app, "applied")  # accidental
+    assert app.last_activity_at > idle_since
+    undo_last_move(session, app)
+    assert app.last_activity_at == idle_since
+
+
+def test_events_get_consecutive_seq(session, role):
+    app = create_application(session, W, role_id=role.id)
+    move(session, W, app, "applied")
+    log_activity(session, app, "call")
+    seqs = [e.seq for e in history(session, app.id)]
+    assert seqs == sorted(seqs) and len(set(seqs)) == 3
+    assert seqs[-1] - seqs[0] == 2
+
+
+def test_removed_stage_gives_transition_error(session, role):
+    from jat.domain.workflow import workflow_from_config
+
+    app = create_application(session, W, role_id=role.id, stage="screen")
+    slim = workflow_from_config({"stages": [{"id": "applied"}, {"id": "rejected", "kind": "closed"}]})
+    with pytest.raises(TransitionError):
+        move(session, slim, app, "rejected")
+
+
 def test_backdated_move(session, role):
     app = create_application(session, W, role_id=role.id)
     when = datetime(2026, 9, 1, 9, 0, tzinfo=UTC)

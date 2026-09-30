@@ -9,7 +9,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import literal_column, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..db.models import Application, Event
@@ -52,19 +52,18 @@ def create_application(
     return app
 
 
-_ROWID = literal_column("events.rowid")
-
-
 def history(session: Session, application_id: str) -> list[Event]:
     """The timeline: events in the order they happened (ties broken by insertion order)."""
     return list(
-        session.scalars(select(Event).where(Event.application_id == application_id).order_by(Event.occurred_at, _ROWID))
+        session.scalars(
+            select(Event).where(Event.application_id == application_id).order_by(Event.occurred_at, Event.seq)
+        )
     )
 
 
 def _recorded(session: Session, application_id: str) -> list[Event]:
     """Events in the order they were recorded, which is what undo reverses."""
-    return list(session.scalars(select(Event).where(Event.application_id == application_id).order_by(_ROWID)))
+    return list(session.scalars(select(Event).where(Event.application_id == application_id).order_by(Event.seq)))
 
 
 def move(
@@ -77,7 +76,11 @@ def move(
     note: str | None = None,
 ) -> Event:
     """Move an application to `to_stage` if the workflow allows it."""
-    if not workflow.can_move(app.stage, to_stage):
+    try:
+        allowed_move = workflow.can_move(app.stage, to_stage)
+    except WorkflowError as exc:  # e.g. a stage removed from config.toml
+        raise TransitionError(str(exc)) from exc
+    if not allowed_move:
         allowed = ", ".join(workflow.allowed_next(app.stage)) or "none"
         raise TransitionError(f"can't move from {app.stage!r} to {to_stage!r} (allowed: {allowed})")
     when = occurred_at or utcnow()
@@ -132,7 +135,17 @@ def undo_last_move(session: Session, app: Application, *, note: str | None = Non
     session.add(event)
     app.stage = last.from_stage
     session.flush()
+    # An undone move isn't real activity: recompute so a stale application stays flagged.
+    app.last_activity_at = _activity_time(_recorded(session, app.id), app.last_activity_at)
+    session.flush()
     return event
+
+
+def _activity_time(events: list[Event], fallback: datetime) -> datetime:
+    """Latest occurred_at over events that count as activity (not undone moves or undo events)."""
+    undone = {(ev.data or {}).get("undo_of") for ev in events} - {None}
+    times = [ev.occurred_at for ev in events if ev.id not in undone and not (ev.data or {}).get("undo_of")]
+    return max(times) if times else fallback
 
 
 def log_activity(

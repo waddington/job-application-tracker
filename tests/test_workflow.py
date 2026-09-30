@@ -56,7 +56,7 @@ def test_custom_config():
     )
     assert wf.allowed_next("lead") == ["call", "dead"]
     assert wf.stage("call").stale_after_days == 3
-    assert wf.reopen_from == ()
+    assert wf.reopen_from == ()  # no ghosted stage in this workflow
 
 
 def test_invalid_configs():
@@ -66,6 +66,27 @@ def test_invalid_configs():
         workflow_from_config({"stages": [{"id": "a"}, {"id": "a"}]})
     with pytest.raises(WorkflowError, match="kind"):
         workflow_from_config({"stages": [{"id": "a", "kind": "weird"}]})
+
+
+def test_config_types_are_checked():
+    stages = [{"id": "screen"}, {"id": "offer"}]
+    with pytest.raises(WorkflowError, match="list of stage ids"):
+        workflow_from_config({"stages": [{"id": "applied", "next": "screen"}, *stages]})
+    for bad in ("7", True, -1, 1.5):
+        with pytest.raises(WorkflowError, match="whole number"):
+            workflow_from_config({"stages": [{"id": "a", "stale_after_days": bad}]})
+    with pytest.raises(WorkflowError, match="true or false"):
+        workflow_from_config({"skip_forward": "false"})
+    with pytest.raises(WorkflowError, match="list of stage ids"):
+        workflow_from_config({"reopen_from": "ghosted"})
+    with pytest.raises(WorkflowError, match="must be a list"):
+        workflow_from_config({"stages": {"id": "a"}})
+
+
+def test_custom_stages_keep_ghosted_reopen_by_default():
+    wf = workflow_from_config({"stages": [{"id": "applied"}, {"id": "ghosted", "kind": "closed"}]})
+    assert wf.reopen_from == ("ghosted",)
+    assert wf.can_move("ghosted", "applied")
 
 
 def test_load_from_data_dir(tmp_path):

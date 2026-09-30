@@ -147,27 +147,46 @@ def workflow_from_config(data: dict | None) -> Workflow:
     if raw_stages is None:
         stages = DEFAULT_WORKFLOW.stages
     else:
+        if not isinstance(raw_stages, list):
+            raise WorkflowError("[workflow] stages must be a list of [[workflow.stages]] tables")
         stages = []
         for raw in raw_stages:
             if not isinstance(raw, dict) or not raw.get("id"):
                 raise WorkflowError("every [[workflow.stages]] entry needs an id")
+            sid = str(raw["id"])
+            stale = raw.get("stale_after_days")
+            if stale is not None and (isinstance(stale, bool) or not isinstance(stale, int) or stale < 0):
+                raise WorkflowError(f"stage {sid!r}: stale_after_days must be a whole number of days")
             stages.append(
                 Stage(
-                    id=str(raw["id"]),
-                    name=str(raw.get("name") or raw["id"]),
+                    id=sid,
+                    name=str(raw.get("name") or sid),
                     kind=str(raw.get("kind") or "active"),
-                    stale_after_days=raw.get("stale_after_days"),
-                    next=tuple(raw.get("next") or ()),
+                    stale_after_days=stale,
+                    next=_str_list(raw.get("next", []), f"stage {sid!r}: next"),
                     color=str(raw.get("color") or "gray"),
                 )
             )
         stages = tuple(stages)
+    skip_forward = data.get("skip_forward", True)
+    if not isinstance(skip_forward, bool):
+        raise WorkflowError("[workflow] skip_forward must be true or false")
+    if "reopen_from" in data:
+        reopen_from = _str_list(data["reopen_from"], "[workflow] reopen_from")
+    else:  # keep "ghosted can be reopened" whenever there's a ghosted stage
+        reopen_from = tuple(s for s in DEFAULT_WORKFLOW.reopen_from if any(st.id == s for st in stages))
     return Workflow(
         stages=stages,
         initial=str(data.get("initial") or (stages[0].id if stages else "")),
-        skip_forward=bool(data.get("skip_forward", True)),
-        reopen_from=tuple(data.get("reopen_from", DEFAULT_WORKFLOW.reopen_from if raw_stages is None else ())),
+        skip_forward=skip_forward,
+        reopen_from=reopen_from,
     )
+
+
+def _str_list(value, what: str) -> tuple[str, ...]:
+    if not isinstance(value, list) or not all(isinstance(v, str) for v in value):
+        raise WorkflowError(f'{what} must be a list of stage ids, e.g. ["screen"]')
+    return tuple(value)
 
 
 def load_workflow(data_dir: Path) -> Workflow:
