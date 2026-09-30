@@ -608,3 +608,7 @@ router.include_router(backup_router)
 from .interviews import router as interviews_router  # noqa: E402
 
 router.include_router(interviews_router)
+
+from .notes import router as notes_router  # noqa: E402
+
+router.include_router(notes_router)

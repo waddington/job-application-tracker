@@ -83,6 +83,12 @@ def check_link(link: str) -> str:
     return link
 
 
+def _normal(body: str) -> str:
+    """Bodies are stored as they read back: Unix newlines, ending in one."""
+    body = body.replace("\r\n", "\n")
+    return body if not body or body.endswith("\n") else body + "\n"
+
+
 def render(note: Note) -> str:
     meta = {
         "id": note.id,
@@ -92,7 +98,7 @@ def render(note: Note) -> str:
         "updated": _iso(note.updated_at),
     }
     front = yaml.safe_dump(meta, sort_keys=False, allow_unicode=True, default_flow_style=None).strip()
-    body = note.body if note.body.endswith("\n") or not note.body else note.body + "\n"
+    body = _normal(note.body)
     return f"---\n{front}\n---\n{body}"
 
 
@@ -162,8 +168,8 @@ class NoteStore:
         return parse(path.read_text(encoding="utf-8"), rel_path, mtime)
 
     def create(self, title: str, body: str, links: list[str]) -> Note:
-        now = utcnow()
-        note = Note(id=new_id(), title=title.strip(), body=body, links=[check_link(x) for x in links])
+        now = utcnow().replace(microsecond=0)
+        note = Note(id=new_id(), title=title.strip(), body=_normal(body), links=[check_link(x) for x in links])
         note.created_at = note.updated_at = now
         note.path = f"{now:%Y/%m}/{note.id}-{slugify(note.title)}.md"
         self._write(self._abs(note.path), render(note))
@@ -172,7 +178,9 @@ class NoteStore:
     def save(self, note: Note) -> Note:
         """Rewrite an existing note. The file keeps its path, so git history follows it."""
         note.links = [check_link(x) for x in note.links]
-        note.updated_at = utcnow()
+        note.title = note.title.strip()
+        note.body = _normal(note.body)
+        note.updated_at = utcnow().replace(microsecond=0)
         self._write(self._abs(note.path), render(note))
         return note
 
