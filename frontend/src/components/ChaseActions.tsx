@@ -28,6 +28,12 @@ export function ChaseActions({ row }: { row: ApplicationRow }) {
   const move = useMoveApplication();
   const { data: workflow } = useWorkflow();
   const ghosted = workflow?.stages.find((s) => s.id === "ghosted");
+  // Only offer Ghosted where the workflow allows that move (always, with any-to-any moves).
+  const canGhost =
+    !!ghosted &&
+    row.stage !== ghosted.id &&
+    (workflow?.transitions === "any" ||
+      !!workflow?.stages.find((s) => s.id === row.stage)?.allowed_next.includes(ghosted.id));
   const busy = update.isPending || move.isPending;
 
   const set = (body: { follow_up_on?: string; snoozed_until?: string }, message: string) =>
@@ -44,7 +50,8 @@ export function ChaseActions({ row }: { row: ApplicationRow }) {
             <ActionIcon
               variant="subtle"
               color="blue"
-              loading={busy}
+              loading={update.isPending}
+              disabled={busy}
               aria-label={`Follow up on ${row.company_name}`}
             >
               <IconBellRinging size={16} />
@@ -66,13 +73,18 @@ export function ChaseActions({ row }: { row: ApplicationRow }) {
       <Menu position="bottom-end" withinPortal>
         <Menu.Target>
           <Tooltip label="Snooze">
-            <ActionIcon variant="subtle" color="gray" aria-label={`Snooze ${row.company_name}`}>
+            <ActionIcon
+              variant="subtle"
+              color="gray"
+              disabled={busy}
+              aria-label={`Snooze ${row.company_name}`}
+            >
               <IconZzz size={16} />
             </ActionIcon>
           </Tooltip>
         </Menu.Target>
         <Menu.Dropdown>
-          <Menu.Label>Don't flag it as quiet for</Menu.Label>
+          <Menu.Label>Snooze for</Menu.Label>
           {SNOOZE.map((o) => (
             <Menu.Item
               key={o.days}
@@ -83,13 +95,16 @@ export function ChaseActions({ row }: { row: ApplicationRow }) {
           ))}
         </Menu.Dropdown>
       </Menu>
-      {ghosted && row.stage !== "ghosted" && (
+      {ghosted && canGhost && (
         <Tooltip label={`Mark as ${ghosted.name}`}>
           <Button
             size="compact-xs"
             variant="subtle"
             color="gray"
             leftSection={<IconGhost2 size={14} />}
+            loading={move.isPending}
+            disabled={busy}
+            aria-label={`Mark ${row.company_name} as ${ghosted.name}`}
             onClick={() => {
               if (
                 !window.confirm(

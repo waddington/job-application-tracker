@@ -177,6 +177,8 @@ def _row(
     name, kind, stale_after = _stage_info(workflow, app.stage)
     days = (datetime.now(UTC) - app.last_activity_at).days
     snoozed = app.snoozed_until is not None and app.snoozed_until > today
+    # A follow-up planned for later counts as a snooze: you've decided when to chase it.
+    snoozed = snoozed or (app.follow_up_on is not None and app.follow_up_on > today)
     stale = kind == "active" and stale_after is not None and days >= stale_after and not snoozed and not app.archived
     base = S.ApplicationOut.model_validate(app).model_dump()
     return S.ApplicationRow(

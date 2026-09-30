@@ -95,3 +95,16 @@ def test_a_booked_later_round_counts_even_after_a_missed_one(client, seeded, app
     post(client, url, {"title": "Onsite", "starts_at": _iso(4)})
     _age(app, a["id"], 20)
     assert a["id"] not in {r["id"] for r in client.get("/api/v1/next-actions").json()["stale"]}
+
+
+def test_a_planned_follow_up_takes_it_off_gone_quiet_until_then(client, seeded, app):
+    a = post(client, "/api/v1/applications", {"role_id": seeded["role"]["id"], "stage": "applied"})
+    _age(app, a["id"], 20)
+    assert a["id"] in {r["id"] for r in client.get("/api/v1/next-actions").json()["stale"]}
+    client.patch(f"/api/v1/applications/{a['id']}", json={"follow_up_on": str(date.today() + timedelta(days=3))})
+    na = client.get("/api/v1/next-actions").json()
+    assert a["id"] not in {r["id"] for r in na["stale"]} and na["follow_ups"] == []
+    # On the day, it comes back as a follow-up.
+    local = date.today() + timedelta(days=3)
+    na = client.get("/api/v1/next-actions", params={"today": str(local)}).json()
+    assert [r["id"] for r in na["follow_ups"]] == [a["id"]]
