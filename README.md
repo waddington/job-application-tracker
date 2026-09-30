@@ -38,14 +38,14 @@ No job-board scraping. No SaaS. No account. **Your job search stays on your disk
 
 ## ✨ Features
 
-> 🚧 **Early development.** The plan is fixed and the build is under way. Here's what's
+> 🚧 **Early development.** The core is built (data model, workflow, backups, applications list) and the rest is under way. Here's what's
 > coming, in order.
 
 | | Feature | Status |
 |---|---|---|
-| 📋 | **Applications list** with filters (stage, source, recruiter, company, tags, "no activity in 7+ days") | Planned |
+| 📋 | **Applications list** with filters (stage, source, recruiter, company, tags, "no activity in 7+ days") | ✅ Available |
 | 🗂️ | **Kanban board**: drag applications between stages, with only valid moves allowed | Planned |
-| 🔁 | **Configurable workflow**: your stages, your transitions, full timestamped history | Planned |
+| 🔁 | **Configurable workflow**: your stages, your transitions, full timestamped history | ✅ Available |
 | 🧑‍💼 | **Recruiter CRM**: agencies, recruiters, multiple contact details, every role they've sent | Planned |
 | ⚠️ | **Duplicate-submission warning**: know before two agencies put you forward for the same job | Planned |
 | 📝 | **Markdown notes** on recruiters, roles, calls and interviews, plus general notes | Planned |
@@ -57,7 +57,7 @@ No job-board scraping. No SaaS. No account. **Your job search stays on your disk
 | 📈 | **Insights**: conversion per stage, time in stage, direct vs recruiter, recruiter scorecard | Planned |
 | 💷 | **Offer comparison**: salary, bonus, equity, pension, day rate and IR35 for contracts | Planned |
 | 🗓️ | **`.ics` export** of interviews for your calendar | Planned |
-| 💾 | **One-folder backup**: copy the data directory and you have everything | Planned |
+| 💾 | **Backups built in**: automatic git snapshots of your private data folder, readable JSONL + Markdown, one-command restore | ✅ Available |
 
 The full plan is in the [product requirements](docs/prd/tracker.md) and the
 [roadmap](docs/ROADMAP.yaml).
