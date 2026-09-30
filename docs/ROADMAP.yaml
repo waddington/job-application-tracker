@@ -21,9 +21,9 @@ phases:
     name: Foundations
     goal: Planning, a PM dashboard and the stack decision
     tasks:
-      - {id: prd-tracker, name: "Product PRD, roadmap and planning docs", owner: lead, status: review, estimate_h: 2, depends: [], prd: docs/prd/tracker.md}
-      - {id: pm-dashboard, name: "PM dashboard web app (tools/pm)", owner: lead, status: building, estimate_h: 4, depends: [prd-tracker]}
-      - {id: readme, name: "Public README: catchy, search- and LLM-friendly", owner: lead, status: building, estimate_h: 1.5, depends: [prd-tracker]}
+      - {id: prd-tracker, name: "Product PRD, roadmap and planning docs", owner: lead, status: done, estimate_h: 2, depends: [], prd: docs/prd/tracker.md}
+      - {id: pm-dashboard, name: "PM dashboard web app (tools/pm)", owner: lead, status: done, estimate_h: 4, depends: [prd-tracker]}
+      - {id: readme, name: "Public README: catchy, search- and LLM-friendly", owner: lead, status: done, estimate_h: 1.5, depends: [prd-tracker]}
       - {id: stack-rfc, name: "Stack and data-format RFC", owner: lead, status: done, estimate_h: 3, depends: [prd-tracker], prd: docs/prd/tracker.md, rfc: docs/rfc/stack.md}
       - {id: stack-gate, name: "Kai signs off the stack RFC", owner: kai, status: done, estimate_h: 0.5, depends: [stack-rfc]}
 
@@ -31,21 +31,21 @@ phases:
     name: Core data and workflow
     goal: Data directory, schema, configurable workflow and a local JSON API
     tasks:
-      - {id: data-dir, name: "Configurable data directory, init and backup layout", owner: lead, status: planned, estimate_h: 2, depends: [stack-gate], prd: docs/prd/tracker.md, rfc: docs/rfc/stack.md}
-      - {id: schema, name: "Entities: companies, agencies, contacts, roles, applications", owner: lead, status: planned, estimate_h: 4, depends: [data-dir], prd: docs/prd/tracker.md, rfc: docs/rfc/stack.md}
-      - {id: workflow, name: "Configurable stages, transitions and event history", owner: lead, status: planned, estimate_h: 4, depends: [schema], prd: docs/prd/tracker.md, rfc: docs/rfc/stack.md}
-      - {id: api, name: "Local JSON API for every action", owner: lead, status: planned, estimate_h: 3, depends: [schema], prd: docs/prd/tracker.md, rfc: docs/rfc/stack.md}
-      - {id: snapshots, name: "Debounced git auto-commit of the data repo, and push on demand", owner: lead, status: planned, estimate_h: 2, depends: [schema], prd: docs/prd/tracker.md, rfc: docs/rfc/stack.md}
-      - {id: app-shell, name: "Web app shell: navigation, theming, layout", owner: lead, status: planned, estimate_h: 3, depends: [stack-gate], prd: docs/prd/tracker.md, rfc: docs/rfc/stack.md}
+      - {id: data-dir, name: "Configurable data directory, init and backup layout", owner: lead, status: done, estimate_h: 2, depends: [stack-gate], prd: docs/prd/tracker.md, rfc: docs/rfc/stack.md}
+      - {id: schema, name: "Entities: companies, agencies, contacts, roles, applications", owner: lead, status: done, estimate_h: 4, depends: [data-dir], prd: docs/prd/tracker.md, rfc: docs/rfc/stack.md}
+      - {id: workflow, name: "Configurable stages, transitions and event history", owner: lead, status: done, estimate_h: 4, depends: [schema], prd: docs/prd/tracker.md, rfc: docs/rfc/stack.md}
+      - {id: api, name: "Local JSON API for every action", owner: lead, status: done, estimate_h: 3, depends: [schema], prd: docs/prd/tracker.md, rfc: docs/rfc/stack.md}
+      - {id: snapshots, name: "Debounced git auto-commit of the data repo, and push on demand", owner: lead, status: done, estimate_h: 2, depends: [schema], prd: docs/prd/tracker.md, rfc: docs/rfc/stack.md}
+      - {id: app-shell, name: "Web app shell: navigation, theming, layout", owner: lead, status: done, estimate_h: 3, depends: [stack-gate], prd: docs/prd/tracker.md, rfc: docs/rfc/stack.md}
 
   - id: P2
     name: Tracking views
     goal: See and move every application
     tasks:
-      - {id: app-list, name: "Applications list with filters and search", owner: lead, status: planned, estimate_h: 4, depends: [api, app-shell], prd: docs/prd/tracker.md}
-      - {id: board, name: "Board view with allowed-transition drag and drop", owner: lead, status: planned, estimate_h: 3, depends: [workflow, app-list], prd: docs/prd/tracker.md}
-      - {id: detail-pages, name: "Application, role, company and contact pages with timeline", owner: lead, status: planned, estimate_h: 4, depends: [api, app-shell], prd: docs/prd/tracker.md}
-      - {id: recruiters, name: "Recruiter and agency pages: contact details, roles, notes", owner: lead, status: planned, estimate_h: 2, depends: [detail-pages], prd: docs/prd/tracker.md}
+      - {id: app-list, name: "Applications list with filters and search", owner: lead, status: done, estimate_h: 4, depends: [api, app-shell], prd: docs/prd/tracker.md}
+      - {id: board, name: "Board view with allowed-transition drag and drop", owner: lead, status: done, estimate_h: 3, depends: [workflow, app-list], prd: docs/prd/tracker.md}
+      - {id: detail-pages, name: "Application, role, company and contact pages with timeline", owner: lead, status: done, estimate_h: 4, depends: [api, app-shell], prd: docs/prd/tracker.md}
+      - {id: recruiters, name: "Recruiter and agency pages: contact details, roles, notes", owner: lead, status: done, estimate_h: 2, depends: [detail-pages], prd: docs/prd/tracker.md}
       - {id: dup-warning, name: "Duplicate-submission warning", owner: lead, status: planned, estimate_h: 1, depends: [schema], prd: docs/prd/tracker.md}
       - {id: readme-refresh-1, name: "README refresh: tracking views, screenshots with fake data", owner: lead, status: planned, estimate_h: 1, depends: [app-list, board, detail-pages, recruiters]}
 
@@ -58,7 +58,7 @@ phases:
       - {id: attachments, name: "File attachments stored in the data directory", owner: lead, status: planned, estimate_h: 3, depends: [detail-pages], prd: docs/prd/tracker.md}
       - {id: eml-import, name: "Email export (.eml) parsing into the timeline", owner: lead, status: planned, estimate_h: 2, depends: [attachments], prd: docs/prd/tracker.md}
       - {id: documents, name: "Versioned CVs and cover letters, with where each was used", owner: lead, status: planned, estimate_h: 2, depends: [attachments], prd: docs/prd/tracker.md}
-      - {id: interviews, name: "Interviews and coding tasks: schedule, prep, debrief, questions", owner: lead, status: planned, estimate_h: 3, depends: [detail-pages], prd: docs/prd/tracker.md}
+      - {id: interviews, name: "Interviews and coding tasks: numbered rounds with a description (Round 2 · System design), shown on board and list; schedule, prep, debrief, questions", owner: lead, status: planned, estimate_h: 3, depends: [detail-pages], prd: docs/prd/tracker.md}
 
   - id: P4
     name: Next actions
