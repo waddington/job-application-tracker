@@ -9,8 +9,20 @@ from __future__ import annotations
 from datetime import date, datetime
 from typing import Any
 
-from sqlalchemy import JSON, Boolean, ForeignKey, Integer, String, Text, UniqueConstraint
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+    event,
+    func,
+    inspect,
+    select,
+)
+from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
 
 from .types import ISODate, UTCDateTime, new_id, utcnow
 
@@ -114,6 +126,10 @@ class Event(IdMixin, Base):
     """Append-only application history (FR7, FR8). Never updated or deleted by the app."""
 
     __tablename__ = "events"
+    __table_args__ = (UniqueConstraint("seq", name="uq_events_seq"),)
+    # Recording order across all events, assigned on insert (see assign_event_seq). Exported and
+    # restored, so ordering never depends on SQLite rowids or same-millisecond UUIDs.
+    seq: Mapped[int] = mapped_column(Integer)
     application_id: Mapped[str] = mapped_column(ForeignKey("applications.id", ondelete="CASCADE"), index=True)
     kind: Mapped[str] = mapped_column(String(30))  # stage_change | call | email | note | file | interview | manual
     occurred_at: Mapped[datetime] = mapped_column(default=utcnow, index=True)
@@ -216,6 +232,18 @@ class NoteIndex(IdMixin, Base):
     created_at: Mapped[datetime]
     updated_at: Mapped[datetime]
     mtime_ns: Mapped[int] = mapped_column(Integer)
+
+
+@event.listens_for(Session, "before_flush")
+def assign_event_seq(session: Session, flush_context, instances) -> None:
+    """Give new events consecutive `seq` numbers in the order they were added to the session."""
+    new_events = [obj for obj in session.new if isinstance(obj, Event) and obj.seq is None]
+    if not new_events:
+        return
+    new_events.sort(key=lambda obj: inspect(obj).insert_order)
+    current = session.execute(select(func.coalesce(func.max(Event.seq), 0))).scalar_one()
+    for offset, obj in enumerate(new_events, start=1):
+        obj.seq = current + offset
 
 
 # Tables whose rows are exported to export/*.jsonl, in foreign-key-safe order.

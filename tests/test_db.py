@@ -99,6 +99,46 @@ def test_date_column_rejects_datetime(engine):
         s.flush()
 
 
+def test_0002_backfills_seq_in_insert_order(tmp_path):
+    path = tmp_path / "old.sqlite3"
+    migrate(path, "0001")
+    eng = make_engine(path)
+    with eng.begin() as conn:
+        conn.execute(
+            text(
+                "INSERT INTO companies (id, name, created_at, updated_at) "
+                "VALUES ('c', 'C', '2026-01-01T00:00:00Z', '2026-01-01T00:00:00Z')"
+            )
+        )
+        conn.execute(
+            text(
+                "INSERT INTO roles (id, company_id, title, created_at, updated_at) "
+                "VALUES ('r', 'c', 'T', '2026-01-01T00:00:00Z', '2026-01-01T00:00:00Z')"
+            )
+        )
+        conn.execute(
+            text(
+                "INSERT INTO applications (id, role_id, route, stage, last_activity_at, tags, archived, created_at, "
+                "updated_at) VALUES ('a', 'r', 'direct', 'applied', '2026-01-01T00:00:00Z', '[]', 0, "
+                "'2026-01-01T00:00:00Z', '2026-01-01T00:00:00Z')"
+            )
+        )
+        for eid in ("zzz", "aaa", "mmm"):  # ids deliberately not in insert order
+            conn.execute(
+                text(
+                    "INSERT INTO events (id, application_id, kind, occurred_at, data, created_at) "
+                    f"VALUES ('{eid}', 'a', 'note', '2026-01-01T00:00:00Z', '{{}}', '2026-01-01T00:00:00Z')"
+                )
+            )
+    eng.dispose()
+    migrate(path)
+    eng = make_engine(path)
+    with eng.connect() as conn:
+        rows = conn.execute(text("SELECT id, seq FROM events ORDER BY seq")).all()
+    eng.dispose()
+    assert rows == [("zzz", 1), ("aaa", 2), ("mmm", 3)]
+
+
 def test_failed_migration_rolls_back(tmp_path):
     from jat.db import MigrationError
 

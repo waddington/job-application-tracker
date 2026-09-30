@@ -5,6 +5,7 @@ import pytest
 from jat.cli import main
 from jat.config import ConfigError, Settings, resolve_data_dir
 from jat.datadir import CODE_ROOT, DataDirError, init_data_dir
+from jat.db import head_revision
 
 
 def git_log(repo):
@@ -81,7 +82,7 @@ def test_cli_init_creates_db_and_export_restore(tmp_path, capsys):
     assert main(["--data-dir", d, "restore"]) == 2  # refuses: database exists
     assert main(["--data-dir", d, "restore", "--force"]) == 0
     assert main(["--data-dir", d, "info"]) == 0
-    assert "schema 0001" in capsys.readouterr().out
+    assert f"schema {head_revision()}" in capsys.readouterr().out
 
 
 def test_cli_init_restores_fresh_clone(tmp_path, capsys):
