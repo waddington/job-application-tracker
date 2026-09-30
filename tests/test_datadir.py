@@ -71,3 +71,30 @@ def test_cli_init_and_errors(tmp_path, monkeypatch, capsys):
     assert main(["--data-dir", str(tmp_path / "d"), "init"]) == 0
     assert "not a git repo" in capsys.readouterr().out
     assert main(["--data-dir", str(CODE_ROOT), "init"]) == 2
+
+
+def test_cli_init_creates_db_and_export_restore(tmp_path, capsys):
+    d = str(tmp_path / "d")
+    assert main(["--data-dir", d, "init"]) == 0
+    assert (tmp_path / "d" / "tracker.sqlite3").exists()
+    assert main(["--data-dir", d, "export"]) == 0
+    assert main(["--data-dir", d, "restore"]) == 2  # refuses: database exists
+    assert main(["--data-dir", d, "restore", "--force"]) == 0
+    assert main(["--data-dir", d, "info"]) == 0
+    assert "schema 0001" in capsys.readouterr().out
+
+
+def test_cli_init_restores_fresh_clone(tmp_path, capsys):
+    d = tmp_path / "d"
+    assert main(["--data-dir", str(d), "init"]) == 0
+    assert main(["--data-dir", str(d), "export"]) == 0
+    (d / "tracker.sqlite3").unlink()
+    for extra in d.glob("tracker.sqlite3-*"):
+        extra.unlink()
+    capsys.readouterr()
+    assert main(["--data-dir", str(d), "init"]) == 0
+    assert "restored from export/" in capsys.readouterr().out
+
+
+def test_cli_export_needs_db(tmp_path):
+    assert main(["--data-dir", str(tmp_path / "none"), "export"]) == 2
