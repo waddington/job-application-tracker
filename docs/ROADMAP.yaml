@@ -76,7 +76,7 @@ phases:
       - {id: sankey, name: "Sankey diagram of stage flows", owner: lead, status: done, estimate_h: 3, depends: [workflow, app-shell], prd: docs/prd/tracker.md}
       - {id: stats, name: "Conversion, time in stage, direct vs recruiter, weekly activity", owner: lead, status: done, estimate_h: 4, depends: [workflow, app-shell], prd: docs/prd/tracker.md}
       - {id: scorecard, name: "Recruiter scorecard", owner: lead, status: done, estimate_h: 2, depends: [stats, recruiters], prd: docs/prd/tracker.md}
-      - {id: readme-refresh-3, name: "README and llms.txt refresh: Sankey and insights, demo GIF", owner: lead, status: planned, estimate_h: 1, depends: [sankey, stats, scorecard]}
+      - {id: readme-refresh-3, name: "README and llms.txt refresh: Sankey and insights, demo GIF", owner: lead, status: done, estimate_h: 1, depends: [sankey, stats, scorecard]}
 
   - id: P6
     name: Extras

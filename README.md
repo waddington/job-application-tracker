@@ -4,7 +4,8 @@
 
 **Stop losing track of your job hunt.**
 A self-hosted, local-first job application tracker for software engineers, with a recruiter
-CRM, interview rounds, Markdown notes, CV versions and a *"who should I chase today?"* page.
+CRM, interview rounds, Markdown notes, CV versions, a *"who should I chase today?"* page and a
+Sankey diagram of your whole funnel.
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 ![Status: early development](https://img.shields.io/badge/status-early%20development-orange)
@@ -33,12 +34,17 @@ way tech hiring actually works:
   place.
 - ⏰ **Things go quiet.** A *Next actions* page shows which applications have stalled, what's
   due, and who to chase.
+- 📊 **You want to know what's working.** A Sankey diagram shows where applications go, with
+  conversion and time per stage, direct vs recruiter outcomes and a scorecard for every
+  recruiter and agency.
 
 No job-board scraping. No SaaS. No account. **Your job search stays on your disk.**
 
 ## 📸 Screenshots
 
 *All names and companies below are made-up demo data (`scripts/seed_demo.py`).*
+
+![A quick tour: Next actions, the Kanban board, an application page and Insights](docs/screenshots/demo.gif)
 
 **Next actions, your home page.** What to chase today, what's coming up, and interviews
 waiting for an outcome. Follow up, snooze or mark Ghosted in one click.
@@ -55,6 +61,17 @@ interview round each one is at.
 exported emails, and the full timestamped history.
 
 ![An application page with interview rounds, the CV sent, notes, links and files](docs/screenshots/application.png)
+
+**Insights: where do your applications go?** A Sankey diagram of every application's path
+through the stages, filtered by date range and route, with counts on hover.
+
+![Sankey diagram of a job search funnel: interested, applied, screen, interviewing, final, offer, with rejections and ghosting](docs/screenshots/insights.png)
+
+**Conversion, time in stage, direct vs recruiter, and a recruiter scorecard.** Which stages
+you get stuck at, whether agencies or direct applications do better for you, and which
+recruiters send roles that go somewhere.
+
+![Stage-by-stage conversion and median time, direct vs recruiter outcomes and a recruiter scorecard](docs/screenshots/insights-stats.png)
 
 <table>
 <tr>
