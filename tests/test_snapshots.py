@@ -103,6 +103,60 @@ def test_cli_snapshot_and_push(data_repo, remote, capsys):
     assert git(remote, "log", "--format=%s", "main")
 
 
+def service_for(repo):
+    return SnapshotService(repo, make_engine(db_path(repo)), debounce_seconds=0)
+
+
+def test_folder_git_doesnt_know_about_doesnt_break_snapshots(data_repo):
+    # files/ exists but holds only an untracked ignored file and no .gitkeep in git
+    git(data_repo, "rm", "-q", "--cached", "files/.gitkeep")
+    git(data_repo, "commit", "-q", "-m", "untrack gitkeep")
+    (data_repo / "files" / ".gitkeep").unlink()
+    (data_repo / "files" / "scratch.tmp").write_text("ignored")
+    assert service_for(data_repo).snapshot_now()
+
+
+def test_users_other_staged_changes_stay_staged(data_repo):
+    (data_repo / "README.md").write_text("changed\n")
+    git(data_repo, "add", "README.md")
+    service_for(data_repo).snapshot_now()
+    assert "README.md" in git(data_repo, "diff", "--cached", "--name-only")
+    assert "README.md" not in git(data_repo, "show", "--name-only", "--format=", "HEAD")
+
+
+def test_refuses_detached_head(data_repo):
+    service_for(data_repo).snapshot_now()
+    git(data_repo, "checkout", "-q", "--detach")
+    with pytest.raises(SnapshotError, match="detached HEAD"):
+        service_for(data_repo).snapshot_now()
+
+
+def test_close_stops_scheduling(data_repo):
+    service = SnapshotService(data_repo, make_engine(db_path(data_repo)), debounce_seconds=0.05)
+    service.close()
+    service.mark_dirty()
+    time.sleep(0.2)
+    assert service._timer is None
+    with pytest.raises(SnapshotError, match="shut down"):
+        service.snapshot_now()
+
+
+def test_git_never_prompts_and_timeouts_are_clean(data_repo, monkeypatch):
+    from jat.snapshot import git as gitmod
+
+    seen = {}
+
+    def fake_run(*args, **kwargs):
+        seen.update(kwargs)
+        raise gitmod.subprocess.TimeoutExpired(cmd="git", timeout=1)
+
+    monkeypatch.setattr(gitmod.subprocess, "run", fake_run)
+    with pytest.raises(SnapshotError, match="timed out"):
+        gitmod._git(data_repo, "push")
+    assert seen["env"]["GIT_TERMINAL_PROMPT"] == "0"
+    assert seen["stdin"] is gitmod.subprocess.DEVNULL
+
+
 def test_debounce_config(tmp_path):
     assert debounce_from_config(tmp_path) == 60
     (tmp_path / "config.toml").write_text("[snapshot]\ndebounce_seconds = 5\n")
