@@ -139,6 +139,47 @@ def test_0002_backfills_seq_in_insert_order(tmp_path):
     assert rows == [("zzz", 1), ("aaa", 2), ("mmm", 3)]
 
 
+def test_0003_numbers_existing_interviews_per_application(tmp_path):
+    path = tmp_path / "old.sqlite3"
+    migrate(path, "0002")
+    eng = make_engine(path)
+    ts = "'2026-01-01T00:00:00Z'"
+    with eng.begin() as conn:
+        conn.execute(text(f"INSERT INTO companies (id, name, created_at, updated_at) VALUES ('c', 'C', {ts}, {ts})"))
+        conn.execute(
+            text(
+                f"INSERT INTO roles (id, company_id, title, created_at, updated_at) VALUES ('r', 'c', 'T', {ts}, {ts})"
+            )
+        )
+        for app_id in ("a", "b"):
+            conn.execute(
+                text(
+                    "INSERT INTO applications (id, role_id, route, stage, last_activity_at, tags, archived, "
+                    f"created_at, updated_at) VALUES ('{app_id}', 'r', 'direct', 'interviewing', {ts}, '[]', 0, "
+                    f"{ts}, {ts})"
+                )
+            )
+        for iid, app_id, starts in [
+            ("i3", "a", "'2026-03-01T10:00:00Z'"),
+            ("i1", "a", "'2026-01-05T10:00:00Z'"),
+            ("i2", "a", "NULL"),  # no time yet: falls back to created_at (2026-01-01), so first
+            ("j1", "b", "'2026-02-01T10:00:00Z'"),
+        ]:
+            conn.execute(
+                text(
+                    "INSERT INTO interviews (id, application_id, kind, status, starts_at, created_at, updated_at) "
+                    f"VALUES ('{iid}', '{app_id}', 'technical', 'scheduled', {starts}, {ts}, {ts})"
+                )
+            )
+    eng.dispose()
+    migrate(path)
+    eng = make_engine(path)
+    with eng.connect() as conn:
+        rows = dict(conn.execute(text("SELECT id, round FROM interviews")).all())
+    eng.dispose()
+    assert rows == {"i2": 1, "i1": 2, "i3": 3, "j1": 1}
+
+
 def test_failed_migration_rolls_back(tmp_path):
     from jat.db import MigrationError
 

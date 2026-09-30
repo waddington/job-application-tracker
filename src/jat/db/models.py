@@ -145,6 +145,10 @@ class Interview(IdMixin, TimestampMixin, Base):
 
     __tablename__ = "interviews"
     application_id: Mapped[str] = mapped_column(ForeignKey("applications.id", ondelete="CASCADE"), index=True)
+    # Which interview this is for the application: 1, 2, 3… (FR9a).
+    round: Mapped[int | None] = mapped_column(Integer)
+    # What the round is, in Kai's words: "Engineering manager chat", "System design test".
+    title: Mapped[str | None] = mapped_column(String(200))
     kind: Mapped[str] = mapped_column(String(30))  # screen | technical | coding_task | system_design | ...
     status: Mapped[str] = mapped_column(String(20), default="scheduled")  # scheduled | done | cancelled
     starts_at: Mapped[datetime | None] = mapped_column(index=True)
