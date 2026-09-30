@@ -38,6 +38,8 @@ export function buildColumns(workflow: Workflow, rows: ApplicationRow[]): Column
 
 export function canDrop(workflow: Workflow, from: string, to: string): boolean {
   if (from === to) return false;
+  // Any-to-any: fine even from a stage since removed from config.toml.
+  if (workflow.transitions === "any") return workflow.stages.some((s) => s.id === to);
   return workflow.stages.find((s) => s.id === from)?.allowed_next.includes(to) ?? false;
 }
 

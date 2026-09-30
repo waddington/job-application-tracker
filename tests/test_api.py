@@ -32,6 +32,7 @@ def test_application_lifecycle(client, app, seeded):
     assert created["stage"] == "interested" and created["stage_name"] == "Interested"
     assert created["company_name"] == "Contoso" and created["recruiter_name"] == "Alex Recruiter"
     assert "applied" in created["allowed_next"]
+    assert created["suggested_next"][0] == "applied"  # the usual next step, of every stage allowed
     writes_before = app.state.writes.writes
 
     moved = post(client, f"/api/v1/applications/{app_id}/move", {"to_stage": "applied", "note": "Sent CV"}, 200)

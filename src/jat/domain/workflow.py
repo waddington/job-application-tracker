@@ -17,7 +17,8 @@ Defaults live here. A data directory can override them in config.toml:
 With `transitions = "any"` (the default) an application can move from any stage to any
 other: processes skip steps and loop back, and every move is still timestamped. The rules
 below then only suggest the usual next stages. With `transitions = "configured"` they're
-enforced, Jira-style.
+enforced, Jira-style. A config that lists its own stages but no `transitions` keeps them
+enforced, as it was written before this setting existed.
 
 Rules (suggestions, or enforced when configured):
 - An active stage may move to any stage listed in its `next`.
@@ -96,7 +97,8 @@ class Workflow:
     def allowed_next(self, from_id: str) -> list[str]:
         """Every stage `from_id` may move to, in workflow order."""
         if self.transitions == "any":
-            self.stage(from_id)
+            # from_id needn't exist: an application left in a stage since removed from
+            # config.toml can still be moved on.
             return [s.id for s in self.stages if s.id != from_id]
         return self.suggested_next(from_id)
 
@@ -194,7 +196,9 @@ def workflow_from_config(data: dict | None) -> Workflow:
         reopen_from = _str_list(data["reopen_from"], "[workflow] reopen_from")
     else:  # keep "ghosted can be reopened" whenever there's a ghosted stage
         reopen_from = tuple(s for s in DEFAULT_WORKFLOW.reopen_from if any(st.id == s for st in stages))
-    transitions = data.get("transitions", "any")
+    # A config.toml that defines its own stages was written when transitions were always
+    # enforced: keep enforcing them unless it says otherwise.
+    transitions = data.get("transitions", "configured" if raw_stages is not None else "any")
     if transitions not in TRANSITIONS:
         raise WorkflowError(f'[workflow] transitions must be "any" or "configured", not {transitions!r}')
     return Workflow(

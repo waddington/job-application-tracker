@@ -84,6 +84,21 @@ def test_custom_config():
     assert wf.reopen_from == ()  # no ghosted stage in this workflow
 
 
+def test_custom_stages_keep_enforcing_unless_told_otherwise():
+    stages = [{"id": "a", "next": ["b"]}, {"id": "b"}]
+    assert workflow_from_config({"stages": stages}).transitions == "configured"
+    assert workflow_from_config({"stages": stages, "transitions": "any"}).transitions == "any"
+    assert workflow_from_config({"skip_forward": False}).transitions == "any"
+
+
+def test_any_mode_moves_out_of_removed_stages():
+    assert DEFAULT_WORKFLOW.can_move("phone_screen", "applied")  # stage no longer in config
+    with pytest.raises(WorkflowError, match="unknown stage"):
+        DEFAULT_WORKFLOW.can_move("applied", "nope")
+    with pytest.raises(WorkflowError):
+        W.allowed_next("phone_screen")  # configured mode still refuses
+
+
 def test_invalid_configs():
     with pytest.raises(WorkflowError, match="doesn't exist"):
         workflow_from_config({"stages": [{"id": "a", "next": ["b"]}]})
