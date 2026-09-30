@@ -1,8 +1,32 @@
+from dataclasses import replace
+
 import pytest
 
 from jat.domain.workflow import DEFAULT_WORKFLOW, WorkflowError, load_workflow, workflow_from_config
 
-W = DEFAULT_WORKFLOW
+# The default rules, enforced (transitions = "configured").
+W = replace(DEFAULT_WORKFLOW, transitions="configured")
+
+
+def test_any_to_any_by_default():
+    assert DEFAULT_WORKFLOW.transitions == "any"
+    everything_else = [s.id for s in DEFAULT_WORKFLOW.stages if s.id != "interviewing"]
+    assert DEFAULT_WORKFLOW.allowed_next("interviewing") == everything_else
+    assert DEFAULT_WORKFLOW.can_move("interviewing", "screen")  # back a step
+    assert DEFAULT_WORKFLOW.can_move("rejected", "interviewing")  # they came back
+    assert not DEFAULT_WORKFLOW.can_move("screen", "screen")
+    # The rules still suggest the usual next stages.
+    assert DEFAULT_WORKFLOW.suggested_next("rejected") == []
+    assert DEFAULT_WORKFLOW.suggested_next("screen") == W.allowed_next("screen")
+    stage = DEFAULT_WORKFLOW.as_dict()["stages"][2]
+    assert stage["id"] == "screen" and "interviewing" in stage["suggested_next"]
+    assert DEFAULT_WORKFLOW.as_dict()["transitions"] == "any"
+
+
+def test_transitions_setting():
+    assert workflow_from_config({"transitions": "configured"}).transitions == "configured"
+    with pytest.raises(WorkflowError, match="transitions"):
+        workflow_from_config({"transitions": "sometimes"})
 
 
 def test_default_moves():
@@ -45,6 +69,7 @@ def test_custom_config():
     wf = workflow_from_config(
         {
             "initial": "lead",
+            "transitions": "configured",
             "skip_forward": False,
             "stages": [
                 {"id": "lead", "next": ["call"]},
@@ -57,6 +82,21 @@ def test_custom_config():
     assert wf.allowed_next("lead") == ["call", "dead"]
     assert wf.stage("call").stale_after_days == 3
     assert wf.reopen_from == ()  # no ghosted stage in this workflow
+
+
+def test_custom_stages_keep_enforcing_unless_told_otherwise():
+    stages = [{"id": "a", "next": ["b"]}, {"id": "b"}]
+    assert workflow_from_config({"stages": stages}).transitions == "configured"
+    assert workflow_from_config({"stages": stages, "transitions": "any"}).transitions == "any"
+    assert workflow_from_config({"skip_forward": False}).transitions == "any"
+
+
+def test_any_mode_moves_out_of_removed_stages():
+    assert DEFAULT_WORKFLOW.can_move("phone_screen", "applied")  # stage no longer in config
+    with pytest.raises(WorkflowError, match="unknown stage"):
+        DEFAULT_WORKFLOW.can_move("applied", "nope")
+    with pytest.raises(WorkflowError):
+        W.allowed_next("phone_screen")  # configured mode still refuses
 
 
 def test_invalid_configs():

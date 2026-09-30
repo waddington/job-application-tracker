@@ -1,3 +1,4 @@
+from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 
 import pytest
@@ -53,9 +54,18 @@ def test_move_validates_and_records(session, role):
     move(session, W, app, "interviewing", note="Recruiter booked tech round")
     assert app.stage == "interviewing"
     with pytest.raises(TransitionError, match="allowed:"):
-        move(session, W, app, "applied")
+        move(session, replace(W, transitions="configured"), app, "applied")
     assert stages(session, app)[-1] == ("applied", "interviewing")
     assert history(session, app.id)[-1].summary == "Recruiter booked tech round"
+
+
+def test_any_mode_moves_back_and_out_of_removed_stages(session, role):
+    app = create_application(session, W, role_id=role.id)
+    move(session, W, app, "rejected")
+    move(session, W, app, "interviewing")  # they came back after all
+    app.stage = "phone_screen"  # a stage since removed from config.toml
+    move(session, W, app, "screen")
+    assert stages(session, app)[-1] == ("phone_screen", "screen")
 
 
 def test_undo_is_a_stack_of_correcting_events(session, role):

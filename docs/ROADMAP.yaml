@@ -47,7 +47,8 @@ phases:
       - {id: detail-pages, name: "Application, role, company and contact pages with timeline", owner: lead, status: done, estimate_h: 4, depends: [api, app-shell], prd: docs/prd/tracker.md}
       - {id: recruiters, name: "Recruiter and agency pages: contact details, roles, notes", owner: lead, status: done, estimate_h: 2, depends: [detail-pages], prd: docs/prd/tracker.md}
       - {id: dup-warning, name: "Duplicate-submission warning", owner: lead, status: done, estimate_h: 1, depends: [schema], prd: docs/prd/tracker.md}
-      - {id: readme-refresh-1, name: "README refresh: tracking views, screenshots with fake data", owner: lead, status: planned, estimate_h: 1, depends: [app-list, board, detail-pages, recruiters]}
+      - {id: readme-refresh-1, name: "README refresh: tracking views, screenshots with fake data", owner: lead, status: done, estimate_h: 1, depends: [app-list, board, detail-pages, recruiters]}
+      - {id: workflow-modes, name: "Stage moves: any stage to any stage by default (history kept, usual next stages hinted); Jira-style configured transitions as an opt-in", owner: lead, status: done, estimate_h: 2, depends: [board], prd: docs/prd/tracker.md}
 
   - id: P3
     name: Notes, documents and interviews

@@ -15,6 +15,7 @@ const detail = {
   events: [],
   contacts: [{ id: "l1", application_id: "a1", contact_id: "c1", relation: "recruiter" }],
   allowed_next: ["screen"],
+  suggested_next: ["screen"],
   can_undo: false,
   duplicates: [],
 };
@@ -35,6 +36,30 @@ beforeEach(() => localStorage.clear());
 afterEach(() => vi.unstubAllGlobals());
 
 describe("application page", () => {
+  it("offers the usual next stages first, then every other stage", async () => {
+    mockApi({
+      "/api/v1/workflow": WORKFLOW,
+      "GET /api/v1/applications/a1": {
+        ...detail,
+        allowed_next: ["interested", "screen", "rejected"],
+        suggested_next: ["screen", "rejected"],
+      },
+      "/api/v1/contacts": contacts,
+      "/api/v1/roles": [],
+      "/api/v1/health": {},
+    });
+    renderAt("/applications/a1");
+    fireEvent.click(await screen.findByRole("button", { name: /Move to/ }));
+    expect(await screen.findByText("Usual next")).toBeInTheDocument();
+    expect(screen.getByText("Other stages")).toBeInTheDocument();
+    // jsdom still has the menu mid-transition (aria-hidden), hence hidden: true.
+    expect((await screen.findAllByRole("menuitem", { hidden: true })).map((i) => i.textContent)).toEqual([
+      "Screen",
+      "Rejected",
+      "Interested",
+    ]);
+  });
+
   it("shows the application with its people and saves details", async () => {
     const calls = mockApi({
       "/api/v1/workflow": WORKFLOW,

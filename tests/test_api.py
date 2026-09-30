@@ -32,6 +32,7 @@ def test_application_lifecycle(client, app, seeded):
     assert created["stage"] == "interested" and created["stage_name"] == "Interested"
     assert created["company_name"] == "Contoso" and created["recruiter_name"] == "Alex Recruiter"
     assert "applied" in created["allowed_next"]
+    assert created["suggested_next"][0] == "applied"  # the usual next step, of every stage allowed
     writes_before = app.state.writes.writes
 
     moved = post(client, f"/api/v1/applications/{app_id}/move", {"to_stage": "applied", "note": "Sent CV"}, 200)
@@ -39,8 +40,8 @@ def test_application_lifecycle(client, app, seeded):
     assert moved["events"][-1]["summary"] == "Sent CV"
     assert app.state.writes.writes > writes_before
 
-    bad = client.post(f"/api/v1/applications/{app_id}/move", json={"to_stage": "interested"})
-    assert bad.status_code == 422 and "allowed" in bad.json()["detail"]
+    bad = client.post(f"/api/v1/applications/{app_id}/move", json={"to_stage": "nope"})
+    assert bad.status_code == 422 and "nope" in bad.json()["detail"]
 
     undone = post(client, f"/api/v1/applications/{app_id}/undo", {}, 200)
     assert undone["stage"] == "interested"

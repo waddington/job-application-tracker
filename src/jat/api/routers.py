@@ -255,13 +255,16 @@ def _detail(session: Session, workflow: Workflow, app_id: str) -> S.ApplicationD
     links = session.scalars(select(ApplicationContact).where(ApplicationContact.application_id == app_id)).all()
     try:
         allowed = workflow.allowed_next(row.stage)
-    except WorkflowError:
-        allowed = []
+        suggested = workflow.suggested_next(row.stage)
+    except WorkflowError:  # a stage since removed from config.toml
+        allowed = [s.id for s in workflow.stages] if workflow.transitions == "any" else []
+        suggested = []
     return S.ApplicationDetail(
         **row.model_dump(),
         events=events,
         contacts=[S.ApplicationContactOut.model_validate(link) for link in links],
         allowed_next=allowed,
+        suggested_next=suggested,
         can_undo=svc.can_undo(session, session.get(Application, app_id)),
         duplicates=_duplicates(session, workflow, [row.company_id], row.role_title, exclude=app_id),
     )

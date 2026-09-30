@@ -53,7 +53,11 @@ export function RoundBadge({
         variant="light"
         color="violet"
         leftSection={<IconCalendarEvent size={12} />}
+        // Wrap rather than cut off on narrow board cards.
+        h="auto"
+        py={2}
         style={{ textTransform: "none", maxWidth: "100%" }}
+        styles={{ label: { whiteSpace: "normal", overflow: "visible", textAlign: "left" } }}
       >
         {upcoming ? `${round.label} · ${shortDate(when)}` : round.label}
       </Badge>
