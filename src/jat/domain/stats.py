@@ -7,9 +7,10 @@ back-and-forth included: every completed stay counts.
 
 from __future__ import annotations
 
+from bisect import bisect_right
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, time, timedelta, tzinfo
 from statistics import median
 
 from sqlalchemy import select
@@ -18,7 +19,7 @@ from sqlalchemy.orm import Session
 from jat.db.models import Application, Event, Interview
 
 from .applications import STAGE_CHANGE, _effective_moves
-from .insights import fold_forward, stage_path, stage_rank
+from .insights import closed_stages, fold_forward, stage_path, stage_rank
 from .workflow import Workflow
 
 ROUTES = ("direct", "agency", "referral")
@@ -63,7 +64,9 @@ class Stats:
 def _events_by_application(session: Session, ids: list[str]) -> dict[str, list[Event]]:
     events: dict[str, list[Event]] = {i: [] for i in ids}
     if ids:
-        for ev in session.scalars(select(Event).where(Event.application_id.in_(ids)).order_by(Event.seq)):
+        for ev in session.scalars(
+            select(Event).where(Event.application_id.in_(ids), Event.kind == STAGE_CHANGE).order_by(Event.seq)
+        ):
             events[ev.application_id].append(ev)
     return events
 
@@ -81,11 +84,12 @@ def stats(
     events = _events_by_application(session, list(routes))
 
     rank = stage_rank(workflow)
+    closed = closed_stages(workflow)
     kinds = {s.id: s.kind for s in workflow.stages}
     result = Stats()
     for app_id, route in routes.items():
         history = events[app_id]
-        path = fold_forward(stage_path(history), rank)
+        path = fold_forward(stage_path(history), rank, closed)
         if not path:
             continue
         result.applications += 1
@@ -111,13 +115,22 @@ class Week:
     interviews: int = 0  # rounds starting in the week (not cancelled)
 
 
-def weekly_activity(session: Session, start: datetime, weeks: int) -> list[Week]:
-    """`weeks` weeks of activity, the first starting at `start` (your local Monday, with its offset)."""
-    end = start + timedelta(weeks=weeks)
-    result = [Week(start=(start + timedelta(weeks=i)).date()) for i in range(weeks)]
+def week_starts(first: date, weeks: int, tz: tzinfo) -> list[datetime]:
+    """Local midnight at the start of each week, plus the end of the last one.
+
+    Midnight to midnight, so a week with a clock change is an hour shorter or longer.
+    """
+    return [datetime.combine(first + timedelta(weeks=i), time(), tzinfo=tz) for i in range(weeks + 1)]
+
+
+def weekly_activity(session: Session, first: date, weeks: int, tz: tzinfo) -> list[Week]:
+    """`weeks` weeks of activity in time zone `tz`, the first starting on `first` (a Monday)."""
+    bounds = week_starts(first, weeks, tz)
+    start, end = bounds[0], bounds[-1]
+    result = [Week(start=b.date()) for b in bounds[:-1]]
 
     def bucket(when: datetime) -> Week | None:
-        i = int((when - start) // timedelta(weeks=1))
+        i = bisect_right(bounds, when) - 1
         return result[i] if 0 <= i < weeks else None
 
     for created in session.scalars(
@@ -126,12 +139,13 @@ def weekly_activity(session: Session, start: datetime, weeks: int) -> list[Week]
         if week := bucket(created):
             week.added += 1
 
-    first_day, last_day = result[0].start, result[0].start + timedelta(weeks=weeks)
     for applied in session.scalars(
-        select(Application.applied_on).where(Application.applied_on >= first_day, Application.applied_on < last_day)
+        select(Application.applied_on).where(
+            Application.applied_on >= first, Application.applied_on < first + timedelta(weeks=weeks)
+        )
     ):
         if applied is not None:
-            result[(applied - first_day).days // 7].applied += 1
+            result[(applied - first).days // 7].applied += 1
 
     # An undo is recorded after the move it reverts, so every undo of a move in the window
     # is itself in or after the window.

@@ -31,11 +31,11 @@ export function useStats(since?: string) {
   });
 }
 
-/** Activity per week, oldest first; `start` is local midnight on the first week's Monday. */
-export function useActivity(start: string, weeks: number) {
+/** Activity per week, oldest first: `start` is the first week's Monday, `tz` your IANA time zone. */
+export function useActivity(start: string, weeks: number, tz: string) {
   return useQuery({
-    queryKey: ["insights", "activity", start, weeks],
+    queryKey: ["insights", "activity", start, weeks, tz],
     queryFn: async () =>
-      unwrap(await api.GET("/api/v1/insights/activity", { params: { query: { start, weeks } } })),
+      unwrap(await api.GET("/api/v1/insights/activity", { params: { query: { start, weeks, tz } } })),
   });
 }

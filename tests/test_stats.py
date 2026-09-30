@@ -84,7 +84,8 @@ def test_stats(client, seeded):
 
 def test_weekly_activity(client, seeded):
     role = seeded["role"]["id"]
-    today = datetime.now(UTC).date()
+    now = datetime.now(UTC)  # read once, so a week boundary can't split the test
+    today = now.date()
     a = post(client, "/api/v1/applications", {"role_id": role, "stage": "applied", "applied_on": today.isoformat()})
     _move(client, a["id"], "screen")
     _move(client, a["id"], "interviewing")
@@ -95,7 +96,7 @@ def test_weekly_activity(client, seeded):
         "/api/v1/applications",
         {"role_id": role, "stage": "applied", "applied_on": (today - timedelta(weeks=5)).isoformat()},
     )
-    starts = datetime.now(UTC).isoformat()  # stays in this week
+    starts = now.isoformat()
     post(client, f"/api/v1/applications/{a['id']}/interviews", {"round": 1, "title": "Screen", "starts_at": starts})
     post(
         client,
@@ -103,14 +104,40 @@ def test_weekly_activity(client, seeded):
         {"round": 2, "title": "Cancelled", "starts_at": starts, "status": "cancelled"},
     )
 
-    now = datetime.now(UTC)
-    start = (now - timedelta(days=now.weekday(), weeks=7)).replace(hour=0, minute=0, second=0, microsecond=0)
+    start = today - timedelta(days=today.weekday(), weeks=7)
     weeks = client.get("/api/v1/insights/activity", params={"start": start.isoformat(), "weeks": 8}).json()
-    assert len(weeks) == 8 and weeks[0]["start"] == start.date().isoformat()
+    assert len(weeks) == 8 and weeks[0]["start"] == start.isoformat()
     this_week = weeks[-1]
+    # Added and moved moments ago; a week boundary in between is the only way this can fail.
     assert (this_week["added"], this_week["moves"], this_week["interviews"]) == (2, 1, 1)
     assert [w["applied"] for w in weeks] == [0, 0, 1, 0, 0, 0, 0, 1]  # this week and five weeks back
 
     default = client.get("/api/v1/insights/activity").json()
     assert len(default) == 12 and date.fromisoformat(default[-1]["start"]).weekday() == 0
     assert client.get("/api/v1/insights/activity", params={"weeks": 0}).status_code == 422
+    assert client.get("/api/v1/insights/activity", params={"tz": "Mars/Olympus"}).status_code == 422
+
+
+def test_weekly_activity_uses_local_weeks_across_a_clock_change(client, seeded):
+    app = post(client, "/api/v1/applications", {"role_id": seeded["role"]["id"], "stage": "applied"})
+    # UK clocks go back on Sunday 25 October 2026. Local weeks start at local midnight on Mondays.
+    for when in (
+        "2026-10-18T23:30:00Z",  # Mon 19 Oct 00:30 BST: the week of 19 Oct
+        "2026-10-25T23:30:00Z",  # Sun 25 Oct 23:30 GMT: still the week of 19 Oct
+        "2026-10-26T00:30:00Z",  # Mon 26 Oct 00:30 GMT: the week of 26 Oct
+    ):
+        post(client, f"/api/v1/applications/{app['id']}/interviews", {"round": 1, "title": "Chat", "starts_at": when})
+    weeks = client.get(
+        "/api/v1/insights/activity", params={"start": "2026-10-12", "weeks": 3, "tz": "Europe/London"}
+    ).json()
+    assert [(w["start"], w["interviews"]) for w in weeks] == [("2026-10-12", 0), ("2026-10-19", 2), ("2026-10-26", 1)]
+
+
+def test_stats_count_reopened_applications_where_they_went(client, seeded):
+    a = post(client, "/api/v1/applications", {"role_id": seeded["role"]["id"], "stage": "applied"})
+    for stage in ("interviewing", "screen", "ghosted", "final"):  # back to Screen, ghosted, then back
+        _move(client, a["id"], stage)
+    stages = {s["id"]: s for s in client.get("/api/v1/insights/stats").json()["stages"]}
+    # Screen was only visited going back, and Ghosted was reopened: neither is on the path.
+    assert list(stages) == ["applied", "interviewing", "final"]
+    assert (stages["applied"]["moved_on"], stages["interviewing"]["moved_on"]) == (1, 1)

@@ -36,7 +36,7 @@ export function InsightsPage() {
     route: route === "any" ? undefined : (route as FlowFilters["route"]),
   };
   const { data: flow, isLoading, isError } = useFlow(filters);
-  const { data: stats } = useStats(range.since);
+  const { data: stats, isError: statsError } = useStats(range.since);
 
   return (
     <Stack maw={1200}>
@@ -87,6 +87,7 @@ export function InsightsPage() {
           <SankeyChart flow={flow} />
         )}
       </Card>
+      {statsError && <Text c="red">Couldn't load the stats.</Text>}
       {stats && stats.applications > 0 && (
         <>
           <StageTable stats={stats} />
