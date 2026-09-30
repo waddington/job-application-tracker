@@ -5,7 +5,8 @@ For the applications a recruiter (or agency) put you forward for:
 - **interviewed**: how many got at least one interview round that wasn't cancelled;
 - **active** / **ghosted** / **closed**: where they are now (ghosted means a `reopen_from`
   stage, Ghosted by default; closed counts every other closed stage);
-- **first update**: median days from adding the application to the first sign of life: a
+- **first update**: median days from adding the application (its first stage event, so
+  backfilled history counts) to the first sign of life: a
   call, email or message logged, or a stage move (undone moves don't count);
 - **last contact**: the latest call, email or message logged.
 """
@@ -48,10 +49,16 @@ class Score:
         return round(median(self.first_update_days), 1) if self.first_update_days else None
 
 
-def _first_update(created: datetime, events: list[Event]) -> datetime | None:
+def _added_at(created: datetime, events: list[Event]) -> datetime:
+    """When the application entered the history: its first stage event, which may be backdated."""
+    first = next((ev for ev in events if ev.kind == STAGE_CHANGE and ev.from_stage is None), None)
+    return first.occurred_at if first else created
+
+
+def _first_update(added: datetime, events: list[Event]) -> datetime | None:
     moves = [ev.occurred_at for ev in _effective_moves(events)]
     contacts = [ev.occurred_at for ev in events if ev.kind in CONTACT_KINDS]
-    times = [t for t in moves + contacts if t >= created]
+    times = [t for t in moves + contacts if t >= added]
     return min(times) if times else None
 
 
@@ -103,7 +110,8 @@ def scorecard(
         if app.agency_id and app.agency_id in agencies:
             scores.append(by_agency.setdefault(app.agency_id, Score(id=app.agency_id, name=agencies[app.agency_id])))
         history = events[app.id]
-        first = _first_update(app.created_at, history)
+        added = _added_at(app.created_at, history)
+        first = _first_update(added, history)
         contacted = [ev.occurred_at for ev in history if ev.kind in CONTACT_KINDS]
         for s in scores:
             s.roles += 1
@@ -118,7 +126,7 @@ def scorecard(
             else:
                 s.active += 1
             if first is not None:
-                s.first_update_days.append((first - app.created_at).total_seconds() / 86_400)
+                s.first_update_days.append((first - added).total_seconds() / 86_400)
             if contacted:
                 latest = max(contacted)
                 s.last_contact = max(s.last_contact, latest) if s.last_contact else latest
