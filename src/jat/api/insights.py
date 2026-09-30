@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from datetime import UTC, date, datetime, timedelta
+from datetime import date, datetime, timedelta
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, HTTPException, Query
 from pydantic import AwareDatetime, BaseModel
 
 from ..domain import insights as svc
@@ -106,7 +107,8 @@ def search_stats(
     result = stats_svc.stats(session, workflow, since=since, until=until)
     rank = svc.stage_rank(workflow)
     known = {s.id: s for s in workflow.stages}
-    ids = sorted(result.stages, key=lambda sid: (rank.get(sid, len(rank)), sid))
+    reached = [sid for sid, st in result.stages.items() if st.reached]  # not ones only visited going back
+    ids = sorted(reached, key=lambda sid: (rank.get(sid, len(rank)), sid))
     stages = []
     for sid in ids:
         st, s = result.stages[sid], known.get(sid)
@@ -143,13 +145,19 @@ class WeekOut(BaseModel):
 @router.get("/activity", response_model=list[WeekOut])
 def weekly_activity(
     session: SessionDep,
-    start: AwareDatetime | None = None,
+    start: date | None = None,
+    tz: str = "UTC",
     weeks: int = Query(12, ge=1, le=52),
 ):
-    """Activity per week, oldest first. Pass `start`, the midnight your first week begins, with
-    its offset, so weeks are your weeks. Defaults to UTC Mondays, ending with this week.
+    """Activity per week, oldest first. Pass `tz`, your IANA time zone (e.g. Europe/London),
+    and `start`, the Monday your first week begins, so weeks are your weeks, clock changes
+    included. `start` defaults to the Monday that makes the last week this one.
     """
+    try:
+        zone = ZoneInfo(tz)
+    except (ZoneInfoNotFoundError, ValueError) as exc:
+        raise HTTPException(422, f"unknown time zone {tz!r}") from exc
     if start is None:
-        today = datetime.now(UTC).replace(hour=0, minute=0, second=0, microsecond=0)
+        today = datetime.now(zone).date()
         start = today - timedelta(days=today.weekday(), weeks=weeks - 1)
-    return [WeekOut(**vars(w)) for w in stats_svc.weekly_activity(session, start, weeks)]
+    return [WeekOut(**vars(w)) for w in stats_svc.weekly_activity(session, start, weeks, zone)]

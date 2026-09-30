@@ -575,8 +575,9 @@ export interface paths {
         };
         /**
          * Weekly Activity
-         * @description Activity per week, oldest first. Pass `start`, the midnight your first week begins, with
-         *     its offset, so weeks are your weeks. Defaults to UTC Mondays, ending with this week.
+         * @description Activity per week, oldest first. Pass `tz`, your IANA time zone (e.g. Europe/London),
+         *     and `start`, the Monday your first week begins, so weeks are your weeks, clock changes
+         *     included. `start` defaults to the Monday that makes the last week this one.
          */
         get: operations["weekly_activity_api_v1_insights_activity_get"];
         put?: never;
@@ -3717,6 +3718,7 @@ export interface operations {
         parameters: {
             query?: {
                 start?: string | null;
+                tz?: string;
                 weeks?: number;
             };
             header?: never;

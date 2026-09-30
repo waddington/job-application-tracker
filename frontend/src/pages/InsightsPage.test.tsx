@@ -162,13 +162,14 @@ describe("insights", () => {
     const calls = mockInsights();
     renderAt("/insights");
     await screen.findByRole("img", { name: /Sankey diagram/ });
-    // Activity asks for twelve weeks from a local Monday midnight, with its offset.
+    // Activity asks for twelve weeks from a local Monday, in the browser's time zone.
     const activity = calls.find((c) => c.path.startsWith("/api/v1/insights/activity"))!;
     const params = new URL(activity.path, "http://localhost").searchParams;
     expect(params.get("weeks")).toBe("12");
-    const start = new Date(params.get("start")!);
-    expect([start.getDay(), start.getHours(), start.getMinutes()]).toEqual([1, 0, 0]);
-    expect(params.get("start")).toMatch(/T00:00:00[+-]\d\d:\d\d$/);
+    expect(params.get("tz")).toBe(Intl.DateTimeFormat().resolvedOptions().timeZone);
+    const start = params.get("start")!;
+    expect(start).toMatch(/^\d{4}-\d\d-\d\d$/);
+    expect(new Date(`${start}T12:00:00`).getDay()).toBe(1);
 
     fireEvent.click(screen.getByText("Last 30 days"));
     await waitFor(() => {

@@ -151,16 +151,18 @@ const SERIES: {
 const WEEKS = 12;
 const BAR_HEIGHT = 120;
 
-/** Local midnight on the Monday `WEEKS - 1` weeks before this week's, with its offset. */
+/** The Monday `WEEKS - 1` weeks before this week's, as YYYY-MM-DD in local time. */
 export function activityStart(now = dayjs()) {
   const monday = now.startOf("day").subtract((now.day() + 6) % 7, "day");
-  return monday.subtract(WEEKS - 1, "week").format();
+  return monday.subtract(WEEKS - 1, "week").format("YYYY-MM-DD");
 }
 
 /** Twelve weeks of activity as grouped bars. */
 export function WeeklyActivity() {
   const start = activityStart();
-  const { data: weeks, isLoading } = useActivity(start, WEEKS);
+  // The server works out local midnights itself, so weeks with a clock change come out right.
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+  const { data: weeks, isLoading } = useActivity(start, WEEKS, tz);
   const max = Math.max(1, ...(weeks ?? []).flatMap((w) => SERIES.map((s) => w[s.key])));
   return (
     <Card withBorder>

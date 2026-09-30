@@ -6831,7 +6831,7 @@
     },
     "/api/v1/insights/activity": {
       "get": {
-        "description": "Activity per week, oldest first. Pass `start`, the midnight your first week begins, with\nits offset, so weeks are your weeks. Defaults to UTC Mondays, ending with this week.",
+        "description": "Activity per week, oldest first. Pass `tz`, your IANA time zone (e.g. Europe/London),\nand `start`, the Monday your first week begins, so weeks are your weeks, clock changes\nincluded. `start` defaults to the Monday that makes the last week this one.",
         "operationId": "weekly_activity_api_v1_insights_activity_get",
         "parameters": [
           {
@@ -6841,7 +6841,7 @@
             "schema": {
               "anyOf": [
                 {
-                  "format": "date-time",
+                  "format": "date",
                   "type": "string"
                 },
                 {
@@ -6849,6 +6849,16 @@
                 }
               ],
               "title": "Start"
+            }
+          },
+          {
+            "in": "query",
+            "name": "tz",
+            "required": false,
+            "schema": {
+              "default": "UTC",
+              "title": "Tz",
+              "type": "string"
             }
           },
           {
