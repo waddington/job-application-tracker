@@ -24,6 +24,7 @@ export interface InterviewFilters {
   application_id?: string;
   status?: "scheduled" | "done" | "cancelled";
   upcoming?: boolean;
+  since?: string;
 }
 
 function notifyError(error: Error) {

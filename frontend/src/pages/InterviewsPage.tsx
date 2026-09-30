@@ -3,10 +3,8 @@ import { IconCalendarEvent } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 
 import { useInterviews, type Interview } from "../api/interviewHooks";
+import { roundStatus } from "../components/Interviews";
 import { formatDateTime } from "../utils/time";
-
-const STATUS_COLOR: Record<string, string> = { scheduled: "blue", done: "teal", cancelled: "gray" };
-const STATUS_LABEL: Record<string, string> = { scheduled: "Coming up", done: "Done", cancelled: "Cancelled" };
 
 function InterviewTable({ interviews, empty }: { interviews: Interview[]; empty: string }) {
   if (!interviews.length) {
@@ -50,8 +48,8 @@ function InterviewTable({ interviews, empty }: { interviews: Interview[]; empty:
                 </Text>
               </Table.Td>
               <Table.Td>
-                <Badge size="sm" variant="light" color={STATUS_COLOR[i.status]}>
-                  {STATUS_LABEL[i.status]}
+                <Badge size="sm" variant="light" color={roundStatus(i).color}>
+                  {roundStatus(i).label}
                 </Badge>
               </Table.Td>
             </Table.Tr>
@@ -64,10 +62,15 @@ function InterviewTable({ interviews, empty }: { interviews: Interview[]; empty:
 
 /** Every interview round across applications: what's coming up, then everything else, newest first. */
 export function InterviewsPage() {
-  const { data: upcoming, isLoading } = useInterviews({ upcoming: true });
-  const { data: all } = useInterviews({});
+  // "Upcoming" starts at your local midnight, so this morning's interview still counts today.
+  const midnight = new Date();
+  midnight.setHours(0, 0, 0, 0);
+  const upcomingQuery = useInterviews({ upcoming: true, since: midnight.toISOString() });
+  const allQuery = useInterviews({});
+  const isLoading = upcomingQuery.isLoading || allQuery.isLoading;
+  const upcoming = upcomingQuery.data;
   const upcomingIds = new Set((upcoming ?? []).map((i) => i.id));
-  const rest = (all ?? []).filter((i) => !upcomingIds.has(i.id)).reverse();
+  const rest = (allQuery.data ?? []).filter((i) => !upcomingIds.has(i.id)).reverse();
 
   return (
     <Stack maw={1100}>

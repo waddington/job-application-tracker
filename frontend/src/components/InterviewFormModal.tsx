@@ -109,7 +109,7 @@ export function InterviewFormModal({
       kind: v.kind,
       status: v.status,
       starts_at: toIso(v.startsAt),
-      deadline_at: toIso(v.deadlineAt),
+      deadline_at: isTask ? toIso(v.deadlineAt) : null, // only tasks have a due date
       format: v.format,
       location: blank(v.location),
       meeting_url: blank(v.meetingUrl),
@@ -159,6 +159,7 @@ export function InterviewFormModal({
             />
           </Group>
           <SegmentedControl
+            aria-label="Status"
             data={[
               { value: "scheduled", label: "Coming up" },
               { value: "done", label: "Done" },

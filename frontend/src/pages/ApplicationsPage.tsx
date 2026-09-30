@@ -262,7 +262,7 @@ export function ApplicationsPage() {
                   <Table.Td>
                     <Stack gap={4} align="flex-start">
                       <StageBadge stage={stages.get(row.stage)} fallback={row.stage_name} />
-                      <RoundBadge round={row.current_round} size="xs" />
+                      <RoundBadge round={row.current_round} stageKind={row.stage_kind} size="xs" />
                     </Stack>
                   </Table.Td>
                   <Table.Td>

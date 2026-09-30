@@ -8,24 +8,46 @@ import { useDeleteInterview, useInterviews, type Interview } from "../api/interv
 import { formatDateTime } from "../utils/time";
 import { InterviewFormModal } from "./InterviewFormModal";
 
-const STATUS_COLOR: Record<string, string> = { scheduled: "blue", done: "teal", cancelled: "gray" };
-const STATUS_LABEL: Record<string, string> = { scheduled: "Coming up", done: "Done", cancelled: "Cancelled" };
+type RoundLike = { status: string; starts_at: string | null; deadline_at: string | null };
 
-/** The round an application is at ("Round 2 · System design test"), for cards, rows and headers. */
+/** "Coming up", "Done", "Cancelled", or "Awaiting outcome" for a scheduled round whose time has passed. */
+export function roundStatus(round: RoundLike): { label: string; color: string } {
+  const when = round.starts_at ?? round.deadline_at;
+  if (round.status === "scheduled" && when && new Date(when) < new Date()) {
+    return { label: "Awaiting outcome", color: "orange" };
+  }
+  return (
+    { done: { label: "Done", color: "teal" }, cancelled: { label: "Cancelled", color: "gray" } }[
+      round.status
+    ] ?? {
+      label: "Coming up",
+      color: "blue",
+    }
+  );
+}
+
+const shortDate = (iso: string) =>
+  new Date(iso).toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" });
+
+/**
+ * The round an application is at ("Round 2 · System design test · Thu 2 Oct"), for cards, rows
+ * and headers. Only shown while the application is in an active stage: once there's an offer or
+ * a rejection, the last round is history.
+ */
 export function RoundBadge({
   round,
+  stageKind,
   size = "sm",
 }: {
   round: ApplicationRow["current_round"];
+  stageKind: string;
   size?: "xs" | "sm";
 }) {
-  if (!round) return null;
+  if (!round || stageKind !== "active") return null;
   const when = round.starts_at ?? round.deadline_at;
+  const upcoming = round.status === "scheduled" && when;
   return (
-    <Tooltip
-      label={when ? formatDateTime(when) : STATUS_LABEL[round.status]}
-      disabled={!when && round.status !== "done"}
-    >
+    <Tooltip label={when ? formatDateTime(when) : ""} disabled={!when}>
       <Badge
         size={size}
         variant="light"
@@ -33,7 +55,7 @@ export function RoundBadge({
         leftSection={<IconCalendarEvent size={12} />}
         style={{ textTransform: "none", maxWidth: "100%" }}
       >
-        {round.label}
+        {upcoming ? `${round.label} · ${shortDate(when)}` : round.label}
       </Badge>
     </Tooltip>
   );
@@ -57,8 +79,8 @@ function InterviewItem({
         <Stack gap={4}>
           <Group gap="xs">
             <Text fw={600}>{interview.label}</Text>
-            <Badge size="xs" variant="light" color={STATUS_COLOR[interview.status]}>
-              {STATUS_LABEL[interview.status]}
+            <Badge size="xs" variant="light" color={roundStatus(interview).color}>
+              {roundStatus(interview).label}
             </Badge>
           </Group>
           <Text size="sm" c="dimmed">

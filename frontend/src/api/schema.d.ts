@@ -409,7 +409,10 @@ export interface paths {
         };
         /**
          * List Interviews
-         * @description Interviews, soonest first. `upcoming` keeps scheduled ones from today on (or with no date yet).
+         * @description Interviews, soonest first.
+         *
+         *     `upcoming` keeps scheduled ones from `since` on, plus those with no date yet. Pass the start
+         *     of your local day as `since`; it defaults to the start of today in UTC.
          */
         get: operations["list_interviews_api_v1_interviews_get"];
         put?: never;
@@ -2447,6 +2450,7 @@ export interface operations {
                 application_id?: string | null;
                 status?: ("scheduled" | "done" | "cancelled") | null;
                 upcoming?: boolean;
+                since?: string | null;
             };
             header?: never;
             path?: never;
