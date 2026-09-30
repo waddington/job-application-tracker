@@ -17,7 +17,14 @@ from pathlib import Path
 CODE_ROOT = Path(__file__).resolve().parents[2]
 DB_NAME = "tracker.sqlite3"
 LAYOUT_DIRS = ("export", "notes", "files")
-GITIGNORE_ENTRIES = (f"{DB_NAME}", f"{DB_NAME}-wal", f"{DB_NAME}-shm", f"{DB_NAME}-journal", "*.tmp")
+GITIGNORE_ENTRIES = (
+    f"{DB_NAME}",
+    f"{DB_NAME}-wal",
+    f"{DB_NAME}-shm",
+    f"{DB_NAME}-journal",
+    f"{DB_NAME}.bak-*",
+    "*.tmp",
+)
 
 DEFAULT_CONFIG = """\
 # Job Application Tracker settings for this data directory.

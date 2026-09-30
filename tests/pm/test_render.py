@@ -6,14 +6,24 @@ from tools.pm.roadmap import Live, PullRequest, apply_live, from_data
 
 
 def state():
-    roadmap = from_data({
-        "project": "demo", "repo": "owner/demo",
-        "phases": [{"id": "P0", "name": "Start", "goal": "Go", "tasks": [
-            {"id": "a", "name": "<script>alert(1)</script>", "estimate_h": 2, "prd": "docs/prd/x.md"},
-            {"id": "b", "name": "Second", "estimate_h": 2, "depends": ["a"]},
-            {"id": "c", "name": "Gate", "owner": "kai", "status": "blocked", "depends": ["b"]},
-        ]}],
-    })
+    roadmap = from_data(
+        {
+            "project": "demo",
+            "repo": "owner/demo",
+            "phases": [
+                {
+                    "id": "P0",
+                    "name": "Start",
+                    "goal": "Go",
+                    "tasks": [
+                        {"id": "a", "name": "<script>alert(1)</script>", "estimate_h": 2, "prd": "docs/prd/x.md"},
+                        {"id": "b", "name": "Second", "estimate_h": 2, "depends": ["a"]},
+                        {"id": "c", "name": "Gate", "owner": "kai", "status": "blocked", "depends": ["b"]},
+                    ],
+                }
+            ],
+        }
+    )
     live = Live(prs=[PullRequest(7, "PR title", "OPEN", "worktree-a", "https://example.com/7")])
     snapshot = Snapshot(live=live, commits=[Commit("abc123", "feat: thing", "2026-09-30T10:00:00+01:00", "x")])
     return apply_live(roadmap, live), snapshot
@@ -22,8 +32,11 @@ def state():
 class RenderTests(unittest.TestCase):
     def test_pages_render_and_escape(self):
         roadmap, snapshot = state()
-        for body in (render.overview(roadmap, snapshot), render.board(roadmap, snapshot),
-                     render.roadmap_page(roadmap, snapshot)):
+        for body in (
+            render.overview(roadmap, snapshot),
+            render.board(roadmap, snapshot),
+            render.roadmap_page(roadmap, snapshot),
+        ):
             html = render.page("T", "/", body, roadmap, snapshot)
             self.assertNotIn("<script>alert", html)
             self.assertIn("&lt;script&gt;", html)
