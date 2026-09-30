@@ -72,7 +72,7 @@ roadmap is `docs/ROADMAP.yaml`, shown by the PM dashboard (see "Project manageme
 ## Code
 - Stack (accepted RFC `docs/rfc/stack.md`): Python 3.12 + uv + FastAPI + SQLite in `src/jat`,
   and Vite + React + TypeScript + Mantine in `frontend/`.
-- Commands: `uv run jat init` / `uv run jat info` (data directory from `JAT_DATA_DIR` in the
+- Commands: `uv run jat init | info | migrate | export | restore` (data directory from `JAT_DATA_DIR` in the
   git-ignored `.env`; see `.env.example`), `uv run pytest`, `uv run ruff check .`,
   `uv run ruff format`.
 - Once they exist, start with `docs/OVERVIEW.md` (the map: processes, data flow, state) and

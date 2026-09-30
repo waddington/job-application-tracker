@@ -10,10 +10,19 @@ class ParseTests(unittest.TestCase):
         self.assertEqual(parse_branches(out), ["worktree-a", "worktree-b"])
 
     def test_prs(self):
-        out = json.dumps([
-            {"number": 3, "title": "t", "state": "MERGED", "headRefName": "worktree-a",
-             "url": "https://example.com/3", "isDraft": False, "updatedAt": "2026-09-30T10:00:00Z"},
-        ])
+        out = json.dumps(
+            [
+                {
+                    "number": 3,
+                    "title": "t",
+                    "state": "MERGED",
+                    "headRefName": "worktree-a",
+                    "url": "https://example.com/3",
+                    "isDraft": False,
+                    "updatedAt": "2026-09-30T10:00:00Z",
+                },
+            ]
+        )
         (pr,) = parse_prs(out)
         self.assertEqual((pr.number, pr.state, pr.branch), (3, "MERGED", "worktree-a"))
         self.assertEqual(parse_prs(""), [])
@@ -24,9 +33,11 @@ class ParseTests(unittest.TestCase):
         self.assertEqual((commit.sha, commit.subject), ("abc", "feat: x"))
 
     def test_worktrees(self):
-        out = ("worktree /repo\nHEAD 1\nbranch refs/heads/main\n\n"
-               "worktree /repo/.claude/worktrees/x\nHEAD 2\nbranch refs/heads/worktree-x\n\n"
-               "worktree /tmp/detached\nHEAD 3\ndetached\n")
+        out = (
+            "worktree /repo\nHEAD 1\nbranch refs/heads/main\n\n"
+            "worktree /repo/.claude/worktrees/x\nHEAD 2\nbranch refs/heads/worktree-x\n\n"
+            "worktree /tmp/detached\nHEAD 3\ndetached\n"
+        )
         trees = parse_worktrees(out)
         self.assertEqual([t.branch for t in trees], ["main", "worktree-x"])
 
