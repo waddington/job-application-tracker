@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import contextlib
+import logging
 import mimetypes
 
 from fastapi import APIRouter, File, Form, HTTPException, Request, Response, UploadFile
@@ -12,11 +13,13 @@ from sqlalchemy.orm import Session
 
 from ..db.models import Application, Attachment
 from ..domain import applications as svc
+from ..storage import eml
 from ..storage.files import FileError, FileStore, TooLarge
 from . import schemas as S
 from .deps import ENTITY_MODELS, SessionDep, get_or_404
 
 router = APIRouter(prefix="/attachments", tags=["attachments"])
+log = logging.getLogger(__name__)
 
 # Only these open in the browser. Anything else (HTML, SVG, scripts…) is downloaded, so a file
 # can never run as a page on the app's own origin.
@@ -40,6 +43,7 @@ def _out(att: Attachment) -> S.AttachmentOut:
         created_at=att.created_at,
         url=f"/api/v1/attachments/{att.id}/file",
         inline=att.content_type in INLINE_TYPES,
+        meta=att.meta or {},
     )
 
 
@@ -90,20 +94,41 @@ def upload_attachment(
         raise HTTPException(413, str(exc)) from exc
     except FileError as exc:
         raise HTTPException(422, str(exc)) from exc
+    content_type = guessed or file.content_type or "application/octet-stream"
+    meta: dict = {}
+    if eml.is_eml(name, content_type):
+        content_type = "message/rfc822"
+        try:
+            meta = eml.parse_eml(_store(request).resolve(stored.path))
+        except Exception:  # a broken email is still worth keeping as a file
+            log.warning("couldn't read email headers from %s", name, exc_info=True)
     att = Attachment(
         id=stored.id,
         entity_type=entity_type,
         entity_id=entity_id,
         path=stored.path,
         original_name=name,
-        content_type=guessed or file.content_type or "application/octet-stream",
+        content_type=content_type,
         size=stored.size,
         sha256=stored.sha256,
+        meta=meta,
     )
     session.add(att)
     session.flush()
     if isinstance(target, Application):
-        svc.log_activity(session, target, "file", summary=f"File added: {name}", data={"attachment_id": att.id})
+        if meta.get("email"):
+            # An exported email goes on the timeline when it was sent, as an email.
+            sender = (meta.get("from") or ["unknown sender"])[0]
+            svc.log_activity(
+                session,
+                target,
+                "email",
+                summary=f"{meta.get('subject') or '(no subject)'} (from {sender})",
+                occurred_at=eml.sent_at(meta),
+                data={"attachment_id": att.id, "from": meta.get("from"), "to": meta.get("to")},
+            )
+        else:
+            svc.log_activity(session, target, "file", summary=f"File added: {name}", data={"attachment_id": att.id})
     return _out(att)
 
 

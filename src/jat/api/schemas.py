@@ -247,6 +247,8 @@ class AttachmentOut(Out):
     created_at: datetime
     url: str  # where to download or view it
     inline: bool  # opens in the browser (PDFs, images, text); anything else downloads
+    # For exported emails (.eml): subject, from, to, cc, date and a snippet.
+    meta: dict[str, Any] = {}
 
 
 class AttachmentPatch(Patch):
