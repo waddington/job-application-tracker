@@ -76,6 +76,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/applications/duplicates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Find Duplicates
+         * @description Existing applications that look like the same job, to warn before applying twice.
+         *
+         *     Give the company by id, or by name ("Contoso Ltd" matches "Contoso").
+         */
+        get: operations["find_duplicates_api_v1_applications_duplicates_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/applications/quick": {
         parameters: {
             query?: never;
@@ -527,6 +549,8 @@ export interface components {
             created_at: string;
             /** Days Since Activity */
             days_since_activity: number;
+            /** Duplicates */
+            duplicates: components["schemas"]["DuplicateOut"][];
             /** Events */
             events: components["schemas"]["EventOut"][];
             /** Follow Up On */
@@ -828,6 +852,72 @@ export interface components {
             name?: string | null;
             /** Title */
             title?: string | null;
+        };
+        /**
+         * DuplicateOut
+         * @description Another application that looks like the same job: same company, same or similar title.
+         */
+        DuplicateOut: {
+            /** Agency Id */
+            agency_id: string | null;
+            /** Agency Name */
+            agency_name: string | null;
+            /** Applied On */
+            applied_on: string | null;
+            /** Archived */
+            archived: boolean;
+            /** Company Id */
+            company_id: string;
+            /** Company Name */
+            company_name: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Days Since Activity */
+            days_since_activity: number;
+            /** Follow Up On */
+            follow_up_on: string | null;
+            /** Id */
+            id: string;
+            /**
+             * Last Activity At
+             * Format: date-time
+             */
+            last_activity_at: string;
+            /**
+             * Match
+             * @enum {string}
+             */
+            match: "same_role" | "similar_title";
+            /** Recruiter Id */
+            recruiter_id: string | null;
+            /** Recruiter Name */
+            recruiter_name: string | null;
+            /** Role Id */
+            role_id: string;
+            /** Role Title */
+            role_title: string;
+            /** Route */
+            route: string;
+            /** Snoozed Until */
+            snoozed_until: string | null;
+            /** Stage */
+            stage: string;
+            /** Stage Kind */
+            stage_kind: string;
+            /** Stage Name */
+            stage_name: string;
+            /** Stale */
+            stale: boolean;
+            /** Tags */
+            tags: string[];
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
         };
         /** EventOut */
         EventOut: {
@@ -1293,6 +1383,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApplicationDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    find_duplicates_api_v1_applications_duplicates_get: {
+        parameters: {
+            query: {
+                role_title: string;
+                company_id?: string | null;
+                company_name?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DuplicateOut"][];
                 };
             };
             /** @description Validation Error */

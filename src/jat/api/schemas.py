@@ -296,11 +296,18 @@ class AgencySummary(BaseModel):
     applications: list[ApplicationRow]
 
 
+class DuplicateOut(ApplicationRow):
+    """Another application that looks like the same job: same company, same or similar title."""
+
+    match: Literal["same_role", "similar_title"]
+
+
 class ApplicationDetail(ApplicationRow):
     events: list[EventOut]
     contacts: list[ApplicationContactOut]
     allowed_next: list[str]
     can_undo: bool
+    duplicates: list[DuplicateOut]
 
 
 class QuickApplicationIn(In):

@@ -1,63 +1,8 @@
 from datetime import UTC, datetime, timedelta
 
-import pytest
-from fastapi.testclient import TestClient
-
-from jat.app import create_app
-from jat.datadir import init_data_dir
-from jat.db import db_path, migrate
 from jat.db.models import Application
 
-
-@pytest.fixture
-def app(tmp_path):
-    path = tmp_path / "data"
-    init_data_dir(path, commit=False)
-    migrate(db_path(path))
-    return create_app(path, dist=tmp_path / "no-dist")
-
-
-@pytest.fixture
-def client(app):
-    return TestClient(app)
-
-
-def post(client, url, json, status=201):
-    r = client.post(url, json=json)
-    assert r.status_code == status, r.text
-    return r.json()
-
-
-@pytest.fixture
-def seeded(client):
-    company = post(client, "/api/v1/companies", {"name": "Contoso", "website": "https://contoso.example.com"})
-    agency = post(client, "/api/v1/agencies", {"name": "Northwind Talent"})
-    recruiter = post(
-        client,
-        "/api/v1/contacts",
-        {
-            "name": "Alex Recruiter",
-            "agency_id": agency["id"],
-            "details": [
-                {"kind": "email", "value": "alex@northwind.example.com", "label": "work"},
-                {"kind": "phone", "value": "+44 7700 900000", "label": "mobile"},
-            ],
-        },
-    )
-    role = post(
-        client,
-        "/api/v1/roles",
-        {
-            "company_id": company["id"],
-            "title": "Senior Backend Engineer",
-            "work_mode": "hybrid",
-            "day_rate": 650,
-            "employment_type": "contract",
-            "ir35": "outside",
-            "currency": "GBP",
-        },
-    )
-    return {"company": company, "agency": agency, "recruiter": recruiter, "role": role}
+from .factories import post
 
 
 def test_contacts_have_multiple_details(client, seeded):
