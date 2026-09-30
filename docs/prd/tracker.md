@@ -203,7 +203,7 @@ signs off before any runtime dependency is added.
 | P5 | Insights | Sankey, funnel stats, recruiter scorecard, weekly activity | 9 |
 | P6 | Extras | Offer comparison, backup archive, full-text search | 7 |
 
-Total is about 73 agent hours. P0 can start now. P1 onwards waits for the stack sign-off.
+Total is about 72 agent hours. P0 can start now. P1 onwards waits for the stack sign-off.
 
 ## 13. Open questions
 

@@ -6,16 +6,21 @@ For the applications a recruiter (or agency) put you forward for:
 - **active** / **ghosted** / **closed**: where they are now (ghosted means a `reopen_from`
   stage, Ghosted by default; closed counts every other closed stage);
 - **first update**: median days from adding the application (its first stage event, so
-  backfilled history counts) to the first sign of life: a
-  call, email or message logged, or a stage move (undone moves don't count);
+  backfilled history counts) to the first sign of life: a call, email or message logged, or a
+  move to a stage that isn't closed. Closing moves (Ghosted, Withdrawn…) are usually yours, so
+  they don't count, and nor do undone moves. Logged contact has no direction, so a chaser you
+  sent counts too;
 - **last contact**: the latest call, email or message logged.
+
+Anything dated in the future (a call logged ahead of time) is left out until it happens.
+An application with a recruiter but no agency counts towards the recruiter's agency.
 """
 
 from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from statistics import median
 
 from sqlalchemy import select
@@ -55,10 +60,10 @@ def _added_at(created: datetime, events: list[Event]) -> datetime:
     return first.occurred_at if first else created
 
 
-def _first_update(added: datetime, events: list[Event]) -> datetime | None:
-    moves = [ev.occurred_at for ev in _effective_moves(events)]
+def _first_update(added: datetime, events: list[Event], closed: set[str], now: datetime) -> datetime | None:
+    moves = [ev.occurred_at for ev in _effective_moves(events) if ev.to_stage not in closed]
     contacts = [ev.occurred_at for ev in events if ev.kind in CONTACT_KINDS]
-    times = [t for t in moves + contacts if t >= added]
+    times = [t for t in moves + contacts if added <= t <= now]
     return min(times) if times else None
 
 
@@ -95,6 +100,8 @@ def scorecard(
     contacts = {c.id: c for c in session.scalars(select(Contact).where(Contact.id.in_({a.recruiter_id for a in apps})))}
     kinds = {s.id: s.kind for s in workflow.stages}
     ghost_stages = set(workflow.reopen_from)
+    closed = {s.id for s in workflow.stages if s.kind == "closed"}
+    now = datetime.now(UTC)
 
     by_recruiter: dict[str, Score] = {}
     by_agency: dict[str, Score] = {}
@@ -107,12 +114,14 @@ def scorecard(
                     c.id, Score(id=c.id, name=c.name, agency_id=c.agency_id, agency_name=agencies.get(c.agency_id))
                 )
             )
-        if app.agency_id and app.agency_id in agencies:
-            scores.append(by_agency.setdefault(app.agency_id, Score(id=app.agency_id, name=agencies[app.agency_id])))
+        recruiter = contacts.get(app.recruiter_id) if app.recruiter_id else None
+        agency_id = app.agency_id or (recruiter.agency_id if recruiter else None)
+        if agency_id and agency_id in agencies:
+            scores.append(by_agency.setdefault(agency_id, Score(id=agency_id, name=agencies[agency_id])))
         history = events[app.id]
         added = _added_at(app.created_at, history)
-        first = _first_update(added, history)
-        contacted = [ev.occurred_at for ev in history if ev.kind in CONTACT_KINDS]
+        first = _first_update(added, history, closed, now)
+        contacted = [ev.occurred_at for ev in history if ev.kind in CONTACT_KINDS and ev.occurred_at <= now]
         for s in scores:
             s.roles += 1
             s.interviewed += app.id in interviewed

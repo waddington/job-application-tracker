@@ -17,7 +17,9 @@ function firstUpdate(days: number | null | undefined) {
 
 function lastContact(iso: string | null | undefined) {
   if (!iso) return "—";
-  return ago(Math.floor((Date.now() - Date.parse(iso)) / 86_400_000));
+  // Calendar days, so yesterday evening is "yesterday" this morning.
+  const day = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  return ago(Math.round((day(new Date()) - day(new Date(iso))) / 86_400_000));
 }
 
 function Outcomes({ s }: { s: Score }) {
