@@ -52,6 +52,7 @@ export function invalidateApplicationViews(qc: QueryClient) {
     ["company-summary"],
     ["agency-summary"],
     ["duplicates"],
+    ["interviews"],
   ]) {
     void qc.invalidateQueries({ queryKey: key });
   }

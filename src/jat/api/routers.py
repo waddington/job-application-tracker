@@ -9,9 +9,10 @@ from fastapi import APIRouter, HTTPException, Query, Response
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session, aliased
 
-from ..db.models import Agency, Application, ApplicationContact, Company, Contact, ContactDetail, Role
+from ..db.models import Agency, Application, ApplicationContact, Company, Contact, ContactDetail, Interview, Role
 from ..domain import applications as svc
 from ..domain import duplicates as dup
+from ..domain import interviews as interviews_svc
 from ..domain.workflow import Workflow, WorkflowError
 from . import schemas as S
 from .crud import crud_router, values
@@ -201,11 +202,33 @@ def _rows_query():
     )
 
 
+def _round_summary(interview: Interview) -> S.RoundSummary:
+    return S.RoundSummary(
+        id=interview.id,
+        round=interview.round,
+        title=interview.title,
+        kind=interview.kind,
+        status=interview.status,
+        label=interviews_svc.label(interview),
+        starts_at=interview.starts_at,
+        deadline_at=interview.deadline_at,
+    )
+
+
+def _with_rounds(session: Session, rows: list[S.ApplicationRow]) -> list[S.ApplicationRow]:
+    """Fill in each row's current interview round (one query for all rows)."""
+    current = interviews_svc.current_rounds(session, (r.id for r in rows))
+    for r in rows:
+        if (interview := current.get(r.id)) is not None:
+            r.current_round = _round_summary(interview)
+    return rows
+
+
 def _load_row(session: Session, workflow: Workflow, app_id: str) -> S.ApplicationRow:
     found = session.execute(_rows_query().where(Application.id == app_id)).first()
     if found is None:
         raise HTTPException(status_code=404, detail=f"Application {app_id} not found")
-    return _row(workflow, *found, today=date.today())
+    return _with_rounds(session, [_row(workflow, *found, today=date.today())])[0]
 
 
 def _duplicates(
@@ -303,7 +326,7 @@ def list_applications(
     if sort == "stage":
         order_ids = [s.id for s in workflow.stages]
         rows.sort(key=lambda r: order_ids.index(r.stage) if r.stage in order_ids else len(order_ids))
-    return rows
+    return _with_rounds(session, rows)
 
 
 def _check_refs(session: Session, data: dict) -> None:
@@ -536,7 +559,7 @@ summaries = APIRouter(tags=["summaries"])
 def _app_rows(session: Session, workflow: Workflow, *where) -> list[S.ApplicationRow]:
     stmt = _rows_query().where(*where).order_by(Application.last_activity_at.desc(), Application.id)
     today = date.today()
-    return [_row(workflow, *found, today=today) for found in session.execute(stmt)]
+    return _with_rounds(session, [_row(workflow, *found, today=today) for found in session.execute(stmt)])
 
 
 @summaries.get("/companies/{company_id}/summary", response_model=S.CompanySummary)
@@ -578,3 +601,7 @@ router.include_router(summaries, prefix="")
 from .backup import router as backup_router  # noqa: E402
 
 router.include_router(backup_router)
+
+from .interviews import router as interviews_router  # noqa: E402
+
+router.include_router(interviews_router)

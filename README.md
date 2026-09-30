@@ -47,11 +47,11 @@ No job-board scraping. No SaaS. No account. **Your job search stays on your disk
 | 🗂️ | **Kanban board**: drag applications between stages, with only valid moves allowed | ✅ Available |
 | 🔁 | **Configurable workflow**: your stages, your transitions, full timestamped history | ✅ Available |
 | 🧑‍💼 | **Recruiter CRM**: agencies, recruiters, multiple contact details, every role they've sent | ✅ Available |
-| ⚠️ | **Duplicate-submission warning**: know before two agencies put you forward for the same job | Planned |
+| ⚠️ | **Duplicate-submission warning**: know before two agencies put you forward for the same job | ✅ Available |
 | 📝 | **Markdown notes** on recruiters, roles, calls and interviews, plus general notes | Planned |
 | 📎 | **Attachments and links**: PDFs, Google Docs, exported emails (`.eml`) added to the timeline | Planned |
 | 📄 | **CV and cover-letter versions**: see exactly what you sent where | Planned |
-| 💻 | **Interviews and coding tasks**: schedule, prep, debrief, questions asked, take-home briefs and deadlines | Planned |
+| 💻 | **Interview rounds and coding tasks**: numbered rounds in your own words ("Round 2 · System design test") shown on the board, plus times, interviewers, prep, debrief, questions asked and take-home briefs | ✅ Available |
 | ⏰ | **Next actions**: stale applications, follow-ups, snooze, upcoming interviews, offer deadlines | Planned |
 | 📊 | **Sankey diagram** of your funnel: applications → screens → interviews → offers | Planned |
 | 📈 | **Insights**: conversion per stage, time in stage, direct vs recruiter, recruiter scorecard | Planned |

@@ -29,6 +29,7 @@ import {
   ApplicationTimeline,
   LogActivity,
 } from "../components/ApplicationDrawer";
+import { InterviewsCard } from "../components/Interviews";
 
 const RELATIONS: { value: Schemas["ApplicationContactIn"]["relation"]; label: string }[] = [
   { value: "recruiter", label: "Recruiter" },
@@ -240,6 +241,7 @@ export function ApplicationPage() {
               <ApplicationSummary app={app} />
               {/* keyed by id, not updated_at: other changes (archive, moves) keep unsaved edits */}
               <DetailsCard key={app.id} app={app} />
+              <InterviewsCard applicationId={app.id} />
               <Card withBorder>
                 <Stack gap="sm">
                   <Title order={4}>Log activity</Title>

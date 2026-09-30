@@ -15,7 +15,7 @@ from pathlib import Path
 
 from jat.datadir import init_data_dir
 from jat.db import db_path, make_engine, migrate, session_factory
-from jat.db.models import Agency, Company, Contact, ContactDetail, Role
+from jat.db.models import Agency, Company, Contact, ContactDetail, Interview, Role
 from jat.domain.applications import create_application, history, log_activity, move
 from jat.domain.workflow import DEFAULT_WORKFLOW as W
 
@@ -25,6 +25,13 @@ NOW = datetime.now(UTC).replace(microsecond=0)
 def days_ago(n: float) -> datetime:
     return NOW - timedelta(days=n)
 
+
+# Interview rounds held on the day an application reached a stage: (stage, description, kind).
+ROUNDS = [
+    ("screen", "Recruiter screen", "screen"),
+    ("interviewing", "Engineering manager chat", "hiring_manager"),
+    ("final", "Final with the CTO", "final"),
+]
 
 # (company, role, route, agency, recruiter, path through stages with days-ago, tags)
 APPLICATIONS = [
@@ -172,6 +179,24 @@ def seed(path: Path) -> None:
             if recruiter and path_:
                 log_activity(
                     s, app, "call", summary=f"Intro call with {recruiter.name}", occurred_at=days_ago(path_[0][1] + 1)
+                )
+            # Interview rounds for the stages it went through, and the next one if it's mid-process.
+            reached = dict(path_)
+            rounds = [(reached[stage], title, kind) for stage, title, kind in ROUNDS if stage in reached]
+            if path_ and path_[-1][0] == "interviewing":
+                rounds.append((-2, "System design test", "system_design"))  # in two days
+            for n, (ago, title, kind) in enumerate(rounds, start=1):
+                s.add(
+                    Interview(
+                        application_id=app.id,
+                        round=n,
+                        title=title,
+                        kind=kind,
+                        status="done" if ago >= 0 else "scheduled",
+                        starts_at=days_ago(ago),
+                        format="video",
+                        meeting_url="https://meet.example.com/demo",
+                    )
                 )
     engine.dispose()
     print(f"Seeded {len(APPLICATIONS)} demo applications in {path}")

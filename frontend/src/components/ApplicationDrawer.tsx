@@ -39,6 +39,7 @@ import {
 } from "../api/hooks";
 import { ago, formatDate, formatDateTime } from "../utils/time";
 import { DuplicateWarning } from "./DuplicateWarning";
+import { RoundBadge } from "./Interviews";
 import { StageBadge } from "./StageBadge";
 
 const ACTIVITY_ICONS: Record<string, typeof IconNote> = {
@@ -123,6 +124,7 @@ export function ApplicationSummary({ app }: { app: ApplicationDetail }) {
       </div>
       <Group gap="xs">
         <StageBadge stage={stages.get(app.stage)} fallback={app.stage_name} />
+        <RoundBadge round={app.current_round} stageKind={app.stage_kind} />
         {app.stale && (
           <Badge color="red" variant="light">
             Needs chasing
