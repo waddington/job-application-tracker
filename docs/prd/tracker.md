@@ -2,12 +2,12 @@
 
 | | |
 |---|---|
-| **Status** | Draft (rev 1) |
+| **Status** | Draft (rev 2: open questions answered 2026-09-30) |
 | **Owner** | lead |
 | **Date** | 2026-09-30 |
 | **Roadmap** | P1–P6 in [docs/ROADMAP.yaml](../ROADMAP.yaml) |
 | **Source idea** | Kai's request, 2026-09-30 |
-| **RFC** | `docs/rfc/stack.md` (roadmap task `stack-rfc`, not written yet) |
+| **RFC** | [docs/rfc/stack.md](../rfc/stack.md) |
 
 > The app never contacts anyone, never sends email and never fetches job data from the web.
 > All data comes from Kai, or from Claude looking things up and filling them in when Kai asks.
@@ -204,8 +204,9 @@ Total is about 73 agent hours. P0 can start now. P1 onwards waits for the stack 
 
 1. **Contract roles:** do you want contract fields (day rate, IR35)? *Default: yes, as
    optional fields on a role.*
-2. **Data format:** a single SQLite file plus a `files/` folder, or plain Markdown and JSON
-   files? *Default: the stack RFC recommends one; both meet FR21 and FR22.*
-3. **Backup:** should the data directory be its own private git repo, for history and
-   off-machine backup? *Default: the app doesn't care. The RFC suggests a private repo.*
+2. **Data format:** *Answered (Kai, 2026-09-30):* SQLite for records, Markdown files for
+   notes, plain files for attachments, with a JSONL export for backups. See the
+   [RFC](../rfc/stack.md).
+3. **Backup:** *Answered:* the data directory is a private git repo. The app auto-commits
+   snapshots, and pushes when Kai asks.
 4. **Version 1 scope:** *Default: P1–P4 is version 1, with P5 and P6 following.*
