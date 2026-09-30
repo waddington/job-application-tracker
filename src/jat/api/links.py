@@ -7,22 +7,14 @@ from urllib.parse import urlsplit
 from fastapi import APIRouter, HTTPException, Query, Response
 from sqlalchemy import select
 
-from ..db.models import Agency, Application, Company, Contact, Interview, Link, Role
+from ..db.models import Link
 from ..domain import applications as svc
 from . import schemas as S
 from .crud import values
-from .deps import SessionDep, get_or_404
+from .deps import ENTITY_MODELS, SessionDep, get_or_404
 
 router = APIRouter(prefix="/links", tags=["links"])
 
-_MODELS = {
-    "application": Application,
-    "company": Company,
-    "role": Role,
-    "agency": Agency,
-    "contact": Contact,
-    "interview": Interview,
-}
 _GOOGLE = {"document": "google_doc", "spreadsheets": "google_sheet", "presentation": "google_slides"}
 _KIND_NAMES = {
     "google_doc": "Google Doc",
@@ -85,7 +77,7 @@ def list_links(
 
 @router.post("", response_model=S.LinkOut, status_code=201)
 def create_link(body: S.LinkIn, session: SessionDep):
-    target = session.get(_MODELS[body.entity_type], body.entity_id)
+    target = session.get(ENTITY_MODELS[body.entity_type], body.entity_id)
     if target is None:
         raise HTTPException(422, f"entity_id: {body.entity_type} {body.entity_id} not found")
     data = values(body, partial=False)
