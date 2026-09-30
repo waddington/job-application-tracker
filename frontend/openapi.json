@@ -4046,6 +4046,125 @@
         "title": "RouteStatsOut",
         "type": "object"
       },
+      "ScoreOut": {
+        "properties": {
+          "active": {
+            "title": "Active",
+            "type": "integer"
+          },
+          "agency_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agency Id"
+          },
+          "agency_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agency Name"
+          },
+          "closed": {
+            "title": "Closed",
+            "type": "integer"
+          },
+          "ghosted": {
+            "title": "Ghosted",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "interviewed": {
+            "title": "Interviewed",
+            "type": "integer"
+          },
+          "last_contact": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Contact"
+          },
+          "median_first_update_days": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Median First Update Days"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "roles": {
+            "title": "Roles",
+            "type": "integer"
+          },
+          "success": {
+            "title": "Success",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "roles",
+          "interviewed",
+          "active",
+          "success",
+          "closed",
+          "ghosted",
+          "median_first_update_days",
+          "last_contact"
+        ],
+        "title": "ScoreOut",
+        "type": "object"
+      },
+      "ScorecardOut": {
+        "properties": {
+          "agencies": {
+            "items": {
+              "$ref": "#/components/schemas/ScoreOut"
+            },
+            "title": "Agencies",
+            "type": "array"
+          },
+          "recruiters": {
+            "items": {
+              "$ref": "#/components/schemas/ScoreOut"
+            },
+            "title": "Recruiters",
+            "type": "array"
+          }
+        },
+        "required": [
+          "recruiters",
+          "agencies"
+        ],
+        "title": "ScorecardOut",
+        "type": "object"
+      },
       "SentDocumentIn": {
         "additionalProperties": false,
         "properties": {
@@ -6990,6 +7109,74 @@
           }
         },
         "summary": "Stage Flow",
+        "tags": [
+          "insights"
+        ]
+      }
+    },
+    "/api/v1/insights/scorecard": {
+      "get": {
+        "description": "How each recruiter's and agency's roles have gone, for applications added in [since, until).",
+        "operationId": "recruiter_scorecard_api_v1_insights_scorecard_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "since",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Since"
+            }
+          },
+          {
+            "in": "query",
+            "name": "until",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Until"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScorecardOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Recruiter Scorecard",
         "tags": [
           "insights"
         ]
