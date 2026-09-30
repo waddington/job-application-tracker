@@ -1,0 +1,20 @@
+# Job Application Tracker
+
+> An open-source (Apache-2.0), self-hosted, local-first web app for tracking a job search,
+> built for software engineers. It tracks applications, recruiters and agencies (one
+> recruiter can have many roles), configurable interview stages with timestamped history,
+> Markdown notes, attachments and exported emails, CV and cover-letter versions, interviews
+> and coding tasks, and a "Next actions" page for stalled applications. It never scrapes job
+> boards or contacts anyone, and all data stays in one local directory outside the code.
+
+Status: early development. The PM dashboard (`python3 -m tools.pm`) works; the tracker app is
+being built phase by phase.
+
+## Docs
+- [README](README.md): overview, features, FAQ
+- [Product requirements](docs/prd/tracker.md): goals, user stories, functional requirements
+- [Roadmap](docs/ROADMAP.yaml): phases P0–P6 with task status
+- [Planning process](docs/planning/README.md)
+
+## Optional
+- [License](LICENSE): Apache-2.0, with [NOTICE](NOTICE) crediting Kai Waddington
