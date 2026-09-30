@@ -26,6 +26,7 @@ import {
   IconUpload,
 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
+import dayjs from "dayjs";
 import { useState } from "react";
 
 import {
@@ -139,7 +140,7 @@ function VersionRow({ version }: { version: DocumentVersion }) {
           )}
         </Group>
         <Text size="xs" c="dimmed">
-          {formatDate(version.created_at.slice(0, 10))}
+          {formatDate(dayjs(version.created_at).format("YYYY-MM-DD"))}
           {version.notes ? ` · ${version.notes}` : ""}
         </Text>
         {version.file && (

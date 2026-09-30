@@ -84,3 +84,26 @@ def test_a_documents_versions_go_when_an_application_is_deleted_but_not_the_othe
     assert client.delete(f"/api/v1/applications/{application['id']}").status_code == 204
     doc = client.get(f"/api/v1/documents/{cv['id']}").json()
     assert doc["used_in"] == [] and doc["versions"][0]["used_in"] == 0
+
+
+def test_a_versions_file_is_guarded_and_only_its_own_is_deleted(client, seeded, app):
+    cv = post(client, "/api/v1/documents", {"name": "CV"})
+    v1 = add_version(client, cv["id"], "v1").json()
+    v2 = add_version(client, cv["id"], "v2").json()
+    # The generic Files delete won't take a version's file out from under it.
+    assert client.delete(f"/api/v1/attachments/{v1['file']['id']}").status_code == 409
+    # A file moved elsewhere isn't deleted with its old version.
+    moved = client.patch(
+        f"/api/v1/attachments/{v2['file']['id']}",
+        json={"entity_type": "company", "entity_id": seeded["company"]["id"]},
+    )
+    assert moved.status_code == 200
+    assert client.delete(f"/api/v1/documents/versions/{v2['id']}").status_code == 204
+    assert (app.state.jat.data_dir / "files" / v2["file"]["path"]).exists()
+    # Unsending checks the application.
+    application = post(client, "/api/v1/applications", {"role_id": seeded["role"]["id"]})
+    sent = post(client, f"/api/v1/applications/{application['id']}/documents", {"document_version_id": v1["id"]})
+    other = post(client, "/api/v1/applications", {"role_id": seeded["role"]["id"]})
+    assert client.delete(f"/api/v1/applications/{other['id']}/documents/{sent['id']}").status_code == 404
+    # Labels are trimmed.
+    assert client.patch(f"/api/v1/documents/versions/{v1['id']}", json={"label": " v1b "}).json()["label"] == "v1b"

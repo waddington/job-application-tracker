@@ -36,6 +36,7 @@ function useRefreshDocuments() {
   return () => {
     void qc.invalidateQueries({ queryKey: ["documents"] });
     void qc.invalidateQueries({ queryKey: ["document"] });
+    void qc.invalidateQueries({ queryKey: ["attachments"] }); // versions keep their files as attachments
     invalidateApplicationViews(qc); // applications list the versions they were sent with
   };
 }

@@ -174,9 +174,11 @@ def _refuse_if_sent(session: Session, where, what: str) -> None:
 
 
 def _delete_version_files(session: Session, versions: list[DocumentVersion]) -> list[str]:
+    """Delete the files that belong to these versions (not ones since moved to something else)."""
     paths = []
     for v in versions:
-        if v.attachment_id and (att := session.get(Attachment, v.attachment_id)) is not None:
+        att = session.get(Attachment, v.attachment_id) if v.attachment_id else None
+        if att is not None and att.entity_type == "document" and att.entity_id == v.document_id:
             paths.append(att.path)
             session.delete(att)
     return paths
@@ -206,7 +208,7 @@ def add_version(
     request: Request,
     session: SessionDep,
     label: str = Form(..., min_length=1, max_length=100),  # noqa: B008
-    notes: str | None = Form(None),  # noqa: B008
+    notes: str | None = Form(None, max_length=2000),  # noqa: B008
     file: UploadFile | None = File(None),  # noqa: B008
 ):
     """A new version, usually with its file (the PDF you send). Sending it is recorded separately."""
@@ -256,7 +258,9 @@ def add_version(
 def update_version(version_id: str, body: S.VersionPatch, session: SessionDep):
     version = get_or_404(session, DocumentVersion, version_id)
     for key, value in values(body, partial=True).items():
-        setattr(version, key, (value.strip() or None) if isinstance(value, str) and key == "notes" else value)
+        if isinstance(value, str):
+            value = value.strip() or None if key == "notes" else value.strip()
+        setattr(version, key, value)
     session.flush()
     return next(v for v in _versions(session, [version.document_id])[version.document_id] if v.id == version.id)
 

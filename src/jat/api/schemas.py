@@ -280,7 +280,7 @@ class VersionPatch(Patch):
     not_null = frozenset({"label"})
 
     label: str | None = Field(default=None, min_length=1, max_length=100, pattern=r"\S")
-    notes: str | None = None
+    notes: str | None = Field(default=None, max_length=2000)
 
 
 class VersionOut(BaseModel):
