@@ -240,7 +240,7 @@ NoteLink = Annotated[str, Field(pattern=r"^(application|company|role|agency|cont
 class NoteIn(In):
     """A Markdown note. `links` attach it to things, e.g. ["application:<id>"]; none makes it a general note."""
 
-    title: str = Field(min_length=1, max_length=300)
+    title: str = Field(min_length=1, max_length=300, pattern=r"\S")
     body: str = Field(default="", max_length=200_000)
     links: list[NoteLink] = []
 
@@ -248,9 +248,12 @@ class NoteIn(In):
 class NotePatch(Patch):
     not_null = frozenset({"title", "body", "links"})
 
-    title: str | None = Field(default=None, min_length=1, max_length=300)
+    title: str | None = Field(default=None, min_length=1, max_length=300, pattern=r"\S")
     body: str | None = Field(default=None, max_length=200_000)
     links: list[NoteLink] | None = None
+    # The note's updated_at when you opened it: if it changed since (another tab, an outside
+    # editor), the save is refused with 409 rather than overwriting those changes.
+    base_updated_at: AwareDatetime | None = None
 
 
 class NoteSummary(BaseModel):

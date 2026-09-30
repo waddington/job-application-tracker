@@ -2418,6 +2418,7 @@
           "title": {
             "maxLength": 300,
             "minLength": 1,
+            "pattern": "\\S",
             "title": "Title",
             "type": "string"
           }
@@ -2484,6 +2485,18 @@
       "NotePatch": {
         "additionalProperties": false,
         "properties": {
+          "base_updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Updated At"
+          },
           "body": {
             "anyOf": [
               {
@@ -2517,6 +2530,7 @@
               {
                 "maxLength": 300,
                 "minLength": 1,
+                "pattern": "\\S",
                 "type": "string"
               },
               {

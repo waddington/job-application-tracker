@@ -42,12 +42,12 @@ function useRefreshNotes() {
 export function useSaveNote() {
   const refresh = useRefreshNotes();
   return useMutation({
-    mutationFn: async (args: { id?: string; body: Schemas["NoteIn"] }) =>
+    mutationFn: async (args: { id?: string; body: Schemas["NoteIn"]; baseUpdatedAt?: string }) =>
       args.id
         ? unwrap(
             await api.PATCH("/api/v1/notes/{note_id}", {
               params: { path: { note_id: args.id } },
-              body: args.body,
+              body: { ...args.body, base_updated_at: args.baseUpdatedAt ?? null },
             }),
           )
         : unwrap(await api.POST("/api/v1/notes", { body: args.body })),

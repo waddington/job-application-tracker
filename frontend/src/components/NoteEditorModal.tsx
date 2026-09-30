@@ -61,7 +61,12 @@ export function NoteEditorModal({
 
   const submit = form.onSubmit((v) =>
     save.mutate(
-      { id: note?.id, body: { title: v.title.trim(), body: v.body, links: v.links } },
+      {
+        id: note?.id,
+        body: { title: v.title.trim(), body: v.body, links: v.links },
+        // Refused (409) if the note changed since it was opened, e.g. in an outside editor.
+        baseUpdatedAt: note?.updated_at,
+      },
       { onSuccess: onClose },
     ),
   );

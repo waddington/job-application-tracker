@@ -1270,6 +1270,8 @@ export interface components {
         };
         /** NotePatch */
         NotePatch: {
+            /** Base Updated At */
+            base_updated_at?: string | null;
             /** Body */
             body?: string | null;
             /** Links */

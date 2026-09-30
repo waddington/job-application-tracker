@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import threading
 
 from fastapi import APIRouter, HTTPException, Request, Response
 from sqlalchemy import select
@@ -26,8 +27,33 @@ _MODELS = {
 }
 
 
+# Index writes happen one at a time, each in its own short transaction, so two requests that
+# both notice a new file can't insert the same index row.
+_INDEX_LOCK = threading.Lock()
+_UNREADABLE = (OSError, UnicodeDecodeError, NoteError)
+
+
 def _store(request: Request) -> NoteStore:
     return NoteStore(request.app.state.jat.data_dir)
+
+
+def _sync(request: Request) -> NoteStore:
+    """Bring note_index up to date with the files before reading it."""
+    store = _store(request)
+    with _INDEX_LOCK, request.app.state.sessions() as s:
+        store.sync_index(s)
+        s.commit()
+    return store
+
+
+def _index(request: Request, store: NoteStore, note: Note | None, remove: str | None = None) -> None:
+    """Record a note the app just wrote (or remove one it deleted) in note_index."""
+    with _INDEX_LOCK, request.app.state.sessions() as s:
+        if note is not None:
+            store.index(s, note)
+        if remove is not None and (row := s.get(NoteIndex, remove)) is not None:
+            s.delete(row)
+        s.commit()
 
 
 def _excerpt(body: str, limit: int = 180) -> str:
@@ -65,14 +91,17 @@ def _check_links(session: Session, links: list[str]) -> list[str]:
     return unique
 
 
-def _load(session: Session, store: NoteStore, note_id: str) -> Note:
-    store.sync_index(session)
+def _load(request: Request, session: Session, note_id: str) -> tuple[NoteStore, Note]:
+    store = _sync(request)
     row = session.get(NoteIndex, note_id)
     if row is None:
         raise HTTPException(404, f"Note {note_id} not found")
-    note = store.read(row.path)
+    try:
+        note = store.read(row.path)
+    except _UNREADABLE as exc:
+        raise HTTPException(404, f"Note {note_id} can't be read: {exc}") from exc
     note.id = row.id  # the index decides ids for copied or hand-written files
-    return note
+    return store, note
 
 
 def _log(session: Session, note: Note, links: list[str], what: str) -> None:
@@ -86,8 +115,7 @@ def _log(session: Session, note: Note, links: list[str], what: str) -> None:
 @router.get("", response_model=list[S.NoteSummary])
 def list_notes(request: Request, session: SessionDep, entity: str | None = None, q: str | None = None):
     """Notes, newest first. `entity=application:<id>` keeps those attached to it; `entity=none` general notes."""
-    store = _store(request)
-    store.sync_index(session)
+    store = _sync(request)
     rows = session.scalars(select(NoteIndex).order_by(NoteIndex.updated_at.desc(), NoteIndex.id)).all()
     if entity == "none":
         rows = [r for r in rows if not r.links]
@@ -96,7 +124,10 @@ def list_notes(request: Request, session: SessionDep, entity: str | None = None,
     out = []
     needle = (q or "").strip().lower()
     for row in rows:
-        note = store.read(row.path)
+        try:
+            note = store.read(row.path)
+        except _UNREADABLE:  # changed or vanished since the sync; skip it
+            continue
         note.id = row.id
         if needle and needle not in note.title.lower() and needle not in note.body.lower():
             continue
@@ -112,41 +143,44 @@ def create_note(body: S.NoteIn, request: Request, session: SessionDep):
         note = store.create(body.title, body.body, links)
     except NoteError as exc:
         raise HTTPException(422, str(exc)) from exc
-    store.index(session, note)
+    _index(request, store, note)
+    session.commit()  # end this read so the timeline write below sees the index write (SQLite snapshot)
     _log(session, note, links, "Note added")
     return _out(note)
 
 
 @router.get("/{note_id}", response_model=S.NoteOut)
 def get_note(note_id: str, request: Request, session: SessionDep):
-    return _out(_load(session, _store(request), note_id))
+    return _out(_load(request, session, note_id)[1])
 
 
 @router.patch("/{note_id}", response_model=S.NoteOut)
 def update_note(note_id: str, body: S.NotePatch, request: Request, session: SessionDep):
-    store = _store(request)
-    note = _load(session, store, note_id)
+    store, note = _load(request, session, note_id)
     data = body.model_dump(exclude_unset=True)
-    if "links" in data:
-        data["links"] = _check_links(session, data["links"])
+    base = data.pop("base_updated_at", None)
+    if base is not None and abs((note.updated_at - base).total_seconds()) >= 1:
+        raise HTTPException(409, "This note changed since you opened it (maybe in another editor). Reload it first.")
     before = set(note.links)
+    if "links" in data:
+        # Only new links must exist: an attached application deleted since shouldn't block saving.
+        data["links"] = list(dict.fromkeys(data["links"]))
+        _check_links(session, [link for link in data["links"] if link not in before])
     for key, value in data.items():
         setattr(note, key, value)
     try:
         store.save(note)
     except NoteError as exc:
         raise HTTPException(422, str(exc)) from exc
-    store.index(session, note)
+    _index(request, store, note)
+    session.commit()  # end this read so the timeline write below sees the index write (SQLite snapshot)
     _log(session, note, [link for link in note.links if link not in before], "Note added")
     return _out(note)
 
 
 @router.delete("/{note_id}", status_code=204)
 def delete_note(note_id: str, request: Request, session: SessionDep):
-    store = _store(request)
-    note = _load(session, store, note_id)
+    store, note = _load(request, session, note_id)
     store.delete(note.path)
-    row = session.get(NoteIndex, note.id)
-    if row is not None:
-        session.delete(row)
+    _index(request, store, None, remove=note.id)
     return Response(status_code=204)

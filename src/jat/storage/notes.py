@@ -19,6 +19,7 @@ edited outside the app (in an editor, or by Claude) show up too.
 
 from __future__ import annotations
 
+import logging
 import os
 import re
 import tempfile
@@ -34,6 +35,8 @@ from sqlalchemy.orm import Session
 
 from ..db.models import NoteIndex
 from ..db.types import new_id, utcnow
+
+log = logging.getLogger(__name__)
 
 ENTITY_TYPES = ("application", "company", "role", "agency", "contact", "interview")
 _FRONTMATTER = re.compile(r"\A---\r?\n(.*?)\r?\n---\r?\n?", re.DOTALL)
@@ -212,7 +215,8 @@ class NoteStore:
         on_disk: dict[str, Path] = {}
         if self.root.exists():
             for path in self.root.rglob("*.md"):
-                if path.name.startswith(".tmp-") or not path.is_file():
+                # Symlinks could point outside notes/: never follow them.
+                if path.name.startswith(".tmp-") or path.is_symlink() or not path.is_file():
                     continue
                 on_disk[path.relative_to(self.root).as_posix()] = path
         rows = {row.path: row for row in session.scalars(select(NoteIndex))}
@@ -222,12 +226,22 @@ class NoteStore:
         session.flush()
         seen_ids: set[str] = set()
         for rel, path in sorted(on_disk.items()):
-            mtime_ns = path.stat().st_mtime_ns
+            try:
+                mtime_ns = path.stat().st_mtime_ns
+            except OSError:  # deleted since the scan
+                continue
             row = rows.get(rel)
             if row is not None and row.mtime_ns == mtime_ns:
                 seen_ids.add(row.id)
                 continue
-            note = self.read(rel)
+            try:
+                note = self.read(rel)
+            except (OSError, UnicodeDecodeError, NoteError) as exc:
+                # One bad file (not UTF-8, vanished mid-scan…) mustn't take every note down with it.
+                log.warning("skipping note %s: %s", rel, exc)
+                if row is not None:
+                    session.delete(row)
+                continue
             if note.id in seen_ids:  # a copied file with the same id: index it under its path
                 note.id = str(uuid.uuid5(uuid.NAMESPACE_URL, f"jat-note:{rel}"))
             seen_ids.add(note.id)
