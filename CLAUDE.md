@@ -84,6 +84,9 @@ roadmap is `docs/ROADMAP.yaml`, shown by the PM dashboard (see "Project manageme
   22.5.1). Vite 8's native rolldown binary needs it, and `engine-strict` makes pnpm fail
   loudly on older Node. In a non-interactive shell, put
   `/home/kai/.nvm/versions/node/v22.23.3/bin` first on `PATH` before running pnpm.
+- API changes: after changing routes or schemas run `uv run python -m jat.openapi` and
+  `pnpm --dir frontend gen:api`, and commit `frontend/openapi.json` and `src/api/schema.d.ts`
+  (`tests/test_openapi.py` fails on drift). Use the typed client in `frontend/src/api/client.ts`.
 - After merging a PR that changes the app, rebuild the frontend in the main checkout and
   restart `jat serve`.
 - Once they exist, start with `docs/OVERVIEW.md` (the map: processes, data flow, state) and
