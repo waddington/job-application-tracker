@@ -566,6 +566,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/insights/activity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Weekly Activity
+         * @description Activity per week, oldest first. Pass `start`, the midnight your first week begins, with
+         *     its offset, so weeks are your weeks. Defaults to UTC Mondays, ending with this week.
+         */
+        get: operations["weekly_activity_api_v1_insights_activity_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/insights/flow": {
         parameters: {
             query?: never;
@@ -578,6 +599,26 @@ export interface paths {
          * @description Stage-to-stage flows for a Sankey diagram, for applications added in [since, until).
          */
         get: operations["stage_flow_api_v1_insights_flow_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/insights/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search Stats
+         * @description Conversion and time per stage, and outcomes by route, for applications added in [since, until).
+         */
+        get: operations["search_stats_api_v1_insights_stats_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1956,6 +1997,20 @@ export interface components {
             /** Title */
             title: string | null;
         };
+        /** RouteStatsOut */
+        RouteStatsOut: {
+            /** Applications */
+            applications: number;
+            /** Reached */
+            reached: {
+                [key: string]: number;
+            };
+            /**
+             * Route
+             * @enum {string}
+             */
+            route: "direct" | "agency" | "referral";
+        };
         /** SentDocumentIn */
         SentDocumentIn: {
             /** Document Version Id */
@@ -1990,6 +2045,36 @@ export interface components {
             /** Commit */
             commit: string | null;
             status: components["schemas"]["BackupStatus"];
+        };
+        /** StageStatsOut */
+        StageStatsOut: {
+            /** Color */
+            color: string;
+            /** Conversion */
+            conversion: number | null;
+            /** Id */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Median Days */
+            median_days: number | null;
+            /** Moved On */
+            moved_on: number;
+            /** Name */
+            name: string;
+            /** Reached */
+            reached: number;
+            /** Stays */
+            stays: number;
+        };
+        /** StatsOut */
+        StatsOut: {
+            /** Applications */
+            applications: number;
+            /** Routes */
+            routes: components["schemas"]["RouteStatsOut"][];
+            /** Stages */
+            stages: components["schemas"]["StageStatsOut"][];
         };
         /** ValidationError */
         ValidationError: {
@@ -2029,6 +2114,22 @@ export interface components {
             label?: string | null;
             /** Notes */
             notes?: string | null;
+        };
+        /** WeekOut */
+        WeekOut: {
+            /** Added */
+            added: number;
+            /** Applied */
+            applied: number;
+            /** Interviews */
+            interviews: number;
+            /** Moves */
+            moves: number;
+            /**
+             * Start
+             * Format: date
+             */
+            start: string;
         };
     };
     responses: never;
@@ -3612,6 +3713,38 @@ export interface operations {
             };
         };
     };
+    weekly_activity_api_v1_insights_activity_get: {
+        parameters: {
+            query?: {
+                start?: string | null;
+                weeks?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WeekOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     stage_flow_api_v1_insights_flow_get: {
         parameters: {
             query?: {
@@ -3632,6 +3765,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FlowOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    search_stats_api_v1_insights_stats_get: {
+        parameters: {
+            query?: {
+                since?: string | null;
+                until?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatsOut"];
                 };
             };
             /** @description Validation Error */
