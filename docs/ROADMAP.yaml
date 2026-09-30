@@ -66,7 +66,7 @@ phases:
     goal: Nothing goes quiet unnoticed
     tasks:
       - {id: next-actions, name: "Next actions page: stale applications, upcoming interviews and deadlines", owner: lead, status: done, estimate_h: 4, depends: [workflow, interviews], prd: docs/prd/tracker.md}
-      - {id: followups, name: "Follow-up dates, snooze and one-click Ghosted", owner: lead, status: planned, estimate_h: 2, depends: [next-actions], prd: docs/prd/tracker.md}
+      - {id: followups, name: "Follow-up dates, snooze and one-click Ghosted", owner: lead, status: done, estimate_h: 2, depends: [next-actions], prd: docs/prd/tracker.md}
       - {id: readme-refresh-2, name: "README refresh: notes, documents, interviews and Next actions", owner: lead, status: planned, estimate_h: 1, depends: [notes, documents, interviews, followups]}
 
   - id: P5
