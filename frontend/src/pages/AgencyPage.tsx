@@ -1,4 +1,17 @@
-import { Alert, Anchor, Button, Card, Grid, Group, Loader, Stack, Table, Text, Title } from "@mantine/core";
+import {
+  Alert,
+  Anchor,
+  Badge,
+  Button,
+  Card,
+  Grid,
+  Group,
+  Loader,
+  Stack,
+  Table,
+  Text,
+  Title,
+} from "@mantine/core";
 import { IconArrowLeft, IconPlus, IconUsers } from "@tabler/icons-react";
 import { Link, useParams } from "@tanstack/react-router";
 import { useState } from "react";
@@ -71,7 +84,14 @@ export function AgencyPage() {
                         </Text>
                       </Table.Td>
                       <Table.Td>
-                        <StageBadge stage={stages.get(a.stage)} fallback={a.stage_name} />
+                        <Group gap={4}>
+                          <StageBadge stage={stages.get(a.stage)} fallback={a.stage_name} />
+                          {a.archived && (
+                            <Badge size="sm" variant="outline" color="gray">
+                              Archived
+                            </Badge>
+                          )}
+                        </Group>
                       </Table.Td>
                       <Table.Td>
                         <Text size="sm" c={a.stale ? "red" : undefined}>
