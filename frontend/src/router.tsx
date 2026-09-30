@@ -3,7 +3,10 @@ import type { JSX } from "react";
 
 import { Layout } from "./components/Layout";
 import { NAV } from "./nav";
+import { ApplicationPage } from "./pages/ApplicationPage";
 import { ApplicationsPage } from "./pages/ApplicationsPage";
+import { CompaniesPage } from "./pages/CompaniesPage";
+import { CompanyPage } from "./pages/CompanyPage";
 import { NotFound } from "./pages/NotFound";
 import { Placeholder } from "./pages/Placeholder";
 
@@ -12,6 +15,7 @@ const rootRoute = createRootRoute({ component: Layout, notFoundComponent: NotFou
 // Pages that are built; everything else in NAV shows its "coming soon" placeholder.
 const PAGES: Record<string, () => JSX.Element> = {
   "/applications": ApplicationsPage,
+  "/companies": CompaniesPage,
 };
 
 const pageRoutes = NAV.map((item) =>
@@ -22,7 +26,19 @@ const pageRoutes = NAV.map((item) =>
   }),
 );
 
-const routeTree = rootRoute.addChildren(pageRoutes);
+const applicationRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/applications/$appId",
+  component: ApplicationPage,
+});
+
+const companyRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/companies/$companyId",
+  component: CompanyPage,
+});
+
+const routeTree = rootRoute.addChildren([...pageRoutes, applicationRoute, companyRoute]);
 
 export function makeRouter(history?: RouterHistory) {
   return createRouter({ routeTree, history, defaultPreload: "intent" });

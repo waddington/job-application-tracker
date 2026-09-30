@@ -363,3 +363,37 @@ def test_can_undo_flag(client, seeded):
     assert moved["can_undo"] is True
     undone = post(client, f"/api/v1/applications/{app['id']}/undo", {}, 200)
     assert undone["can_undo"] is False
+
+
+# --- summaries (detail pages) ------------------------------------------------------------------------
+
+
+def test_company_summary(client, seeded):
+    app = post(
+        client,
+        "/api/v1/applications",
+        {"role_id": seeded["role"]["id"], "route": "agency", "recruiter_id": seeded["recruiter"]["id"]},
+    )
+    manager = post(client, "/api/v1/contacts", {"name": "Hiring Manager", "company_id": seeded["company"]["id"]})
+    interviewer = post(client, "/api/v1/contacts", {"name": "Interviewer"})
+    link = {"contact_id": interviewer["id"], "relation": "interviewer"}
+    post(client, f"/api/v1/applications/{app['id']}/contacts", link)
+    s = client.get(f"/api/v1/companies/{seeded['company']['id']}/summary").json()
+    assert s["company"]["name"] == "Contoso"
+    assert [r["title"] for r in s["roles"]] == ["Senior Backend Engineer"]
+    assert [a["id"] for a in s["applications"]] == [app["id"]]
+    assert {c["name"] for c in s["contacts"]} == {manager["name"], interviewer["name"]}
+    assert client.get("/api/v1/companies/nope/summary").status_code == 404
+
+
+def test_agency_summary(client, seeded):
+    app = post(
+        client,
+        "/api/v1/applications",
+        {"role_id": seeded["role"]["id"], "route": "agency", "recruiter_id": seeded["recruiter"]["id"]},
+    )
+    post(client, "/api/v1/applications", {"role_id": seeded["role"]["id"]})  # direct: not the agency's
+    s = client.get(f"/api/v1/agencies/{seeded['agency']['id']}/summary").json()
+    assert [r["name"] for r in s["recruiters"]] == ["Alex Recruiter"]
+    assert s["recruiters"][0]["details"][0]["kind"] == "email"
+    assert [a["id"] for a in s["applications"]] == [app["id"]]

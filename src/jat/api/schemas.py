@@ -283,6 +283,19 @@ class ApplicationContactOut(Out):
     relation: str
 
 
+class CompanySummary(BaseModel):
+    company: CompanyOut
+    roles: list[RoleOut]
+    applications: list[ApplicationRow]
+    contacts: list[ContactOut]
+
+
+class AgencySummary(BaseModel):
+    agency: AgencyOut
+    recruiters: list[ContactOut]
+    applications: list[ApplicationRow]
+
+
 class ApplicationDetail(ApplicationRow):
     events: list[EventOut]
     contacts: list[ApplicationContactOut]
