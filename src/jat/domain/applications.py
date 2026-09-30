@@ -114,6 +114,12 @@ def _effective_moves(events: list[Event]) -> list[Event]:
     ]
 
 
+def can_undo(session: Session, app: Application) -> bool:
+    """True when there's a recorded move that hasn't been undone and matches the current stage."""
+    moves = _effective_moves(_recorded(session, app.id))
+    return bool(moves) and moves[-1].to_stage == app.stage
+
+
 def undo_last_move(session: Session, app: Application, *, note: str | None = None) -> Event:
     """Revert the most recently recorded stage move by appending a correcting event."""
     moves = _effective_moves(_recorded(session, app.id))

@@ -287,3 +287,32 @@ class ApplicationDetail(ApplicationRow):
     events: list[EventOut]
     contacts: list[ApplicationContactOut]
     allowed_next: list[str]
+    can_undo: bool
+
+
+class QuickApplicationIn(In):
+    """Create an application and, in the same transaction, anything it needs that doesn't exist yet.
+
+    Company, agency and recruiter can each be given by id or by name. A name that matches an
+    existing record (case-insensitively) reuses it; otherwise a new one is created. A recruiter
+    name is matched within the application's agency.
+    """
+
+    company_id: str | None = None
+    company_name: str | None = Field(default=None, max_length=200)
+    role_title: str = Field(min_length=1, max_length=300)
+    role_url: HttpUrl | None = None
+    route: Route = "direct"
+    agency_id: str | None = None
+    agency_name: str | None = Field(default=None, max_length=200)
+    recruiter_id: str | None = None
+    recruiter_name: str | None = Field(default=None, max_length=200)
+    stage: str | None = None
+    applied_on: date | None = None
+    tags: list[str] = []
+
+    @model_validator(mode="after")
+    def _company_given(self):
+        if not self.company_id and not (self.company_name or "").strip():
+            raise ValueError("give company_id or company_name")
+        return self

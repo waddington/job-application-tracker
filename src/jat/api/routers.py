@@ -220,6 +220,7 @@ def _detail(session: Session, workflow: Workflow, app_id: str) -> S.ApplicationD
         events=events,
         contacts=[S.ApplicationContactOut.model_validate(link) for link in links],
         allowed_next=allowed,
+        can_undo=svc.can_undo(session, session.get(Application, app_id)),
     )
 
 
@@ -326,6 +327,81 @@ def create_app_(body: S.ApplicationIn, session: SessionDep, workflow: WorkflowDe
     stage = data.pop("stage", None)
     try:
         app = svc.create_application(session, workflow, stage=stage, **data)
+    except WorkflowError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return _detail(session, workflow, app.id)
+
+
+def _by_name(session: Session, model, name: str, **where):
+    """Case-insensitive exact name match (optionally scoped); returns the match if exactly one."""
+    stmt = select(model).where(func.lower(model.name) == name.strip().lower())
+    for column, value in where.items():
+        stmt = stmt.where(getattr(model, column) == value)
+    found = session.scalars(stmt.limit(2)).all()
+    return found[0] if len(found) == 1 else None
+
+
+@apps.post("/quick", response_model=S.ApplicationDetail, status_code=201)
+def quick_create(body: S.QuickApplicationIn, session: SessionDep, workflow: WorkflowDep):
+    """One transaction: reuse or create the company, role, agency and recruiter, then the application.
+
+    If anything fails, nothing is saved, so a retry never leaves duplicates behind.
+    """
+    if body.company_id:
+        company = get_or_404(session, Company, body.company_id)
+    else:
+        company = _by_name(session, Company, body.company_name or "")
+        if company is None:
+            company = Company(name=(body.company_name or "").strip())
+            session.add(company)
+            session.flush()
+
+    title = body.role_title.strip()
+    role = session.scalars(
+        select(Role).where(Role.company_id == company.id, func.lower(Role.title) == title.lower()).limit(1)
+    ).first()
+    if role is None:
+        role = Role(company_id=company.id, title=title, url=str(body.role_url) if body.role_url else None)
+        session.add(role)
+        session.flush()
+
+    agency_id = recruiter_id = None
+    if body.route == "agency":
+        agency = None
+        if body.agency_id:
+            agency = get_or_404(session, Agency, body.agency_id)
+        elif (body.agency_name or "").strip():
+            agency = _by_name(session, Agency, body.agency_name or "")
+            if agency is None:
+                agency = Agency(name=(body.agency_name or "").strip())
+                session.add(agency)
+                session.flush()
+        recruiter = None
+        if body.recruiter_id:
+            recruiter = get_or_404(session, Contact, body.recruiter_id)
+        elif (body.recruiter_name or "").strip():
+            name = body.recruiter_name or ""
+            # Within the agency when there is one; otherwise a unique match anywhere.
+            recruiter = (
+                _by_name(session, Contact, name, agency_id=agency.id) if agency else _by_name(session, Contact, name)
+            )
+            if recruiter is None:
+                recruiter = Contact(name=name.strip(), agency_id=agency.id if agency else None)
+                session.add(recruiter)
+                session.flush()
+        if agency is None and recruiter is not None and recruiter.agency_id:
+            agency = session.get(Agency, recruiter.agency_id)
+        agency_id = agency.id if agency else None
+        recruiter_id = recruiter.id if recruiter else None
+    elif body.agency_id or body.agency_name or body.recruiter_id or body.recruiter_name:
+        raise HTTPException(422, "Only applications through a recruiter can have an agency or recruiter.")
+
+    data = {"route": body.route, "agency_id": agency_id, "recruiter_id": recruiter_id}
+    data.update(_check_route(session, data))
+    try:
+        app = svc.create_application(
+            session, workflow, role_id=role.id, stage=body.stage, applied_on=body.applied_on, tags=body.tags, **data
+        )
     except WorkflowError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     return _detail(session, workflow, app.id)

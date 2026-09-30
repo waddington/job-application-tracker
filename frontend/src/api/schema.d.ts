@@ -59,6 +59,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/applications/quick": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Quick Create
+         * @description One transaction: reuse or create the company, role, agency and recruiter, then the application.
+         *
+         *     If anything fails, nothing is saved, so a retry never leaves duplicates behind.
+         */
+        post: operations["quick_create_api_v1_applications_quick_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/applications/{app_id}": {
         parameters: {
             query?: never;
@@ -448,6 +470,8 @@ export interface components {
             applied_on: string | null;
             /** Archived */
             archived: boolean;
+            /** Can Undo */
+            can_undo: boolean;
             /** Company Id */
             company_id: string;
             /** Company Name */
@@ -802,6 +826,47 @@ export interface components {
             output: string;
             status: components["schemas"]["BackupStatus"];
         };
+        /**
+         * QuickApplicationIn
+         * @description Create an application and, in the same transaction, anything it needs that doesn't exist yet.
+         *
+         *     Company, agency and recruiter can each be given by id or by name. A name that matches an
+         *     existing record (case-insensitively) reuses it; otherwise a new one is created. A recruiter
+         *     name is matched within the application's agency.
+         */
+        QuickApplicationIn: {
+            /** Agency Id */
+            agency_id?: string | null;
+            /** Agency Name */
+            agency_name?: string | null;
+            /** Applied On */
+            applied_on?: string | null;
+            /** Company Id */
+            company_id?: string | null;
+            /** Company Name */
+            company_name?: string | null;
+            /** Recruiter Id */
+            recruiter_id?: string | null;
+            /** Recruiter Name */
+            recruiter_name?: string | null;
+            /** Role Title */
+            role_title: string;
+            /** Role Url */
+            role_url?: string | null;
+            /**
+             * Route
+             * @default direct
+             * @enum {string}
+             */
+            route: "direct" | "agency" | "referral";
+            /** Stage */
+            stage?: string | null;
+            /**
+             * Tags
+             * @default []
+             */
+            tags: string[];
+        };
         /** RoleIn */
         RoleIn: {
             /** Company Id */
@@ -1135,6 +1200,39 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["ApplicationIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplicationDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    quick_create_api_v1_applications_quick_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuickApplicationIn"];
             };
         };
         responses: {
