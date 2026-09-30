@@ -39,3 +39,16 @@ export function useActivity(start: string, weeks: number, tz: string) {
       unwrap(await api.GET("/api/v1/insights/activity", { params: { query: { start, weeks, tz } } })),
   });
 }
+
+export type Scorecard = Schemas["ScorecardOut"];
+export type Score = Schemas["ScoreOut"];
+
+/** How each recruiter's and agency's roles have gone, for applications added since `since`. */
+export function useScorecard(since?: string) {
+  return useQuery({
+    queryKey: ["insights", "scorecard", since],
+    queryFn: async () =>
+      unwrap(await api.GET("/api/v1/insights/scorecard", { params: { query: { since } } })),
+    placeholderData: keepPreviousData,
+  });
+}

@@ -608,6 +608,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/insights/scorecard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Recruiter Scorecard
+         * @description How each recruiter's and agency's roles have gone, for applications added in [since, until).
+         */
+        get: operations["recruiter_scorecard_api_v1_insights_scorecard_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/insights/stats": {
         parameters: {
             query?: never;
@@ -2011,6 +2031,40 @@ export interface components {
              * @enum {string}
              */
             route: "direct" | "agency" | "referral";
+        };
+        /** ScoreOut */
+        ScoreOut: {
+            /** Active */
+            active: number;
+            /** Agency Id */
+            agency_id?: string | null;
+            /** Agency Name */
+            agency_name?: string | null;
+            /** Closed */
+            closed: number;
+            /** Ghosted */
+            ghosted: number;
+            /** Id */
+            id: string;
+            /** Interviewed */
+            interviewed: number;
+            /** Last Contact */
+            last_contact: string | null;
+            /** Median First Update Days */
+            median_first_update_days: number | null;
+            /** Name */
+            name: string;
+            /** Roles */
+            roles: number;
+            /** Success */
+            success: number;
+        };
+        /** ScorecardOut */
+        ScorecardOut: {
+            /** Agencies */
+            agencies: components["schemas"]["ScoreOut"][];
+            /** Recruiters */
+            recruiters: components["schemas"]["ScoreOut"][];
         };
         /** SentDocumentIn */
         SentDocumentIn: {
@@ -3767,6 +3821,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FlowOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    recruiter_scorecard_api_v1_insights_scorecard_get: {
+        parameters: {
+            query?: {
+                since?: string | null;
+                until?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScorecardOut"];
                 };
             };
             /** @description Validation Error */
