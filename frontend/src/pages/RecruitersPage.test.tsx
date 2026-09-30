@@ -67,6 +67,39 @@ describe("recruiters", () => {
     expect(screen.getByText("Sam Patel")).toBeInTheDocument();
   });
 
+  it("shows company contacts, searches by agency name and says when nothing matches", async () => {
+    mockApi({
+      "/api/v1/workflow": WORKFLOW,
+      "/api/v1/agencies": agencies,
+      "/api/v1/contacts": [
+        ...contacts,
+        {
+          ...person("c4", "Riley Chen", null, [
+            { id: "d4", kind: "phone", value: "+44 20 7946 0000 ext. 12", label: null, position: 0 },
+          ]),
+          company_id: "co1",
+        },
+      ],
+      "/api/v1/companies": [{ id: "co1", name: "Fabrikam", website: null, created_at: "", updated_at: "" }],
+      "/api/v1/applications": [],
+      "/api/v1/health": {},
+    });
+    renderAt("/recruiters");
+    expect(await screen.findByRole("link", { name: "Fabrikam" })).toHaveAttribute("href", "/companies/co1");
+    expect(screen.getByRole("link", { name: "+44 20 7946 0000 ext. 12" })).toHaveAttribute(
+      "href",
+      "tel:+442079460000",
+    );
+
+    const search = screen.getByLabelText("Search recruiters");
+    fireEvent.change(search, { target: { value: "northwind" } });
+    expect(screen.getByText("Alex Morgan")).toBeInTheDocument();
+    expect(screen.queryByText("Sam Patel")).not.toBeInTheDocument();
+
+    fireEvent.change(search, { target: { value: "zzz" } });
+    expect(screen.getByText("No matches.")).toBeInTheDocument();
+  });
+
   it("adds a contact with several details", async () => {
     const calls = mockApi({
       "/api/v1/workflow": WORKFLOW,

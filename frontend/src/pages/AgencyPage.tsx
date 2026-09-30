@@ -47,7 +47,7 @@ export function AgencyPage() {
       <Group gap="sm">
         <IconUsers size={26} stroke={1.6} />
         <Title order={2}>{agency.name}</Title>
-        {agency.website && (
+        {agency.website && /^https?:\/\//i.test(agency.website) && (
           <Anchor href={agency.website} target="_blank" rel="noreferrer" size="sm">
             {agency.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
           </Anchor>
@@ -131,6 +131,7 @@ export function AgencyPage() {
       </Grid>
       <ApplicationDrawer id={openId} onClose={() => setOpenId(null)} />
       <ContactFormModal
+        key={editing?.id ?? "new"}
         opened={editing !== undefined}
         contact={editing}
         defaultAgencyId={agency.id}

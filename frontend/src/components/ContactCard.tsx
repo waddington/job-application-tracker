@@ -13,7 +13,8 @@ const ICONS = {
 
 function href(kind: string, value: string): string | undefined {
   if (kind === "email") return `mailto:${value}`;
-  if (kind === "phone") return `tel:${value.replace(/[^\d+]/g, "")}`;
+  // Drop any extension ("ext. 12", "x12") so the dialler gets just the number.
+  if (kind === "phone") return `tel:${value.replace(/\s*(ext\.?|x)\s*\d+\s*$/i, "").replace(/[^\d+]/g, "")}`;
   if (/^https?:\/\//.test(value)) return value;
   return undefined;
 }

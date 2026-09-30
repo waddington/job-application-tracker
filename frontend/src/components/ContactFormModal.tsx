@@ -1,5 +1,6 @@
 import { ActionIcon, Button, Group, Modal, Select, Stack, Text, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
+import { randomId } from "@mantine/hooks";
 import { IconPlus, IconTrash } from "@tabler/icons-react";
 import { useEffect } from "react";
 
@@ -10,6 +11,8 @@ import { useAgencies, useCompanies } from "../api/hooks";
 type Kind = Schemas["ContactDetailIn"]["kind"];
 
 interface DetailRow {
+  /** Stable React key so removing a row doesn't shift the others' inputs. */
+  key: string;
   kind: Kind;
   label: string;
   value: string;
@@ -38,10 +41,11 @@ function fromContact(contact: Contact | null | undefined, agencyId: string | nul
     agencyId: contact ? contact.agency_id : agencyId,
     companyId: contact?.company_id ?? null,
     details: contact?.details.map((d) => ({
+      key: d.id,
       kind: d.kind as Kind,
       label: d.label ?? "",
       value: d.value,
-    })) ?? [{ kind: "email", label: "", value: "" }],
+    })) ?? [{ key: randomId(), kind: "email", label: "", value: "" }],
   };
 }
 
@@ -140,8 +144,8 @@ export function ContactFormModal({
           <Text size="sm" fw={500}>
             Contact details
           </Text>
-          {form.values.details.map((_, index) => (
-            <Group key={index} align="flex-start" wrap="nowrap">
+          {form.values.details.map((row, index) => (
+            <Group key={row.key} align="flex-start" wrap="nowrap">
               <Select
                 data={KINDS}
                 allowDeselect={false}
@@ -175,7 +179,9 @@ export function ContactFormModal({
           <Button
             variant="subtle"
             leftSection={<IconPlus size={14} />}
-            onClick={() => form.insertListItem("details", { kind: "phone", label: "", value: "" })}
+            onClick={() =>
+              form.insertListItem("details", { key: randomId(), kind: "phone", label: "", value: "" })
+            }
             w="fit-content"
           >
             Add a detail

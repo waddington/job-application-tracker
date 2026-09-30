@@ -18,6 +18,7 @@ function useRefreshPeople() {
       ["agency-summary"],
       ["company-summary"],
       ["applications"],
+      ["application"],
     ]) {
       void qc.invalidateQueries({ queryKey: key });
     }

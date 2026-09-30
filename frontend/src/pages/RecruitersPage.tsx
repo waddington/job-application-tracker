@@ -18,7 +18,7 @@ import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 
 import type { Contact } from "../api/client";
-import { useAgencies, useApplications, useContacts } from "../api/hooks";
+import { useAgencies, useApplications, useCompanies, useContacts } from "../api/hooks";
 import { useCreateAgency } from "../api/peopleHooks";
 import { ContactCard } from "../components/ContactCard";
 import { ContactFormModal } from "../components/ContactFormModal";
@@ -65,6 +65,7 @@ export function RecruitersPage() {
   const { data: agencies, isLoading } = useAgencies();
   const { data: contacts } = useContacts();
   const { data: apps } = useApplications({});
+  const { data: companies } = useCompanies();
   const [q, setQ] = useState("");
   const [newAgency, setNewAgency] = useState(false);
   const [editing, setEditing] = useState<Contact | null | undefined>(undefined); // undefined = closed, null = new
@@ -80,6 +81,23 @@ export function RecruitersPage() {
       activeByAgency.set(a.agency_id, (activeByAgency.get(a.agency_id) ?? 0) + 1);
   }
   const independent = (contacts ?? []).filter((c) => !c.agency_id && !c.company_id && matches(c));
+  // Hiring managers and interviewers: saved against a company but no agency.
+  const companyName = new Map((companies ?? []).map((c) => [c.id, c.name]));
+  const atCompanies = new Map<string, Contact[]>();
+  for (const c of contacts ?? []) {
+    if (c.agency_id || !c.company_id) continue;
+    const name = companyName.get(c.company_id) ?? "";
+    if (!matches(c) && !(needle && name.toLowerCase().includes(needle))) continue;
+    atCompanies.set(c.company_id, [...(atCompanies.get(c.company_id) ?? []), c]);
+  }
+  const agencyGroups = (agencies ?? []).flatMap((agency) => {
+    const all = (contacts ?? []).filter((c) => c.agency_id === agency.id);
+    // Searching an agency's name shows everyone there.
+    const people = needle && agency.name.toLowerCase().includes(needle) ? all : all.filter(matches);
+    if (needle && !people.length) return [];
+    return [{ agency, people }];
+  });
+  const nothingShown = !agencyGroups.length && !independent.length && !atCompanies.size;
 
   return (
     <Stack>
@@ -109,37 +127,35 @@ export function RecruitersPage() {
         <Loader />
       ) : (
         <>
-          {!agencies?.length && !independent.length && (
+          {nothingShown && (
             <Card withBorder p="xl">
               <Text ta="center" c="dimmed">
-                No recruiters yet. Add an agency, or add one when you create an application.
+                {needle
+                  ? "No matches."
+                  : "No recruiters yet. Add an agency, or add one when you create an application."}
               </Text>
             </Card>
           )}
-          {(agencies ?? []).map((agency) => {
-            const people = (contacts ?? []).filter((c) => c.agency_id === agency.id && matches(c));
-            if (needle && !people.length && !agency.name.toLowerCase().includes(needle)) return null;
-            return (
-              <Stack key={agency.id} gap="xs">
-                <Group gap="sm">
-                  <Anchor component={Link} to={`/agencies/${agency.id}`} fw={700} size="lg">
-                    {agency.name}
-                  </Anchor>
-                  <Badge variant="light" color="gray">
-                    {people.length} {people.length === 1 ? "person" : "people"}
-                  </Badge>
-                  {!!activeByAgency.get(agency.id) && (
-                    <Badge variant="light">{activeByAgency.get(agency.id)} in progress</Badge>
-                  )}
-                </Group>
-                <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }}>
-                  {people.map((c) => (
-                    <ContactCard key={c.id} contact={c} onEdit={() => setEditing(c)} />
-                  ))}
-                </SimpleGrid>
-              </Stack>
-            );
-          })}
+          {agencyGroups.map(({ agency, people }) => (
+            <Stack key={agency.id} gap="xs">
+              <Group gap="sm">
+                <Anchor component={Link} to={`/agencies/${agency.id}`} fw={700} size="lg">
+                  {agency.name}
+                </Anchor>
+                <Badge variant="light" color="gray">
+                  {people.length} {people.length === 1 ? "person" : "people"}
+                </Badge>
+                {!!activeByAgency.get(agency.id) && (
+                  <Badge variant="light">{activeByAgency.get(agency.id)} in progress</Badge>
+                )}
+              </Group>
+              <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }}>
+                {people.map((c) => (
+                  <ContactCard key={c.id} contact={c} onEdit={() => setEditing(c)} />
+                ))}
+              </SimpleGrid>
+            </Stack>
+          ))}
           {!!independent.length && (
             <Stack gap="xs">
               <Text fw={700} size="lg">
@@ -152,10 +168,28 @@ export function RecruitersPage() {
               </SimpleGrid>
             </Stack>
           )}
+          {[...atCompanies].map(([companyId, people]) => (
+            <Stack key={companyId} gap="xs">
+              <Group gap="sm">
+                <Anchor component={Link} to={`/companies/${companyId}`} fw={700} size="lg">
+                  {companyName.get(companyId) ?? "Company"}
+                </Anchor>
+                <Badge variant="light" color="gray">
+                  at the company
+                </Badge>
+              </Group>
+              <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }}>
+                {people.map((c) => (
+                  <ContactCard key={c.id} contact={c} onEdit={() => setEditing(c)} />
+                ))}
+              </SimpleGrid>
+            </Stack>
+          ))}
         </>
       )}
       <NewAgencyModal opened={newAgency} onClose={() => setNewAgency(false)} />
       <ContactFormModal
+        key={editing?.id ?? "new"}
         opened={editing !== undefined}
         contact={editing}
         onClose={() => setEditing(undefined)}
