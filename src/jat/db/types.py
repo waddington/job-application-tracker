@@ -19,7 +19,8 @@ def utcnow() -> datetime:
 
 
 class UTCDateTime(TypeDecorator):
-    """Timezone-aware datetime stored as ISO 8601 UTC text, e.g. 2026-09-30T14:05:00Z."""
+    """Timezone-aware datetime stored as ISO 8601 UTC text at whole-second precision,
+    e.g. 2026-09-30T14:05:00Z. One fixed width keeps text ordering equal to time ordering."""
 
     impl = String(32)
     cache_ok = True
@@ -31,7 +32,7 @@ class UTCDateTime(TypeDecorator):
             value = parse_datetime(value)
         if value.tzinfo is None:
             raise ValueError("naive datetimes are not allowed; use timezone-aware UTC")
-        return value.astimezone(UTC).isoformat().replace("+00:00", "Z")
+        return value.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     def process_result_value(self, value, dialect):
         return None if value is None else parse_datetime(value)
@@ -48,6 +49,8 @@ class ISODate(TypeDecorator):
             return None
         if isinstance(value, str):
             value = date.fromisoformat(value)
+        if isinstance(value, datetime):  # a datetime is a date subclass; don't store a timestamp
+            raise ValueError("expected a date, got a datetime")
         return value.isoformat()
 
     def process_result_value(self, value, dialect):

@@ -76,3 +76,35 @@ def test_foreign_keys_enforced(engine):
     Session = session_factory(engine)
     with pytest.raises(Exception, match="FOREIGN KEY"), Session.begin() as s:
         s.add(Role(company_id="missing", title="x"))
+
+
+def test_datetime_precision_is_fixed(engine):
+    Session = session_factory(engine)
+    with Session.begin() as s:
+        s.add(Company(name="A", created_at=datetime(2026, 9, 30, 14, 5, 7, 123456, tzinfo=UTC)))
+    with engine.connect() as conn:
+        assert conn.execute(text("select created_at from companies")).scalar() == "2026-09-30T14:05:07Z"
+
+
+def test_date_column_rejects_datetime(engine):
+    Session = session_factory(engine)
+    with pytest.raises(Exception, match="expected a date"), Session.begin() as s:
+        company = Company(name="C")
+        s.add(company)
+        s.flush()
+        role = Role(company_id=company.id, title="t")
+        s.add(role)
+        s.flush()
+        s.add(Application(role_id=role.id, stage="applied", applied_on=datetime(2026, 9, 30, tzinfo=UTC)))
+        s.flush()
+
+
+def test_failed_migration_rolls_back(tmp_path):
+    from jat.db import MigrationError
+
+    path = tmp_path / "m.sqlite3"
+    with pytest.raises(MigrationError):
+        migrate(path, "nonexistent")
+    eng = make_engine(path)
+    assert "companies" not in inspect(eng).get_table_names()
+    eng.dispose()
