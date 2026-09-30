@@ -11,28 +11,62 @@ import {
   UnstyledButton,
 } from "@mantine/core";
 import { IconChecklist, IconConfetti } from "@tabler/icons-react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { useState, type ReactNode } from "react";
+import dayjs from "dayjs";
+import { useEffect, useState, type ReactNode } from "react";
 
 import { api, unwrap, type ApplicationRow } from "../api/client";
-import { stageLookup, useUpdateApplication, useWorkflow } from "../api/hooks";
+import { stageLookup, useLogActivity, useUpdateApplication, useWorkflow } from "../api/hooks";
 import { useSaveInterview, type Interview } from "../api/interviewHooks";
 import { ApplicationDrawer } from "../components/ApplicationDrawer";
 import { ChaseActions } from "../components/ChaseActions";
 import { StageBadge } from "../components/StageBadge";
 import { ago, formatDate, formatDateTime } from "../utils/time";
 
+const localDay = () => dayjs().format("YYYY-MM-DD");
+
+/** Your local date, updated when the clock passes midnight (so an open tab rolls over). */
+function useToday() {
+  const [today, setToday] = useState(localDay);
+  useEffect(() => {
+    const timer = setInterval(() => setToday(localDay()), 60_000);
+    return () => clearInterval(timer);
+  }, []);
+  return today;
+}
+
 export function useNextActions() {
-  // "Today" is your local day, not UTC's.
-  const midnight = new Date();
-  midnight.setHours(0, 0, 0, 0);
-  const since = midnight.toISOString();
+  // "Today" is your local day, not UTC's: send the date and the start of it with its offset.
+  const today = useToday();
+  const since = dayjs(today).format(); // local midnight, e.g. 2026-09-30T00:00:00+01:00
   return useQuery({
-    queryKey: ["next-actions", since],
-    queryFn: async () => unwrap(await api.GET("/api/v1/next-actions", { params: { query: { since } } })),
+    queryKey: ["next-actions", today],
+    queryFn: async () =>
+      unwrap(await api.GET("/api/v1/next-actions", { params: { query: { today, since } } })),
     refetchInterval: 5 * 60_000, // keeps "coming up" honest if the tab stays open
   });
+}
+
+/** You chased it: log that (so it isn't "gone quiet" straight away) and clear the date. */
+function useFollowedUp() {
+  const log = useLogActivity();
+  const update = useUpdateApplication();
+  return useMutation({
+    mutationFn: async (row: ApplicationRow) => {
+      await log.mutateAsync({ id: row.id, body: { kind: "manual", summary: "Followed up", data: {} } });
+      await update.mutateAsync({ id: row.id, body: { follow_up_on: null } });
+    },
+  });
+}
+
+function FollowedUpButton({ row }: { row: ApplicationRow }) {
+  const done = useFollowedUp();
+  return (
+    <Button size="compact-xs" variant="light" loading={done.isPending} onClick={() => done.mutate(row)}>
+      Done
+    </Button>
+  );
 }
 
 function Section({
@@ -132,14 +166,19 @@ function InterviewLine({ interview, action }: { interview: Interview; action?: R
 
 function OutcomeButtons({ interview }: { interview: Interview }) {
   const save = useSaveInterview();
+  const [clicked, setClicked] = useState<"done" | "cancelled" | null>(null);
+  const mark = (status: "done" | "cancelled") => {
+    setClicked(status);
+    save.mutate({ id: interview.id, body: { status } });
+  };
   return (
     <Group gap={4} wrap="nowrap">
       <Button
         size="compact-xs"
         variant="light"
         color="teal"
-        loading={save.isPending}
-        onClick={() => save.mutate({ id: interview.id, body: { status: "done" } })}
+        loading={save.isPending && clicked === "done"}
+        onClick={() => mark("done")}
       >
         Done
       </Button>
@@ -147,7 +186,8 @@ function OutcomeButtons({ interview }: { interview: Interview }) {
         size="compact-xs"
         variant="subtle"
         color="gray"
-        onClick={() => save.mutate({ id: interview.id, body: { status: "cancelled" } })}
+        loading={save.isPending && clicked === "cancelled"}
+        onClick={() => mark("cancelled")}
       >
         Didn't happen
       </Button>
@@ -158,7 +198,6 @@ function OutcomeButtons({ interview }: { interview: Interview }) {
 /** Home: what to chase, what's coming up and what needs an outcome (PRD FR18, US5). */
 export function NextActionsPage() {
   const { data, isLoading } = useNextActions();
-  const update = useUpdateApplication();
   const [openId, setOpenId] = useState<string | null>(null);
   const total = data
     ? data.follow_ups.length + data.stale.length + data.upcoming.length + data.awaiting_outcome.length
@@ -199,13 +238,7 @@ export function NextActionsPage() {
                 detail={`due ${formatDate(r.follow_up_on)}`}
                 action={
                   <Group gap={4} wrap="nowrap">
-                    <Button
-                      size="compact-xs"
-                      variant="light"
-                      onClick={() => update.mutate({ id: r.id, body: { follow_up_on: null } })}
-                    >
-                      Done
-                    </Button>
+                    <FollowedUpButton row={r} />
                     <ChaseActions row={r} />
                   </Group>
                 }

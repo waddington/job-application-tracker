@@ -44,6 +44,18 @@ def _when(interview: Interview) -> datetime:
     return interview.starts_at or interview.deadline_at or interview.created_at
 
 
+def booked_ahead(session: Session, application_ids: Iterable[str], now: datetime) -> set[str]:
+    """Applications with any round still scheduled for a time that hasn't come yet."""
+    ids = list(set(application_ids))
+    if not ids:
+        return set()
+    when = func.coalesce(Interview.starts_at, Interview.deadline_at)
+    stmt = select(Interview.application_id).where(
+        Interview.application_id.in_(ids), Interview.status == "scheduled", when >= now
+    )
+    return set(session.scalars(stmt))
+
+
 def current_rounds(session: Session, application_ids: Iterable[str]) -> dict[str, Interview]:
     """For each application: the next scheduled round, else the latest round that happened."""
     ids = list(set(application_ids))

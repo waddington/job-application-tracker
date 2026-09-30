@@ -673,7 +673,10 @@ export interface paths {
         };
         /**
          * Next Actions
-         * @description Pass `since` as the start of your local day so "today" means your today (default: UTC).
+         * @description Pass your local `today` (YYYY-MM-DD) and `since` (the start of your local day, with its
+         *     offset) so "today" means your today. Both default to UTC's.
+         *
+         *     Only open applications count: archived ones, and ones in a closed or success stage, are done.
          */
         get: operations["next_actions_api_v1_next_actions_get"];
         put?: never;
@@ -3837,6 +3840,7 @@ export interface operations {
     next_actions_api_v1_next_actions_get: {
         parameters: {
             query?: {
+                today?: string | null;
                 since?: string | null;
             };
             header?: never;

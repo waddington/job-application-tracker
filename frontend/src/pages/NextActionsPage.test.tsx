@@ -59,6 +59,17 @@ describe("next actions", () => {
         today: "2026-09-30",
       },
       "PATCH /api/v1/applications/a2": row({ id: "a2" }),
+      "POST /api/v1/applications/a2/activities": {
+        id: "e1",
+        application_id: "a2",
+        kind: "manual",
+        occurred_at: "2026-09-30T10:00:00Z",
+        from_stage: null,
+        to_stage: null,
+        summary: "Followed up",
+        data: {},
+        created_at: "2026-09-30T10:00:00Z",
+      },
       "PATCH /api/v1/interviews/i0": interview({ id: "i0", status: "done" }),
       "/api/v1/health": {},
     });
@@ -77,6 +88,7 @@ describe("next actions", () => {
     // The request asks for "today" from local midnight.
     const request = calls.find((c) => c.path.startsWith("/api/v1/next-actions"))!;
     expect(new URL(request.path, "http://x").searchParams.get("since")).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+    expect(new URL(request.path, "http://x").searchParams.get("today")).toMatch(/^\d{4}-\d{2}-\d{2}$/);
 
     fireEvent.click(within(followUps).getByRole("button", { name: "Done" }));
     await waitFor(() =>
@@ -84,6 +96,10 @@ describe("next actions", () => {
         follow_up_on: null,
       }),
     );
+    // Chasing counts as activity, so it doesn't land in "Gone quiet" straight away.
+    expect(calls.find((c) => c.path.endsWith("/a2/activities"))?.body).toMatchObject({
+      summary: "Followed up",
+    });
     const outcome = screen
       .getByRole("heading", { name: "How did it go?" })
       .closest(".mantine-Card-root") as HTMLElement;
