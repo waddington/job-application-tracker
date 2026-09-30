@@ -275,6 +275,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/applications/{app_id}/offers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Offer */
+        post: operations["create_offer_api_v1_applications__app_id__offers_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/applications/{app_id}/undo": {
         parameters: {
             query?: never;
@@ -807,6 +824,46 @@ export interface paths {
         head?: never;
         /** Update Note */
         patch: operations["update_note_api_v1_notes__note_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/offers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Offers
+         * @description Offers, newest first. With `latest` (the default), only each application's newest offer:
+         *     a revised offer replaces the one before it for comparing.
+         */
+        get: operations["list_offers_api_v1_offers_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/offers/{offer_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Offer */
+        get: operations["get_offer_api_v1_offers__offer_id__get"];
+        put?: never;
+        post?: never;
+        /** Delete Offer */
+        delete: operations["delete_offer_api_v1_offers__offer_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Offer */
+        patch: operations["update_offer_api_v1_offers__offer_id__patch"];
         trace?: never;
     };
     "/api/v1/roles": {
@@ -1769,6 +1826,11 @@ export interface components {
             awaiting_outcome: components["schemas"]["InterviewOut"][];
             /** Follow Ups */
             follow_ups: components["schemas"]["ApplicationRow"][];
+            /**
+             * Offer Deadlines
+             * @default []
+             */
+            offer_deadlines: components["schemas"]["OfferOut"][];
             /** Stale */
             stale: components["schemas"]["ApplicationRow"][];
             /**
@@ -1855,6 +1917,151 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+        };
+        /**
+         * OfferIn
+         * @description An offer on an application. Money is whole units of `currency` a year, except `day_rate`.
+         */
+        OfferIn: {
+            /** Benefits */
+            benefits?: string | null;
+            /** Bonus */
+            bonus?: number | null;
+            /** Contract Months */
+            contract_months?: number | null;
+            /** Currency */
+            currency?: string | null;
+            /** Day Rate */
+            day_rate?: number | null;
+            /** Employment Type */
+            employment_type?: ("permanent" | "contract" | "fixed_term") | null;
+            /** Equity */
+            equity?: string | null;
+            /** Equity Value */
+            equity_value?: number | null;
+            /** Holiday Days */
+            holiday_days?: number | null;
+            /** Ir35 */
+            ir35?: ("inside" | "outside" | "unknown") | null;
+            /** Notes */
+            notes?: string | null;
+            /** Pension Percent */
+            pension_percent?: number | null;
+            /** Received On */
+            received_on?: string | null;
+            /** Respond By */
+            respond_by?: string | null;
+            /** Salary */
+            salary?: number | null;
+            /** Start On */
+            start_on?: string | null;
+            /**
+             * Status
+             * @default pending
+             * @enum {string}
+             */
+            status: "pending" | "accepted" | "declined" | "withdrawn";
+        };
+        /** OfferOut */
+        OfferOut: {
+            /** Annual Value */
+            annual_value: number | null;
+            /** Application Id */
+            application_id: string;
+            /** Benefits */
+            benefits: string | null;
+            /** Bonus */
+            bonus: number | null;
+            /** Company Name */
+            company_name: string;
+            /** Contract Months */
+            contract_months: number | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Currency */
+            currency: string | null;
+            /** Day Rate */
+            day_rate: number | null;
+            /** Employment Type */
+            employment_type: string | null;
+            /** Equity */
+            equity: string | null;
+            /** Equity Value */
+            equity_value: number | null;
+            /** Holiday Days */
+            holiday_days: number | null;
+            /** Id */
+            id: string;
+            /** Ir35 */
+            ir35: string | null;
+            /** Notes */
+            notes: string | null;
+            /** Pension Percent */
+            pension_percent: number | null;
+            /** Received On */
+            received_on: string | null;
+            /** Respond By */
+            respond_by: string | null;
+            /** Role Title */
+            role_title: string;
+            /** Salary */
+            salary: number | null;
+            /** Stage */
+            stage: string;
+            /** Start On */
+            start_on: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "accepted" | "declined" | "withdrawn";
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Value Basis */
+            value_basis: ("salary" | "day rate") | null;
+        };
+        /** OfferPatch */
+        OfferPatch: {
+            /** Benefits */
+            benefits?: string | null;
+            /** Bonus */
+            bonus?: number | null;
+            /** Contract Months */
+            contract_months?: number | null;
+            /** Currency */
+            currency?: string | null;
+            /** Day Rate */
+            day_rate?: number | null;
+            /** Employment Type */
+            employment_type?: ("permanent" | "contract" | "fixed_term") | null;
+            /** Equity */
+            equity?: string | null;
+            /** Equity Value */
+            equity_value?: number | null;
+            /** Holiday Days */
+            holiday_days?: number | null;
+            /** Ir35 */
+            ir35?: ("inside" | "outside" | "unknown") | null;
+            /** Notes */
+            notes?: string | null;
+            /** Pension Percent */
+            pension_percent?: number | null;
+            /** Received On */
+            received_on?: string | null;
+            /** Respond By */
+            respond_by?: string | null;
+            /** Salary */
+            salary?: number | null;
+            /** Start On */
+            start_on?: string | null;
+            /** Status */
+            status?: ("pending" | "accepted" | "declined" | "withdrawn") | null;
         };
         /** PushResult */
         PushResult: {
@@ -2875,6 +3082,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApplicationDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_offer_api_v1_applications__app_id__offers_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                app_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OfferIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OfferOut"];
                 };
             };
             /** @description Validation Error */
@@ -4355,6 +4597,134 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["NoteOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_offers_api_v1_offers_get: {
+        parameters: {
+            query?: {
+                application_id?: string | null;
+                status?: ("pending" | "accepted" | "declined" | "withdrawn") | null;
+                latest?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OfferOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_offer_api_v1_offers__offer_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                offer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OfferOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_offer_api_v1_offers__offer_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                offer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_offer_api_v1_offers__offer_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                offer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OfferPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OfferOut"];
                 };
             };
             /** @description Validation Error */

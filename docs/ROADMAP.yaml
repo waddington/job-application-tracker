@@ -82,7 +82,7 @@ phases:
     name: Extras
     goal: Nice to have once the core works
     tasks:
-      - {id: offers, name: "Offer comparison, pay terms, contract day rate and IR35", owner: lead, status: planned, estimate_h: 2, depends: [detail-pages], prd: docs/prd/tracker.md}
+      - {id: offers, name: "Offer comparison, pay terms, contract day rate and IR35", owner: lead, status: done, estimate_h: 2, depends: [detail-pages], prd: docs/prd/tracker.md}
       - {id: backup-export, name: "One-click backup archive of the data directory", owner: lead, status: planned, estimate_h: 2, depends: [data-dir], prd: docs/prd/tracker.md}
       - {id: search, name: "Full-text search across notes and entities", owner: lead, status: planned, estimate_h: 3, depends: [notes], prd: docs/prd/tracker.md}
       - {id: readme-refresh-4, name: "README and llms.txt refresh: extras, install guide, v1 release notes", owner: lead, status: planned, estimate_h: 1, depends: [offers, backup-export, search]}

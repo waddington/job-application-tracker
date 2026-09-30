@@ -19,6 +19,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { api, unwrap, type ApplicationRow } from "../api/client";
 import { stageLookup, useLogActivity, useUpdateApplication, useWorkflow } from "../api/hooks";
 import { useSaveInterview, type Interview } from "../api/interviewHooks";
+import { headline, type Offer } from "../api/offerHooks";
 import { ApplicationDrawer } from "../components/ApplicationDrawer";
 import { ChaseActions } from "../components/ChaseActions";
 import { StageBadge } from "../components/StageBadge";
@@ -164,6 +165,25 @@ function InterviewLine({ interview, action }: { interview: Interview; action?: R
   );
 }
 
+function OfferLine({ offer, today }: { offer: Offer; today: string }) {
+  const overdue = offer.respond_by! < today;
+  return (
+    <Group justify="space-between" wrap="nowrap">
+      <div style={{ minWidth: 0 }}>
+        <Text fw={600} size="sm" truncate="end">
+          {headline(offer)}
+        </Text>
+        <Anchor component={Link} to={`/applications/${offer.application_id}`} size="xs">
+          {offer.company_name} · {offer.role_title}
+        </Anchor>
+      </div>
+      <Text size="xs" c={overdue ? "red" : "orange"} ta="right">
+        {overdue ? "Reply was due" : "Reply by"} {formatDate(offer.respond_by)}
+      </Text>
+    </Group>
+  );
+}
+
 function OutcomeButtons({ interview }: { interview: Interview }) {
   const save = useSaveInterview();
   const [clicked, setClicked] = useState<"done" | "cancelled" | null>(null);
@@ -199,8 +219,13 @@ function OutcomeButtons({ interview }: { interview: Interview }) {
 export function NextActionsPage() {
   const { data, isLoading } = useNextActions();
   const [openId, setOpenId] = useState<string | null>(null);
+  const offers = data?.offer_deadlines ?? [];
   const total = data
-    ? data.follow_ups.length + data.stale.length + data.upcoming.length + data.awaiting_outcome.length
+    ? offers.length +
+      data.follow_ups.length +
+      data.stale.length +
+      data.upcoming.length +
+      data.awaiting_outcome.length
     : 0;
 
   return (
@@ -224,6 +249,11 @@ export function NextActionsPage() {
         </Card>
       ) : (
         <>
+          <Section title="Offers to answer" count={offers.length} hint="Reply due in the next two weeks">
+            {offers.map((o) => (
+              <OfferLine key={o.id} offer={o} today={data.today} />
+            ))}
+          </Section>
           <Section title="How did it go?" count={data.awaiting_outcome.length} hint="Their time has passed">
             {data.awaiting_outcome.map((i) => (
               <InterviewLine key={i.id} interview={i} action={<OutcomeButtons interview={i} />} />
