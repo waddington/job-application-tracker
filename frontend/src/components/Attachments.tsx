@@ -45,9 +45,23 @@ export function humanSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+interface EmailMeta {
+  email?: boolean;
+  subject?: string;
+  from?: string[];
+  date?: string;
+  snippet?: string;
+}
+
 function AttachmentRow({ att }: { att: AttachmentItem }) {
   const remove = useDeleteAttachment();
   const Icon = iconFor(att);
+  // Exported emails show what they're about, not their file name.
+  const mail = att.meta as EmailMeta;
+  const title = mail.email ? mail.subject || "(no subject)" : att.original_name;
+  const detail = mail.email
+    ? [mail.from?.[0], mail.date ? formatDate(mail.date.slice(0, 10)) : null].filter(Boolean).join(" · ")
+    : `${humanSize(att.size)} · ${formatDate(att.created_at.slice(0, 10))}`;
   return (
     <Group justify="space-between" wrap="nowrap" gap="xs">
       <Group gap="xs" wrap="nowrap" style={{ minWidth: 0, flex: 1 }}>
@@ -64,11 +78,16 @@ function AttachmentRow({ att }: { att: AttachmentItem }) {
             truncate="end"
             display="block"
           >
-            {att.original_name}
+            {title}
           </Anchor>
-          <Text size="xs" c="dimmed">
-            {humanSize(att.size)} · {formatDate(att.created_at.slice(0, 10))}
+          <Text size="xs" c="dimmed" truncate="end">
+            {detail}
           </Text>
+          {mail.snippet && (
+            <Text size="xs" c="dimmed" lineClamp={2}>
+              {mail.snippet}
+            </Text>
+          )}
         </div>
       </Group>
       <Tooltip label="Delete file">
