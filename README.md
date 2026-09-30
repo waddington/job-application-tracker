@@ -87,9 +87,9 @@ recruiters send roles that go somewhere.
 ## ✨ Features
 
 > 🚧 **Early development, but usable day to day.** Tracking, recruiters, interview rounds,
-> notes, links, files and emails, CV versions, the *Next actions* page, the Sankey diagram and
-> funnel stats and recruiter scorecards all work today. Offer comparison and search are next. Everything marked ✅ is merged and
-> running.
+> notes, links, files and emails, CV versions, the *Next actions* page, insights (Sankey
+> diagram, funnel stats, recruiter scorecards) and offer comparison all work today. A backup
+> archive and full-text search are next. Everything marked ✅ is merged and running.
 
 | | Feature | Status |
 |---|---|---|
@@ -108,7 +108,7 @@ recruiters send roles that go somewhere.
 | 📊 | **Sankey diagram** of your funnel: applications → screens → interviews → offers, filtered by date range and route, with counts on hover | ✅ Available |
 | 📈 | **Insights**: conversion per stage, median time in stage, direct vs recruiter outcomes and weekly activity | ✅ Available |
 | 🏅 | **Recruiter scorecard**: roles sent, interview rate, where they ended up, time to first update and last contact, per recruiter and per agency | ✅ Available |
-| 💷 | **Offer comparison**: salary, bonus, equity, pension, day rate and IR35 for contracts | Planned |
+| 💷 | **Offer comparison**: salary, bonus, equity, pension and holiday, or day rate, IR35 and length for contracts, side by side with a worth-a-year figure; replies due show in Next actions | ✅ Available |
 | 💾 | **Backups built in**: automatic git snapshots of your private data folder, readable JSON Lines export, one-command restore | ✅ Available |
 
 The full plan is in the [product requirements](docs/prd/tracker.md) and the

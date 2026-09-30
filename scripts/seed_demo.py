@@ -25,6 +25,7 @@ from jat.db.models import (
     Document,
     DocumentVersion,
     Interview,
+    Offer,
     Role,
 )
 from jat.domain.applications import create_application, history, log_activity, move
@@ -72,7 +73,7 @@ APPLICATIONS = [
         "agency",
         "Blue Yonder Recruitment",
         "Sam Patel",
-        [("applied", 15), ("screen", 11), ("interviewing", 6), ("final", 2)],
+        [("applied", 15), ("screen", 11), ("interviewing", 6), ("final", 2), ("offer", 1)],
         ["python", "remote"],
     ),
     ("Adventure Works", "Backend Engineer (Go)", "direct", None, None, [("applied", 3)], ["go"]),
@@ -229,6 +230,35 @@ def seed(path: Path) -> None:
             ),
         ]:
             store.index(s, store.create(title, body, links))
+        # Two offers to compare: a permanent package and a contract.
+        s.add_all(
+            [
+                Offer(
+                    application_id=first_app["Litware"].id,
+                    employment_type="permanent",
+                    currency="GBP",
+                    salary=95_000,
+                    bonus=9_500,
+                    equity="Share options, 4-year vest",
+                    equity_value=4_000,
+                    pension_percent=6,
+                    holiday_days=28,
+                    benefits="Private health, £1,000 learning budget",
+                    received_on=date.today() - timedelta(days=3),
+                    respond_by=date.today() + timedelta(days=4),
+                ),
+                Offer(
+                    application_id=first_app["Wide World Importers"].id,
+                    employment_type="contract",
+                    currency="GBP",
+                    day_rate=600,
+                    ir35="outside",
+                    contract_months=6,
+                    received_on=date.today() - timedelta(days=1),
+                    respond_by=date.today() + timedelta(days=9),
+                ),
+            ]
+        )
         # A CV with two versions, the newer one sent to Contoso.
         cv = Document(kind="cv", name="Backend CV")
         s.add(cv)
