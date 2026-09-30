@@ -30,13 +30,16 @@ import {
 } from "../api/attachmentHooks";
 import { formatDate, formatDateTime } from "../utils/time";
 
-function iconFor(att: AttachmentItem) {
+/** An icon for the file's type. */
+function AttachmentIcon({ att }: { att: AttachmentItem }) {
   const type = att.content_type ?? "";
-  if (type === "application/pdf") return IconFileTypePdf;
-  if (type.startsWith("image/")) return IconPhoto;
-  if (type === "message/rfc822" || att.original_name.toLowerCase().endsWith(".eml")) return IconMail;
-  if (type.startsWith("text/")) return IconTextCaption;
-  return IconFile;
+  const props = { size: 18, stroke: 1.6, style: { flexShrink: 0 } };
+  if (type === "application/pdf") return <IconFileTypePdf {...props} />;
+  if (type.startsWith("image/")) return <IconPhoto {...props} />;
+  if (type === "message/rfc822" || att.original_name.toLowerCase().endsWith(".eml"))
+    return <IconMail {...props} />;
+  if (type.startsWith("text/")) return <IconTextCaption {...props} />;
+  return <IconFile {...props} />;
 }
 
 export function humanSize(bytes: number): string {
@@ -55,7 +58,6 @@ interface EmailMeta {
 
 function AttachmentRow({ att }: { att: AttachmentItem }) {
   const remove = useDeleteAttachment();
-  const Icon = iconFor(att);
   // Exported emails show what they're about, not their file name.
   const mail = att.meta as EmailMeta;
   const title = mail.email ? mail.subject || "(no subject)" : att.original_name;
@@ -67,7 +69,7 @@ function AttachmentRow({ att }: { att: AttachmentItem }) {
   return (
     <Group justify="space-between" wrap="nowrap" gap="xs">
       <Group gap="xs" wrap="nowrap" style={{ minWidth: 0, flex: 1 }}>
-        <Icon size={18} stroke={1.6} style={{ flexShrink: 0 }} />
+        <AttachmentIcon att={att} />
         <div style={{ minWidth: 0 }}>
           <Anchor
             href={att.url}

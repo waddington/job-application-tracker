@@ -9,6 +9,7 @@ import { ApplicationsPage } from "./pages/ApplicationsPage";
 import { CompaniesPage } from "./pages/CompaniesPage";
 import { CompanyPage } from "./pages/CompanyPage";
 import { DocumentsPage } from "./pages/DocumentsPage";
+import { InsightsPage } from "./pages/InsightsPage";
 import { InterviewsPage } from "./pages/InterviewsPage";
 import { NotesPage } from "./pages/NotesPage";
 import { NextActionsPage } from "./pages/NextActionsPage";
@@ -24,6 +25,7 @@ const PAGES: Record<string, () => JSX.Element> = {
   "/applications": ApplicationsPage,
   "/companies": CompaniesPage,
   "/documents": DocumentsPage,
+  "/insights": InsightsPage,
   "/interviews": InterviewsPage,
   "/notes": NotesPage,
   "/recruiters": RecruitersPage,

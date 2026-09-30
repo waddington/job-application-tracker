@@ -1,9 +1,11 @@
+import { MantineProvider } from "@mantine/core";
 import { createMemoryHistory } from "@tanstack/react-router";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { App } from "./App";
 import { NAV } from "./nav";
+import { Placeholder } from "./pages/Placeholder";
 import { makeRouter } from "./router";
 
 function renderAt(path: string) {
@@ -21,10 +23,15 @@ describe("app shell", () => {
     expect(await screen.findByRole("heading", { name: "Next actions" })).toBeInTheDocument();
   });
 
-  it("renders a placeholder for each page", async () => {
-    renderAt("/insights");
-    expect(await screen.findByRole("heading", { name: "Insights" })).toBeInTheDocument();
-    expect(screen.getByText("sankey")).toBeInTheDocument();
+  it("renders a placeholder for a page that isn't built", () => {
+    // Every page is built now; the placeholder stays for pages added to NAV ahead of their task.
+    render(
+      <MantineProvider>
+        <Placeholder item={{ ...NAV[0]!, label: "Offers", task: "offers" }} />
+      </MantineProvider>,
+    );
+    expect(screen.getByRole("heading", { name: "Offers" })).toBeInTheDocument();
+    expect(screen.getByText("offers")).toBeInTheDocument();
   });
 
   it("shows not found for unknown paths", async () => {
