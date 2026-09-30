@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { useFlow, useStats, type FlowFilters } from "../api/insightHooks";
 import { RouteTable, StageTable, WeeklyActivity } from "../components/InsightStats";
+import { ScorecardCard } from "../components/Scorecard";
 import { SankeyChart } from "../components/SankeyChart";
 
 type Range = "all" | "90" | "30";
@@ -94,6 +95,7 @@ export function InsightsPage() {
           <RouteTable stats={stats} />
         </>
       )}
+      <ScorecardCard since={range.since} />
       <WeeklyActivity />
     </Stack>
   );

@@ -5,23 +5,27 @@
 > recruiter can have many roles), configurable interview stages with timestamped history,
 > numbered interview rounds described in the user's own words ("Round 2 · System design
 > test"), duplicate-submission warnings, Markdown notes, attachments and exported emails,
-> CV and cover-letter versions, and a "Next actions" page for stalled applications. It never
-> scrapes job boards or contacts anyone, and all data stays in one local directory outside
-> the code.
+> CV and cover-letter versions, a "Next actions" page for stalled applications, and
+> insights: a Sankey diagram of the funnel, conversion and time per stage, direct vs
+> recruiter outcomes and a recruiter scorecard. It never scrapes job boards or contacts
+> anyone, and all data stays in one local directory outside the code.
 
 Status: early development, usable day to day. Available now: a Next actions home page
 (follow-ups due, applications gone quiet, interviews coming up, one-click follow-up, snooze
 and Ghosted), applications list and Kanban board (move between any stages), application,
 company, recruiter and agency pages, recruiter CRM, numbered interview rounds, duplicate
 warnings, Markdown notes as real files, links, file attachments and `.eml` import onto the
-timeline, versioned CVs and cover letters, a Sankey diagram of stage flows, funnel stats (conversion and median time per stage, direct vs
-recruiter, weekly activity), and git-backed snapshots with restore. Planned
-next: a recruiter scorecard, offers, `.ics` export and search.
+timeline, versioned CVs and cover letters, an Insights page (Sankey diagram of stage flows
+filtered by date and route; conversion and median time per stage; direct vs recruiter
+outcomes; weekly activity; a recruiter and agency scorecard), and git-backed snapshots with
+restore. Planned next: offer comparison, a backup archive and full-text search.
 
 Stack: Python 3.12, FastAPI, SQLAlchemy, Alembic and SQLite (with a JSON Lines export
-committed to the user's private data repo); React 19, TypeScript, Mantine and TanStack
-Router/Query. Run with `uv run jat --data-dir <dir> serve` (http://127.0.0.1:8770); try
-demo data with `uv run python scripts/seed_demo.py /tmp/jat-demo`.
+committed to the user's private data repo); React 19, TypeScript, Mantine, TanStack
+Router/Query and d3-sankey. Run with `uv run jat --data-dir <dir> serve`
+(http://127.0.0.1:8770); try demo data with `uv run python scripts/seed_demo.py /tmp/jat-demo`.
+The JSON API is documented at http://127.0.0.1:8770/api/docs; insights live under
+`/api/v1/insights/` (`flow`, `stats`, `activity`, `scorecard`).
 
 ## Docs
 - [README](README.md): overview, screenshots, features, getting started, FAQ

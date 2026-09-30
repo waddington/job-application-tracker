@@ -9,6 +9,7 @@ from fastapi import APIRouter, HTTPException, Query
 from pydantic import AwareDatetime, BaseModel
 
 from ..domain import insights as svc
+from ..domain import scorecard as score_svc
 from ..domain import stats as stats_svc
 from . import schemas as S
 from .deps import SessionDep, WorkflowDep
@@ -161,3 +162,52 @@ def weekly_activity(
         today = datetime.now(zone).date()
         start = today - timedelta(days=today.weekday(), weeks=weeks - 1)
     return [WeekOut(**vars(w)) for w in stats_svc.weekly_activity(session, start, weeks, zone)]
+
+
+class ScoreOut(BaseModel):
+    id: str
+    name: str
+    agency_id: str | None = None  # for a recruiter: their agency
+    agency_name: str | None = None
+    roles: int  # applications they put you forward for
+    interviewed: int  # of those, how many got an interview round (not cancelled)
+    active: int
+    success: int
+    closed: int  # closed, other than ghosted
+    ghosted: int
+    median_first_update_days: float | None  # adding the application to the first call, email, message or move
+    last_contact: datetime | None  # the latest call, email or message logged
+
+
+class ScorecardOut(BaseModel):
+    recruiters: list[ScoreOut]  # most roles first
+    agencies: list[ScoreOut]
+
+
+def _score_out(s: score_svc.Score) -> ScoreOut:
+    return ScoreOut(
+        id=s.id,
+        name=s.name,
+        agency_id=s.agency_id,
+        agency_name=s.agency_name,
+        roles=s.roles,
+        interviewed=s.interviewed,
+        active=s.active,
+        success=s.success,
+        closed=s.closed,
+        ghosted=s.ghosted,
+        median_first_update_days=s.median_first_update,
+        last_contact=s.last_contact,
+    )
+
+
+@router.get("/scorecard", response_model=ScorecardOut)
+def recruiter_scorecard(
+    session: SessionDep,
+    workflow: WorkflowDep,
+    since: AwareDatetime | None = None,
+    until: AwareDatetime | None = None,
+):
+    """How each recruiter's and agency's roles have gone, for applications added in [since, until)."""
+    recruiters, agencies = score_svc.scorecard(session, workflow, since=since, until=until)
+    return ScorecardOut(recruiters=[_score_out(s) for s in recruiters], agencies=[_score_out(s) for s in agencies])

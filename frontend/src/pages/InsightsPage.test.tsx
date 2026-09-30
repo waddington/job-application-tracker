@@ -90,11 +90,45 @@ const ACTIVITY = [
   week("2026-09-28", { moves: 3, interviews: 1 }),
 ];
 
+const score = (overrides: Record<string, unknown>) => ({
+  agency_id: null,
+  agency_name: null,
+  interviewed: 0,
+  active: 0,
+  success: 0,
+  closed: 0,
+  ghosted: 0,
+  median_first_update_days: null,
+  last_contact: null,
+  ...overrides,
+});
+
+const SCORECARD = {
+  recruiters: [
+    score({
+      id: "c1",
+      name: "Alex Recruiter",
+      agency_id: "ag1",
+      agency_name: "Northwind Talent",
+      roles: 4,
+      interviewed: 2,
+      active: 2,
+      ghosted: 1,
+      closed: 1,
+      median_first_update_days: 2.5,
+      last_contact: new Date(Date.now() - 3 * 86_400_000).toISOString(),
+    }),
+    score({ id: "c2", name: "Sam Recruiter", roles: 1, active: 1, median_first_update_days: 0.2 }),
+  ],
+  agencies: [score({ id: "ag1", name: "Northwind Talent", roles: 5, interviewed: 2, active: 3, ghosted: 1 })],
+};
+
 function mockInsights(overrides: Record<string, unknown> = {}) {
   return mockApi({
     "/api/v1/insights/flow": FLOW,
     "/api/v1/insights/stats": STATS,
     "/api/v1/insights/activity": ACTIVITY,
+    "/api/v1/insights/scorecard": SCORECARD,
     "/api/v1/health": {},
     ...overrides,
   });
@@ -199,5 +233,36 @@ describe("insights", () => {
     renderAt("/insights");
     expect(await screen.findByText("No applications match these filters.")).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Stage by stage" })).not.toBeInTheDocument();
+  });
+
+  it("scores recruiters and agencies", async () => {
+    const calls = mockInsights();
+    renderAt("/insights");
+    const card = (await screen.findByRole("heading", { name: "Recruiter scorecard" })).closest(
+      ".mantine-Card-root",
+    ) as HTMLElement;
+    const table = await within(card).findByRole("table");
+    expect(rows(table)).toEqual([
+      "RecruiterRolesInterviewedWhere they are nowFirst updateLast contact",
+      "Alex RecruiterNorthwind Talent42 (50%)2 active1 ghosted1 closed2.5 days3 days ago",
+      "Sam Recruiter10 (0%)1 activesame day—",
+    ]);
+    expect(within(table).getByRole("link", { name: "Northwind Talent" })).toHaveAttribute(
+      "href",
+      "/agencies/ag1",
+    );
+
+    fireEvent.click(within(card).getByText("Agencies"));
+    expect(rows(within(card).getByRole("table"))).toEqual([
+      "AgencyRolesInterviewedWhere they are nowFirst updateLast contact",
+      "Northwind Talent52 (40%)3 active1 ghosted——",
+    ]);
+
+    // The date range applies to the scorecard too.
+    fireEvent.click(screen.getByText("Last 90 days"));
+    await waitFor(() => {
+      const last = calls.filter((c) => c.path.startsWith("/api/v1/insights/scorecard")).at(-1)!;
+      expect(last.path).toContain("since=");
+    });
   });
 });

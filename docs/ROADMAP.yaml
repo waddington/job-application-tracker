@@ -75,15 +75,14 @@ phases:
     tasks:
       - {id: sankey, name: "Sankey diagram of stage flows", owner: lead, status: done, estimate_h: 3, depends: [workflow, app-shell], prd: docs/prd/tracker.md}
       - {id: stats, name: "Conversion, time in stage, direct vs recruiter, weekly activity", owner: lead, status: done, estimate_h: 4, depends: [workflow, app-shell], prd: docs/prd/tracker.md}
-      - {id: scorecard, name: "Recruiter scorecard", owner: lead, status: planned, estimate_h: 2, depends: [stats, recruiters], prd: docs/prd/tracker.md}
-      - {id: readme-refresh-3, name: "README refresh: Sankey and insights, demo GIF", owner: lead, status: planned, estimate_h: 1, depends: [sankey, stats, scorecard]}
+      - {id: scorecard, name: "Recruiter scorecard", owner: lead, status: done, estimate_h: 2, depends: [stats, recruiters], prd: docs/prd/tracker.md}
+      - {id: readme-refresh-3, name: "README and llms.txt refresh: Sankey and insights, demo GIF", owner: lead, status: done, estimate_h: 1, depends: [sankey, stats, scorecard]}
 
   - id: P6
     name: Extras
     goal: Nice to have once the core works
     tasks:
       - {id: offers, name: "Offer comparison, pay terms, contract day rate and IR35", owner: lead, status: planned, estimate_h: 2, depends: [detail-pages], prd: docs/prd/tracker.md}
-      - {id: ics-export, name: ".ics export for interviews", owner: lead, status: planned, estimate_h: 1, depends: [interviews], prd: docs/prd/tracker.md}
       - {id: backup-export, name: "One-click backup archive of the data directory", owner: lead, status: planned, estimate_h: 2, depends: [data-dir], prd: docs/prd/tracker.md}
       - {id: search, name: "Full-text search across notes and entities", owner: lead, status: planned, estimate_h: 3, depends: [notes], prd: docs/prd/tracker.md}
-      - {id: readme-refresh-4, name: "README refresh: extras, install guide, v1 release notes", owner: lead, status: planned, estimate_h: 1, depends: [offers, ics-export, backup-export, search]}
+      - {id: readme-refresh-4, name: "README and llms.txt refresh: extras, install guide, v1 release notes", owner: lead, status: planned, estimate_h: 1, depends: [offers, backup-export, search]}
