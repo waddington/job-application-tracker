@@ -134,6 +134,18 @@ def cmd_push(args) -> int:
     return 0
 
 
+def cmd_archive(args) -> int:
+    from .snapshot.archive import archive_name, write_archive
+
+    dest = args.output or Path.cwd() / f"{archive_name()}.zip"
+    if dest.exists():
+        print(f"error: {dest} already exists; pick another --output", file=sys.stderr)
+        return 2
+    info = write_archive(_service(_data_dir(args)), dest)
+    print(f"wrote {info.path} ({info.files} files, {info.bytes:,} bytes before compression)")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="jat", description="Job Application Tracker")
     parser.add_argument("--data-dir", type=Path, help="override JAT_DATA_DIR")
@@ -154,6 +166,9 @@ def build_parser() -> argparse.ArgumentParser:
     p.set_defaults(func=cmd_serve)
     sub.add_parser("snapshot", help="export and commit to the data repo now").set_defaults(func=cmd_snapshot)
     sub.add_parser("push", help="snapshot, then push the data repo (never forced)").set_defaults(func=cmd_push)
+    p = sub.add_parser("archive", help="write the data directory to one zip file, to keep anywhere")
+    p.add_argument("-o", "--output", type=Path, help="where to write it (default ./jat-backup-DATE.zip)")
+    p.set_defaults(func=cmd_archive)
     return parser
 
 

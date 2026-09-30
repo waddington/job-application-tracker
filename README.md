@@ -88,8 +88,8 @@ recruiters send roles that go somewhere.
 
 > 🚧 **Early development, but usable day to day.** Tracking, recruiters, interview rounds,
 > notes, links, files and emails, CV versions, the *Next actions* page, insights (Sankey
-> diagram, funnel stats, recruiter scorecards) and offer comparison all work today. A backup
-> archive and full-text search are next. Everything marked ✅ is merged and running.
+> diagram, funnel stats, recruiter scorecards), offer comparison and one-click backups all work
+> today. Full-text search is next. Everything marked ✅ is merged and running.
 
 | | Feature | Status |
 |---|---|---|
@@ -109,7 +109,7 @@ recruiters send roles that go somewhere.
 | 📈 | **Insights**: conversion per stage, median time in stage, direct vs recruiter outcomes and weekly activity | ✅ Available |
 | 🏅 | **Recruiter scorecard**: roles sent, interview rate, where they ended up, time to first update and last contact, per recruiter and per agency | ✅ Available |
 | 💷 | **Offer comparison**: salary, bonus, equity, pension and holiday, or day rate, IR35 and length for contracts, side by side with a worth-a-year figure; replies due show in Next actions | ✅ Available |
-| 💾 | **Backups built in**: automatic git snapshots of your private data folder, readable JSON Lines export, one-command restore | ✅ Available |
+| 💾 | **Backups built in**: automatic git snapshots of your private data folder, readable JSON Lines export, a one-click zip of everything (or `jat archive`), one-command restore | ✅ Available |
 
 The full plan is in the [product requirements](docs/prd/tracker.md) and the
 [roadmap](docs/ROADMAP.yaml).
@@ -204,6 +204,11 @@ coding interviews, take-home tasks), but the workflow is configurable.
 **What format is my data in?** A SQLite database for speed, plus a plain-text export
 (one JSON Lines file per table) that's committed to your data repo. You can read it, diff it,
 and rebuild the database from it with `jat restore`.
+
+**How do I back it up?** It's automatic if the data folder is a git repo: every change is
+snapshotted, and `jat push` sends it to your private remote. For a single file to keep
+anywhere, click *Download a backup* in the sidebar (or run `jat archive`): a zip with your
+data, notes and files. Unzip it and run `jat restore` to get everything back.
 
 **Can I track which interview round I'm at?** Yes. Each application has numbered rounds
 with your own description ("Round 2 · Engineering manager chat", "Round 3 · System design

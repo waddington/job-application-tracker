@@ -21,6 +21,10 @@ describe("app shell", () => {
       expect(nav).toHaveTextContent(item.label);
     }
     expect(await screen.findByRole("heading", { name: "Next actions" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Download a backup" })).toHaveAttribute(
+      "href",
+      "/api/v1/backup/archive",
+    );
   });
 
   it("renders a placeholder for a page that isn't built", () => {

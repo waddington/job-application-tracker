@@ -19,8 +19,9 @@ timeline, versioned CVs and cover letters, an Insights page (Sankey diagram of s
 filtered by date and route; conversion and median time per stage; direct vs recruiter
 outcomes; weekly activity; a recruiter and agency scorecard), offers compared side by side
 (salary, bonus, equity, pension and holiday, or day rate, IR35 and length, with a
-worth-a-year figure and reply deadlines in Next actions), and git-backed snapshots with
-restore. Planned next: a backup archive and full-text search.
+worth-a-year figure and reply deadlines in Next actions), git-backed snapshots, a one-click
+zip backup of the whole data directory (`GET /api/v1/backup/archive` or `jat archive`), and
+restore (`jat restore`). Planned next: full-text search.
 
 Stack: Python 3.12, FastAPI, SQLAlchemy, Alembic and SQLite (with a JSON Lines export
 committed to the user's private data repo); React 19, TypeScript, Mantine, TanStack
