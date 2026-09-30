@@ -17,6 +17,7 @@ from ..domain.workflow import Workflow, WorkflowError
 from . import schemas as S
 from .crud import crud_router, values
 from .deps import SessionDep, WorkflowDep, get_or_404, require
+from .documents import sent_documents
 
 router = APIRouter(prefix="/api/v1")
 
@@ -267,6 +268,7 @@ def _detail(session: Session, workflow: Workflow, app_id: str) -> S.ApplicationD
         suggested_next=suggested,
         can_undo=svc.can_undo(session, session.get(Application, app_id)),
         duplicates=_duplicates(session, workflow, [row.company_id], row.role_title, exclude=app_id),
+        documents=sent_documents(session, app_id),
     )
 
 
@@ -619,3 +621,7 @@ router.include_router(notes_router)
 from .attachments import router as attachments_router  # noqa: E402
 
 router.include_router(attachments_router)
+
+from .documents import router as documents_router  # noqa: E402
+
+router.include_router(documents_router)
