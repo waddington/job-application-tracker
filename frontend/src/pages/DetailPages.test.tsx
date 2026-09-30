@@ -16,6 +16,7 @@ const detail = {
   contacts: [{ id: "l1", application_id: "a1", contact_id: "c1", relation: "recruiter" }],
   allowed_next: ["screen"],
   can_undo: false,
+  duplicates: [],
 };
 const contacts = [
   {
@@ -66,6 +67,31 @@ describe("application page", () => {
 });
 
 describe("companies", () => {
+  it("notes other applications for the same job", async () => {
+    mockApi({
+      "/api/v1/workflow": WORKFLOW,
+      "GET /api/v1/applications/a1": {
+        ...detail,
+        duplicates: [
+          {
+            ...row({ id: "a2", route: "direct", agency_name: null, recruiter_name: null, archived: true }),
+            match: "same_role",
+          },
+        ],
+      },
+      "/api/v1/contacts": contacts,
+      "/api/v1/roles": [],
+      "/api/v1/health": {},
+    });
+    renderAt("/applications/a1");
+    expect(await screen.findByText("Also applied for this job")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Backend Engineer at Contoso" })).toHaveAttribute(
+      "href",
+      "/applications/a2",
+    );
+    expect(screen.getByText(/directly · Applied · applied 20 Sep 2026 · archived/)).toBeInTheDocument();
+  });
+
   it("lists companies with application counts and opens one", async () => {
     mockApi({
       "/api/v1/workflow": WORKFLOW,

@@ -45,7 +45,7 @@ export const keys = {
 
 /** Everything that shows applications: lists, the board, company and agency pages. */
 export function invalidateApplicationViews(qc: QueryClient) {
-  for (const key of [["applications"], ["company-summary"], ["agency-summary"]]) {
+  for (const key of [["applications"], ["company-summary"], ["agency-summary"], ["duplicates"]]) {
     void qc.invalidateQueries({ queryKey: key });
   }
 }
@@ -106,6 +106,20 @@ export function useContacts() {
   return useQuery({
     queryKey: keys.contacts,
     queryFn: async () => unwrap(await api.GET("/api/v1/contacts")),
+  });
+}
+
+/** Existing applications that look like the same job (same company, same or similar title). */
+export function useDuplicates(args: { companyId?: string; companyName: string; roleTitle: string }) {
+  const companyName = args.companyName.trim();
+  const roleTitle = args.roleTitle.trim();
+  const query = args.companyId
+    ? { company_id: args.companyId, role_title: roleTitle }
+    : { company_name: companyName, role_title: roleTitle };
+  return useQuery({
+    queryKey: ["duplicates", query],
+    queryFn: async () => unwrap(await api.GET("/api/v1/applications/duplicates", { params: { query } })),
+    enabled: !!roleTitle && (!!args.companyId || !!companyName),
   });
 }
 

@@ -12,11 +12,20 @@ import {
 } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import { useForm } from "@mantine/form";
+import { useDebouncedValue } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import dayjs from "dayjs";
 import { useEffect } from "react";
 
-import { useAgencies, useCompanies, useContacts, useCreateApplication, useWorkflow } from "../api/hooks";
+import {
+  useAgencies,
+  useCompanies,
+  useContacts,
+  useCreateApplication,
+  useDuplicates,
+  useWorkflow,
+} from "../api/hooks";
+import { DuplicateWarning } from "./DuplicateWarning";
 
 interface Values {
   company: string;
@@ -94,6 +103,17 @@ export function NewApplicationModal({
   const recruiterMatch = findByName(recruitersHere, form.values.recruiter);
   const company = findByName(companies, form.values.company);
 
+  // Warn, while typing, about an application for the same job (PRD FR5). Never blocks saving.
+  const [dupCompany] = useDebouncedValue(form.values.company, 300);
+  const [dupTitle] = useDebouncedValue(form.values.roleTitle, 300);
+  const dupCompanyId = findByName(companies, dupCompany)?.id;
+  const { data: duplicates } = useDuplicates({
+    companyId: dupCompanyId,
+    companyName: dupCompany,
+    roleTitle: dupTitle,
+  });
+  const showDuplicates = !!(form.values.company.trim() && form.values.roleTitle.trim() && duplicates);
+
   const close = (id?: string) => {
     form.reset();
     onClose(id);
@@ -148,6 +168,13 @@ export function NewApplicationModal({
               {...form.getInputProps("roleTitle")}
             />
           </Group>
+          {showDuplicates && (
+            <DuplicateWarning
+              duplicates={duplicates}
+              title="You may have applied for this already"
+              onNavigate={() => close()}
+            />
+          )}
           <TextInput label="Job ad link" placeholder="https://…" {...form.getInputProps("roleUrl")} />
           <div>
             <Text size="sm" fw={500} mb={4}>

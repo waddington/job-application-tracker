@@ -38,6 +38,7 @@ import {
   useWorkflow,
 } from "../api/hooks";
 import { ago, formatDate, formatDateTime } from "../utils/time";
+import { DuplicateWarning } from "./DuplicateWarning";
 import { StageBadge } from "./StageBadge";
 
 const ACTIVITY_ICONS: Record<string, typeof IconNote> = {
@@ -134,6 +135,8 @@ export function ApplicationSummary({ app }: { app: ApplicationDetail }) {
           </Badge>
         ))}
       </Group>
+      <DuplicateWarning duplicates={app.duplicates} title="Also applied for this job" />
+
       <Group gap="xs">
         <Menu shadow="md" position="bottom-start">
           <Menu.Target>

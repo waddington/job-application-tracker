@@ -13,6 +13,7 @@ export const api = createClient<paths>({
 export type Schemas = components["schemas"];
 export type ApplicationRow = Schemas["ApplicationRow"];
 export type ApplicationDetail = Schemas["ApplicationDetail"];
+export type Duplicate = Schemas["DuplicateOut"];
 export type Company = Schemas["CompanyOut"];
 export type Agency = Schemas["AgencyOut"];
 export type Contact = Schemas["ContactOut"];
