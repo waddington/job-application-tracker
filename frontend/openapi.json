@@ -6849,6 +6849,24 @@
         ]
       }
     },
+    "/api/v1/backup/archive": {
+      "get": {
+        "description": "The whole data directory as one zip (fresh export, notes, files, config), to keep anywhere.\nUnzip it and run `jat restore` to get the tracker back.",
+        "operationId": "download_archive_api_v1_backup_archive_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/zip": {}
+            },
+            "description": "The data directory as a zip"
+          }
+        },
+        "summary": "Download Archive",
+        "tags": [
+          "backup"
+        ]
+      }
+    },
     "/api/v1/backup/push": {
       "post": {
         "operationId": "push_api_v1_backup_push_post",

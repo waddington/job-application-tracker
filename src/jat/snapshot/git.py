@@ -166,6 +166,16 @@ class SnapshotService:
             finally:
                 fcntl.flock(fh, fcntl.LOCK_UN)
 
+    @contextlib.contextmanager
+    def fresh_export(self) -> Iterator[None]:
+        """Export the database to export/ now and keep snapshots out until the block ends,
+        so what's read from the data directory inside it is one consistent copy.
+        Works whether or not the data directory is a git repo.
+        """
+        with self._work, self._process_lock():
+            export_db(self.engine, self.data_dir / "export")
+            yield
+
     def _check_repo_state(self) -> None:
         head = _git(self.data_dir, "symbolic-ref", "-q", "HEAD")
         if head.returncode != 0:

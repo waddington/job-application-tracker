@@ -1,10 +1,15 @@
-"""Backup endpoints: snapshot status, snapshot now, push the data repo."""
+"""Backup endpoints: snapshot status, snapshot now, push the data repo, download an archive."""
 
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException, Request
-from pydantic import BaseModel
+import uuid
 
+from fastapi import APIRouter, HTTPException, Request
+from fastapi.responses import FileResponse
+from pydantic import BaseModel
+from starlette.background import BackgroundTask
+
+from ..snapshot.archive import write_archive
 from ..snapshot.git import SnapshotError, SnapshotService
 
 router = APIRouter(prefix="/backup", tags=["backup"])
@@ -59,3 +64,29 @@ def push(request: Request):
     except SnapshotError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     return {"output": output, "status": service.status().as_dict()}
+
+
+@router.get(
+    "/archive",
+    response_class=FileResponse,
+    responses={200: {"content": {"application/zip": {}}, "description": "The data directory as a zip"}},
+)
+def download_archive(request: Request):
+    """The whole data directory as one zip (fresh export, notes, files, config), to keep anywhere.
+    Unzip it and run `jat restore` to get the tracker back.
+    """
+    service = _service(request)
+    staging = service.data_dir / ".tmp"
+    staging.mkdir(exist_ok=True)
+    dest = staging / f"archive-{uuid.uuid4().hex}.zip"
+    try:
+        info = write_archive(service, dest)
+    except Exception:
+        dest.unlink(missing_ok=True)
+        raise
+    return FileResponse(
+        dest,
+        media_type="application/zip",
+        filename=info.name,
+        background=BackgroundTask(dest.unlink, missing_ok=True),
+    )
