@@ -1140,6 +1140,7 @@
           "notes": {
             "anyOf": [
               {
+                "maxLength": 2000,
                 "type": "string"
               },
               {
@@ -4109,6 +4110,7 @@
           "notes": {
             "anyOf": [
               {
+                "maxLength": 2000,
                 "type": "string"
               },
               {
