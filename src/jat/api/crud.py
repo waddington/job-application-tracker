@@ -28,6 +28,7 @@ def crud_router(
     order_by,
     search_column=None,
     validate: Callable[[Session, dict], None] | None = None,
+    before_delete: Callable[[Session, object], None] | None = None,
 ) -> APIRouter:
     router = APIRouter(prefix=prefix, tags=[tag])
 
@@ -66,6 +67,8 @@ def crud_router(
     @router.delete("/{item_id}", status_code=204)
     def delete_item(item_id: str, session: SessionDep):
         obj = get_or_404(session, model, item_id)
+        if before_delete:
+            before_delete(session, obj)  # may refuse (409) or tidy up what goes with it
         session.delete(obj)
         try:
             session.flush()

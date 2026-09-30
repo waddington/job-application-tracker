@@ -29,6 +29,35 @@ def _validate_role(session: Session, data: dict) -> None:
     require(session, Company, data.get("company_id"), "company_id")
 
 
+def _count_applications(session: Session, *where) -> int:
+    return session.scalar(select(func.count()).select_from(Application).join(Role).where(*where)) or 0
+
+
+def _plural(n: int, word: str) -> str:
+    return f"{n} {word}{'' if n == 1 else 's'}"
+
+
+def _before_company_delete(session: Session, company: Company) -> None:
+    """A company with applications can't go (delete or move those first); its roles go with it."""
+    n = _count_applications(session, Role.company_id == company.id)
+    if n:
+        raise HTTPException(
+            409,
+            f"{company.name} has {_plural(n, 'application')}. Delete them first, or archive them instead.",
+        )
+    for role in session.scalars(select(Role).where(Role.company_id == company.id)):
+        session.delete(role)
+    session.flush()
+
+
+def _before_role_delete(session: Session, role: Role) -> None:
+    n = _count_applications(session, Application.role_id == role.id)
+    if n:
+        raise HTTPException(
+            409, f"{role.title} has {_plural(n, 'application')}. Delete them first, or archive them instead."
+        )
+
+
 router.include_router(
     crud_router(
         model=Company,
@@ -39,6 +68,7 @@ router.include_router(
         tag="companies",
         order_by=func.lower(Company.name),
         search_column=Company.name,
+        before_delete=_before_company_delete,
     )
 )
 router.include_router(
@@ -64,6 +94,7 @@ router.include_router(
         order_by=func.lower(Role.title),
         search_column=Role.title,
         validate=_validate_role,
+        before_delete=_before_role_delete,
     )
 )
 
