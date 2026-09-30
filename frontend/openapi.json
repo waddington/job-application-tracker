@@ -6851,7 +6851,7 @@
     },
     "/api/v1/backup/archive": {
       "get": {
-        "description": "The whole data directory as one zip (fresh export, notes, files, config), to keep anywhere.\nUnzip it and run `jat restore` to get the tracker back.",
+        "description": "The whole data directory as one zip (fresh export, notes, files, config), to keep anywhere.\nUnzip it and run `jat restore` to get the tracker back.\n\nA GET, so it works as a plain download link; but it does real work (an export and a zip),\nso another site can't set it off: cross-site requests are refused.",
         "operationId": "download_archive_api_v1_backup_archive_get",
         "responses": {
           "200": {

@@ -1,4 +1,6 @@
 import io
+import os
+import time
 import zipfile
 from datetime import date
 
@@ -7,6 +9,7 @@ from fastapi.testclient import TestClient
 from jat.app import create_app
 from jat.cli import main
 from jat.db import db_path
+from jat.snapshot import archive
 
 from .factories import post
 
@@ -61,3 +64,33 @@ def test_cli_archive(app, client, tmp_path, capsys):
     # It never overwrites.
     assert main(["--data-dir", str(data_dir), "archive", "-o", str(out)]) == 2
     assert "already exists" in capsys.readouterr().err
+
+
+def test_archive_refuses_other_sites_and_clears_old_downloads(app, client):
+    r = client.get("/api/v1/backup/archive", headers={"Sec-Fetch-Site": "cross-site"})
+    assert r.status_code == 403
+    staging = app.state.snapshots.data_dir / ".tmp"
+    staging.mkdir(exist_ok=True)
+    old, recent = staging / "archive-old.zip", staging / "archive-recent.zip"
+    old.write_bytes(b"left over from a cut-off download")
+    recent.write_bytes(b"someone else's download in progress")
+    os.utime(old, (time.time() - 3600, time.time() - 3600))
+    assert client.get("/api/v1/backup/archive", headers={"Sec-Fetch-Site": "same-origin"}).status_code == 200
+    assert not old.exists() and recent.exists()
+
+
+def test_files_deleted_mid_archive_are_skipped(app, tmp_path, monkeypatch):
+    data_dir = app.state.snapshots.data_dir
+    gone = data_dir / "notes" / "gone.md"
+    gone.write_text("deleted while the zip is being written")
+    real_members = archive._members
+
+    def members_then_delete(path):
+        found = real_members(path)
+        gone.unlink()
+        return found
+
+    monkeypatch.setattr(archive, "_members", members_then_delete)
+    info = archive.write_archive(app.state.snapshots, tmp_path / "b.zip")
+    assert not any(n.endswith("gone.md") for n in _names((tmp_path / "b.zip").read_bytes()))
+    assert info.files >= 1

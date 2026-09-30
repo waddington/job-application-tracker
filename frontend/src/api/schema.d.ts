@@ -394,6 +394,9 @@ export interface paths {
          * Download Archive
          * @description The whole data directory as one zip (fresh export, notes, files, config), to keep anywhere.
          *     Unzip it and run `jat restore` to get the tracker back.
+         *
+         *     A GET, so it works as a plain download link; but it does real work (an export and a zip),
+         *     so another site can't set it off: cross-site requests are refused.
          */
         get: operations["download_archive_api_v1_backup_archive_get"];
         put?: never;

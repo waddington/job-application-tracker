@@ -67,8 +67,13 @@ def write_archive(service: SnapshotService, dest: Path, *, day: date | None = No
     files = total = 0
     with service.fresh_export(), zipfile.ZipFile(dest, "x", zipfile.ZIP_DEFLATED) as zf:
         for path in _members(data_dir):
-            zf.write(path, f"{root}/{path.relative_to(data_dir).as_posix()}")
+            # Notes and files aren't under the export lock: one deleted meanwhile is skipped.
+            try:
+                size = path.stat().st_size
+                zf.write(path, f"{root}/{path.relative_to(data_dir).as_posix()}")
+            except FileNotFoundError:
+                continue
             files += 1
-            total += path.stat().st_size
+            total += size
         zf.writestr(f"{root}/RESTORE.md", RESTORE.format(root=root))
     return ArchiveInfo(path=dest, name=f"{root}.zip", files=files, bytes=total)
