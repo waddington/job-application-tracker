@@ -927,6 +927,28 @@ export interface paths {
         patch: operations["update_item_api_v1_roles__item_id__patch"];
         trace?: never;
     };
+    "/api/v1/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search
+         * @description Everything matching every word of `q`: applications, companies, agencies, people and
+         *     their contact details, interview prep and debriefs, offers, timeline entries, notes,
+         *     documents, files, emails and links. Title matches first, then the most recent.
+         */
+        get: operations["search_api_v1_search_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/workflow": {
         parameters: {
             query?: never;
@@ -2296,6 +2318,23 @@ export interface components {
             agencies: components["schemas"]["ScoreOut"][];
             /** Recruiters */
             recruiters: components["schemas"]["ScoreOut"][];
+        };
+        /** SearchHit */
+        SearchHit: {
+            /** Id */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Link */
+            link: string;
+            /** Snippet */
+            snippet: string | null;
+            /** Subtitle */
+            subtitle: string | null;
+            /** Title */
+            title: string;
+            /** Updated */
+            updated: string | null;
         };
         /** SentDocumentIn */
         SentDocumentIn: {
@@ -4930,6 +4969,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RoleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    search_api_v1_search_get: {
+        parameters: {
+            query: {
+                q: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SearchHit"][];
                 };
             };
             /** @description Validation Error */

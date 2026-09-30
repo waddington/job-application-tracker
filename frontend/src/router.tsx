@@ -17,6 +17,7 @@ import { NextActionsPage } from "./pages/NextActionsPage";
 import { NotFound } from "./pages/NotFound";
 import { Placeholder } from "./pages/Placeholder";
 import { RecruitersPage } from "./pages/RecruitersPage";
+import { SearchPage } from "./pages/SearchPage";
 
 const rootRoute = createRootRoute({ component: Layout, notFoundComponent: NotFound });
 
@@ -59,7 +60,21 @@ const agencyRoute = createRoute({
   component: AgencyPage,
 });
 
-const routeTree = rootRoute.addChildren([...pageRoutes, applicationRoute, companyRoute, agencyRoute]);
+const searchRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/search",
+  component: SearchPage,
+  // ?q= as typed, kept a string (the default parser would turn "2026" into a number).
+  validateSearch: (search: Record<string, unknown>) => ({ q: search.q == null ? "" : String(search.q) }),
+});
+
+const routeTree = rootRoute.addChildren([
+  ...pageRoutes,
+  applicationRoute,
+  companyRoute,
+  agencyRoute,
+  searchRoute,
+]);
 
 export function makeRouter(history?: RouterHistory) {
   return createRouter({ routeTree, history, defaultPreload: "intent" });

@@ -18,6 +18,7 @@ import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 
 import { NAV } from "../nav";
 import { ApiStatus } from "./ApiStatus";
+import { HeaderSearch } from "./HeaderSearch";
 
 function ColorSchemeToggle() {
   const { setColorScheme } = useMantineColorScheme();
@@ -62,7 +63,10 @@ export function Layout() {
               Job Application Tracker
             </Title>
           </Group>
-          <ColorSchemeToggle />
+          <Group gap="sm" wrap="nowrap">
+            <HeaderSearch />
+            <ColorSchemeToggle />
+          </Group>
         </Group>
       </AppShell.Header>
 
