@@ -34,6 +34,11 @@ roadmap is `docs/ROADMAP.yaml`, shown by the PM dashboard (see "Project manageme
 - Before every commit, check the diff for personal data. If any has been pushed, stop and tell
   Kai; don't rewrite history on your own.
 
+## Working style
+- **Don't use the `agent-team` skill in this repo** (Kai, 2026-09-30). This overrides the global
+  "default to agent-team" instruction. Work directly; use a plain subagent only when parallel
+  work or a review pass calls for one.
+
 ## Git
 - Follow `~/.claude/git-workflow.md`: a worktree per change set under `.claude/worktrees/`,
   a PR per change set, merge commits (`gh pr merge N --merge --delete-branch`), and
@@ -85,8 +90,8 @@ the call, note the assumption in the PR, and keep going.
 - Big or unclear items get a PRD and an RFC first (`docs/prd`, `docs/rfc`), linked from the
   roadmap task.
 - Worktree and PR per change set. Name the branch `worktree-<roadmap task id>`. Every PR gets a
-  review pass (the `agent-team` reviewer roles), and `must_fix` findings are fixed before
-  merging.
+  review pass (a plain reviewer subagent or `/code-review`), and `must_fix` findings are
+  fixed before merging.
 - **Every PR updates the docs it affects, in the same PR.** A reviewer treats a missing doc
   update as `must_fix`. Put this requirement in every agent prompt.
 - The lead session merges (subagents can't). Then fast-forward main, restart anything running
