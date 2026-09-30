@@ -8,7 +8,7 @@ CRM, interview rounds, Markdown notes, CV versions, a *"who should I chase today
 Sankey diagram of your whole funnel.
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
-![Status: v1 release candidate](https://img.shields.io/badge/status-v1%20release%20candidate-blue)
+![Status: early development](https://img.shields.io/badge/status-early%20development-orange)
 ![Local-first](https://img.shields.io/badge/data-100%25%20local-brightgreen)
 ![No tracking](https://img.shields.io/badge/telemetry-none-brightgreen)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-blueviolet.svg)](#-contributing)
@@ -90,7 +90,8 @@ recruiters send roles that go somewhere.
 
 ## ✨ Features
 
-> ✅ **Feature-complete for v1 (release candidate).** See the [changelog](CHANGELOG.md). Tracking, recruiters, interview rounds,
+> 🚧 **Early development (0.1.0).** Every planned feature is built but hasn't been tested in
+> real use yet, so expect rough edges. See the [changelog](CHANGELOG.md). Tracking, recruiters, interview rounds,
 > notes, links, files and emails, CV versions, the *Next actions* page, insights (Sankey
 > diagram, funnel stats, recruiter scorecards), offer comparison, one-click backups and
 > full-text search all work today. Everything marked ✅ is merged and running.
