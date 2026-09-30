@@ -53,9 +53,7 @@ vertical-align:top}th{color:var(--muted);font-weight:500;font-size:12px}
 
 
 def page(title: str, active: str, body: str, roadmap: Roadmap, snapshot: Snapshot) -> str:
-    nav = "".join(
-        f'<a href="{href}" class="{"active" if href == active else ""}">{label}</a>' for href, label in NAV
-    )
+    nav = "".join(f'<a href="{href}" class="{"active" if href == active else ""}">{label}</a>' for href, label in NAV)
     taken = datetime.fromtimestamp(snapshot.taken_at).strftime("%H:%M:%S") if snapshot.taken_at else "never"
     project = escape(roadmap.project or "Project")
     return f"""<!doctype html>
@@ -88,8 +86,10 @@ def task_links(roadmap: Roadmap, task: Task) -> str:
     parts = []
     if task.pr:
         draft = " draft" if task.pr.is_draft else ""
-        parts.append(f'<a href="{escape(task.pr.url)}">PR #{task.pr.number}</a>'
-                     f' <span class="muted">({task.pr.state.lower()}{draft})</span>')
+        parts.append(
+            f'<a href="{escape(task.pr.url)}">PR #{task.pr.number}</a>'
+            f' <span class="muted">({task.pr.state.lower()}{draft})</span>'
+        )
     elif task.branch:
         parts.append(f"<code>{escape(task.branch)}</code> +{task.commits_ahead}")
     if task.prd:
@@ -103,17 +103,17 @@ def task_line(roadmap: Roadmap, task: Task, show_status: bool = True) -> str:
     status = pill(task.status) + " " if show_status else ""
     links = task_links(roadmap, task)
     owner = ' <span class="pill blocked">Kai</span>' if task.owner == "kai" else ""
-    return (f'<li>{status}<b>{escape(task.name)}</b>{owner}<br>'
-            f'<span class="small muted"><code>{escape(task.id)}</code> · {task.phase} · {task.estimate_h:g} h'
-            f'{" · " + links if links else ""}</span></li>')
+    return (
+        f"<li>{status}<b>{escape(task.name)}</b>{owner}<br>"
+        f'<span class="small muted"><code>{escape(task.id)}</code> · {task.phase} · {task.estimate_h:g} h'
+        f"{' · ' + links if links else ''}</span></li>"
+    )
 
 
 def overview(roadmap: Roadmap, snapshot: Snapshot) -> str:
     s = roadmap.summary()
     counts = s["counts"]
-    stats = "".join(
-        f'<div class="stat"><b>{counts[k]}</b><span>{k}</span></div>' for k in STATUSES
-    )
+    stats = "".join(f'<div class="stat"><b>{counts[k]}</b><span>{k}</span></div>' for k in STATUSES)
     header = f"""<div class="panel" style="margin-bottom:16px"><h2>Progress</h2>
 <div class="stats"><div class="stat"><b>{s["percent"]}%</b>
 <span>{s["done_h"]:g} of {s["estimate_h"]:g} h done</span></div>
@@ -124,22 +124,34 @@ def overview(roadmap: Roadmap, snapshot: Snapshot) -> str:
     nxt = "".join(task_line(roadmap, t, False) for t in roadmap.next_up()[:8])
     nxt = nxt or '<li class="muted">Nothing ready.</li>'
     blocked = [t for t in roadmap.tasks if t.status == "blocked"]
-    blocked_html = "".join(
-        task_line(roadmap, t, False).replace(
-            "</span></li>",
-            f' · waiting on {escape(", ".join(roadmap.waiting(t)) or "Kai")}</span></li>', 1)
-        for t in blocked) or '<li class="muted">Nothing blocked.</li>'
+    blocked_html = (
+        "".join(
+            task_line(roadmap, t, False).replace(
+                "</span></li>", f" · waiting on {escape(', '.join(roadmap.waiting(t)) or 'Kai')}</span></li>", 1
+            )
+            for t in blocked
+        )
+        or '<li class="muted">Nothing blocked.</li>'
+    )
 
     open_prs = [p for p in snapshot.live.prs if p.state == "OPEN"]
-    prs = "".join(
-        f'<li><a href="{escape(p.url)}">#{p.number}</a> {escape(p.title)} '
-        f'<span class="small muted"><code>{escape(p.branch)}</code></span></li>' for p in open_prs
-    ) or '<li class="muted">No open PRs.</li>'
+    prs = (
+        "".join(
+            f'<li><a href="{escape(p.url)}">#{p.number}</a> {escape(p.title)} '
+            f'<span class="small muted"><code>{escape(p.branch)}</code></span></li>'
+            for p in open_prs
+        )
+        or '<li class="muted">No open PRs.</li>'
+    )
 
-    commits = "".join(
-        f'<li><code>{escape(c.sha)}</code> {escape(c.subject)} '
-        f'<span class="small muted">{escape(c.date[:16].replace("T", " "))}</span></li>' for c in snapshot.commits[:12]
-    ) or '<li class="muted">No commits found.</li>'
+    commits = (
+        "".join(
+            f"<li><code>{escape(c.sha)}</code> {escape(c.subject)} "
+            f'<span class="small muted">{escape(c.date[:16].replace("T", " "))}</span></li>'
+            for c in snapshot.commits[:12]
+        )
+        or '<li class="muted">No commits found.</li>'
+    )
 
     phases = "".join(
         f'<li><b>{escape(p.id)}</b> {escape(p.name)} <span class="small muted">'
@@ -150,7 +162,9 @@ def overview(roadmap: Roadmap, snapshot: Snapshot) -> str:
     trees = [w for w in snapshot.worktrees if w.branch != "main"]
     trees_html = "".join(f"<li><code>{escape(w.branch)}</code></li>" for w in trees) or '<li class="muted">None.</li>'
 
-    return header + f"""<div class="grid">
+    return (
+        header
+        + f"""<div class="grid">
 <div class="panel"><h2>In progress</h2><ul class="plain">{now}</ul></div>
 <div class="panel"><h2>Next up</h2><ul class="plain">{nxt}</ul></div>
 <div class="panel"><h2>Blocked</h2><ul class="plain">{blocked_html}</ul></div>
@@ -159,6 +173,7 @@ def overview(roadmap: Roadmap, snapshot: Snapshot) -> str:
 <div class="panel"><h2>Active worktrees</h2><ul class="plain">{trees_html}</ul></div>
 <div class="panel"><h2>Recent commits on main</h2><ul class="plain">{commits}</ul></div>
 </div>"""
+    )
 
 
 def phase_filter(roadmap: Roadmap, base: str, selected: str | None) -> str:
@@ -182,12 +197,14 @@ def board(roadmap: Roadmap, snapshot: Snapshot, phase: str | None = None) -> str
             cards.append(
                 f'<div class="card {status}"><b>{escape(t.name)}</b>'
                 f'<div class="small muted"><code>{escape(t.id)}</code> · {t.phase} · {t.estimate_h:g} h'
-                f'{" · Kai" if t.owner == "kai" else ""}</div>{extra}'
-                f'{f"<div class=small>{links}</div>" if links else ""}</div>'
+                f"{' · Kai' if t.owner == 'kai' else ''}</div>{extra}"
+                f"{f'<div class=small>{links}</div>' if links else ''}</div>"
             )
         count = len(cards)
-        cols.append(f'<div class="col"><h2 class="small muted">{pill(status)} <span>{count}</span></h2>'
-                    f'{"".join(cards) or "<p class=muted>—</p>"}</div>')
+        cols.append(
+            f'<div class="col"><h2 class="small muted">{pill(status)} <span>{count}</span></h2>'
+            f"{''.join(cards) or '<p class=muted>—</p>'}</div>"
+        )
     return phase_filter(roadmap, "/board", phase) + f'<div class="board">{"".join(cols)}</div>'
 
 
@@ -197,9 +214,13 @@ def roadmap_page(roadmap: Roadmap, snapshot: Snapshot) -> str:
         pct = round(100 * p.done_h / p.estimate_h) if p.estimate_h else 0
         rows = []
         for t in p.tasks:
-            deps = ", ".join(
-                f'{"✓ " if (d := roadmap.task(dep)) and d.status == "done" else ""}{escape(dep)}' for dep in t.depends
-            ) or "—"
+            deps = (
+                ", ".join(
+                    f"{'✓ ' if (d := roadmap.task(dep)) and d.status == 'done' else ''}{escape(dep)}"
+                    for dep in t.depends
+                )
+                or "—"
+            )
             rows.append(
                 f"<tr><td>{pill(t.status)}</td><td><b>{escape(t.name)}</b><br>"
                 f'<code class="muted">{escape(t.id)}</code></td><td>{t.estimate_h:g} h</td>'
@@ -212,7 +233,7 @@ def roadmap_page(roadmap: Roadmap, snapshot: Snapshot) -> str:
             f'<span class="muted">· {p.done_h:g}/{p.estimate_h:g} h · {pct}%</span></h2>'
             f'<p class="muted" style="margin:0">{escape(p.goal)}</p><div class="bar"><i style="width:{pct}%"></i></div>'
             f"<table><tr><th>Status</th><th>Task</th><th>Estimate</th><th>Depends on</th><th>Owner</th>"
-            f'<th>Links</th></tr>{"".join(rows)}</table></div>'
+            f"<th>Links</th></tr>{''.join(rows)}</table></div>"
         )
     return "".join(out)
 
@@ -227,12 +248,24 @@ def as_json(roadmap: Roadmap, snapshot: Snapshot) -> dict:
         "next_up": [t.id for t in roadmap.next_up()],
         "phases": [
             {
-                "id": p.id, "name": p.name, "goal": p.goal, "estimate_h": p.estimate_h, "done_h": p.done_h,
+                "id": p.id,
+                "name": p.name,
+                "goal": p.goal,
+                "estimate_h": p.estimate_h,
+                "done_h": p.done_h,
                 "tasks": [
                     {
-                        "id": t.id, "name": t.name, "status": t.status, "status_source": t.status_source,
-                        "owner": t.owner, "estimate_h": t.estimate_h, "depends": t.depends,
-                        "prd": t.prd, "rfc": t.rfc, "branch": t.branch, "commits_ahead": t.commits_ahead,
+                        "id": t.id,
+                        "name": t.name,
+                        "status": t.status,
+                        "status_source": t.status_source,
+                        "owner": t.owner,
+                        "estimate_h": t.estimate_h,
+                        "depends": t.depends,
+                        "prd": t.prd,
+                        "rfc": t.rfc,
+                        "branch": t.branch,
+                        "commits_ahead": t.commits_ahead,
                         "pr": {"number": t.pr.number, "state": t.pr.state, "url": t.pr.url} if t.pr else None,
                     }
                     for t in p.tasks

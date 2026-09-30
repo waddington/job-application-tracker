@@ -150,7 +150,7 @@ def parse_scalar(text: str, line: int | None = None):
         value = parser.value()
         parser.skip_space()
         if parser.pos != len(text):
-            raise YamlishError(f"trailing text after flow value: {text[parser.pos:]!r}", line)
+            raise YamlishError(f"trailing text after flow value: {text[parser.pos :]!r}", line)
         return value
     if text[:1] in "\"'":
         parser = _FlowParser(text, line)
