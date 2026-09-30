@@ -49,6 +49,13 @@ PDFs and email exports. It runs locally.
 - Once they exist, start with `docs/OVERVIEW.md` (the map: processes, data flow, state) and
   then `docs/ARCHITECTURE.md` (module contracts).
 - Tests and lint must pass before merging.
+- **`.gitignore` follows the stack** (Kai, 2026-09-30): whenever a technology, language, framework
+  or tool comes into the repo, append the matching template from
+  https://github.com/github/gitignore (e.g. `Python.gitignore`, `Node.gitignore`,
+  `Global/macOS.gitignore`) to `.gitignore` in the same PR, under a
+  `# --- <Name> (github/gitignore) ---` header. Skip it if that template is already there. Don't
+  duplicate lines the file already has, and keep the repo-specific entries (worktrees,
+  `data/`, `var/`) intact.
 - Prefer a plain-file data model (Markdown with frontmatter, attachments next to it) so the data
   stays readable and portable without the app.
 
