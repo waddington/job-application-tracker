@@ -1,4 +1,16 @@
-import { Anchor, Badge, Card, Group, Loader, Stack, Switch, Table, Text, Title } from "@mantine/core";
+import {
+  Anchor,
+  Badge,
+  Card,
+  Group,
+  Loader,
+  Stack,
+  Switch,
+  Table,
+  Text,
+  Title,
+  VisuallyHidden,
+} from "@mantine/core";
 import { IconCash, IconTrophy } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
@@ -106,7 +118,9 @@ export function OffersPage() {
             <Table withColumnBorders verticalSpacing="sm">
               <Table.Thead>
                 <Table.Tr>
-                  <Table.Th w={160} />
+                  <Table.Th w={160}>
+                    <VisuallyHidden>Detail</VisuallyHidden>
+                  </Table.Th>
                   {offers.map((o) => (
                     <Table.Th key={o.id}>
                       <Anchor component={Link} to={`/applications/${o.application_id}`} fw={700}>
@@ -140,7 +154,7 @@ export function OffersPage() {
                     <Table.Th scope="row">{row.label}</Table.Th>
                     {offers.map((o) => (
                       <Table.Td key={o.id}>
-                        <Text size="sm" span>
+                        <Text size="sm" component="div">
                           {row.cell(o)}
                         </Text>
                       </Table.Td>

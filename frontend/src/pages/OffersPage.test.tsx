@@ -76,7 +76,7 @@ describe("offers", () => {
     const header = within(table)
       .getAllByRole("columnheader")
       .map((h) => h.textContent);
-    expect(header).toEqual(["", "FabrikamPlatform Contractor", "ContosoBackend Engineer"]);
+    expect(header).toEqual(["Detail", "FabrikamPlatform Contractor", "ContosoBackend Engineer"]);
     const rowText = (label: string) =>
       within(table).getByRole("rowheader", { name: label }).closest("tr")!.textContent;
     expect(rowText("Worth a year")).toBe("Worth a year£143,000Highest£98,100");

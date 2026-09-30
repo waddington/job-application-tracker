@@ -81,5 +81,39 @@ def test_offer_deadlines_in_next_actions(client, seeded):
         f"/api/v1/applications/{done['id']}/offers",
         {"respond_by": str(today), "status": "declined"},
     )
+    overdue, revised, archived, closed = (_app(client, seeded) for _ in range(4))
+    post(client, f"/api/v1/applications/{overdue['id']}/offers", {"respond_by": str(today - timedelta(days=2))})
+    # A revised offer with no deadline replaces the first one's.
+    post(client, f"/api/v1/applications/{revised['id']}/offers", {"respond_by": str(today + timedelta(days=1))})
+    post(client, f"/api/v1/applications/{revised['id']}/offers", {"salary": 90_000})
+    for app in (archived, closed):
+        post(client, f"/api/v1/applications/{app['id']}/offers", {"respond_by": str(today)})
+    assert client.patch(f"/api/v1/applications/{archived['id']}", json={"archived": True}).status_code == 200
+    r = client.post(f"/api/v1/applications/{closed['id']}/move", json={"to_stage": "declined"})
+    assert r.status_code == 200, r.text
+
     out = client.get("/api/v1/next-actions", params={"today": str(today)}).json()
-    assert [o["application_id"] for o in out["offer_deadlines"]] == [soon["id"]]
+    assert [o["application_id"] for o in out["offer_deadlines"]] == [overdue["id"], soon["id"]]
+
+
+def test_offer_value_follows_the_kind_of_job(client, seeded):
+    app = _app(client, seeded)
+    offer = post(
+        client,
+        f"/api/v1/applications/{app['id']}/offers",
+        {"employment_type": "contract", "day_rate": 600, "currency": "GBP"},
+    )
+    # Switched to permanent through the API, with the old day rate left behind.
+    r = client.patch(f"/api/v1/offers/{offer['id']}", json={"employment_type": "permanent", "salary": 80_000})
+    assert (r.json()["value_basis"], r.json()["annual_value"]) == ("salary", 80_000)
+    r = client.patch(f"/api/v1/offers/{offer['id']}", json={"currency": "eur"})
+    assert r.json()["currency"] == "EUR"
+    assert client.patch(f"/api/v1/offers/{offer['id']}", json={"currency": None}).json()["currency"] is None
+    assert client.patch(f"/api/v1/offers/{offer['id']}", json={"currency": "£££"}).status_code == 422
+
+
+def test_offers_go_with_their_application(client, seeded):
+    app = _app(client, seeded)
+    offer = post(client, f"/api/v1/applications/{app['id']}/offers", {"salary": 70_000})
+    assert client.delete(f"/api/v1/applications/{app['id']}").status_code == 204
+    assert client.get(f"/api/v1/offers/{offer['id']}").status_code == 404

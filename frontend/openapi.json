@@ -3356,8 +3356,7 @@
           "currency": {
             "anyOf": [
               {
-                "maxLength": 3,
-                "minLength": 3,
+                "pattern": "^[A-Za-z]{3}$",
                 "type": "string"
               },
               {
@@ -3854,8 +3853,7 @@
           "currency": {
             "anyOf": [
               {
-                "maxLength": 3,
-                "minLength": 3,
+                "pattern": "^[A-Za-z]{3}$",
                 "type": "string"
               },
               {

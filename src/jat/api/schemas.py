@@ -622,7 +622,7 @@ class OfferIn(In):
     respond_by: date | None = None
     start_on: date | None = None
     employment_type: EmploymentType | None = None
-    currency: str | None = Field(default=None, min_length=3, max_length=3)
+    currency: str | None = Field(default=None, pattern=r"^[A-Za-z]{3}$")
     salary: int | None = Field(default=None, ge=0)
     bonus: int | None = Field(default=None, ge=0)
     equity: str | None = None
@@ -644,7 +644,7 @@ class OfferPatch(Patch):
     respond_by: date | None = None
     start_on: date | None = None
     employment_type: EmploymentType | None = None
-    currency: str | None = Field(default=None, min_length=3, max_length=3)
+    currency: str | None = Field(default=None, pattern=r"^[A-Za-z]{3}$")
     salary: int | None = Field(default=None, ge=0)
     bonus: int | None = Field(default=None, ge=0)
     equity: str | None = None
