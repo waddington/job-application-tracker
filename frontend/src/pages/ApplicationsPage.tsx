@@ -117,7 +117,7 @@ export function ApplicationsPage() {
           leftSection={<IconSearch size={16} />}
           value={q}
           onChange={(e) => setQ(e.currentTarget.value)}
-          w={260}
+          w={300}
           aria-label="Search"
         />
         <MultiSelect
