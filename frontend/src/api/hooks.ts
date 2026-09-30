@@ -55,6 +55,7 @@ export function invalidateApplicationViews(qc: QueryClient) {
     ["company-summary"],
     ["agency-summary"],
     ["duplicates"],
+    ["insights"],
     ["interviews"],
     ["next-actions"],
   ]) {
