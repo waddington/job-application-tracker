@@ -24,6 +24,7 @@ class SearchHit(BaseModel):
     link: str  # where to open it in the app (a path), or an external URL for a link
     snippet: str | None  # text around the first match, when it isn't in the title
     updated: datetime | None
+    archived: bool  # an archived application (listed last)
 
 
 @router.get("/search", response_model=list[SearchHit])
@@ -37,6 +38,8 @@ def search(
     their contact details, interview prep and debriefs, offers, timeline entries, notes,
     documents, files, emails and links. Title matches first, then the most recent.
     """
+    # Each search reads every table and every note file (after syncing the note index): fine
+    # for one person's job hunt, and it runs on submit, not on each keystroke.
     store = _sync(request)
     notes = []
     for row in session.scalars(select(NoteIndex)):
@@ -53,6 +56,7 @@ def search(
             link=h.link,
             snippet=h.snippet,
             updated=h.updated,
+            archived=h.archived,
         )
         for h in svc.search(session, q, notes=notes, limit=limit)
     ]

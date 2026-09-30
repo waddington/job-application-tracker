@@ -2321,6 +2321,8 @@ export interface components {
         };
         /** SearchHit */
         SearchHit: {
+            /** Archived */
+            archived: boolean;
             /** Id */
             id: string;
             /** Kind */

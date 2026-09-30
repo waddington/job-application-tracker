@@ -57,6 +57,10 @@ class Candidate:
     subtitle: str | None = None
     fields: list[str] = field(default_factory=list)  # searchable text besides the title
     updated: datetime | None = None
+    # Is the subtitle searchable? Not when it only names the application something belongs to:
+    # otherwise "contoso" would list every interview and call for every Contoso application.
+    subtitle_searchable: bool = True
+    archived: bool = False  # an archived application: shown, but after everything else
 
 
 @dataclass
@@ -69,6 +73,7 @@ class Hit:
     snippet: str | None  # text around the first match outside the title
     title_match: bool
     updated: datetime | None
+    archived: bool = False
 
 
 def _snippet(text: str, words: list[str]) -> str | None:
@@ -86,7 +91,8 @@ def _snippet(text: str, words: list[str]) -> str | None:
 def match(candidate: Candidate, words: list[str]) -> Hit | None:
     title = fold(candidate.title)
     body = [f for f in candidate.fields if f]
-    everything = " ".join([title, fold(candidate.subtitle or ""), *(fold(f) for f in body)])
+    subtitle = fold(candidate.subtitle or "") if candidate.subtitle_searchable else ""
+    everything = " ".join([title, subtitle, *(fold(f) for f in body)])
     if not all(w in everything for w in words):
         return None
     title_match = all(w in title for w in words)
@@ -105,6 +111,7 @@ def match(candidate: Candidate, words: list[str]) -> Hit | None:
         snippet,
         title_match,
         candidate.updated,
+        candidate.archived,
     )
 
 
@@ -163,6 +170,7 @@ def _applications(session: Session, places: Places) -> Iterator[Candidate]:
             subtitle=" · ".join(x for x in (agency, recruiter.name if recruiter else None) if x) or None,
             fields=[location or "", " ".join(app.tags or []), description or ""],
             updated=app.updated_at,
+            archived=app.archived,
         )
 
 
@@ -216,14 +224,17 @@ def _activity(session: Session, places: Places) -> Iterator[Candidate]:
             f"/applications/{i.application_id}",
             subtitle=apps.get(i.application_id),
             fields=[i.prep or "", i.debrief or "", i.questions or "", i.task_instructions or "", i.location or ""],
+            subtitle_searchable=False,
             updated=i.updated_at,
         )
     for o in session.scalars(select(Offer)):
         yield Candidate(
             "offer",
             o.id,
-            f"Offer · {apps.get(o.application_id, '')}",
+            "Offer",
             f"/applications/{o.application_id}",
+            subtitle=apps.get(o.application_id),
+            subtitle_searchable=False,
             fields=[o.equity or "", o.benefits or "", o.notes or ""],
             updated=o.updated_at,
         )
@@ -235,6 +246,7 @@ def _activity(session: Session, places: Places) -> Iterator[Candidate]:
             e.summary or "",
             f"/applications/{e.application_id}",
             subtitle=apps.get(e.application_id),
+            subtitle_searchable=False,
             updated=e.occurred_at,
         )
 
@@ -300,5 +312,5 @@ def search(session: Session, query: str, *, notes: Iterable[tuple[NoteIndex, str
     for source in SOURCES:
         hits.extend(h for c in source(session, places) if (h := match(c, words)))
     hits.extend(h for c in notes_candidates(notes, places) if (h := match(c, words)))
-    hits.sort(key=lambda h: (not h.title_match, -(h.updated.timestamp() if h.updated else 0)))
+    hits.sort(key=lambda h: (h.archived, not h.title_match, -(h.updated.timestamp() if h.updated else 0)))
     return hits[:limit]

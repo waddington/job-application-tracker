@@ -4897,6 +4897,10 @@
       },
       "SearchHit": {
         "properties": {
+          "archived": {
+            "title": "Archived",
+            "type": "boolean"
+          },
           "id": {
             "title": "Id",
             "type": "string"
@@ -4955,7 +4959,8 @@
           "subtitle",
           "link",
           "snippet",
-          "updated"
+          "updated",
+          "archived"
         ],
         "title": "SearchHit",
         "type": "object"

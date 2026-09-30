@@ -34,7 +34,9 @@ const KINDS: Record<string, { label: string; icon: Icon }> = {
 
 function HitRow({ hit, words }: { hit: SearchHit; words: string[] }) {
   const kind = KINDS[hit.kind] ?? { label: hit.kind, icon: IconSearch };
+  // In-app paths open in the app; files and outside links in a new tab (web addresses only).
   const external = !hit.link.startsWith("/") || hit.link.startsWith("/api/");
+  const safe = hit.link.startsWith("/") || /^https?:\/\//i.test(hit.link);
   const title = (
     <Highlight highlight={words} fw={600} size="sm" span>
       {hit.title}
@@ -45,7 +47,9 @@ function HitRow({ hit, words }: { hit: SearchHit; words: string[] }) {
       <kind.icon size={18} stroke={1.6} style={{ marginTop: 2, flexShrink: 0 }} />
       <Stack gap={2} style={{ minWidth: 0 }}>
         <Group gap="xs" wrap="nowrap">
-          {external ? (
+          {!safe ? (
+            title
+          ) : external ? (
             <Anchor href={hit.link} target="_blank" rel="noreferrer">
               {title}
             </Anchor>
@@ -57,6 +61,11 @@ function HitRow({ hit, words }: { hit: SearchHit; words: string[] }) {
           <Badge size="xs" variant="light" color="gray">
             {kind.label}
           </Badge>
+          {hit.archived && (
+            <Badge size="xs" variant="outline" color="gray">
+              Archived
+            </Badge>
+          )}
         </Group>
         {hit.subtitle && (
           <Text size="xs" c="dimmed" truncate="end">

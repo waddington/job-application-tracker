@@ -65,9 +65,18 @@ def test_search_across_everything(client, seeded):
     assert [(h["kind"], h["link"]) for h in notes] == [("note", "/notes")]
     assert "Kafka" in notes[0]["snippet"]
 
-    # Title matches come first.
+    # Title matches come first, and the application's interviews, offer and calls don't match
+    # on its name alone (only on what they say).
     hits = _search(client, "contoso")
     assert hits[0]["kind"] in ("company", "application") and hits[0]["title"].startswith("Contoso")
+    assert {h["kind"] for h in hits} == {"company", "application"}
+    assert [h["kind"] for h in _search(client, "contoso idempotency")] == []  # the name isn't in the debrief
+
+    # Archived applications are still found, after everything else.
+    other = post(client, "/api/v1/applications", {"role_id": role})
+    assert client.patch(f"/api/v1/applications/{app['id']}", json={"archived": True}).status_code == 200
+    hits = [h for h in _search(client, "contoso senior") if h["kind"] == "application"]
+    assert [(h["id"], h["archived"]) for h in hits] == [(other["id"], False), (app["id"], True)]
     assert _search(client, "nothing-matches-this") == []
     assert len(_search(client, "contoso", limit=1)) == 1
     assert client.get("/api/v1/search", params={"q": ""}).status_code == 422
