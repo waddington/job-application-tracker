@@ -15,7 +15,18 @@ from pathlib import Path
 
 from jat.datadir import init_data_dir
 from jat.db import db_path, make_engine, migrate, session_factory
-from jat.db.models import Agency, Application, Company, Contact, ContactDetail, Interview, Role
+from jat.db.models import (
+    Agency,
+    Application,
+    ApplicationDocument,
+    Company,
+    Contact,
+    ContactDetail,
+    Document,
+    DocumentVersion,
+    Interview,
+    Role,
+)
 from jat.domain.applications import create_application, history, log_activity, move
 from jat.domain.workflow import DEFAULT_WORKFLOW as W
 from jat.storage.notes import NoteStore
@@ -218,6 +229,15 @@ def seed(path: Path) -> None:
             ),
         ]:
             store.index(s, store.create(title, body, links))
+        # A CV with two versions, the newer one sent to Contoso.
+        cv = Document(kind="cv", name="Backend CV")
+        s.add(cv)
+        s.flush()
+        v2 = DocumentVersion(document_id=cv.id, label="v2", created_at=days_ago(40))
+        v3 = DocumentVersion(document_id=cv.id, label="v3 (fintech)", notes="Leads with payments work")
+        s.add_all([v2, v3])
+        s.flush()
+        s.add(ApplicationDocument(application_id=first_app["Contoso"].id, document_version_id=v3.id))
     engine.dispose()
     print(f"Seeded {len(APPLICATIONS)} demo applications in {path}")
 
