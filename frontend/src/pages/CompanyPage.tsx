@@ -14,7 +14,7 @@ import {
   Title,
 } from "@mantine/core";
 import { IconArrowLeft, IconBuilding } from "@tabler/icons-react";
-import { Link, useParams } from "@tanstack/react-router";
+import { Link, useParams, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 
 import type { Schemas } from "../api/client";
@@ -22,6 +22,7 @@ import { useCompanySummary, useUpdateCompany } from "../api/detailHooks";
 import { stageLookup, useWorkflow } from "../api/hooks";
 import { ApplicationDrawer } from "../components/ApplicationDrawer";
 import { AttachmentsCard } from "../components/Attachments";
+import { DeleteButton } from "../components/DeleteButton";
 import { LinksCard } from "../components/Links";
 import { NotesCard } from "../components/Notes";
 import { StageBadge } from "../components/StageBadge";
@@ -60,6 +61,7 @@ export function CompanyPage() {
   const { data: workflow } = useWorkflow();
   const stages = stageLookup(workflow);
   const [openId, setOpenId] = useState<string | null>(null);
+  const router = useRouter();
 
   if (isError) return <Alert color="red">Couldn't load this company.</Alert>;
   if (isLoading || !data) return <Loader />;
@@ -72,14 +74,28 @@ export function CompanyPage() {
           <IconArrowLeft size={14} /> All companies
         </Group>
       </Anchor>
-      <Group gap="sm">
-        <IconBuilding size={26} stroke={1.6} />
-        <Title order={2}>{company.name}</Title>
-        {company.website && (
-          <Anchor href={company.website} target="_blank" rel="noreferrer" size="sm">
-            {company.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
-          </Anchor>
-        )}
+      <Group justify="space-between" wrap="wrap">
+        <Group gap="sm">
+          <IconBuilding size={26} stroke={1.6} />
+          <Title order={2}>{company.name}</Title>
+          {company.website && (
+            <Anchor href={company.website} target="_blank" rel="noreferrer" size="sm">
+              {company.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+            </Anchor>
+          )}
+        </Group>
+        <DeleteButton
+          kind="company"
+          id={company.id}
+          name={company.name}
+          blocked={
+            applications.length
+              ? `${company.name} still has ${applications.length === 1 ? "an application" : `${applications.length} applications`}. Delete them first, or archive them instead.`
+              : null
+          }
+          confirm={`Delete ${company.name} and its roles? Its people stay, without a company.`}
+          onDeleted={() => router.history.push("/companies")}
+        />
       </Group>
       <Grid gap="lg">
         <Grid.Col span={{ base: 12, md: 8 }}>
@@ -153,9 +169,18 @@ export function CompanyPage() {
               <Stack gap={6}>
                 {roles.map((r) => (
                   <div key={r.id}>
-                    <Text size="sm" fw={600}>
-                      {r.title}
-                    </Text>
+                    <Group justify="space-between" wrap="nowrap" gap={4}>
+                      <Text size="sm" fw={600}>
+                        {r.title}
+                      </Text>
+                      <DeleteButton
+                        compact
+                        kind="role"
+                        id={r.id}
+                        name={r.title}
+                        confirm={`Delete the role ${r.title}? A role with applications can't be deleted.`}
+                      />
+                    </Group>
                     <Group gap={6}>
                       {r.work_mode && (
                         <Badge size="xs" variant="light" color="gray">

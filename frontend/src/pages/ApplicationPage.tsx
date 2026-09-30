@@ -16,7 +16,7 @@ import {
 } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import { IconArrowLeft, IconTrash } from "@tabler/icons-react";
-import { Link, useParams } from "@tanstack/react-router";
+import { Link, useParams, useRouter } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { useState } from "react";
 
@@ -32,6 +32,7 @@ import {
 import { AttachmentsCard } from "../components/Attachments";
 import { LinksCard } from "../components/Links";
 import { NotesCard } from "../components/Notes";
+import { DeleteButton } from "../components/DeleteButton";
 import { OffersCard } from "../components/Offers";
 import { SentDocumentsCard } from "../components/SentDocuments";
 import { InterviewsCard } from "../components/Interviews";
@@ -227,14 +228,30 @@ function RoleCard({ app }: { app: ApplicationDetail }) {
 export function ApplicationPage() {
   const { appId } = useParams({ from: "/applications/$appId" });
   const { data: app, isLoading, isError, error } = useApplication(appId);
+  const router = useRouter();
 
   return (
     <Stack maw={1200}>
-      <Anchor component={Link} to="/applications" size="sm">
-        <Group gap={4}>
-          <IconArrowLeft size={14} /> All applications
-        </Group>
-      </Anchor>
+      <Group justify="space-between">
+        <Anchor component={Link} to="/applications" size="sm">
+          <Group gap={4}>
+            <IconArrowLeft size={14} /> All applications
+          </Group>
+        </Anchor>
+        {app && (
+          <DeleteButton
+            kind="application"
+            id={app.id}
+            name={`${app.company_name} · ${app.role_title}`}
+            confirm={
+              `Delete your application to ${app.company_name} (${app.role_title})? Its interviews, ` +
+              "offer, timeline and record of documents sent go with it; notes and files stay. " +
+              "To keep it but hide it, archive it instead."
+            }
+            onDeleted={() => router.history.push("/applications")}
+          />
+        )}
+      </Group>
       {isError ? (
         <ApplicationLoadError error={error} />
       ) : isLoading || !app ? (
