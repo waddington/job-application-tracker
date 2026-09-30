@@ -140,7 +140,7 @@ describe("next actions", () => {
     };
     vi.stubGlobal("confirm", () => true);
     const calls = mockApi({
-      "/api/v1/workflow": { ...WORKFLOW, stages: [...WORKFLOW.stages, ghosted] },
+      "/api/v1/workflow": { ...WORKFLOW, transitions: "any", stages: [...WORKFLOW.stages, ghosted] },
       "/api/v1/next-actions": {
         follow_ups: [],
         stale: [row({ id: "a3", company_name: "Litware", days_since_activity: 12 })],
@@ -165,9 +165,37 @@ describe("next actions", () => {
     await waitFor(() => expect(calls.filter((c) => c.method === "PATCH")).toHaveLength(2));
     expect(calls.filter((c) => c.method === "PATCH")[1]!.body).toHaveProperty("follow_up_on");
 
-    fireEvent.click(screen.getByRole("button", { name: /Ghosted/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Mark Litware as Ghosted" }));
     await waitFor(() =>
       expect(calls.find((c) => c.method === "POST")?.body).toEqual({ to_stage: "ghosted", note: "No reply" }),
     );
+  });
+
+  it("only offers Ghosted where the workflow allows that move", async () => {
+    const ghosted = {
+      id: "ghosted",
+      name: "Ghosted",
+      kind: "closed",
+      stale_after_days: null,
+      color: "dark",
+      next: [],
+      allowed_next: [],
+      suggested_next: [],
+    };
+    mockApi({
+      // Configured transitions, and "applied" can't go to "ghosted".
+      "/api/v1/workflow": { ...WORKFLOW, transitions: "configured", stages: [...WORKFLOW.stages, ghosted] },
+      "/api/v1/next-actions": {
+        follow_ups: [],
+        stale: [row({ id: "a3", company_name: "Litware", stage: "applied" })],
+        upcoming: [],
+        awaiting_outcome: [],
+        today: "2026-09-30",
+      },
+      "/api/v1/health": {},
+    });
+    renderHome();
+    expect(await screen.findByRole("button", { name: "Snooze Litware" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /as Ghosted/ })).not.toBeInTheDocument();
   });
 });
