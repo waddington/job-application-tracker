@@ -54,6 +54,9 @@ def safe_name(name: str, limit: int = 100) -> str:
 class FileStore:
     def __init__(self, data_dir: Path, max_bytes: int = MAX_BYTES) -> None:
         self.root = (data_dir / "files").resolve()
+        # Uploads land here first (same disk, so the final move is atomic), outside files/ so a
+        # half-written file can never be picked up by a snapshot.
+        self.tmp = data_dir.resolve() / ".tmp"
         self.max_bytes = max_bytes
 
     def resolve(self, rel_path: str) -> Path:
@@ -73,7 +76,8 @@ class FileStore:
         dest.parent.mkdir(parents=True, exist_ok=True)
         digest = hashlib.sha256()
         size = 0
-        fd, tmp = tempfile.mkstemp(dir=dest.parent, prefix=".tmp-")
+        self.tmp.mkdir(exist_ok=True)
+        fd, tmp = tempfile.mkstemp(dir=self.tmp, prefix="upload-")
         try:
             with os.fdopen(fd, "wb") as out:
                 while chunk := stream.read(_CHUNK):

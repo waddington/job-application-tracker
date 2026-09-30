@@ -26,7 +26,7 @@ def dist(tmp_path):
 
 
 def test_health(data_dir, dist):
-    client = TestClient(create_app(data_dir, dist=dist))
+    client = TestClient(base_url="http://127.0.0.1", app=create_app(data_dir, dist=dist))
     body = client.get("/api/v1/health").json()
     assert body["status"] == "ok"
     assert body["schema"] == body["schema_head"] == head_revision()
@@ -34,7 +34,7 @@ def test_health(data_dir, dist):
 
 
 def test_spa_routes_and_assets(data_dir, dist):
-    client = TestClient(create_app(data_dir, dist=dist))
+    client = TestClient(base_url="http://127.0.0.1", app=create_app(data_dir, dist=dist))
     for path in ("/", "/applications", "/recruiters/123"):
         r = client.get(path)
         assert r.status_code == 200 and "SPA" in r.text
@@ -43,7 +43,7 @@ def test_spa_routes_and_assets(data_dir, dist):
 
 
 def test_api_paths_never_fall_through_to_spa(data_dir, dist):
-    client = TestClient(create_app(data_dir, dist=dist))
+    client = TestClient(base_url="http://127.0.0.1", app=create_app(data_dir, dist=dist))
     for path in ("/api/v1/nope", "/api", "/api/"):
         r = client.get(path)
         assert r.status_code == 404
@@ -51,19 +51,19 @@ def test_api_paths_never_fall_through_to_spa(data_dir, dist):
 
 
 def test_no_path_traversal(data_dir, dist):
-    client = TestClient(create_app(data_dir, dist=dist))
+    client = TestClient(base_url="http://127.0.0.1", app=create_app(data_dir, dist=dist))
     for path in ("/../secret.txt", "/%2e%2e/secret.txt", "/..%2fsecret.txt"):
         assert "outside dist" not in client.get(path).text
 
 
 def test_unbuilt_frontend_message(data_dir, tmp_path):
-    client = TestClient(create_app(data_dir, dist=tmp_path / "missing"))
+    client = TestClient(base_url="http://127.0.0.1", app=create_app(data_dir, dist=tmp_path / "missing"))
     r = client.get("/")
     assert r.status_code == 200 and "isn't built yet" in r.text
 
 
 def test_openapi_available(data_dir, dist):
-    client = TestClient(create_app(data_dir, dist=dist))
+    client = TestClient(base_url="http://127.0.0.1", app=create_app(data_dir, dist=dist))
     assert "/api/v1/health" in client.get("/api/openapi.json").json()["paths"]
 
 

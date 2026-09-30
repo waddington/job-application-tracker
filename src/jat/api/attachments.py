@@ -68,7 +68,9 @@ def list_attachments(
     stmt = select(Attachment)
     if unattached:
         stmt = stmt.where(Attachment.entity_type.is_(None))
-    elif entity_type or entity_id:
+    elif (entity_type is None) != (entity_id is None):
+        raise HTTPException(422, "Give both entity_type and entity_id, or neither")
+    elif entity_type:
         stmt = stmt.where(Attachment.entity_type == entity_type, Attachment.entity_id == entity_id)
     return [_out(a) for a in session.scalars(stmt.order_by(Attachment.created_at.desc(), Attachment.id))]
 
@@ -83,27 +85,35 @@ def upload_attachment(
 ):
     target = _check_entity(session, entity_type, entity_id)
     name = (file.filename or "file").replace("\\", "/").rsplit("/", 1)[-1][:300] or "file"
-    guessed = mimetypes.guess_type(name)[0]
+    # The type comes from the name only: the browser's claim isn't trusted (it decides inline).
+    content_type = mimetypes.guess_type(name)[0] or "application/octet-stream"
+    store = _store(request)
     try:
-        stored = _store(request).save(file.file, name)
+        stored = store.save(file.file, name)
     except TooLarge as exc:
         raise HTTPException(413, str(exc)) from exc
     except FileError as exc:
         raise HTTPException(422, str(exc)) from exc
-    att = Attachment(
-        id=stored.id,
-        entity_type=entity_type,
-        entity_id=entity_id,
-        path=stored.path,
-        original_name=name,
-        content_type=guessed or file.content_type or "application/octet-stream",
-        size=stored.size,
-        sha256=stored.sha256,
-    )
-    session.add(att)
-    session.flush()
-    if isinstance(target, Application):
-        svc.log_activity(session, target, "file", summary=f"File added: {name}", data={"attachment_id": att.id})
+    try:
+        att = Attachment(
+            id=stored.id,
+            entity_type=entity_type,
+            entity_id=entity_id,
+            path=stored.path,
+            original_name=name,
+            content_type=content_type,
+            size=stored.size,
+            sha256=stored.sha256,
+        )
+        session.add(att)
+        session.flush()
+        if isinstance(target, Application):
+            svc.log_activity(session, target, "file", summary=f"File added: {name}", data={"attachment_id": att.id})
+        session.commit()  # now, so a failed save can take its file with it
+    except BaseException:
+        session.rollback()
+        store.delete(stored.path)
+        raise
     return _out(att)
 
 
@@ -152,7 +162,7 @@ def delete_attachment(attachment_id: str, request: Request, session: SessionDep)
     att = get_or_404(session, Attachment, attachment_id)
     path = att.path
     session.delete(att)
-    session.flush()
+    session.commit()  # the record goes first: a failed commit must not leave it pointing at nothing
     with contextlib.suppress(FileError):  # a path the store refuses to touch: leave it be
         _store(request).delete(path)
     return Response(status_code=204)

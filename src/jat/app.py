@@ -18,7 +18,9 @@ from .api.routers import router as api_v1
 from .config import Settings, resolve_data_dir
 from .datadir import CODE_ROOT, check_outside_code_repo, is_git_repo
 from .db import current_revision, db_path, head_revision, make_engine, session_factory
+from .security import LocalOnly
 from .snapshot.git import SnapshotService
+from .storage.files import MAX_BYTES
 
 DEFAULT_DIST = CODE_ROOT / "frontend" / "dist"
 DEV_ORIGINS = ["http://127.0.0.1:5173", "http://localhost:5173"]
@@ -76,7 +78,12 @@ def _mount_frontend(app: FastAPI, dist: Path) -> None:
 
 
 def create_app(
-    data_dir: Path, *, dist: Path = DEFAULT_DIST, dev: bool = False, snapshot_debounce: float | None = None
+    data_dir: Path,
+    *,
+    dist: Path = DEFAULT_DIST,
+    dev: bool = False,
+    snapshot_debounce: float | None = None,
+    bind_host: str | None = None,
 ) -> FastAPI:
     """Build the app for a data directory whose database already exists and is migrated."""
     check_outside_code_repo(data_dir)
@@ -107,6 +114,13 @@ def create_app(
     app.state.writes.subscribe(app.state.snapshots.mark_dirty)
     if dev:
         app.add_middleware(CORSMiddleware, allow_origins=DEV_ORIGINS, allow_methods=["*"], allow_headers=["*"])
+    # Outermost: refuse other hosts and cross-site writes before anything else runs.
+    app.add_middleware(
+        LocalOnly,
+        bind_host=bind_host,
+        extra_origins=DEV_ORIGINS if dev else (),
+        max_upload_bytes=MAX_BYTES,
+    )
     app.include_router(_api_router())
     app.include_router(api_v1)
     _mount_frontend(app, dist)
@@ -115,5 +129,6 @@ def create_app(
 
 def app_from_env() -> FastAPI:
     """Factory for uvicorn (`jat serve`): reads JAT_DATA_DIR and JAT_DEV from the environment."""
-    data_dir = resolve_data_dir(Settings())
-    return create_app(data_dir, dev=os.environ.get("JAT_DEV") == "1")
+    settings = Settings()
+    data_dir = resolve_data_dir(settings)
+    return create_app(data_dir, dev=os.environ.get("JAT_DEV") == "1", bind_host=settings.host)

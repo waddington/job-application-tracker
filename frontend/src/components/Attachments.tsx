@@ -108,7 +108,10 @@ export function AttachmentsCard({ entityType, entityId }: { entityType: string; 
         e.preventDefault();
         setDragging(true);
       }}
-      onDragLeave={() => setDragging(false)}
+      onDragLeave={(e) => {
+        // Moving over a child fires dragleave too: only stop when the pointer leaves the card.
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setDragging(false);
+      }}
       onDrop={onDrop}
       style={dragging ? { outline: "2px dashed var(--mantine-color-blue-5)", outlineOffset: -4 } : undefined}
     >

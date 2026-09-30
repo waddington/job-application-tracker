@@ -35,7 +35,7 @@ def test_store_hashes_and_refuses_escapes(tmp_path):
     small = FileStore(tmp_path, max_bytes=10)
     with pytest.raises(TooLarge):
         small.save(io.BytesIO(b"x" * 11), "big.bin")
-    leftovers = [p for p in (tmp_path / "files").rglob("*") if p.is_file() and p.name.startswith(".tmp-")]
+    leftovers = [p for p in tmp_path.rglob("*") if p.is_file() and p.name.startswith("upload-")]
     assert leftovers == []
 
 
@@ -115,3 +115,63 @@ def test_attachment_validation(client, seeded):
     bad = client.patch(f"/api/v1/attachments/{att['id']}", json={"entity_type": "company", "entity_id": "nope"})
     assert bad.status_code == 422
     assert client.patch(f"/api/v1/attachments/{att['id']}", json={"original_name": "  "}).status_code == 422
+    assert client.get("/api/v1/attachments", params={"entity_type": "company"}).status_code == 422
+
+
+def test_the_browsers_claimed_type_is_not_trusted(client):
+    # No extension, claimed to be a PDF: served as a download, never inline.
+    att = upload(client, "invoice", b"<html>not a pdf</html>", "application/pdf").json()
+    assert att["content_type"] == "application/octet-stream" and att["inline"] is False
+
+
+def test_other_websites_cannot_write(client):
+    evil = {"Origin": "https://evil.example.com"}
+    r = client.post("/api/v1/attachments", files={"file": ("x.txt", b"x", "text/plain")}, headers=evil)
+    assert r.status_code == 403
+    assert client.post("/api/v1/companies", json={"name": "X"}, headers=evil).status_code == 403
+    r = client.post("/api/v1/companies", json={"name": "X"}, headers={"Sec-Fetch-Site": "cross-site"})
+    assert r.status_code == 403
+    # The app's own pages, and tools that send no Origin, are fine.
+    same = {"Origin": "http://127.0.0.1"}
+    assert client.post("/api/v1/companies", json={"name": "Contoso"}, headers=same).status_code == 201
+    assert client.post("/api/v1/companies", json={"name": "Fabrikam"}).status_code == 201
+    # Reads from anywhere still work (the browser keeps the response from other sites).
+    assert client.get("/api/v1/companies", headers=evil).status_code == 200
+
+
+def test_only_localhost_names_are_answered(client):
+    assert client.get("/api/v1/health", headers={"Host": "rebind.example.com"}).status_code == 400
+    assert client.get("/api/v1/health", headers={"Host": "localhost:8770"}).status_code == 200
+    assert client.get("/api/v1/health", headers={"Host": "[::1]:8770"}).status_code == 200
+
+
+def test_oversize_uploads_are_refused_before_reading(client):
+    r = client.post(
+        "/api/v1/attachments",
+        content=b"x",
+        headers={"Content-Length": str(60 * 1024 * 1024), "Content-Type": "multipart/form-data; boundary=x"},
+    )
+    assert r.status_code == 413
+
+
+def test_a_failed_save_takes_its_file_with_it(client, seeded, app, monkeypatch):
+    from jat.domain import applications
+
+    def boom(*args, **kwargs):
+        raise RuntimeError("disk full")
+
+    monkeypatch.setattr(applications, "log_activity", boom)
+    application = post(client, "/api/v1/applications", {"role_id": seeded["role"]["id"]})
+    with pytest.raises(RuntimeError):
+        upload(client, "cv.pdf", PDF, entity_type="application", entity_id=application["id"])
+    files = [p for p in (app.state.jat.data_dir / "files").rglob("*") if p.is_file() and p.name != ".gitkeep"]
+    assert files == []
+
+
+def test_symlinks_are_refused(tmp_path):
+    store = FileStore(tmp_path)
+    (tmp_path / "files").mkdir(exist_ok=True)
+    (tmp_path / "outside.txt").write_text("secret")
+    (tmp_path / "files" / "link.txt").symlink_to(tmp_path / "outside.txt")
+    with pytest.raises(FileError):
+        store.resolve("link.txt")

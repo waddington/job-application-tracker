@@ -48,7 +48,7 @@ def test_snapshot_commits_only_tracked_paths(data_repo):
 
 def test_writes_trigger_debounced_snapshot(data_repo):
     app = create_app(data_repo, dist=data_repo / "none", snapshot_debounce=0.3)
-    client = TestClient(app)
+    client = TestClient(base_url="http://127.0.0.1", app=app)
     before = len(commits(data_repo))
     client.post("/api/v1/companies", json={"name": "Contoso"})
     client.post("/api/v1/companies", json={"name": "Fabrikam"})
@@ -63,7 +63,7 @@ def test_writes_trigger_debounced_snapshot(data_repo):
 
 def test_shutdown_flushes_pending_snapshot(data_repo):
     app = create_app(data_repo, dist=data_repo / "none", snapshot_debounce=3600)
-    with TestClient(app) as client:
+    with TestClient(base_url="http://127.0.0.1", app=app) as client:
         client.post("/api/v1/companies", json={"name": "Contoso"})
         before = len(commits(data_repo))
     assert len(commits(data_repo)) == before + 1
@@ -71,7 +71,7 @@ def test_shutdown_flushes_pending_snapshot(data_repo):
 
 def test_backup_api_and_push(data_repo, remote):
     app = create_app(data_repo, dist=data_repo / "none", snapshot_debounce=3600)
-    client = TestClient(app)
+    client = TestClient(base_url="http://127.0.0.1", app=app)
     client.post("/api/v1/companies", json={"name": "Contoso"})
     status = client.get("/api/v1/backup").json()
     assert status["enabled"] and status["dirty"] and status["has_remote"]
@@ -91,7 +91,7 @@ def test_disabled_when_not_a_git_repo(tmp_path):
     init_data_dir(path, commit=False)
     migrate(db_path(path))
     app = create_app(path, dist=path / "none", snapshot_debounce=0)
-    client = TestClient(app)
+    client = TestClient(base_url="http://127.0.0.1", app=app)
     client.post("/api/v1/companies", json={"name": "Contoso"})
     assert client.get("/api/v1/backup").json()["enabled"] is False
     assert client.post("/api/v1/backup/snapshot").status_code == 409
