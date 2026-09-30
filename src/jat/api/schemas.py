@@ -607,3 +607,81 @@ class QuickApplicationIn(In):
         if not self.company_id and not (self.company_name or "").strip():
             raise ValueError("give company_id or company_name")
         return self
+
+
+# --- offers ------------------------------------------------------------------------------
+
+OfferStatus = Literal["pending", "accepted", "declined", "withdrawn"]
+
+
+class OfferIn(In):
+    """An offer on an application. Money is whole units of `currency` a year, except `day_rate`."""
+
+    status: OfferStatus = "pending"
+    received_on: date | None = None
+    respond_by: date | None = None
+    start_on: date | None = None
+    employment_type: EmploymentType | None = None
+    currency: str | None = Field(default=None, min_length=3, max_length=3)
+    salary: int | None = Field(default=None, ge=0)
+    bonus: int | None = Field(default=None, ge=0)
+    equity: str | None = None
+    equity_value: int | None = Field(default=None, ge=0)
+    pension_percent: float | None = Field(default=None, ge=0, le=100)
+    holiday_days: int | None = Field(default=None, ge=0, le=366)
+    day_rate: int | None = Field(default=None, ge=0)
+    ir35: IR35 | None = None
+    contract_months: int | None = Field(default=None, ge=0, le=120)
+    benefits: str | None = None
+    notes: str | None = None
+
+
+class OfferPatch(Patch):
+    not_null = frozenset({"status"})
+
+    status: OfferStatus | None = None
+    received_on: date | None = None
+    respond_by: date | None = None
+    start_on: date | None = None
+    employment_type: EmploymentType | None = None
+    currency: str | None = Field(default=None, min_length=3, max_length=3)
+    salary: int | None = Field(default=None, ge=0)
+    bonus: int | None = Field(default=None, ge=0)
+    equity: str | None = None
+    equity_value: int | None = Field(default=None, ge=0)
+    pension_percent: float | None = Field(default=None, ge=0, le=100)
+    holiday_days: int | None = Field(default=None, ge=0, le=366)
+    day_rate: int | None = Field(default=None, ge=0)
+    ir35: IR35 | None = None
+    contract_months: int | None = Field(default=None, ge=0, le=120)
+    benefits: str | None = None
+    notes: str | None = None
+
+
+class OfferOut(BaseModel):
+    id: str
+    application_id: str
+    status: OfferStatus
+    received_on: date | None
+    respond_by: date | None
+    start_on: date | None
+    employment_type: str | None
+    currency: str | None
+    salary: int | None
+    bonus: int | None
+    equity: str | None
+    equity_value: int | None
+    pension_percent: float | None
+    holiday_days: int | None
+    day_rate: int | None
+    ir35: str | None
+    contract_months: int | None
+    benefits: str | None
+    notes: str | None
+    annual_value: int | None  # salary + bonus + equity + employer pension, or day rate x working days
+    value_basis: Literal["salary", "day rate"] | None
+    company_name: str
+    role_title: str
+    stage: str  # the application's stage
+    created_at: datetime
+    updated_at: datetime

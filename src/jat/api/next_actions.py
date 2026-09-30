@@ -8,10 +8,12 @@ from fastapi import APIRouter
 from pydantic import AwareDatetime, BaseModel
 from sqlalchemy import func
 
-from ..db.models import Application, Interview
+from ..db.models import Application, Interview, Offer
 from . import schemas as S
 from .deps import SessionDep, WorkflowDep
 from .interviews import _outs, _query
+from .offers import _outs as _offer_outs
+from .offers import _query as _offer_query
 
 router = APIRouter(tags=["next actions"])
 
@@ -23,6 +25,7 @@ class NextActions(BaseModel):
     stale: list[S.ApplicationRow]  # past the stage's staleness threshold, quietest first
     upcoming: list[S.InterviewOut]  # booked in the next two weeks, then rounds with no date yet
     awaiting_outcome: list[S.InterviewOut]  # their time has passed but they're still "scheduled"
+    offer_deadlines: list[S.OfferOut] = []  # pending offers to answer in the next two weeks (or overdue)
     today: date
 
 
@@ -72,10 +75,29 @@ def next_actions(
     past = _outs(session, session.execute(scheduled.where(when < now).order_by(when.desc(), Interview.id)))
     # Earlier today counts as upcoming until its time has passed; then it's awaiting an outcome.
     upcoming = [i for i in booked if (i.starts_at or i.deadline_at) >= now]
+    # Pending offers with a reply due soon, on applications still in play. A revised offer
+    # replaces the one before it.
+    offer_rows = session.execute(
+        _offer_query()
+        .where(Application.archived.is_(False), Application.stage.in_(active))
+        .order_by(Offer.created_at.desc(), Offer.id.desc())
+    ).all()
+    newest: dict[str, tuple] = {}
+    for row in offer_rows:
+        newest.setdefault(row[0].application_id, row)
+    due = [
+        row
+        for row in newest.values()
+        if row[0].status == "pending"
+        and row[0].respond_by is not None
+        and row[0].respond_by <= today + timedelta(days=UPCOMING_DAYS)
+    ]
+    offer_deadlines = _offer_outs(sorted(due, key=lambda row: (row[0].respond_by, row[2].lower())))
     return NextActions(
         follow_ups=follow_ups,
         stale=stale,
         upcoming=upcoming + unbooked,
         awaiting_outcome=past,
         today=today,
+        offer_deadlines=offer_deadlines,
     )
