@@ -85,6 +85,8 @@ APPLICATIONS = [
         [("applied", 9)],
         ["typescript", "react"],
     ),
+    # The same job applied for twice: directly first, then through a recruiter (duplicate warning).
+    ("Coho Winery", "Senior Full-stack Engineer", "direct", None, None, [("applied", 14)], ["typescript"]),
     (
         "Alpine Ski House",
         "Site Reliability Engineer",
