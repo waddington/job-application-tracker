@@ -124,7 +124,7 @@ export function ApplicationSummary({ app }: { app: ApplicationDetail }) {
       </div>
       <Group gap="xs">
         <StageBadge stage={stages.get(app.stage)} fallback={app.stage_name} />
-        <RoundBadge round={app.current_round} />
+        <RoundBadge round={app.current_round} stageKind={app.stage_kind} />
         {app.stale && (
           <Badge color="red" variant="light">
             Needs chasing

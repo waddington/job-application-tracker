@@ -54,9 +54,9 @@ function CardBody({ row }: { row: ApplicationRow }) {
       <Text size="xs" c="dimmed" lineClamp={2}>
         {row.role_title}
       </Text>
-      {row.current_round && (
+      {row.current_round && row.stage_kind === "active" && (
         <Group mt={6}>
-          <RoundBadge round={row.current_round} size="xs" />
+          <RoundBadge round={row.current_round} stageKind={row.stage_kind} size="xs" />
         </Group>
       )}
       <Group gap={6} mt={6} justify="space-between" wrap="nowrap">
