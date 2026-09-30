@@ -22,9 +22,9 @@ describe("app shell", () => {
   });
 
   it("renders a placeholder for each page", async () => {
-    renderAt("/interviews");
-    expect(await screen.findByRole("heading", { name: "Interviews" })).toBeInTheDocument();
-    expect(screen.getByText("interviews")).toBeInTheDocument();
+    renderAt("/documents");
+    expect(await screen.findByRole("heading", { name: "Documents" })).toBeInTheDocument();
+    expect(screen.getByText("documents")).toBeInTheDocument();
   });
 
   it("shows not found for unknown paths", async () => {

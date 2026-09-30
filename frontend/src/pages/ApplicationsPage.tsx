@@ -32,6 +32,7 @@ import {
 import { ApplicationDrawer } from "../components/ApplicationDrawer";
 import { Board } from "../components/Board";
 import { NewApplicationModal } from "../components/NewApplicationModal";
+import { RoundBadge } from "../components/Interviews";
 import { StageBadge } from "../components/StageBadge";
 import { ago } from "../utils/time";
 
@@ -259,7 +260,10 @@ export function ApplicationsPage() {
                     <Text size="sm">{routeLabel(row)}</Text>
                   </Table.Td>
                   <Table.Td>
-                    <StageBadge stage={stages.get(row.stage)} fallback={row.stage_name} />
+                    <Stack gap={4} align="flex-start">
+                      <StageBadge stage={stages.get(row.stage)} fallback={row.stage_name} />
+                      <RoundBadge round={row.current_round} size="xs" />
+                    </Stack>
                   </Table.Td>
                   <Table.Td>
                     <Text size="sm" c={row.stale ? "red" : undefined} fw={row.stale ? 600 : undefined}>

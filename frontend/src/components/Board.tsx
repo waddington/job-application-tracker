@@ -20,6 +20,7 @@ import type { ApplicationRow } from "../api/client";
 import { useMoveApplication, type Workflow } from "../api/hooks";
 import { buildColumns, canDrop, visibleColumns, type Column } from "../utils/board";
 import { ago } from "../utils/time";
+import { RoundBadge } from "./Interviews";
 
 // Space picks a card up and drops it; Enter is left free to open the card.
 const KEYBOARD_CODES = { start: ["Space"], cancel: ["Escape"], end: ["Space"] };
@@ -53,6 +54,11 @@ function CardBody({ row }: { row: ApplicationRow }) {
       <Text size="xs" c="dimmed" lineClamp={2}>
         {row.role_title}
       </Text>
+      {row.current_round && (
+        <Group mt={6}>
+          <RoundBadge round={row.current_round} size="xs" />
+        </Group>
+      )}
       <Group gap={6} mt={6} justify="space-between" wrap="nowrap">
         <Text size="xs" c={row.stale ? "red" : "dimmed"} fw={row.stale ? 600 : undefined}>
           {ago(row.days_since_activity)}
