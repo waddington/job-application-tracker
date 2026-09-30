@@ -23,4 +23,5 @@ Statuses for PRDs and RFCs are **Draft**, **Accepted**, **Implemented** and **Su
 
 | Feature | Status | Roadmap | PRD | RFC |
 |---|---|---|---|---|
-| Job application tracker | Draft (rev 1) | P1–P6 | [PRD](../prd/tracker.md) | stack RFC to come (`stack-rfc`) |
+| Job application tracker | Draft (rev 2) | P1–P6 | [PRD](../prd/tracker.md) | — |
+| Stack and data format | Accepted | P0 `stack-rfc`, gate `stack-gate` | [PRD](../prd/tracker.md) | [RFC](../rfc/stack.md) |

@@ -24,18 +24,18 @@ phases:
       - {id: prd-tracker, name: "Product PRD, roadmap and planning docs", owner: lead, status: review, estimate_h: 2, depends: [], prd: docs/prd/tracker.md}
       - {id: pm-dashboard, name: "PM dashboard web app (tools/pm)", owner: lead, status: building, estimate_h: 4, depends: [prd-tracker]}
       - {id: readme, name: "Public README: catchy, search- and LLM-friendly", owner: lead, status: building, estimate_h: 1.5, depends: [prd-tracker]}
-      - {id: stack-rfc, name: "Stack and data-format RFC", owner: lead, status: planned, estimate_h: 3, depends: [prd-tracker], prd: docs/prd/tracker.md}
-      - {id: stack-gate, name: "Kai signs off the stack RFC", owner: kai, status: blocked, estimate_h: 0.5, depends: [stack-rfc]}
+      - {id: stack-rfc, name: "Stack and data-format RFC", owner: lead, status: done, estimate_h: 3, depends: [prd-tracker], prd: docs/prd/tracker.md, rfc: docs/rfc/stack.md}
+      - {id: stack-gate, name: "Kai signs off the stack RFC", owner: kai, status: done, estimate_h: 0.5, depends: [stack-rfc]}
 
   - id: P1
     name: Core data and workflow
     goal: Data directory, schema, configurable workflow and a local JSON API
     tasks:
-      - {id: data-dir, name: "Configurable data directory, init and backup layout", owner: lead, status: planned, estimate_h: 2, depends: [stack-gate], prd: docs/prd/tracker.md}
-      - {id: schema, name: "Entities: companies, agencies, contacts, roles, applications", owner: lead, status: planned, estimate_h: 4, depends: [data-dir], prd: docs/prd/tracker.md}
-      - {id: workflow, name: "Configurable stages, transitions and event history", owner: lead, status: planned, estimate_h: 4, depends: [schema], prd: docs/prd/tracker.md}
-      - {id: api, name: "Local JSON API for every action", owner: lead, status: planned, estimate_h: 3, depends: [schema], prd: docs/prd/tracker.md}
-      - {id: app-shell, name: "Web app shell: navigation, theming, layout", owner: lead, status: planned, estimate_h: 3, depends: [stack-gate], prd: docs/prd/tracker.md}
+      - {id: data-dir, name: "Configurable data directory, init and backup layout", owner: lead, status: planned, estimate_h: 2, depends: [stack-gate], prd: docs/prd/tracker.md, rfc: docs/rfc/stack.md}
+      - {id: schema, name: "Entities: companies, agencies, contacts, roles, applications", owner: lead, status: planned, estimate_h: 4, depends: [data-dir], prd: docs/prd/tracker.md, rfc: docs/rfc/stack.md}
+      - {id: workflow, name: "Configurable stages, transitions and event history", owner: lead, status: planned, estimate_h: 4, depends: [schema], prd: docs/prd/tracker.md, rfc: docs/rfc/stack.md}
+      - {id: api, name: "Local JSON API for every action", owner: lead, status: planned, estimate_h: 3, depends: [schema], prd: docs/prd/tracker.md, rfc: docs/rfc/stack.md}
+      - {id: app-shell, name: "Web app shell: navigation, theming, layout", owner: lead, status: planned, estimate_h: 3, depends: [stack-gate], prd: docs/prd/tracker.md, rfc: docs/rfc/stack.md}
 
   - id: P2
     name: Tracking views

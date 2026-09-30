@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft (rev 1): waiting for Kai's sign-off (`stack-gate`) |
+| **Status** | Accepted (Kai, 2026-09-30: "then get building") |
 | **Authors** | lead |
 | **Date** | 2026-09-30 |
 | **Roadmap** | P0 `stack-rfc`; unblocks P1 (`data-dir`, `schema`, `workflow`, `api`, `app-shell`) |
