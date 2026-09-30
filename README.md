@@ -76,7 +76,8 @@ test"), details and the full timestamped history.
 | 📎 | **Files and emails**: drop PDFs, images or exported emails (`.eml`) on an application, company or agency; emails land on the timeline at the time they were sent | ✅ Available |
 | 📄 | **CV and cover-letter versions**: every tailored version with its file, which one each application got, and where each was used | ✅ Available |
 | 💻 | **Interview rounds and coding tasks**: numbered rounds in your own words ("Round 2 · System design test") shown on the board, plus times, interviewers, prep, debrief, questions asked and take-home briefs | ✅ Available |
-| ⏰ | **Next actions**: stale applications, follow-ups, snooze, upcoming interviews, offer deadlines | Planned |
+| ⏰ | **Next actions** (the home page): follow-ups due, applications gone quiet, interviews and deadlines coming up, and rounds waiting for an outcome | ✅ Available |
+| 😴 | **Snooze and one-click Ghosted** from Next actions, plus offer deadlines | Planned |
 | 📊 | **Sankey diagram** of your funnel: applications → screens → interviews → offers | Planned |
 | 📈 | **Insights**: conversion per stage, time in stage, direct vs recruiter, recruiter scorecard | Planned |
 | 💷 | **Offer comparison**: salary, bonus, equity, pension, day rate and IR35 for contracts | Planned |

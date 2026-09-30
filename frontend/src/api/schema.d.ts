@@ -664,6 +664,29 @@ export interface paths {
         patch: operations["update_link_api_v1_links__link_id__patch"];
         trace?: never;
     };
+    "/api/v1/next-actions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Next Actions
+         * @description Pass your local `today` (YYYY-MM-DD) and `since` (the start of your local day, with its
+         *     offset) so "today" means your today. Both default to UTC's.
+         *
+         *     Only open applications count: archived ones, and ones in a closed or success stage, are done.
+         */
+        get: operations["next_actions_api_v1_next_actions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/notes": {
         parameters: {
             query?: never;
@@ -1624,6 +1647,22 @@ export interface components {
             occurred_at?: string | null;
             /** To Stage */
             to_stage: string;
+        };
+        /** NextActions */
+        NextActions: {
+            /** Awaiting Outcome */
+            awaiting_outcome: components["schemas"]["InterviewOut"][];
+            /** Follow Ups */
+            follow_ups: components["schemas"]["ApplicationRow"][];
+            /** Stale */
+            stale: components["schemas"]["ApplicationRow"][];
+            /**
+             * Today
+             * Format: date
+             */
+            today: string;
+            /** Upcoming */
+            upcoming: components["schemas"]["InterviewOut"][];
         };
         /**
          * NoteIn
@@ -3785,6 +3824,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LinkOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    next_actions_api_v1_next_actions_get: {
+        parameters: {
+            query?: {
+                today?: string | null;
+                since?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NextActions"];
                 };
             };
             /** @description Validation Error */

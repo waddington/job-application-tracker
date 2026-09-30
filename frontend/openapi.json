@@ -2973,6 +2973,52 @@
         "title": "MoveIn",
         "type": "object"
       },
+      "NextActions": {
+        "properties": {
+          "awaiting_outcome": {
+            "items": {
+              "$ref": "#/components/schemas/InterviewOut"
+            },
+            "title": "Awaiting Outcome",
+            "type": "array"
+          },
+          "follow_ups": {
+            "items": {
+              "$ref": "#/components/schemas/ApplicationRow"
+            },
+            "title": "Follow Ups",
+            "type": "array"
+          },
+          "stale": {
+            "items": {
+              "$ref": "#/components/schemas/ApplicationRow"
+            },
+            "title": "Stale",
+            "type": "array"
+          },
+          "today": {
+            "format": "date",
+            "title": "Today",
+            "type": "string"
+          },
+          "upcoming": {
+            "items": {
+              "$ref": "#/components/schemas/InterviewOut"
+            },
+            "title": "Upcoming",
+            "type": "array"
+          }
+        },
+        "required": [
+          "follow_ups",
+          "stale",
+          "upcoming",
+          "awaiting_outcome",
+          "today"
+        ],
+        "title": "NextActions",
+        "type": "object"
+      },
       "NoteIn": {
         "additionalProperties": false,
         "description": "A Markdown note. `links` attach it to things, e.g. [\"application:<id>\"]; none makes it a general note.",
@@ -6970,6 +7016,74 @@
         "summary": "Update Link",
         "tags": [
           "links"
+        ]
+      }
+    },
+    "/api/v1/next-actions": {
+      "get": {
+        "description": "Pass your local `today` (YYYY-MM-DD) and `since` (the start of your local day, with its\noffset) so \"today\" means your today. Both default to UTC's.\n\nOnly open applications count: archived ones, and ones in a closed or success stage, are done.",
+        "operationId": "next_actions_api_v1_next_actions_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "today",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Today"
+            }
+          },
+          {
+            "in": "query",
+            "name": "since",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Since"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextActions"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Next Actions",
+        "tags": [
+          "next actions"
         ]
       }
     },
