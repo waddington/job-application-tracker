@@ -232,6 +232,98 @@ class ApplicationOut(Out):
     updated_at: datetime
 
 
+# --- interviews --------------------------------------------------------------------------
+
+InterviewKind = Literal[
+    "screen",
+    "hiring_manager",
+    "technical",
+    "coding_task",
+    "system_design",
+    "pairing",
+    "behavioural",
+    "onsite",
+    "final",
+    "other",
+]
+InterviewStatus = Literal["scheduled", "done", "cancelled"]
+InterviewFormat = Literal["video", "phone", "onsite", "take_home"]
+
+
+class InterviewIn(In):
+    """An interview round. Leave `round` out to make it the next round for the application."""
+
+    round: int | None = Field(default=None, ge=1, le=99)
+    title: str | None = Field(default=None, max_length=200)
+    kind: InterviewKind = "technical"
+    status: InterviewStatus = "scheduled"
+    starts_at: AwareDatetime | None = None
+    ends_at: AwareDatetime | None = None
+    deadline_at: AwareDatetime | None = None
+    format: InterviewFormat | None = None
+    location: str | None = Field(default=None, max_length=300)
+    meeting_url: HttpUrl | None = None
+    prep: str | None = None
+    debrief: str | None = None
+    questions: str | None = None
+    task_instructions: str | None = None
+    task_repo_url: HttpUrl | None = None
+    interviewer_ids: list[str] = []
+
+
+class InterviewPatch(Patch):
+    not_null = frozenset({"round", "kind", "status", "interviewer_ids"})
+
+    round: int | None = Field(default=None, ge=1, le=99)
+    title: str | None = Field(default=None, max_length=200)
+    kind: InterviewKind | None = None
+    status: InterviewStatus | None = None
+    starts_at: AwareDatetime | None = None
+    ends_at: AwareDatetime | None = None
+    deadline_at: AwareDatetime | None = None
+    format: InterviewFormat | None = None
+    location: str | None = Field(default=None, max_length=300)
+    meeting_url: HttpUrl | None = None
+    prep: str | None = None
+    debrief: str | None = None
+    questions: str | None = None
+    task_instructions: str | None = None
+    task_repo_url: HttpUrl | None = None
+    interviewer_ids: list[str] | None = None
+
+
+class RoundSummary(Out):
+    """The round an application is at, for the board and list: "Round 2 · System design test"."""
+
+    id: str
+    round: int | None
+    title: str | None
+    kind: str
+    status: str
+    label: str
+    starts_at: datetime | None
+    deadline_at: datetime | None
+
+
+class InterviewOut(RoundSummary):
+    application_id: str
+    ends_at: datetime | None
+    format: str | None
+    location: str | None
+    meeting_url: str | None
+    prep: str | None
+    debrief: str | None
+    questions: str | None
+    task_instructions: str | None
+    task_repo_url: str | None
+    interviewer_ids: list[str]
+    # For lists across applications (the Interviews page).
+    company_name: str
+    role_title: str
+    created_at: datetime
+    updated_at: datetime
+
+
 class ApplicationRow(ApplicationOut):
     """An application with the names the list and board need."""
 
@@ -244,6 +336,7 @@ class ApplicationRow(ApplicationOut):
     stage_kind: str
     days_since_activity: int
     stale: bool
+    current_round: RoundSummary | None = None
 
 
 class MoveIn(In):

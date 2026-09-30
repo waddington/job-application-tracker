@@ -312,6 +312,16 @@
             "title": "Created At",
             "type": "string"
           },
+          "current_round": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RoundSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "days_since_activity": {
             "title": "Days Since Activity",
             "type": "integer"
@@ -719,6 +729,16 @@
             "format": "date-time",
             "title": "Created At",
             "type": "string"
+          },
+          "current_round": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RoundSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "days_since_activity": {
             "title": "Days Since Activity",
@@ -1444,6 +1464,16 @@
             "title": "Created At",
             "type": "string"
           },
+          "current_round": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RoundSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "days_since_activity": {
             "title": "Days Since Activity",
             "type": "integer"
@@ -1669,6 +1699,655 @@
           }
         },
         "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "InterviewIn": {
+        "additionalProperties": false,
+        "description": "An interview round. Leave `round` out to make it the next round for the application.",
+        "properties": {
+          "deadline_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deadline At"
+          },
+          "debrief": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Debrief"
+          },
+          "ends_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ends At"
+          },
+          "format": {
+            "anyOf": [
+              {
+                "enum": [
+                  "video",
+                  "phone",
+                  "onsite",
+                  "take_home"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Format"
+          },
+          "interviewer_ids": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Interviewer Ids",
+            "type": "array"
+          },
+          "kind": {
+            "default": "technical",
+            "enum": [
+              "screen",
+              "hiring_manager",
+              "technical",
+              "coding_task",
+              "system_design",
+              "pairing",
+              "behavioural",
+              "onsite",
+              "final",
+              "other"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
+          "meeting_url": {
+            "anyOf": [
+              {
+                "format": "uri",
+                "maxLength": 2083,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Meeting Url"
+          },
+          "prep": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prep"
+          },
+          "questions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Questions"
+          },
+          "round": {
+            "anyOf": [
+              {
+                "maximum": 99.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Round"
+          },
+          "starts_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Starts At"
+          },
+          "status": {
+            "default": "scheduled",
+            "enum": [
+              "scheduled",
+              "done",
+              "cancelled"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "task_instructions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Instructions"
+          },
+          "task_repo_url": {
+            "anyOf": [
+              {
+                "format": "uri",
+                "maxLength": 2083,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Repo Url"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "title": "InterviewIn",
+        "type": "object"
+      },
+      "InterviewOut": {
+        "properties": {
+          "application_id": {
+            "title": "Application Id",
+            "type": "string"
+          },
+          "company_name": {
+            "title": "Company Name",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "deadline_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deadline At"
+          },
+          "debrief": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Debrief"
+          },
+          "ends_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ends At"
+          },
+          "format": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Format"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "interviewer_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Interviewer Ids",
+            "type": "array"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
+          "meeting_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Meeting Url"
+          },
+          "prep": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prep"
+          },
+          "questions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Questions"
+          },
+          "role_title": {
+            "title": "Role Title",
+            "type": "string"
+          },
+          "round": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Round"
+          },
+          "starts_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Starts At"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "task_instructions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Instructions"
+          },
+          "task_repo_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Repo Url"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "round",
+          "title",
+          "kind",
+          "status",
+          "label",
+          "starts_at",
+          "deadline_at",
+          "application_id",
+          "ends_at",
+          "format",
+          "location",
+          "meeting_url",
+          "prep",
+          "debrief",
+          "questions",
+          "task_instructions",
+          "task_repo_url",
+          "interviewer_ids",
+          "company_name",
+          "role_title",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "InterviewOut",
+        "type": "object"
+      },
+      "InterviewPatch": {
+        "additionalProperties": false,
+        "properties": {
+          "deadline_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deadline At"
+          },
+          "debrief": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Debrief"
+          },
+          "ends_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ends At"
+          },
+          "format": {
+            "anyOf": [
+              {
+                "enum": [
+                  "video",
+                  "phone",
+                  "onsite",
+                  "take_home"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Format"
+          },
+          "interviewer_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interviewer Ids"
+          },
+          "kind": {
+            "anyOf": [
+              {
+                "enum": [
+                  "screen",
+                  "hiring_manager",
+                  "technical",
+                  "coding_task",
+                  "system_design",
+                  "pairing",
+                  "behavioural",
+                  "onsite",
+                  "final",
+                  "other"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kind"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
+          "meeting_url": {
+            "anyOf": [
+              {
+                "format": "uri",
+                "maxLength": 2083,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Meeting Url"
+          },
+          "prep": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prep"
+          },
+          "questions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Questions"
+          },
+          "round": {
+            "anyOf": [
+              {
+                "maximum": 99.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Round"
+          },
+          "starts_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Starts At"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "enum": [
+                  "scheduled",
+                  "done",
+                  "cancelled"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          },
+          "task_instructions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Instructions"
+          },
+          "task_repo_url": {
+            "anyOf": [
+              {
+                "format": "uri",
+                "maxLength": 2083,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Repo Url"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "title": "InterviewPatch",
         "type": "object"
       },
       "MoveIn": {
@@ -2337,6 +3016,85 @@
           }
         },
         "title": "RolePatch",
+        "type": "object"
+      },
+      "RoundSummary": {
+        "description": "The round an application is at, for the board and list: \"Round 2 \u00b7 System design test\".",
+        "properties": {
+          "deadline_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deadline At"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "round": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Round"
+          },
+          "starts_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Starts At"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "required": [
+          "id",
+          "round",
+          "title",
+          "kind",
+          "status",
+          "label",
+          "starts_at",
+          "deadline_at"
+        ],
+        "title": "RoundSummary",
         "type": "object"
       },
       "SnapshotResult": {
@@ -3389,6 +4147,58 @@
         ]
       }
     },
+    "/api/v1/applications/{app_id}/interviews": {
+      "post": {
+        "operationId": "create_interview_api_v1_applications__app_id__interviews_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "app_id",
+            "required": true,
+            "schema": {
+              "title": "App Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InterviewIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InterviewOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Interview",
+        "tags": [
+          "interviews"
+        ]
+      }
+    },
     "/api/v1/applications/{app_id}/move": {
       "post": {
         "operationId": "move_app_api_v1_applications__app_id__move_post",
@@ -4055,6 +4865,242 @@
         "summary": "Update Contact",
         "tags": [
           "contacts"
+        ]
+      }
+    },
+    "/api/v1/interviews": {
+      "get": {
+        "description": "Interviews, soonest first. `upcoming` keeps scheduled ones from today on (or with no date yet).",
+        "operationId": "list_interviews_api_v1_interviews_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "application_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Application Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "scheduled",
+                    "done",
+                    "cancelled"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "upcoming",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Upcoming",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/InterviewOut"
+                  },
+                  "title": "Response List Interviews Api V1 Interviews Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Interviews",
+        "tags": [
+          "interviews"
+        ]
+      }
+    },
+    "/api/v1/interviews/titles": {
+      "get": {
+        "description": "Round descriptions used before, most used first: suggestions for the next one.",
+        "operationId": "interview_titles_api_v1_interviews_titles_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "title": "Response Interview Titles Api V1 Interviews Titles Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Interview Titles",
+        "tags": [
+          "interviews"
+        ]
+      }
+    },
+    "/api/v1/interviews/{interview_id}": {
+      "delete": {
+        "operationId": "delete_interview_api_v1_interviews__interview_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "interview_id",
+            "required": true,
+            "schema": {
+              "title": "Interview Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Interview",
+        "tags": [
+          "interviews"
+        ]
+      },
+      "get": {
+        "operationId": "get_interview_api_v1_interviews__interview_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "interview_id",
+            "required": true,
+            "schema": {
+              "title": "Interview Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InterviewOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Interview",
+        "tags": [
+          "interviews"
+        ]
+      },
+      "patch": {
+        "operationId": "update_interview_api_v1_interviews__interview_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "interview_id",
+            "required": true,
+            "schema": {
+              "title": "Interview Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InterviewPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InterviewOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Interview",
+        "tags": [
+          "interviews"
         ]
       }
     },

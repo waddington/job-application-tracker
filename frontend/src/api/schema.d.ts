@@ -207,6 +207,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/applications/{app_id}/interviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Interview */
+        post: operations["create_interview_api_v1_applications__app_id__interviews_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/applications/{app_id}/move": {
         parameters: {
             query?: never;
@@ -383,6 +400,65 @@ export interface paths {
         patch: operations["update_contact_api_v1_contacts__contact_id__patch"];
         trace?: never;
     };
+    "/api/v1/interviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Interviews
+         * @description Interviews, soonest first. `upcoming` keeps scheduled ones from today on (or with no date yet).
+         */
+        get: operations["list_interviews_api_v1_interviews_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/interviews/titles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Interview Titles
+         * @description Round descriptions used before, most used first: suggestions for the next one.
+         */
+        get: operations["interview_titles_api_v1_interviews_titles_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/interviews/{interview_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Interview */
+        get: operations["get_interview_api_v1_interviews__interview_id__get"];
+        put?: never;
+        post?: never;
+        /** Delete Interview */
+        delete: operations["delete_interview_api_v1_interviews__interview_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Interview */
+        patch: operations["update_interview_api_v1_interviews__interview_id__patch"];
+        trace?: never;
+    };
     "/api/v1/roles": {
         parameters: {
             query?: never;
@@ -547,6 +623,7 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+            current_round?: components["schemas"]["RoundSummary"] | null;
             /** Days Since Activity */
             days_since_activity: number;
             /** Duplicates */
@@ -662,6 +739,7 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+            current_round?: components["schemas"]["RoundSummary"] | null;
             /** Days Since Activity */
             days_since_activity: number;
             /** Follow Up On */
@@ -875,6 +953,7 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+            current_round?: components["schemas"]["RoundSummary"] | null;
             /** Days Since Activity */
             days_since_activity: number;
             /** Follow Up On */
@@ -952,6 +1031,145 @@ export interface components {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /**
+         * InterviewIn
+         * @description An interview round. Leave `round` out to make it the next round for the application.
+         */
+        InterviewIn: {
+            /** Deadline At */
+            deadline_at?: string | null;
+            /** Debrief */
+            debrief?: string | null;
+            /** Ends At */
+            ends_at?: string | null;
+            /** Format */
+            format?: ("video" | "phone" | "onsite" | "take_home") | null;
+            /**
+             * Interviewer Ids
+             * @default []
+             */
+            interviewer_ids: string[];
+            /**
+             * Kind
+             * @default technical
+             * @enum {string}
+             */
+            kind: "screen" | "hiring_manager" | "technical" | "coding_task" | "system_design" | "pairing" | "behavioural" | "onsite" | "final" | "other";
+            /** Location */
+            location?: string | null;
+            /** Meeting Url */
+            meeting_url?: string | null;
+            /** Prep */
+            prep?: string | null;
+            /** Questions */
+            questions?: string | null;
+            /** Round */
+            round?: number | null;
+            /** Starts At */
+            starts_at?: string | null;
+            /**
+             * Status
+             * @default scheduled
+             * @enum {string}
+             */
+            status: "scheduled" | "done" | "cancelled";
+            /** Task Instructions */
+            task_instructions?: string | null;
+            /** Task Repo Url */
+            task_repo_url?: string | null;
+            /** Title */
+            title?: string | null;
+        };
+        /** InterviewOut */
+        InterviewOut: {
+            /** Application Id */
+            application_id: string;
+            /** Company Name */
+            company_name: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Deadline At */
+            deadline_at: string | null;
+            /** Debrief */
+            debrief: string | null;
+            /** Ends At */
+            ends_at: string | null;
+            /** Format */
+            format: string | null;
+            /** Id */
+            id: string;
+            /** Interviewer Ids */
+            interviewer_ids: string[];
+            /** Kind */
+            kind: string;
+            /** Label */
+            label: string;
+            /** Location */
+            location: string | null;
+            /** Meeting Url */
+            meeting_url: string | null;
+            /** Prep */
+            prep: string | null;
+            /** Questions */
+            questions: string | null;
+            /** Role Title */
+            role_title: string;
+            /** Round */
+            round: number | null;
+            /** Starts At */
+            starts_at: string | null;
+            /** Status */
+            status: string;
+            /** Task Instructions */
+            task_instructions: string | null;
+            /** Task Repo Url */
+            task_repo_url: string | null;
+            /** Title */
+            title: string | null;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** InterviewPatch */
+        InterviewPatch: {
+            /** Deadline At */
+            deadline_at?: string | null;
+            /** Debrief */
+            debrief?: string | null;
+            /** Ends At */
+            ends_at?: string | null;
+            /** Format */
+            format?: ("video" | "phone" | "onsite" | "take_home") | null;
+            /** Interviewer Ids */
+            interviewer_ids?: string[] | null;
+            /** Kind */
+            kind?: ("screen" | "hiring_manager" | "technical" | "coding_task" | "system_design" | "pairing" | "behavioural" | "onsite" | "final" | "other") | null;
+            /** Location */
+            location?: string | null;
+            /** Meeting Url */
+            meeting_url?: string | null;
+            /** Prep */
+            prep?: string | null;
+            /** Questions */
+            questions?: string | null;
+            /** Round */
+            round?: number | null;
+            /** Starts At */
+            starts_at?: string | null;
+            /** Status */
+            status?: ("scheduled" | "done" | "cancelled") | null;
+            /** Task Instructions */
+            task_instructions?: string | null;
+            /** Task Repo Url */
+            task_repo_url?: string | null;
+            /** Title */
+            title?: string | null;
         };
         /** MoveIn */
         MoveIn: {
@@ -1101,6 +1319,28 @@ export interface components {
             url?: string | null;
             /** Work Mode */
             work_mode?: ("remote" | "hybrid" | "office") | null;
+        };
+        /**
+         * RoundSummary
+         * @description The round an application is at, for the board and list: "Round 2 · System design test".
+         */
+        RoundSummary: {
+            /** Deadline At */
+            deadline_at: string | null;
+            /** Id */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Label */
+            label: string;
+            /** Round */
+            round: number | null;
+            /** Starts At */
+            starts_at: string | null;
+            /** Status */
+            status: string;
+            /** Title */
+            title: string | null;
         };
         /** SnapshotResult */
         SnapshotResult: {
@@ -1688,6 +1928,41 @@ export interface operations {
             };
         };
     };
+    create_interview_api_v1_applications__app_id__interviews_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                app_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InterviewIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InterviewOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     move_app_api_v1_applications__app_id__move_post: {
         parameters: {
             query?: never;
@@ -2153,6 +2428,154 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ContactOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_interviews_api_v1_interviews_get: {
+        parameters: {
+            query?: {
+                application_id?: string | null;
+                status?: ("scheduled" | "done" | "cancelled") | null;
+                upcoming?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InterviewOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    interview_titles_api_v1_interviews_titles_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string[];
+                };
+            };
+        };
+    };
+    get_interview_api_v1_interviews__interview_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                interview_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InterviewOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_interview_api_v1_interviews__interview_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                interview_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_interview_api_v1_interviews__interview_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                interview_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InterviewPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InterviewOut"];
                 };
             };
             /** @description Validation Error */
