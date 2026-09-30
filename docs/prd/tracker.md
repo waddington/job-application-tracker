@@ -48,7 +48,7 @@ want. The Obsidian plugins work on plain files but aren't a web app and have no 
 ## 4. Non-goals
 
 - Searching for jobs, scraping, job-board imports or any external job feed.
-- Quick-add from a pasted URL, and an MCP server (Kai, 2026-09-30).
+- Quick-add from a pasted URL, an MCP server, and `.ics` calendar export (Kai, 2026-09-30).
 - Sending email or messages, or submitting applications.
 - Multi-user use, authentication, hosting or cloud sync. It is one person on localhost.
 - Obsidian integration. This is a standalone web app.
@@ -201,7 +201,7 @@ signs off before any runtime dependency is added.
 | P3 | Notes, documents and interviews | Markdown notes, links, attachments, `.eml`, CV and cover-letter versions, interviews and coding tasks | 14 |
 | P4 | Next actions | Staleness rules, follow-ups, snooze, upcoming items, Ghosted | 6 |
 | P5 | Insights | Sankey, funnel stats, recruiter scorecard, weekly activity | 9 |
-| P6 | Extras | Offer comparison, `.ics` export, backup archive, full-text search | 8 |
+| P6 | Extras | Offer comparison, backup archive, full-text search | 7 |
 
 Total is about 73 agent hours. P0 can start now. P1 onwards waits for the stack sign-off.
 

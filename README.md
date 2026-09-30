@@ -71,7 +71,7 @@ exported emails, and the full timestamped history.
 
 > 🚧 **Early development, but usable day to day.** Tracking, recruiters, interview rounds,
 > notes, links, files and emails, CV versions, the *Next actions* page, the Sankey diagram and
-> funnel stats all work today. Recruiter scorecards and offer comparison are next. Everything marked ✅ is merged and
+> funnel stats and recruiter scorecards all work today. Offer comparison and search are next. Everything marked ✅ is merged and
 > running.
 
 | | Feature | Status |
@@ -90,9 +90,8 @@ exported emails, and the full timestamped history.
 | 😴 | **One-click chasing**: set a follow-up reminder, snooze, or mark Ghosted straight from Next actions | ✅ Available |
 | 📊 | **Sankey diagram** of your funnel: applications → screens → interviews → offers, filtered by date range and route, with counts on hover | ✅ Available |
 | 📈 | **Insights**: conversion per stage, median time in stage, direct vs recruiter outcomes and weekly activity | ✅ Available |
-| 🏅 | **Recruiter scorecard**: roles sent, interview rate and responsiveness per recruiter | Planned |
+| 🏅 | **Recruiter scorecard**: roles sent, interview rate, where they ended up, time to first update and last contact, per recruiter and per agency | ✅ Available |
 | 💷 | **Offer comparison**: salary, bonus, equity, pension, day rate and IR35 for contracts | Planned |
-| 🗓️ | **`.ics` export** of interviews for your calendar | Planned |
 | 💾 | **Backups built in**: automatic git snapshots of your private data folder, readable JSON Lines export, one-command restore | ✅ Available |
 
 The full plan is in the [product requirements](docs/prd/tracker.md) and the
@@ -170,7 +169,7 @@ progress and live PR status of the build itself. It needs nothing but Python; th
 | **P3** Notes and documents | Notes, links, attachments, `.eml`, CV versions, interviews |
 | **P4** Next actions | Stale applications, follow-ups, snooze, upcoming items |
 | **P5** Insights | Sankey, funnel stats, recruiter scorecard |
-| **P6** Extras | Offers, `.ics`, backup archive, full-text search |
+| **P6** Extras | Offers, backup archive, full-text search |
 
 ## ❓ FAQ
 

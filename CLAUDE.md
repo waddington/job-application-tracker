@@ -65,9 +65,10 @@ roadmap is `docs/ROADMAP.yaml`, shown by the PM dashboard (see "Project manageme
 - The README is the project's shop window (Kai wants GitHub stars): catchy, easy for search
   engines and LLMs to read, and honest. A feature is only marked as available once it has
   merged. `llms.txt` mirrors the README summary.
-- When a feature merges, update its status in the README feature table in the same PR. The
-  `readme-refresh-*` roadmap tasks do a fuller pass: screenshots and GIFs made with fake data
-  only.
+- When a feature merges, update its status in the README feature table and in `llms.txt` in
+  the same PR. The `readme-refresh-*` roadmap tasks do a fuller pass over both the README and
+  `llms.txt`: screenshots and GIFs made with fake data only, and `llms.txt` checked against
+  what's actually available.
 
 ## Code
 - Stack (accepted RFC `docs/rfc/stack.md`): Python 3.12 + uv + FastAPI + SQLite in `src/jat`,
