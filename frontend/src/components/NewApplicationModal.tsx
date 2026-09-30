@@ -112,7 +112,15 @@ export function NewApplicationModal({
     companyName: dupCompany,
     roleTitle: dupTitle,
   });
-  const showDuplicates = !!(form.values.company.trim() && form.values.roleTitle.trim() && duplicates);
+  // Only while the results are for what's in the fields now, never a warning for older input.
+  const settled =
+    dupCompany.trim() === form.values.company.trim() && dupTitle.trim() === form.values.roleTitle.trim();
+  const showDuplicates = !!(
+    settled &&
+    form.values.company.trim() &&
+    form.values.roleTitle.trim() &&
+    duplicates
+  );
 
   const close = (id?: string) => {
     form.reset();
@@ -172,7 +180,7 @@ export function NewApplicationModal({
             <DuplicateWarning
               duplicates={duplicates}
               title="You may have applied for this already"
-              onNavigate={() => close()}
+              onNavigate={() => onClose()} // keep the draft: reopening the form picks up where you left off
             />
           )}
           <TextInput label="Job ad link" placeholder="https://…" {...form.getInputProps("roleUrl")} />

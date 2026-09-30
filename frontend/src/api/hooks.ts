@@ -45,7 +45,14 @@ export const keys = {
 
 /** Everything that shows applications: lists, the board, company and agency pages. */
 export function invalidateApplicationViews(qc: QueryClient) {
-  for (const key of [["applications"], ["company-summary"], ["agency-summary"], ["duplicates"]]) {
+  // ["application"] too: other applications list this one as a possible duplicate.
+  for (const key of [
+    ["applications"],
+    ["application"],
+    ["company-summary"],
+    ["agency-summary"],
+    ["duplicates"],
+  ]) {
     void qc.invalidateQueries({ queryKey: key });
   }
 }

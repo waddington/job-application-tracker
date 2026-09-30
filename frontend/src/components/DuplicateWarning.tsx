@@ -1,9 +1,8 @@
 import { Alert, Anchor, List, Text } from "@mantine/core";
 import { IconCopy } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
-import dayjs from "dayjs";
-
 import type { Duplicate } from "../api/client";
+import { formatDate } from "../utils/time";
 
 function via(d: Duplicate): string {
   if (d.route === "agency") return `via ${d.agency_name ?? d.recruiter_name ?? "a recruiter"}`;
@@ -12,7 +11,7 @@ function via(d: Duplicate): string {
 }
 
 function describe(d: Duplicate): string {
-  const how = d.applied_on ? `${via(d)} on ${dayjs(d.applied_on).format("D MMM YYYY")}` : via(d);
+  const how = d.applied_on ? `${via(d)} on ${formatDate(d.applied_on)}` : via(d);
   const bits = [how, `now ${d.stage_name}`];
   if (d.archived) bits.push("archived");
   return bits.join(" · ");
