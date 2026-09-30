@@ -263,10 +263,13 @@ ENTITY_MODELS: dict[str, type[Base]] = {
 
 @event.listens_for(Session, "before_flush")
 def remove_orphan_links(session: Session, flush_context, instances) -> None:
-    """Links point at their entity by type and id (no foreign key), so delete them with it.
+    """Links and attachments point at their entity by type and id (no foreign key).
+
+    When the entity goes, its links go with it. Its attachments are only detached: the files
+    are yours, so they stay (unattached) rather than vanish with a record.
 
     Deleting an application also removes its interviews in the database (ON DELETE CASCADE),
-    out of the ORM's sight, so their links are collected here too.
+    out of the ORM's sight, so theirs are collected here too.
     """
     kinds = {model: kind for kind, model in ENTITY_MODELS.items()}
     targets: list[tuple[str, str]] = []
@@ -282,6 +285,9 @@ def remove_orphan_links(session: Session, flush_context, instances) -> None:
         for kind, entity_id in targets:
             for link in session.scalars(select(Link).where(Link.entity_type == kind, Link.entity_id == entity_id)):
                 session.delete(link)
+            attached = select(Attachment).where(Attachment.entity_type == kind, Attachment.entity_id == entity_id)
+            for attachment in session.scalars(attached):
+                attachment.entity_type = attachment.entity_id = None
 
 
 # Tables whose rows are exported to export/*.jsonl, in foreign-key-safe order.

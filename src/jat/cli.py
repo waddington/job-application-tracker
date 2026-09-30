@@ -97,6 +97,7 @@ def cmd_serve(args) -> int:
     # uvicorn builds the app in its own import (needed for --dev reload), so hand over via env.
     os.environ["JAT_DATA_DIR"] = str(path)
     os.environ["JAT_DEV"] = "1" if args.dev else "0"
+    os.environ["JAT_HOST"] = host  # the app only answers to this host (and loopback names)
     print(f"Job Application Tracker: http://{host}:{port}  (data: {path})")
     if args.dev:
         print("dev mode: API reloads on change; run `pnpm --dir frontend dev` for the UI on :5173")

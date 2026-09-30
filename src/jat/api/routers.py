@@ -615,3 +615,7 @@ router.include_router(links_router)
 from .notes import router as notes_router  # noqa: E402
 
 router.include_router(notes_router)
+
+from .attachments import router as attachments_router  # noqa: E402
+
+router.include_router(attachments_router)
