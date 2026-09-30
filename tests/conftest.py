@@ -21,7 +21,7 @@ def app(tmp_path):
 
 @pytest.fixture
 def client(app):
-    return TestClient(app)
+    return TestClient(base_url="http://127.0.0.1", app=app)
 
 
 @pytest.fixture

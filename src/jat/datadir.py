@@ -24,6 +24,8 @@ GITIGNORE_ENTRIES = (
     f"{DB_NAME}-journal",
     f"{DB_NAME}.bak-*",
     "*.tmp",
+    ".tmp/",  # uploads in progress
+    ".tmp-*",  # atomic writes in progress (notes)
 )
 
 DEFAULT_CONFIG = """\

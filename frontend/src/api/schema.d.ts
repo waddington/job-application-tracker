@@ -934,6 +934,13 @@ export interface components {
             id: string;
             /** Inline */
             inline: boolean;
+            /**
+             * Meta
+             * @default {}
+             */
+            meta: {
+                [key: string]: unknown;
+            };
             /** Original Name */
             original_name: string;
             /** Path */
