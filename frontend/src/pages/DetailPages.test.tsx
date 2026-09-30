@@ -89,7 +89,7 @@ describe("companies", () => {
       "href",
       "/applications/a2",
     );
-    expect(screen.getByText(/directly · Applied · applied 20 Sep 2026 · archived/)).toBeInTheDocument();
+    expect(screen.getByText(/directly on 20 Sep 2026 · now Applied · archived/)).toBeInTheDocument();
   });
 
   it("lists companies with application counts and opens one", async () => {

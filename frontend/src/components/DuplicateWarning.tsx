@@ -12,8 +12,8 @@ function via(d: Duplicate): string {
 }
 
 function describe(d: Duplicate): string {
-  const bits = [via(d), d.stage_name];
-  if (d.applied_on) bits.push(`applied ${dayjs(d.applied_on).format("D MMM YYYY")}`);
+  const how = d.applied_on ? `${via(d)} on ${dayjs(d.applied_on).format("D MMM YYYY")}` : via(d);
+  const bits = [how, `now ${d.stage_name}`];
   if (d.archived) bits.push("archived");
   return bits.join(" · ");
 }

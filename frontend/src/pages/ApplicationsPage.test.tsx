@@ -160,7 +160,7 @@ describe("applications page", () => {
       "/applications/a1",
     );
     expect(
-      within(dialog).getByText(/directly · Applied · applied 20 Sep 2026 · similar title/),
+      within(dialog).getByText(/directly on 20 Sep 2026 · now Applied · similar title/),
     ).toBeInTheDocument();
     const lookup = calls.filter((c) => c.path.startsWith("/api/v1/applications/duplicates")).at(-1)!;
     const params = new URL(lookup.path, "http://localhost").searchParams;
