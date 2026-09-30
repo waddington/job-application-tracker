@@ -115,12 +115,14 @@ def overview(roadmap: Roadmap, snapshot: Snapshot) -> str:
         f'<div class="stat"><b>{counts[k]}</b><span>{k}</span></div>' for k in STATUSES
     )
     header = f"""<div class="panel" style="margin-bottom:16px"><h2>Progress</h2>
-<div class="stats"><div class="stat"><b>{s["percent"]}%</b><span>{s["done_h"]:g} of {s["estimate_h"]:g} h done</span></div>
+<div class="stats"><div class="stat"><b>{s["percent"]}%</b>
+<span>{s["done_h"]:g} of {s["estimate_h"]:g} h done</span></div>
 {stats}</div><div class="bar"><i style="width:{s["percent"]}%"></i></div></div>"""
 
     active = [t for t in roadmap.tasks if t.status in ("building", "review")]
     now = "".join(task_line(roadmap, t) for t in active) or '<li class="muted">Nothing in flight.</li>'
-    nxt = "".join(task_line(roadmap, t, False) for t in roadmap.next_up()[:8]) or '<li class="muted">Nothing ready.</li>'
+    nxt = "".join(task_line(roadmap, t, False) for t in roadmap.next_up()[:8])
+    nxt = nxt or '<li class="muted">Nothing ready.</li>'
     blocked = [t for t in roadmap.tasks if t.status == "blocked"]
     blocked_html = "".join(
         task_line(roadmap, t, False).replace(
@@ -202,7 +204,8 @@ def roadmap_page(roadmap: Roadmap, snapshot: Snapshot) -> str:
                 f"<tr><td>{pill(t.status)}</td><td><b>{escape(t.name)}</b><br>"
                 f'<code class="muted">{escape(t.id)}</code></td><td>{t.estimate_h:g} h</td>'
                 f'<td class="small">{deps}</td><td class="small">{escape(t.owner)}</td>'
-                f'<td class="small">{task_links(roadmap, t)}<br><span class="muted">{escape(t.status_source)}</span></td></tr>'
+                f'<td class="small">{task_links(roadmap, t)}<br>'
+                f'<span class="muted">{escape(t.status_source)}</span></td></tr>'
             )
         out.append(
             f'<div class="panel" style="margin-bottom:16px"><h2>{escape(p.id)} · {escape(p.name)} '
