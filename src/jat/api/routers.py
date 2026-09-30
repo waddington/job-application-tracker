@@ -638,3 +638,7 @@ router.include_router(next_actions_router)
 from .documents import router as documents_router  # noqa: E402
 
 router.include_router(documents_router)
+
+from .insights import router as insights_router  # noqa: E402
+
+router.include_router(insights_router)

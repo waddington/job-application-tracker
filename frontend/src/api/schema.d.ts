@@ -566,6 +566,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/insights/flow": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Stage Flow
+         * @description Stage-to-stage flows for a Sankey diagram, for applications added in [since, until).
+         */
+        get: operations["stage_flow_api_v1_insights_flow_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/interviews": {
         parameters: {
             query?: never;
@@ -1447,6 +1467,39 @@ export interface components {
             summary: string | null;
             /** To Stage */
             to_stage: string | null;
+        };
+        /** FlowLink */
+        FlowLink: {
+            /** Source */
+            source: string;
+            /** Target */
+            target: string;
+            /** Value */
+            value: number;
+        };
+        /** FlowNode */
+        FlowNode: {
+            /** Color */
+            color: string;
+            /** Current */
+            current: number;
+            /** Id */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Name */
+            name: string;
+            /** Reached */
+            reached: number;
+        };
+        /** FlowOut */
+        FlowOut: {
+            /** Applications */
+            applications: number;
+            /** Links */
+            links: components["schemas"]["FlowLink"][];
+            /** Nodes */
+            nodes: components["schemas"]["FlowNode"][];
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -3546,6 +3599,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["VersionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    stage_flow_api_v1_insights_flow_get: {
+        parameters: {
+            query?: {
+                since?: string | null;
+                until?: string | null;
+                route?: ("direct" | "agency" | "referral") | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FlowOut"];
                 };
             };
             /** @description Validation Error */
