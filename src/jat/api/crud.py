@@ -35,7 +35,7 @@ def crud_router(
     def list_items(session: SessionDep, q: str | None = None, limit: int = 500, offset: int = 0):
         stmt = select(model)
         if q and search_column is not None:
-            stmt = stmt.where(func.lower(search_column).contains(q.lower()))
+            stmt = stmt.where(func.lower(search_column).contains(q.lower(), autoescape=True))
         return session.scalars(stmt.order_by(order_by).limit(min(limit, 1000)).offset(offset)).all()
 
     @router.get("/{item_id}", response_model=schema_out)

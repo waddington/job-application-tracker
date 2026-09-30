@@ -194,3 +194,93 @@ def test_openapi_lists_endpoints(client):
     paths = client.get("/api/openapi.json").json()["paths"]
     for p in ("/api/v1/applications", "/api/v1/applications/{app_id}/move", "/api/v1/contacts", "/api/v1/workflow"):
         assert p in paths
+
+
+# --- review fixes (PR #12) ------------------------------------------------------------------------
+
+
+def test_integrity_error_reaches_client_as_409_and_nothing_is_saved(client, seeded):
+    app_id = post(client, "/api/v1/applications", {"role_id": seeded["role"]["id"]})["id"]
+    link = {"contact_id": seeded["recruiter"]["id"], "relation": "recruiter"}
+    post(client, f"/api/v1/applications/{app_id}/contacts", link)
+    r = client.post(f"/api/v1/applications/{app_id}/contacts", json=link)
+    assert r.status_code == 409
+    assert len(client.get(f"/api/v1/applications/{app_id}").json()["contacts"]) == 1
+
+
+def test_null_on_required_fields_is_422(client, seeded):
+    assert client.patch(f"/api/v1/companies/{seeded['company']['id']}", json={"name": None}).status_code == 422
+    assert client.patch(f"/api/v1/roles/{seeded['role']['id']}", json={"company_id": None}).status_code == 422
+    app_id = post(client, "/api/v1/applications", {"role_id": seeded["role"]["id"]})["id"]
+    for field in ("role_id", "route", "tags", "archived"):
+        assert client.patch(f"/api/v1/applications/{app_id}", json={field: None}).status_code == 422, field
+    # Nullable fields can still be cleared.
+    assert client.patch(f"/api/v1/companies/{seeded['company']['id']}", json={"website": None}).status_code == 200
+
+
+def test_unknown_fields_are_rejected(client, seeded):
+    app_id = post(client, "/api/v1/applications", {"role_id": seeded["role"]["id"]})["id"]
+    r = client.patch(f"/api/v1/applications/{app_id}", json={"stage": "offer"})
+    assert r.status_code == 422
+    assert client.get(f"/api/v1/applications/{app_id}").json()["stage"] == "interested"
+
+
+def test_route_rules(client, seeded):
+    role_id, agency_id, recruiter_id = seeded["role"]["id"], seeded["agency"]["id"], seeded["recruiter"]["id"]
+    other = post(client, "/api/v1/agencies", {"name": "Other Agency"})
+    apps_url = "/api/v1/applications"
+    assert client.post(apps_url, json={"role_id": role_id, "route": "agency"}).status_code == 422
+    assert (
+        client.post(apps_url, json={"role_id": role_id, "route": "direct", "agency_id": agency_id}).status_code == 422
+    )
+    mismatch = {"role_id": role_id, "route": "agency", "agency_id": other["id"], "recruiter_id": recruiter_id}
+    assert client.post(apps_url, json=mismatch).status_code == 422
+    # A recruiter on a direct application isn't allowed, so it isn't inferred into an agency either.
+    assert client.post(apps_url, json={"role_id": role_id, "recruiter_id": recruiter_id}).status_code == 422
+
+    app_id = post(client, apps_url, {"role_id": role_id, "route": "agency", "recruiter_id": recruiter_id})["id"]
+    assert client.patch(f"{apps_url}/{app_id}", json={"route": "direct"}).status_code == 422
+    ok = client.patch(f"{apps_url}/{app_id}", json={"route": "direct", "agency_id": None, "recruiter_id": None})
+    assert ok.status_code == 200 and ok.json()["agency_id"] is None
+
+
+def test_naive_datetimes_rejected(client, seeded):
+    app_id = post(client, "/api/v1/applications", {"role_id": seeded["role"]["id"]})["id"]
+    r = client.post(
+        f"/api/v1/applications/{app_id}/move", json={"to_stage": "applied", "occurred_at": "2026-09-01T10:00:00"}
+    )
+    assert r.status_code == 422
+    r = client.post(
+        f"/api/v1/applications/{app_id}/move", json={"to_stage": "applied", "occurred_at": "2026-09-01T10:00:00+01:00"}
+    )
+    assert r.status_code == 200
+    assert client.get("/api/v1/applications").status_code == 200
+
+
+def test_deletes_cascade_safely(client, seeded):
+    recruiter_id = seeded["recruiter"]["id"]
+    app_id = post(
+        client,
+        "/api/v1/applications",
+        {"role_id": seeded["role"]["id"], "route": "agency", "recruiter_id": recruiter_id},
+    )["id"]
+    post(client, f"/api/v1/applications/{app_id}/contacts", {"contact_id": recruiter_id, "relation": "recruiter"})
+    assert client.delete(f"/api/v1/contacts/{recruiter_id}").status_code == 204
+    detail = client.get(f"/api/v1/applications/{app_id}").json()
+    assert detail["recruiter_id"] is None and detail["contacts"] == []
+    assert client.delete(f"/api/v1/applications/{app_id}").status_code == 204
+    assert client.get(f"/api/v1/applications/{app_id}/events").status_code == 404
+    # The role and company are untouched.
+    assert client.get(f"/api/v1/roles/{seeded['role']['id']}").status_code == 200
+
+
+def test_search_wildcards_are_literal(client, seeded):
+    post(client, "/api/v1/applications", {"role_id": seeded["role"]["id"]})
+    assert client.get("/api/v1/applications?q=%25").json() == []
+    assert client.get("/api/v1/applications?q=_").json() == []
+    assert client.get("/api/v1/companies?q=%25").json() == []
+
+
+def test_salary_range(client, seeded):
+    body = {"company_id": seeded["company"]["id"], "title": "x", "salary_min": 90000, "salary_max": 80000}
+    assert client.post("/api/v1/roles", json=body).status_code == 422

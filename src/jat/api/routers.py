@@ -96,7 +96,7 @@ def _validate_contact(session: Session, data: dict) -> None:
 def list_contacts(session: SessionDep, q: str | None = None, agency_id: str | None = None):
     stmt = select(Contact)
     if q:
-        stmt = stmt.where(func.lower(Contact.name).contains(q.lower()))
+        stmt = stmt.where(func.lower(Contact.name).contains(q.lower(), autoescape=True))
     if agency_id:
         stmt = stmt.where(Contact.agency_id == agency_id)
     return [_contact_out(session, c) for c in session.scalars(stmt.order_by(func.lower(Contact.name)))]
@@ -254,13 +254,13 @@ def list_applications(
     if company_id:
         stmt = stmt.where(Company.id == company_id)
     if q:
-        like = f"%{q.lower()}%"
+        like = f"%{_escape_like(q.lower())}%"
         stmt = stmt.where(
             or_(
-                func.lower(Role.title).like(like),
-                func.lower(Company.name).like(like),
-                func.lower(Agency.name).like(like),
-                func.lower(Recruiter.name).like(like),
+                func.lower(Role.title).like(like, escape="\\"),
+                func.lower(Company.name).like(like, escape="\\"),
+                func.lower(Agency.name).like(like, escape="\\"),
+                func.lower(Recruiter.name).like(like, escape="\\"),
             )
         )
     order = {
@@ -291,13 +291,38 @@ def _check_refs(session: Session, data: dict) -> None:
     require(session, Contact, data.get("recruiter_id"), "recruiter_id")
 
 
+def _check_route(session: Session, merged: dict) -> dict:
+    """Validate route/agency/recruiter together (after merging a PATCH into the current values).
+
+    - direct: no agency and no recruiter.
+    - agency: an agency or a recruiter; a missing agency is taken from the recruiter.
+    - a recruiter who belongs to an agency must match the application's agency.
+    Returns the values to set (possibly with agency_id filled in).
+    """
+    route, agency_id, recruiter_id = merged.get("route"), merged.get("agency_id"), merged.get("recruiter_id")
+    recruiter = session.get(Contact, recruiter_id) if recruiter_id else None
+    updates: dict = {}
+    if route == "direct" and (agency_id or recruiter_id):
+        raise HTTPException(422, "A direct application can't have an agency or recruiter; change the route first.")
+    if route == "agency":
+        if not agency_id and recruiter is not None and recruiter.agency_id:
+            agency_id = updates["agency_id"] = recruiter.agency_id
+        if not agency_id and not recruiter_id:
+            raise HTTPException(422, "An agency application needs an agency or a recruiter.")
+    if recruiter is not None and recruiter.agency_id and agency_id and recruiter.agency_id != agency_id:
+        raise HTTPException(422, "The recruiter works for a different agency than the one given.")
+    return updates
+
+
+def _escape_like(text: str) -> str:
+    return text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+
 @apps.post("", response_model=S.ApplicationDetail, status_code=201)
 def create_app_(body: S.ApplicationIn, session: SessionDep, workflow: WorkflowDep):
     data = values(body, partial=False)
     _check_refs(session, data)
-    if data.get("recruiter_id") and not data.get("agency_id"):
-        recruiter = session.get(Contact, data["recruiter_id"])
-        data["agency_id"] = recruiter.agency_id if recruiter else None
+    data.update(_check_route(session, data))
     stage = data.pop("stage", None)
     try:
         app = svc.create_application(session, workflow, stage=stage, **data)
@@ -316,6 +341,8 @@ def update_app(app_id: str, body: S.ApplicationPatch, session: SessionDep, workf
     app = get_or_404(session, Application, app_id)
     data = values(body, partial=True)
     _check_refs(session, data)
+    current = {"route": app.route, "agency_id": app.agency_id, "recruiter_id": app.recruiter_id}
+    data.update(_check_route(session, {**current, **data}))
     for key, value in data.items():
         setattr(app, key, value)
     session.flush()
