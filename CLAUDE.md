@@ -58,7 +58,7 @@ roadmap is `docs/ROADMAP.yaml`, shown by the PM dashboard (see "Project manageme
 - PM dashboard: `python3 -m tools.pm` (http://127.0.0.1:8767), run from the main checkout.
   Standard library only. It reads `docs/ROADMAP.yaml` and takes live task status from
   `worktree-<task id>` branches and their PRs (via `gh`).
-- Tests: `python3 -m unittest discover -s tests -t .`
+- Its tests run with the rest: `uv run pytest`.
 - After merging a PR that changes `tools/pm`, restart the dashboard so it loads the new code.
 
 ## README
@@ -70,8 +70,11 @@ roadmap is `docs/ROADMAP.yaml`, shown by the PM dashboard (see "Project manageme
   only.
 
 ## Code
-- The stack isn't chosen yet. Decide it in an RFC (see "Delivering an item"), then record the
-  run, test and lint commands here.
+- Stack (accepted RFC `docs/rfc/stack.md`): Python 3.12 + uv + FastAPI + SQLite in `src/jat`,
+  and Vite + React + TypeScript + Mantine in `frontend/`.
+- Commands: `uv run jat init` / `uv run jat info` (data directory from `JAT_DATA_DIR` in the
+  git-ignored `.env`; see `.env.example`), `uv run pytest`, `uv run ruff check .`,
+  `uv run ruff format`.
 - Once they exist, start with `docs/OVERVIEW.md` (the map: processes, data flow, state) and
   then `docs/ARCHITECTURE.md` (module contracts).
 - Tests and lint must pass before merging.
