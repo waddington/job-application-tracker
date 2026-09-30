@@ -17,7 +17,21 @@ from jat.db.models import Company
 
 Match = Literal["same_role", "similar_title"]
 
-_COMPANY_SUFFIXES = {"ltd", "limited", "inc", "incorporated", "plc", "llc", "llp", "gmbh", "corp", "corporation", "co"}
+# Trailing words that don't change which company it is ("Tailspin & Co" is Tailspin).
+_COMPANY_SUFFIXES = {
+    "ltd",
+    "limited",
+    "inc",
+    "incorporated",
+    "plc",
+    "llc",
+    "llp",
+    "gmbh",
+    "corp",
+    "corporation",
+    "co",
+    "and",
+}
 # Words that say the same thing in job titles.
 _SYNONYMS = {
     "sr": "senior",
@@ -25,13 +39,17 @@ _SYNONYMS = {
     "jr": "junior",
     "jnr": "junior",
     "eng": "engineer",
-    "engineering": "engineer",
     "dev": "engineer",
     "developer": "engineer",
     "mgr": "manager",
     "swe": "software engineer",
 }
 _FILLER = {"a", "an", "and", "the", "of", "for", "to", "in", "at", "with", "m", "f", "d"}
+# Seniority: one title having a level the other lacks is fine; two different levels are different jobs.
+_LEVELS = {"junior", "graduate", "intern", "associate", "mid", "senior", "staff", "principal", "lead"}
+_LEVELS |= {"i", "ii", "iii", "iv", "1", "2", "3", "4"}
+# Words that qualify a job without changing what it is.
+_QUALIFIERS = _LEVELS | {"remote", "hybrid", "onsite", "contract", "contractor", "permanent", "perm", "fte"}
 
 
 def _words(text: str) -> list[str]:
@@ -62,12 +80,18 @@ def title_match(a: str, b: str) -> Match | None:
         return None
     if sorted(wa) == sorted(wb):
         return "same_role"
-    small, big = sorted((set(wa), set(wb)), key=len)
-    # One title is the other plus a qualifier ("Senior", "Remote", "Contract"…).
-    if small <= big and len(small) >= 1 and len(big) - len(small) <= 2:
+    levels_a, levels_b = set(wa) & _LEVELS, set(wb) & _LEVELS
+    if levels_a and levels_b and levels_a != levels_b:
+        return None  # "Junior Backend Engineer" isn't "Senior Backend Engineer"
+    core_a = [w for w in wa if w not in _QUALIFIERS]
+    core_b = [w for w in wb if w not in _QUALIFIERS]
+    if not core_a or not core_b:
+        return None
+    # The same job with a qualifier added or dropped ("Senior", "Remote", "Contract"…).
+    if sorted(core_a) == sorted(core_b):
         return "similar_title"
-    # Typos and small rewordings.
-    if SequenceMatcher(None, " ".join(wa), " ".join(wb)).ratio() >= 0.9:
+    # Typos: "Platfrom Engineer". Not extra words: "Frontend Engineer" vs "Frontend Engineering Manager".
+    if len(core_a) == len(core_b) and SequenceMatcher(None, " ".join(core_a), " ".join(core_b)).ratio() >= 0.9:
         return "similar_title"
     return None
 
