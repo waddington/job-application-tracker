@@ -180,6 +180,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/backup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Backup Status */
+        get: operations["backup_status_api_v1_backup_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/backup/push": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Push */
+        post: operations["push_api_v1_backup_push_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/backup/snapshot": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Snapshot */
+        post: operations["snapshot_api_v1_backup_snapshot_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/companies": {
         parameters: {
             query?: never;
@@ -560,6 +611,27 @@ export interface components {
              */
             updated_at: string;
         };
+        /** BackupStatus */
+        BackupStatus: {
+            /** Debounce Seconds */
+            debounce_seconds: number;
+            /** Dirty */
+            dirty: boolean;
+            /** Enabled */
+            enabled: boolean;
+            /** Has Remote */
+            has_remote: boolean;
+            /** Last Commit */
+            last_commit: string | null;
+            /** Last Error */
+            last_error: string | null;
+            /** Last Push At */
+            last_push_at: string | null;
+            /** Last Snapshot At */
+            last_snapshot_at: string | null;
+            /** Unpushed Commits */
+            unpushed_commits: number | null;
+        };
         /** CompanyIn */
         CompanyIn: {
             /** Description */
@@ -724,6 +796,12 @@ export interface components {
             /** To Stage */
             to_stage: string;
         };
+        /** PushResult */
+        PushResult: {
+            /** Output */
+            output: string;
+            status: components["schemas"]["BackupStatus"];
+        };
         /** RoleIn */
         RoleIn: {
             /** Company Id */
@@ -816,6 +894,12 @@ export interface components {
             url?: string | null;
             /** Work Mode */
             work_mode?: ("remote" | "hybrid" | "office") | null;
+        };
+        /** SnapshotResult */
+        SnapshotResult: {
+            /** Commit */
+            commit: string | null;
+            status: components["schemas"]["BackupStatus"];
         };
         /** ValidationError */
         ValidationError: {
@@ -1362,6 +1446,66 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    backup_status_api_v1_backup_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BackupStatus"];
+                };
+            };
+        };
+    };
+    push_api_v1_backup_push_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PushResult"];
+                };
+            };
+        };
+    };
+    snapshot_api_v1_backup_snapshot_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SnapshotResult"];
                 };
             };
         };

@@ -11,6 +11,7 @@ from .datadir import DataDirError, check_outside_code_repo, init_data_dir, is_gi
 from .db import MigrationError, current_revision, db_path, head_revision, make_engine, migrate
 from .snapshot import ExportError, RestoreError, export_data_dir, restore_data_dir
 from .snapshot.export import META_FILE
+from .snapshot.git import SnapshotError
 
 
 def _data_dir(args) -> Path:
@@ -111,6 +112,27 @@ def cmd_serve(args) -> int:
     return 0
 
 
+def _service(path: Path):
+    from .snapshot.git import SnapshotService
+
+    _require_db(path)
+    migrate(db_path(path))
+    return SnapshotService(path, make_engine(db_path(path)), debounce_seconds=0)
+
+
+def cmd_snapshot(args) -> int:
+    commit = _service(_data_dir(args)).snapshot_now()
+    print(f"committed snapshot {commit}" if commit else "nothing changed since the last snapshot")
+    return 0
+
+
+def cmd_push(args) -> int:
+    service = _service(_data_dir(args))
+    service.snapshot_now()
+    print(service.push() or "pushed")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="jat", description="Job Application Tracker")
     parser.add_argument("--data-dir", type=Path, help="override JAT_DATA_DIR")
@@ -129,6 +151,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--port", type=int, help="port (default JAT_PORT or 8770)")
     p.add_argument("--dev", action="store_true", help="reload on code changes and allow the Vite dev origin")
     p.set_defaults(func=cmd_serve)
+    sub.add_parser("snapshot", help="export and commit to the data repo now").set_defaults(func=cmd_snapshot)
+    sub.add_parser("push", help="snapshot, then push the data repo (never forced)").set_defaults(func=cmd_push)
     return parser
 
 
@@ -136,7 +160,7 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
         return args.func(args)
-    except (ConfigError, DataDirError, RestoreError, ExportError, MigrationError) as exc:
+    except (ConfigError, DataDirError, RestoreError, ExportError, MigrationError, SnapshotError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
 
