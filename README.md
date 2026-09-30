@@ -3,8 +3,9 @@
 # 🎯 Job Application Tracker
 
 **Stop losing track of your job hunt.**
-A self-hosted, local-first job application tracker for software engineers, with recruiter
-CRM, interview notes, CV tracking and a *"who should I chase today?"* page.
+A self-hosted, local-first job application tracker for software engineers, with a recruiter
+CRM, interview rounds, duplicate warnings and git-backed backups. Notes, CV tracking and a
+*"who should I chase today?"* page are next.
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 ![Status: early development](https://img.shields.io/badge/status-early%20development-orange)
@@ -46,14 +47,14 @@ interview round each one is at.
 ![Kanban board of job applications by stage, with interview round badges](docs/screenshots/board.png)
 
 **Application page.** Stage, interview rounds in your own words ("Round 3 · System design
-test"), people, details and the full timestamped history.
+test"), details and the full timestamped history.
 
 ![An application page showing three interview rounds](docs/screenshots/application.png)
 
 <table>
 <tr>
-<td width="50%"><b>Applications list</b> with filters, route, stage, round and staleness<br><img src="docs/screenshots/list.png" alt="Applications list with filters"></td>
-<td width="50%"><b>Recruiter CRM</b>: agencies, recruiters and every way to reach them<br><img src="docs/screenshots/recruiters.png" alt="Recruiters grouped by agency"></td>
+<td width="50%"><b>Applications list</b> with filters, route, stage, round and staleness<br><img src="docs/screenshots/list.png" width="100%" alt="Applications list with filters"></td>
+<td width="50%"><b>Recruiter CRM</b>: agencies, recruiters and every way to reach them<br><img src="docs/screenshots/recruiters.png" width="100%" alt="Recruiters grouped by agency"></td>
 </tr>
 </table>
 
@@ -65,7 +66,7 @@ test"), people, details and the full timestamped history.
 
 | | Feature | Status |
 |---|---|---|
-| 📋 | **Applications list** with filters (stage, source, recruiter, company, tags, "no activity in 7+ days") | ✅ Available |
+| 📋 | **Applications list** with search (company, role, recruiter) and filters (stage, route, agency, "needs chasing", archived) | ✅ Available |
 | 🗂️ | **Kanban board**: drag applications between stages, with only valid moves allowed | ✅ Available |
 | 🔁 | **Configurable workflow**: your stages, your transitions, full timestamped history | ✅ Available |
 | 🧑‍💼 | **Recruiter CRM**: agencies, recruiters, multiple contact details, every role they've sent | ✅ Available |
@@ -79,7 +80,7 @@ test"), people, details and the full timestamped history.
 | 📈 | **Insights**: conversion per stage, time in stage, direct vs recruiter, recruiter scorecard | Planned |
 | 💷 | **Offer comparison**: salary, bonus, equity, pension, day rate and IR35 for contracts | Planned |
 | 🗓️ | **`.ics` export** of interviews for your calendar | Planned |
-| 💾 | **Backups built in**: automatic git snapshots of your private data folder, readable JSONL + Markdown, one-command restore | ✅ Available |
+| 💾 | **Backups built in**: automatic git snapshots of your private data folder, readable JSON Lines export, one-command restore | ✅ Available |
 
 The full plan is in the [product requirements](docs/prd/tracker.md) and the
 [roadmap](docs/ROADMAP.yaml).
@@ -91,8 +92,8 @@ The full plan is in the [product requirements](docs/prd/tracker.md) and the
 | Your data stays on your machine | Sometimes | ❌ | ✅ |
 | Recruiters with several roles | Manual | Partial | ✅ First-class |
 | Real stage workflow and history | ❌ | Partial | ✅ |
-| Notes, files, emails and CV versions per application | Messy | Partial | ✅ |
-| "Who do I chase today?" | ❌ | Partial | ✅ |
+| Notes, files, emails and CV versions per application | Messy | Partial | 🚧 Next up |
+| "Who do I chase today?" | ❌ | Partial | 🚧 Planned |
 | Free and open source | ✅ | ❌ | ✅ Apache-2.0 |
 
 It's also deliberately **not** a job-search engine. There's no scraping and there are no
@@ -120,7 +121,7 @@ pnpm --dir frontend install && pnpm --dir frontend build
 **Try it with demo data** (made-up companies and people):
 
 ```bash
-uv run python scripts/seed_demo.py /tmp/jat-demo
+uv run python scripts/seed_demo.py /tmp/jat-demo    # needs a new or empty folder
 uv run jat --data-dir /tmp/jat-demo serve          # → http://127.0.0.1:8770
 ```
 
@@ -130,11 +131,14 @@ full history and backups for free.
 
 ```bash
 mkdir -p ~/job-search-data && git -C ~/job-search-data init
-echo "JAT_DATA_DIR=$HOME/job-search-data" > .env   # or pass --data-dir each time
+git -C ~/job-search-data remote add origin <your-private-repo-url>   # optional, for jat push
+cp .env.example .env        # then set JAT_DATA_DIR=~/job-search-data (or pass --data-dir each time)
 uv run jat init
-uv run jat serve                                   # → http://127.0.0.1:8770
-uv run jat push                                    # when you want the snapshots on your remote
+uv run jat serve            # → http://127.0.0.1:8770 (keeps running)
 ```
+
+Later, from another terminal, `uv run jat push` sends the snapshots to your private remote
+(never forced). Run `jat` from the repo root, where it reads `.env`.
 
 The server only listens on `127.0.0.1` by default. `uv run jat --help` lists the other
 commands (`export`, `restore`, `snapshot`, `migrate`, `info`).
