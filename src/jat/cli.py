@@ -83,6 +83,34 @@ def cmd_restore(args) -> int:
     return 0
 
 
+def cmd_serve(args) -> int:
+    import os
+
+    import uvicorn
+
+    settings = Settings()
+    path = _data_dir(args)
+    _require_db(path)
+    migrate(db_path(path))  # always serve on the current schema
+    host, port = args.host or settings.host, args.port or settings.port
+    # uvicorn builds the app in its own import (needed for --dev reload), so hand over via env.
+    os.environ["JAT_DATA_DIR"] = str(path)
+    os.environ["JAT_DEV"] = "1" if args.dev else "0"
+    print(f"Job Application Tracker: http://{host}:{port}  (data: {path})")
+    if args.dev:
+        print("dev mode: API reloads on change; run `pnpm --dir frontend dev` for the UI on :5173")
+    uvicorn.run(
+        "jat.app:app_from_env",
+        factory=True,
+        host=host,
+        port=port,
+        reload=args.dev,
+        reload_dirs=[str(Path(__file__).resolve().parent)] if args.dev else None,
+        log_level="info" if args.dev else "warning",
+    )
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="jat", description="Job Application Tracker")
     parser.add_argument("--data-dir", type=Path, help="override JAT_DATA_DIR")
@@ -96,6 +124,11 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("restore", help="rebuild the database from export/")
     p.add_argument("--force", action="store_true", help="move an existing database aside first")
     p.set_defaults(func=cmd_restore)
+    p = sub.add_parser("serve", help="run the web app (localhost only by default)")
+    p.add_argument("--host", help="bind address (default JAT_HOST or 127.0.0.1)")
+    p.add_argument("--port", type=int, help="port (default JAT_PORT or 8770)")
+    p.add_argument("--dev", action="store_true", help="reload on code changes and allow the Vite dev origin")
+    p.set_defaults(func=cmd_serve)
     return parser
 
 

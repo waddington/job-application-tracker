@@ -8,9 +8,11 @@ authors = [{ name = "Kai Waddington" }]
 requires-python = ">=3.12"
 dependencies = [
     "alembic>=1.20.0",
+    "fastapi>=0.142.2",
     "pydantic-settings>=2.15.0",
     "sqlalchemy>=2.1.1",
     "uuid-utils>=1.0.0",
+    "uvicorn[standard]>=0.54.0",
 ]
 
 [project.scripts]
@@ -36,6 +38,7 @@ select = ["E", "F", "I", "UP", "B", "SIM"]
 
 [dependency-groups]
 dev = [
+    "httpx>=0.28.1",
     "pytest>=9.1.1",
     "ruff>=0.16.9",
 ]

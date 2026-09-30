@@ -72,9 +72,17 @@ roadmap is `docs/ROADMAP.yaml`, shown by the PM dashboard (see "Project manageme
 ## Code
 - Stack (accepted RFC `docs/rfc/stack.md`): Python 3.12 + uv + FastAPI + SQLite in `src/jat`,
   and Vite + React + TypeScript + Mantine in `frontend/`.
-- Commands: `uv run jat init | info | migrate | export | restore` (data directory from `JAT_DATA_DIR` in the
-  git-ignored `.env`; see `.env.example`), `uv run pytest`, `uv run ruff check .`,
-  `uv run ruff format`.
+- Commands: `uv run jat init | info | migrate | export | restore | serve` (data directory from
+  `JAT_DATA_DIR` in the git-ignored `.env`; see `.env.example`), `uv run pytest`,
+  `uv run ruff check .`, `uv run ruff format`.
+- Run the app: `pnpm --dir frontend install && pnpm --dir frontend build`, then
+  `uv run jat serve` (http://127.0.0.1:8770; API docs at `/api/docs`). Development:
+  `uv run jat serve --dev` plus `pnpm --dir frontend dev` (http://127.0.0.1:5173, which proxies `/api`).
+- Frontend checks (run in `frontend/`): `pnpm typecheck`, `pnpm lint`, `pnpm test`,
+  `pnpm format:check`. TypeScript is pinned to 5.9 (typescript-eslint doesn't support TS 7
+  yet) and jsdom to 26 (Node 22.5 can't `require()` ESM).
+- After merging a PR that changes the app, rebuild the frontend in the main checkout and
+  restart `jat serve`.
 - Once they exist, start with `docs/OVERVIEW.md` (the map: processes, data flow, state) and
   then `docs/ARCHITECTURE.md` (module contracts).
 - Tests and lint must pass before merging.
