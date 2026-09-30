@@ -20,6 +20,7 @@ import type { Contact } from "../api/client";
 import { useAgencySummary } from "../api/detailHooks";
 import { stageLookup, useWorkflow } from "../api/hooks";
 import { ApplicationDrawer } from "../components/ApplicationDrawer";
+import { LinksCard } from "../components/Links";
 import { NotesCard } from "../components/Notes";
 import { ContactCard } from "../components/ContactCard";
 import { ContactFormModal } from "../components/ContactFormModal";
@@ -128,6 +129,7 @@ export function AgencyPage() {
               </Text>
             )}
             <NotesCard entity={`agency:${agency.id}`} />
+            <LinksCard entityType="agency" entityId={agency.id} />
           </Stack>
         </Grid.Col>
       </Grid>

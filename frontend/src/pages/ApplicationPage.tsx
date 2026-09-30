@@ -29,6 +29,7 @@ import {
   ApplicationTimeline,
   LogActivity,
 } from "../components/ApplicationDrawer";
+import { LinksCard } from "../components/Links";
 import { NotesCard } from "../components/Notes";
 import { InterviewsCard } from "../components/Interviews";
 
@@ -244,6 +245,7 @@ export function ApplicationPage() {
               <DetailsCard key={app.id} app={app} />
               <InterviewsCard applicationId={app.id} />
               <NotesCard entity={`application:${app.id}`} />
+              <LinksCard entityType="application" entityId={app.id} />
               <Card withBorder>
                 <Stack gap="sm">
                   <Title order={4}>Log activity</Title>

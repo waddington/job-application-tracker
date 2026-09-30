@@ -21,6 +21,7 @@ import type { Schemas } from "../api/client";
 import { useCompanySummary, useUpdateCompany } from "../api/detailHooks";
 import { stageLookup, useWorkflow } from "../api/hooks";
 import { ApplicationDrawer } from "../components/ApplicationDrawer";
+import { LinksCard } from "../components/Links";
 import { NotesCard } from "../components/Notes";
 import { StageBadge } from "../components/StageBadge";
 import { ago } from "../utils/time";
@@ -138,6 +139,7 @@ export function CompanyPage() {
               <Description key={company.updated_at} company={company} />
             </Card>
             <NotesCard entity={`company:${company.id}`} />
+            <LinksCard entityType="company" entityId={company.id} />
           </Stack>
         </Grid.Col>
         <Grid.Col span={{ base: 12, md: 4 }}>
