@@ -61,6 +61,14 @@ roadmap is `docs/ROADMAP.yaml`, shown by the PM dashboard (see "Project manageme
 - Tests: `python3 -m unittest discover -s tests -t .`
 - After merging a PR that changes `tools/pm`, restart the dashboard so it loads the new code.
 
+## README
+- The README is the project's shop window (Kai wants GitHub stars): catchy, easy for search
+  engines and LLMs to read, and honest. A feature is only marked as available once it has
+  merged. `llms.txt` mirrors the README summary.
+- When a feature merges, update its status in the README feature table in the same PR. The
+  `readme-refresh-*` roadmap tasks do a fuller pass: screenshots and GIFs made with fake data
+  only.
+
 ## Code
 - The stack isn't chosen yet. Decide it in an RFC (see "Delivering an item"), then record the
   run, test and lint commands here.

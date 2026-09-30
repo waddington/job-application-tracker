@@ -23,6 +23,7 @@ phases:
     tasks:
       - {id: prd-tracker, name: "Product PRD, roadmap and planning docs", owner: lead, status: review, estimate_h: 2, depends: [], prd: docs/prd/tracker.md}
       - {id: pm-dashboard, name: "PM dashboard web app (tools/pm)", owner: lead, status: building, estimate_h: 4, depends: [prd-tracker]}
+      - {id: readme, name: "Public README: catchy, search- and LLM-friendly", owner: lead, status: building, estimate_h: 1.5, depends: [prd-tracker]}
       - {id: stack-rfc, name: "Stack and data-format RFC", owner: lead, status: planned, estimate_h: 3, depends: [prd-tracker], prd: docs/prd/tracker.md}
       - {id: stack-gate, name: "Kai signs off the stack RFC", owner: kai, status: blocked, estimate_h: 0.5, depends: [stack-rfc]}
 
@@ -45,6 +46,7 @@ phases:
       - {id: detail-pages, name: "Application, role, company and contact pages with timeline", owner: lead, status: planned, estimate_h: 4, depends: [api, app-shell], prd: docs/prd/tracker.md}
       - {id: recruiters, name: "Recruiter and agency pages: contact details, roles, notes", owner: lead, status: planned, estimate_h: 2, depends: [detail-pages], prd: docs/prd/tracker.md}
       - {id: dup-warning, name: "Duplicate-submission warning", owner: lead, status: planned, estimate_h: 1, depends: [schema], prd: docs/prd/tracker.md}
+      - {id: readme-refresh-1, name: "README refresh: tracking views, screenshots with fake data", owner: lead, status: planned, estimate_h: 1, depends: [app-list, board, detail-pages, recruiters]}
 
   - id: P3
     name: Notes, documents and interviews
@@ -63,6 +65,7 @@ phases:
     tasks:
       - {id: next-actions, name: "Next actions page: stale applications, upcoming interviews and deadlines", owner: lead, status: planned, estimate_h: 4, depends: [workflow, interviews], prd: docs/prd/tracker.md}
       - {id: followups, name: "Follow-up dates, snooze and one-click Ghosted", owner: lead, status: planned, estimate_h: 2, depends: [next-actions], prd: docs/prd/tracker.md}
+      - {id: readme-refresh-2, name: "README refresh: notes, documents, interviews and Next actions", owner: lead, status: planned, estimate_h: 1, depends: [notes, documents, interviews, followups]}
 
   - id: P5
     name: Insights
@@ -71,6 +74,7 @@ phases:
       - {id: sankey, name: "Sankey diagram of stage flows", owner: lead, status: planned, estimate_h: 3, depends: [workflow, app-shell], prd: docs/prd/tracker.md}
       - {id: stats, name: "Conversion, time in stage, direct vs recruiter, weekly activity", owner: lead, status: planned, estimate_h: 4, depends: [workflow, app-shell], prd: docs/prd/tracker.md}
       - {id: scorecard, name: "Recruiter scorecard", owner: lead, status: planned, estimate_h: 2, depends: [stats, recruiters], prd: docs/prd/tracker.md}
+      - {id: readme-refresh-3, name: "README refresh: Sankey and insights, demo GIF", owner: lead, status: planned, estimate_h: 1, depends: [sankey, stats, scorecard]}
 
   - id: P6
     name: Extras
@@ -80,3 +84,4 @@ phases:
       - {id: ics-export, name: ".ics export for interviews", owner: lead, status: planned, estimate_h: 1, depends: [interviews], prd: docs/prd/tracker.md}
       - {id: backup-export, name: "One-click backup archive of the data directory", owner: lead, status: planned, estimate_h: 2, depends: [data-dir], prd: docs/prd/tracker.md}
       - {id: search, name: "Full-text search across notes and entities", owner: lead, status: planned, estimate_h: 3, depends: [notes], prd: docs/prd/tracker.md}
+      - {id: readme-refresh-4, name: "README refresh: extras, install guide, v1 release notes", owner: lead, status: planned, estimate_h: 1, depends: [offers, ics-export, backup-export, search]}
