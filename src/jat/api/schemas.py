@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import Any, Literal
+from typing import Any, ClassVar, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, HttpUrl
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, HttpUrl, model_validator
 
 WorkMode = Literal["remote", "hybrid", "office"]
 EmploymentType = Literal["permanent", "contract", "fixed_term"]
@@ -20,20 +20,39 @@ class Out(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class Patch(BaseModel):
-    """Base for partial updates: only fields that were sent are applied."""
+class In(BaseModel):
+    """Base for request bodies: unknown fields are an error, not silently ignored."""
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class Patch(In):
+    """Base for partial updates: only fields that were sent are applied.
+
+    Fields listed in `not_null` are required columns: they may be omitted but not set to null.
+    """
+
+    not_null: ClassVar[frozenset[str]] = frozenset()
+
+    @model_validator(mode="after")
+    def _reject_null_required(self):
+        bad = sorted(f for f in self.model_fields_set & self.not_null if getattr(self, f) is None)
+        if bad:
+            raise ValueError(f"{', '.join(bad)} can't be null")
+        return self
 
 
 # --- companies ---------------------------------------------------------------------------
 
 
-class CompanyIn(BaseModel):
+class CompanyIn(In):
     name: str = Field(min_length=1, max_length=200)
     website: HttpUrl | None = None
     description: str | None = None
 
 
 class CompanyPatch(Patch):
+    not_null = frozenset({"name"})
     name: str | None = Field(default=None, min_length=1, max_length=200)
     website: HttpUrl | None = None
     description: str | None = None
@@ -51,12 +70,13 @@ class CompanyOut(Out):
 # --- agencies ----------------------------------------------------------------------------
 
 
-class AgencyIn(BaseModel):
+class AgencyIn(In):
     name: str = Field(min_length=1, max_length=200)
     website: HttpUrl | None = None
 
 
 class AgencyPatch(Patch):
+    not_null = frozenset({"name"})
     name: str | None = Field(default=None, min_length=1, max_length=200)
     website: HttpUrl | None = None
 
@@ -72,7 +92,7 @@ class AgencyOut(Out):
 # --- contacts ----------------------------------------------------------------------------
 
 
-class ContactDetailIn(BaseModel):
+class ContactDetailIn(In):
     kind: DetailKind
     value: str = Field(min_length=1, max_length=500)
     label: str | None = Field(default=None, max_length=100)
@@ -86,7 +106,7 @@ class ContactDetailOut(Out):
     position: int
 
 
-class ContactIn(BaseModel):
+class ContactIn(In):
     name: str = Field(min_length=1, max_length=200)
     title: str | None = None
     agency_id: str | None = None
@@ -95,6 +115,7 @@ class ContactIn(BaseModel):
 
 
 class ContactPatch(Patch):
+    not_null = frozenset({"name"})
     name: str | None = Field(default=None, min_length=1, max_length=200)
     title: str | None = None
     agency_id: str | None = None
@@ -116,7 +137,7 @@ class ContactOut(Out):
 # --- roles -------------------------------------------------------------------------------
 
 
-class RoleFields(BaseModel):
+class RoleFields(In):
     url: HttpUrl | None = None
     location: str | None = None
     work_mode: WorkMode | None = None
@@ -130,11 +151,18 @@ class RoleFields(BaseModel):
 
 
 class RoleIn(RoleFields):
+    @model_validator(mode="after")
+    def _salary_range(self):
+        if self.salary_min is not None and self.salary_max is not None and self.salary_min > self.salary_max:
+            raise ValueError("salary_min can't be more than salary_max")
+        return self
+
     company_id: str
     title: str = Field(min_length=1, max_length=300)
 
 
 class RolePatch(RoleFields, Patch):
+    not_null = frozenset({"company_id", "title"})
     company_id: str | None = None
     title: str | None = Field(default=None, min_length=1, max_length=300)
 
@@ -160,7 +188,7 @@ class RoleOut(Out):
 # --- applications ------------------------------------------------------------------------
 
 
-class ApplicationIn(BaseModel):
+class ApplicationIn(In):
     role_id: str
     route: Route = "direct"
     agency_id: str | None = None
@@ -173,6 +201,8 @@ class ApplicationIn(BaseModel):
 
 class ApplicationPatch(Patch):
     """Stage is changed with POST /applications/{id}/move, not here."""
+
+    not_null = frozenset({"role_id", "route", "tags", "archived"})
 
     role_id: str | None = None
     route: Route | None = None
@@ -216,16 +246,16 @@ class ApplicationRow(ApplicationOut):
     stale: bool
 
 
-class MoveIn(BaseModel):
+class MoveIn(In):
     to_stage: str
-    occurred_at: datetime | None = None
+    occurred_at: AwareDatetime | None = None
     note: str | None = None
 
 
-class ActivityIn(BaseModel):
+class ActivityIn(In):
     kind: ActivityKind
     summary: str | None = None
-    occurred_at: datetime | None = None
+    occurred_at: AwareDatetime | None = None
     data: dict[str, Any] = {}
 
 
@@ -241,7 +271,7 @@ class EventOut(Out):
     created_at: datetime
 
 
-class ApplicationContactIn(BaseModel):
+class ApplicationContactIn(In):
     contact_id: str
     relation: Relation
 

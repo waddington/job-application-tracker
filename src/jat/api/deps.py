@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import threading
 from collections.abc import Callable, Iterator
 from pathlib import Path
@@ -12,6 +13,8 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from ..domain.workflow import Workflow, WorkflowError, load_workflow
+
+log = logging.getLogger(__name__)
 
 
 class WriteNotifier:
@@ -27,7 +30,10 @@ class WriteNotifier:
     def notify(self) -> None:
         self.writes += 1
         for listener in self._listeners:
-            listener()
+            try:
+                listener()
+            except Exception:  # the write is already committed; never turn it into an error
+                log.exception("write listener failed")
 
 
 class WorkflowCache:
@@ -73,7 +79,9 @@ def get_workflow(request: Request) -> Workflow:
         raise HTTPException(status_code=500, detail=f"invalid workflow in config.toml: {exc}") from exc
 
 
-SessionDep = Annotated[Session, Depends(get_session)]
+# scope="function": the commit runs before the response is sent (FastAPI >= 0.121), so a
+# client never gets a 2xx for a write that then fails to commit.
+SessionDep = Annotated[Session, Depends(get_session, scope="function")]
 WorkflowDep = Annotated[Workflow, Depends(get_workflow)]
 
 

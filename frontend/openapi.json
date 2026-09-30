@@ -2,6 +2,7 @@
   "components": {
     "schemas": {
       "ActivityIn": {
+        "additionalProperties": false,
         "properties": {
           "data": {
             "additionalProperties": true,
@@ -53,6 +54,7 @@
         "type": "object"
       },
       "AgencyIn": {
+        "additionalProperties": false,
         "properties": {
           "name": {
             "maxLength": 200,
@@ -124,6 +126,7 @@
         "type": "object"
       },
       "AgencyPatch": {
+        "additionalProperties": false,
         "properties": {
           "name": {
             "anyOf": [
@@ -157,6 +160,7 @@
         "type": "object"
       },
       "ApplicationContactIn": {
+        "additionalProperties": false,
         "properties": {
           "contact_id": {
             "title": "Contact Id",
@@ -415,6 +419,7 @@
         "type": "object"
       },
       "ApplicationIn": {
+        "additionalProperties": false,
         "properties": {
           "agency_id": {
             "anyOf": [
@@ -503,6 +508,7 @@
         "type": "object"
       },
       "ApplicationPatch": {
+        "additionalProperties": false,
         "description": "Stage is changed with POST /applications/{id}/move, not here.",
         "properties": {
           "agency_id": {
@@ -802,6 +808,7 @@
         "type": "object"
       },
       "CompanyIn": {
+        "additionalProperties": false,
         "properties": {
           "description": {
             "anyOf": [
@@ -896,6 +903,7 @@
         "type": "object"
       },
       "CompanyPatch": {
+        "additionalProperties": false,
         "properties": {
           "description": {
             "anyOf": [
@@ -940,6 +948,7 @@
         "type": "object"
       },
       "ContactDetailIn": {
+        "additionalProperties": false,
         "properties": {
           "kind": {
             "enum": [
@@ -1019,6 +1028,7 @@
         "type": "object"
       },
       "ContactIn": {
+        "additionalProperties": false,
         "properties": {
           "agency_id": {
             "anyOf": [
@@ -1149,6 +1159,7 @@
         "type": "object"
       },
       "ContactPatch": {
+        "additionalProperties": false,
         "properties": {
           "agency_id": {
             "anyOf": [
@@ -1305,6 +1316,7 @@
         "type": "object"
       },
       "MoveIn": {
+        "additionalProperties": false,
         "properties": {
           "note": {
             "anyOf": [
@@ -1341,6 +1353,7 @@
         "type": "object"
       },
       "RoleIn": {
+        "additionalProperties": false,
         "properties": {
           "company_id": {
             "title": "Company Id",
@@ -1649,6 +1662,7 @@
         "type": "object"
       },
       "RolePatch": {
+        "additionalProperties": false,
         "properties": {
           "company_id": {
             "anyOf": [
