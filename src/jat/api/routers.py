@@ -29,6 +29,32 @@ def _validate_role(session: Session, data: dict) -> None:
     require(session, Company, data.get("company_id"), "company_id")
 
 
+def _count_applications(session: Session, *where) -> int:
+    return session.scalar(select(func.count()).select_from(Application).join(Role).where(*where)) or 0
+
+
+def _still_used(name: str, n: int) -> str:
+    if n == 1:
+        return f"{name} has an application. Delete it first, or archive it instead."
+    return f"{name} has {n} applications. Delete them first, or archive them instead."
+
+
+def _before_company_delete(session: Session, company: Company) -> None:
+    """A company with applications can't go (delete or move those first); its roles go with it."""
+    n = _count_applications(session, Role.company_id == company.id)
+    if n:
+        raise HTTPException(409, _still_used(company.name, n))
+    for role in session.scalars(select(Role).where(Role.company_id == company.id)):
+        session.delete(role)
+    session.flush()  # roles first: the ORM doesn't know companies own roles, so it can't order them
+
+
+def _before_role_delete(session: Session, role: Role) -> None:
+    n = _count_applications(session, Application.role_id == role.id)
+    if n:
+        raise HTTPException(409, _still_used(role.title, n))
+
+
 router.include_router(
     crud_router(
         model=Company,
@@ -39,6 +65,7 @@ router.include_router(
         tag="companies",
         order_by=func.lower(Company.name),
         search_column=Company.name,
+        before_delete=_before_company_delete,
     )
 )
 router.include_router(
@@ -64,6 +91,7 @@ router.include_router(
         order_by=func.lower(Role.title),
         search_column=Role.title,
         validate=_validate_role,
+        before_delete=_before_role_delete,
     )
 )
 

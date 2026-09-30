@@ -2,6 +2,7 @@ import { ActionIcon, Anchor, Card, Group, Stack, Text, Tooltip } from "@mantine/
 import { IconBrandLinkedin, IconLink, IconMail, IconPencil, IconPhone, IconPoint } from "@tabler/icons-react";
 
 import type { Contact } from "../api/client";
+import { DeleteButton } from "./DeleteButton";
 
 const ICONS = {
   email: IconMail,
@@ -63,11 +64,20 @@ export function ContactCard({ contact, onEdit }: { contact: Contact; onEdit?: ()
           )}
         </Stack>
         {onEdit && (
-          <Tooltip label="Edit">
-            <ActionIcon variant="subtle" color="gray" onClick={onEdit} aria-label={`Edit ${contact.name}`}>
-              <IconPencil size={16} />
-            </ActionIcon>
-          </Tooltip>
+          <Group gap={2} wrap="nowrap">
+            <Tooltip label="Edit">
+              <ActionIcon variant="subtle" color="gray" onClick={onEdit} aria-label={`Edit ${contact.name}`}>
+                <IconPencil size={16} />
+              </ActionIcon>
+            </Tooltip>
+            <DeleteButton
+              compact
+              kind="contact"
+              id={contact.id}
+              name={contact.name}
+              confirm={`Delete ${contact.name}? They come off the applications and interviews they're on; the applications themselves stay.`}
+            />
+          </Group>
         )}
       </Group>
     </Card>

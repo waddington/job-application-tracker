@@ -110,9 +110,10 @@ def test_validation_and_errors(client, seeded):
     )
     assert client.get("/api/v1/applications/nope").status_code == 404
     assert client.get("/api/v1/companies/nope").status_code == 404
-    # A company with roles can't be deleted.
-    assert client.delete(f"/api/v1/companies/{seeded['company']['id']}").status_code == 409
     assert client.post(f"/api/v1/applications/{'nope'}/undo").status_code == 404
+    # A company with applications can't be deleted (see test_delete.py for the rules).
+    post(client, "/api/v1/applications", {"role_id": seeded["role"]["id"]})
+    assert client.delete(f"/api/v1/companies/{seeded['company']['id']}").status_code == 409
 
 
 def test_crud_and_search(client, seeded):
