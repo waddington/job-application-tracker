@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session, aliased
 
 from ..db.models import Agency, Application, ApplicationContact, Company, Contact, ContactDetail, Role
 from ..domain import applications as svc
+from ..domain import duplicates as dup
 from ..domain.workflow import Workflow, WorkflowError
 from . import schemas as S
 from .crud import crud_router, values
@@ -207,6 +208,24 @@ def _load_row(session: Session, workflow: Workflow, app_id: str) -> S.Applicatio
     return _row(workflow, *found, today=date.today())
 
 
+def _duplicates(
+    session: Session, workflow: Workflow, company_ids: list[str], role_title: str, exclude: str | None = None
+) -> list[S.DuplicateOut]:
+    """Applications (archived too) at these companies whose role looks like `role_title`."""
+    if not company_ids:
+        return []
+    stmt = _rows_query().where(Company.id.in_(company_ids))
+    if exclude:
+        stmt = stmt.where(Application.id != exclude)
+    today = date.today()
+    out = []
+    for found in session.execute(stmt.order_by(Application.created_at, Application.id)):
+        match = dup.title_match(role_title, found[1].title)  # (Application, Role, …)
+        if match:
+            out.append(S.DuplicateOut(**_row(workflow, *found, today=today).model_dump(), match=match))
+    return out
+
+
 def _detail(session: Session, workflow: Workflow, app_id: str) -> S.ApplicationDetail:
     row = _load_row(session, workflow, app_id)
     events = [S.EventOut.model_validate(e) for e in svc.history(session, app_id)]
@@ -221,6 +240,7 @@ def _detail(session: Session, workflow: Workflow, app_id: str) -> S.ApplicationD
         contacts=[S.ApplicationContactOut.model_validate(link) for link in links],
         allowed_next=allowed,
         can_undo=svc.can_undo(session, session.get(Application, app_id)),
+        duplicates=_duplicates(session, workflow, [row.company_id], row.role_title, exclude=app_id),
     )
 
 
@@ -405,6 +425,27 @@ def quick_create(body: S.QuickApplicationIn, session: SessionDep, workflow: Work
     except WorkflowError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     return _detail(session, workflow, app.id)
+
+
+@apps.get("/duplicates", response_model=list[S.DuplicateOut])
+def find_duplicates(
+    session: SessionDep,
+    workflow: WorkflowDep,
+    role_title: Annotated[str, Query(min_length=1, max_length=300)],
+    company_id: str | None = None,
+    company_name: Annotated[str | None, Query(max_length=200)] = None,
+):
+    """Existing applications that look like the same job, to warn before applying twice.
+
+    Give the company by id, or by name ("Contoso Ltd" matches "Contoso").
+    """
+    if company_id:
+        ids = [company_id]
+    elif company_name:
+        ids = dup.company_ids_named(session, company_name)
+    else:
+        raise HTTPException(422, "Give company_id or company_name.")
+    return _duplicates(session, workflow, ids, role_title)
 
 
 @apps.get("/{app_id}", response_model=S.ApplicationDetail)

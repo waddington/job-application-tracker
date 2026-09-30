@@ -40,6 +40,7 @@ const detail = {
   contacts: [],
   allowed_next: ["screen", "rejected"],
   can_undo: true,
+  duplicates: [],
 };
 
 afterEach(() => vi.unstubAllGlobals());
@@ -132,6 +133,40 @@ describe("applications page", () => {
     fireEvent.click(await screen.findByText("Contoso"));
     const drawer = await screen.findByRole("dialog");
     expect(await within(drawer).findByRole("button", { name: /Undo last move/ })).toBeDisabled();
+  });
+
+  it("warns about a possible duplicate while adding, but still saves", async () => {
+    const calls = mockApi({
+      "/api/v1/workflow": WORKFLOW,
+      "/api/v1/agencies": [],
+      "/api/v1/companies": [{ id: "co1", name: "Contoso" }],
+      "/api/v1/contacts": [],
+      "/api/v1/applications": [],
+      "/api/v1/applications/duplicates": [
+        { ...row({ route: "direct", agency_name: null, recruiter_name: null }), match: "similar_title" },
+      ],
+      "POST /api/v1/applications/quick": detail,
+      "GET /api/v1/applications/a1": detail,
+      "/api/v1/health": {},
+    });
+    renderApplications();
+    fireEvent.click((await screen.findAllByRole("button", { name: /New application/ }))[0]!);
+    const dialog = await screen.findByRole("dialog");
+    fireEvent.change(within(dialog).getByLabelText("Company"), { target: { value: "Contoso" } });
+    fireEvent.change(within(dialog).getByLabelText("Role"), { target: { value: "Senior Backend Engineer" } });
+    expect(await within(dialog).findByText("You may have applied for this already")).toBeInTheDocument();
+    expect(within(dialog).getByRole("link", { name: "Backend Engineer at Contoso" })).toHaveAttribute(
+      "href",
+      "/applications/a1",
+    );
+    expect(within(dialog).getByText(/directly on .+ · now Applied · similar title/)).toBeInTheDocument();
+    const lookup = calls.filter((c) => c.path.startsWith("/api/v1/applications/duplicates")).at(-1)!;
+    const params = new URL(lookup.path, "http://localhost").searchParams;
+    expect(params.get("company_id")).toBe("co1");
+    expect(params.get("role_title")).toBe("Senior Backend Engineer");
+
+    fireEvent.click(within(dialog).getByRole("button", { name: "Add application" }));
+    await waitFor(() => expect(calls.some((c) => c.path === "/api/v1/applications/quick")).toBe(true));
   });
 
   it("creates an application with one quick-create request", async () => {

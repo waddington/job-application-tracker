@@ -316,6 +316,13 @@
             "title": "Days Since Activity",
             "type": "integer"
           },
+          "duplicates": {
+            "items": {
+              "$ref": "#/components/schemas/DuplicateOut"
+            },
+            "title": "Duplicates",
+            "type": "array"
+          },
           "events": {
             "items": {
               "$ref": "#/components/schemas/EventOut"
@@ -446,7 +453,8 @@
           "events",
           "contacts",
           "allowed_next",
-          "can_undo"
+          "can_undo",
+          "duplicates"
         ],
         "title": "ApplicationDetail",
         "type": "object"
@@ -1380,6 +1388,197 @@
           }
         },
         "title": "ContactPatch",
+        "type": "object"
+      },
+      "DuplicateOut": {
+        "description": "Another application that looks like the same job: same company, same or similar title.",
+        "properties": {
+          "agency_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agency Id"
+          },
+          "agency_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agency Name"
+          },
+          "applied_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Applied On"
+          },
+          "archived": {
+            "title": "Archived",
+            "type": "boolean"
+          },
+          "company_id": {
+            "title": "Company Id",
+            "type": "string"
+          },
+          "company_name": {
+            "title": "Company Name",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "days_since_activity": {
+            "title": "Days Since Activity",
+            "type": "integer"
+          },
+          "follow_up_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Follow Up On"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "last_activity_at": {
+            "format": "date-time",
+            "title": "Last Activity At",
+            "type": "string"
+          },
+          "match": {
+            "enum": [
+              "same_role",
+              "similar_title"
+            ],
+            "title": "Match",
+            "type": "string"
+          },
+          "recruiter_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recruiter Id"
+          },
+          "recruiter_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recruiter Name"
+          },
+          "role_id": {
+            "title": "Role Id",
+            "type": "string"
+          },
+          "role_title": {
+            "title": "Role Title",
+            "type": "string"
+          },
+          "route": {
+            "title": "Route",
+            "type": "string"
+          },
+          "snoozed_until": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Snoozed Until"
+          },
+          "stage": {
+            "title": "Stage",
+            "type": "string"
+          },
+          "stage_kind": {
+            "title": "Stage Kind",
+            "type": "string"
+          },
+          "stage_name": {
+            "title": "Stage Name",
+            "type": "string"
+          },
+          "stale": {
+            "title": "Stale",
+            "type": "boolean"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "role_id",
+          "route",
+          "agency_id",
+          "recruiter_id",
+          "stage",
+          "applied_on",
+          "follow_up_on",
+          "snoozed_until",
+          "last_activity_at",
+          "tags",
+          "archived",
+          "created_at",
+          "updated_at",
+          "role_title",
+          "company_id",
+          "company_name",
+          "agency_name",
+          "recruiter_name",
+          "stage_name",
+          "stage_kind",
+          "days_since_activity",
+          "stale",
+          "match"
+        ],
+        "title": "DuplicateOut",
         "type": "object"
       },
       "EventOut": {
@@ -2742,6 +2941,88 @@
           }
         },
         "summary": "Create App ",
+        "tags": [
+          "applications"
+        ]
+      }
+    },
+    "/api/v1/applications/duplicates": {
+      "get": {
+        "description": "Existing applications that look like the same job, to warn before applying twice.\n\nGive the company by id, or by name (\"Contoso Ltd\" matches \"Contoso\").",
+        "operationId": "find_duplicates_api_v1_applications_duplicates_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "role_title",
+            "required": true,
+            "schema": {
+              "maxLength": 300,
+              "minLength": 1,
+              "title": "Role Title",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "company_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Company Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "company_name",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 200,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Company Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DuplicateOut"
+                  },
+                  "title": "Response Find Duplicates Api V1 Applications Duplicates Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Find Duplicates",
         "tags": [
           "applications"
         ]

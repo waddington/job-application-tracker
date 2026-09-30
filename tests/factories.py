@@ -23,6 +23,13 @@ from jat.db.models import (
 )
 
 
+def post(client, url, json, status=201):
+    """POST through the API test client and return the JSON, failing loudly on the wrong status."""
+    r = client.post(url, json=json)
+    assert r.status_code == status, r.text
+    return r.json()
+
+
 def populate(session) -> dict[str, str]:
     """One row in every exported table, with unicode, JSON, booleans, dates and nulls."""
     company = Company(name="Contoso Ltd", website="https://contoso.example.com")
