@@ -58,6 +58,68 @@ def test_parse_html_only_email_without_a_date(tmp_path):
 
 def test_future_dates_are_not_trusted():
     assert sent_at({"date": "2999-01-01T00:00:00Z"}) is None
+    assert sent_at({"date": "1970-01-01T00:00:00Z"}) is None
+
+
+MULTIPART = b"""From: =?utf-8?b?Sm9yZGFuIEzDqWU=?= <jordan@northwind.example.com>
+To: broken <<<>>>, candidate@example.com
+Subject: =?utf-8?q?Offer=0Aline_two?=
+Date: Wed, 30 Sep 2026 09:00:00 -0000
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="outer"
+
+--outer
+Content-Type: multipart/alternative; boundary="inner"
+
+--inner
+Content-Type: text/html; charset=utf-8
+
+<style>p{color:red}</style><p>Offer attached</p><script>track()</script>
+--inner
+Content-Type: text/plain; charset=x-made-up-charset
+
+Offer attached (plain)
+--inner--
+--outer
+Content-Type: application/pdf; name="offer.pdf"
+Content-Transfer-Encoding: base64
+
+JVBERi0xLjQK
+--outer--
+"""
+
+
+def test_nested_multipart_odd_charsets_and_injected_newlines(tmp_path):
+    path = tmp_path / "c.eml"
+    path.write_bytes(MULTIPART)
+    meta = parse_eml(path)
+    assert meta["from"] == ["Jordan Lée <jordan@northwind.example.com>"]
+    assert "candidate@example.com" in meta["to"]
+    assert meta["subject"] == "Offer line two"  # no newline smuggled into the timeline
+    assert meta["date"] == "2026-09-30T09:00:00Z"
+    # The plain part has an unknown charset, so the HTML one is used, minus style and script.
+    assert "color" not in meta.get("snippet", "") and "track" not in meta.get("snippet", "")
+
+
+def test_only_the_start_of_a_big_email_is_read(tmp_path):
+    path = tmp_path / "big.eml"
+    path.write_bytes(PLAIN + b"x" * (3 * 1024 * 1024))
+    meta = parse_eml(path)
+    assert meta["subject"] == "Contoso - next steps"
+
+
+def test_a_past_email_does_not_make_the_application_look_active(client, seeded):
+    app = post(client, "/api/v1/applications", {"role_id": seeded["role"]["id"], "stage": "applied"})
+    before = client.get(f"/api/v1/applications/{app['id']}").json()["last_activity_at"]
+    old = PLAIN.replace(b"Tue, 29 Sep 2026", b"Mon, 01 Jan 2024")
+    client.post(
+        "/api/v1/attachments",
+        files={"file": ("old.eml", old, "message/rfc822")},
+        data={"entity_type": "application", "entity_id": app["id"]},
+    )
+    after = client.get(f"/api/v1/applications/{app['id']}").json()
+    assert after["last_activity_at"] == before
+    assert any(e["kind"] == "email" and e["occurred_at"].startswith("2024-01-01") for e in after["events"])
 
 
 def test_uploading_an_email_puts_it_on_the_timeline(client, seeded):

@@ -28,7 +28,7 @@ import {
   useUploadAttachments,
   type AttachmentItem,
 } from "../api/attachmentHooks";
-import { formatDate } from "../utils/time";
+import { formatDate, formatDateTime } from "../utils/time";
 
 function iconFor(att: AttachmentItem) {
   const type = att.content_type ?? "";
@@ -60,7 +60,9 @@ function AttachmentRow({ att }: { att: AttachmentItem }) {
   const mail = att.meta as EmailMeta;
   const title = mail.email ? mail.subject || "(no subject)" : att.original_name;
   const detail = mail.email
-    ? [mail.from?.[0], mail.date ? formatDate(mail.date.slice(0, 10)) : null].filter(Boolean).join(" · ")
+    ? [mail.from?.[0], mail.date ? formatDateTime(mail.date) : null, humanSize(att.size)]
+        .filter(Boolean)
+        .join(" · ")
     : `${humanSize(att.size)} · ${formatDate(att.created_at.slice(0, 10))}`;
   return (
     <Group justify="space-between" wrap="nowrap" gap="xs">

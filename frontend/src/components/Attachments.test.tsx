@@ -80,7 +80,7 @@ describe("attachments", () => {
     expect(pdf).toHaveAttribute("href", "/api/v1/attachments/f1/file");
     expect(pdf).toHaveAttribute("target", "_blank");
     expect(screen.getByRole("link", { name: "notes.html" })).toHaveAttribute("download", "notes.html");
-    expect(screen.getAllByText(/180 KB/)).toHaveLength(2);
+    expect(screen.getAllByText(/180 KB/)).toHaveLength(3);
     // An exported email shows its subject, sender and a snippet.
     expect(screen.getByRole("link", { name: "Contoso - next steps" })).toHaveAttribute(
       "download",
