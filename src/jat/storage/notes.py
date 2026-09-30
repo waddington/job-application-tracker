@@ -38,7 +38,7 @@ from ..db.types import new_id, utcnow
 
 log = logging.getLogger(__name__)
 
-ENTITY_TYPES = ("application", "company", "role", "agency", "contact", "interview")
+ENTITY_TYPES = ("application", "company", "role", "agency", "contact", "interview", "document")
 _FRONTMATTER = re.compile(r"\A---\r?\n(.*?)\r?\n---\r?\n?", re.DOTALL)
 
 

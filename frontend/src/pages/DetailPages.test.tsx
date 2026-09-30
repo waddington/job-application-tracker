@@ -17,6 +17,7 @@ const detail = {
   allowed_next: ["screen"],
   suggested_next: ["screen"],
   can_undo: false,
+  documents: [],
   duplicates: [],
 };
 const contacts = [
