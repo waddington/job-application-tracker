@@ -35,6 +35,7 @@ phases:
       - {id: schema, name: "Entities: companies, agencies, contacts, roles, applications", owner: lead, status: planned, estimate_h: 4, depends: [data-dir], prd: docs/prd/tracker.md, rfc: docs/rfc/stack.md}
       - {id: workflow, name: "Configurable stages, transitions and event history", owner: lead, status: planned, estimate_h: 4, depends: [schema], prd: docs/prd/tracker.md, rfc: docs/rfc/stack.md}
       - {id: api, name: "Local JSON API for every action", owner: lead, status: planned, estimate_h: 3, depends: [schema], prd: docs/prd/tracker.md, rfc: docs/rfc/stack.md}
+      - {id: snapshots, name: "Debounced git auto-commit of the data repo, and push on demand", owner: lead, status: planned, estimate_h: 2, depends: [schema], prd: docs/prd/tracker.md, rfc: docs/rfc/stack.md}
       - {id: app-shell, name: "Web app shell: navigation, theming, layout", owner: lead, status: planned, estimate_h: 3, depends: [stack-gate], prd: docs/prd/tracker.md, rfc: docs/rfc/stack.md}
 
   - id: P2
