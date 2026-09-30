@@ -12,6 +12,7 @@ from typing import Any
 from sqlalchemy import (
     JSON,
     Boolean,
+    Float,
     ForeignKey,
     Integer,
     String,
@@ -169,6 +170,34 @@ class InterviewContact(IdMixin, Base):
     __table_args__ = (UniqueConstraint("interview_id", "contact_id"),)
     interview_id: Mapped[str] = mapped_column(ForeignKey("interviews.id", ondelete="CASCADE"), index=True)
     contact_id: Mapped[str] = mapped_column(ForeignKey("contacts.id", ondelete="CASCADE"), index=True)
+
+
+class Offer(IdMixin, TimestampMixin, Base):
+    """An offer on an application, with its pay and terms (FR4, offer comparison).
+
+    An application can have more than one (a revised offer after negotiating); the newest
+    counts. Money is whole units of `currency` a year, except `day_rate`.
+    """
+
+    __tablename__ = "offers"
+    application_id: Mapped[str] = mapped_column(ForeignKey("applications.id", ondelete="CASCADE"), index=True)
+    status: Mapped[str] = mapped_column(String(20), default="pending")  # pending | accepted | declined | withdrawn
+    received_on: Mapped[date | None]
+    respond_by: Mapped[date | None] = mapped_column(index=True)
+    start_on: Mapped[date | None]
+    employment_type: Mapped[str | None] = mapped_column(String(20))  # permanent | contract | fixed_term
+    currency: Mapped[str | None] = mapped_column(String(3))
+    salary: Mapped[int | None] = mapped_column(Integer)  # base, a year
+    bonus: Mapped[int | None] = mapped_column(Integer)  # expected, a year
+    equity: Mapped[str | None] = mapped_column(Text)  # the terms, in words
+    equity_value: Mapped[int | None] = mapped_column(Integer)  # your estimate, a year
+    pension_percent: Mapped[float | None] = mapped_column(Float)  # employer contribution
+    holiday_days: Mapped[int | None] = mapped_column(Integer)
+    day_rate: Mapped[int | None] = mapped_column(Integer)
+    ir35: Mapped[str | None] = mapped_column(String(20))  # inside | outside | unknown
+    contract_months: Mapped[int | None] = mapped_column(Integer)
+    benefits: Mapped[str | None] = mapped_column(Text)
+    notes: Mapped[str | None] = mapped_column(Text)
 
 
 class Attachment(IdMixin, Base):
