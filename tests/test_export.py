@@ -5,7 +5,7 @@ import pytest
 
 from jat.datadir import init_data_dir
 from jat.db import db_path, make_engine, migrate, session_factory
-from jat.db.models import exported_tables
+from jat.db.models import Company, exported_tables
 from jat.snapshot import RestoreError, export_data_dir, restore_data_dir
 from tests.factories import populate
 
@@ -75,3 +75,92 @@ def test_restore_refuses_existing_db_unless_forced(data_dir):
 def test_restore_without_export(tmp_path):
     with pytest.raises(RestoreError, match="No export"):
         restore_data_dir(tmp_path)
+
+
+def _fresh_with_export(data_dir, tmp_path, name="fresh"):
+    export_data_dir(data_dir)
+    fresh = tmp_path / name
+    init_data_dir(fresh, commit=False)
+    shutil.copytree(data_dir / "export", fresh / "export", dirs_exist_ok=True)
+    return fresh
+
+
+def test_line_separator_characters_survive_round_trip(tmp_path):
+    path = tmp_path / "data"
+    init_data_dir(path, commit=False)
+    migrate(db_path(path))
+    engine = make_engine(db_path(path))
+    tricky = "pasted from a page\x85with \r odd breaks"
+    with session_factory(engine).begin() as s:
+        s.add(Company(name="Contoso", description=tricky))
+    engine.dispose()
+    fresh = _fresh_with_export(path, tmp_path)
+    restore_data_dir(fresh)
+    export_data_dir(fresh)
+    assert read_export(fresh) == read_export(path)
+    # U+2028 is written unescaped, which is exactly what used to break restore.
+    assert " " in (fresh / "export" / "companies.jsonl").read_text(encoding="utf-8")
+
+
+def test_failed_restore_changes_nothing(data_dir, tmp_path):
+    fresh = _fresh_with_export(data_dir, tmp_path)
+    events = fresh / "export" / "events.jsonl"
+    events.write_text(events.read_text().replace('"stage_change"', '"stage_change', 1))
+    with pytest.raises(RestoreError, match="not valid JSON"):
+        restore_data_dir(fresh)
+    assert not (fresh / "tracker.sqlite3").exists()
+    assert not list(fresh.glob("tracker.sqlite3.restoring*"))
+
+    # With --force, a failure must leave the existing database in place.
+    before = (data_dir / "tracker.sqlite3").read_bytes()
+    shutil.copy(events, data_dir / "export" / "events.jsonl")
+    with pytest.raises(RestoreError):
+        restore_data_dir(data_dir, force=True)
+    assert (data_dir / "tracker.sqlite3").read_bytes() == before
+    assert not list(data_dir.glob("tracker.sqlite3.bak-*"))
+
+
+def test_integrity_error_is_a_clean_restore_error(data_dir, tmp_path):
+    fresh = _fresh_with_export(data_dir, tmp_path)
+    roles = fresh / "export" / "roles.jsonl"
+    row = json.loads(roles.read_text())
+    row["company_id"] = "no-such-company"
+    roles.write_text(json.dumps(row) + "\n")
+    with pytest.raises(RestoreError, match="nothing was changed"):
+        restore_data_dir(fresh)
+    assert not (fresh / "tracker.sqlite3").exists()
+
+
+def test_restore_validates_export_completeness(data_dir, tmp_path):
+    fresh = _fresh_with_export(data_dir, tmp_path)
+    (fresh / "export" / "links.jsonl").unlink()
+    with pytest.raises(RestoreError, match="links.jsonl is missing"):
+        restore_data_dir(fresh)
+
+    fresh = _fresh_with_export(data_dir, tmp_path, "fresh2")
+    (fresh / "export" / "links.jsonl").write_text("")
+    with pytest.raises(RestoreError, match="has 0 rows but _meta.json says 1"):
+        restore_data_dir(fresh)
+
+    fresh = _fresh_with_export(data_dir, tmp_path, "fresh3")
+    (fresh / "export" / "mystery.jsonl").write_text("{}\n")
+    with pytest.raises(RestoreError, match="Unexpected export files"):
+        restore_data_dir(fresh)
+
+
+def test_restore_rejects_unknown_revision(data_dir, tmp_path):
+    fresh = _fresh_with_export(data_dir, tmp_path)
+    meta_path = fresh / "export" / "_meta.json"
+    meta = json.loads(meta_path.read_text())
+    meta["schema_revision"] = "9999_future"
+    meta_path.write_text(json.dumps(meta))
+    with pytest.raises(RestoreError, match="newer or unknown schema"):
+        restore_data_dir(fresh)
+
+
+def test_repeated_forced_restores_keep_every_backup(data_dir):
+    export_data_dir(data_dir)
+    restore_data_dir(data_dir, force=True)
+    restore_data_dir(data_dir, force=True)
+    backups = [p for p in data_dir.glob("tracker.sqlite3.bak-*") if not p.name.endswith(("-wal", "-shm"))]
+    assert len(backups) == 2
