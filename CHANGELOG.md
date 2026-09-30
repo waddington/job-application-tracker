@@ -1,9 +1,9 @@
 # Changelog
 
-## v1.0.0 (release candidate, not yet tagged)
+## Unreleased (0.1.0)
 
-The first complete version: everything in the [roadmap](docs/ROADMAP.yaml) (phases P0–P6)
-is built and merged. Numbers in brackets are pull requests.
+Everything in the [roadmap](docs/ROADMAP.yaml) (phases P0–P6)
+is built and merged, but not yet tested in real use. Numbers in brackets are pull requests.
 
 ### Tracking
 - **Applications list** with search and filters (stage, route, agency, "needs chasing",
