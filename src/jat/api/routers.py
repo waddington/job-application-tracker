@@ -216,11 +216,19 @@ def _round_summary(interview: Interview) -> S.RoundSummary:
 
 
 def _with_rounds(session: Session, rows: list[S.ApplicationRow]) -> list[S.ApplicationRow]:
-    """Fill in each row's current interview round (one query for all rows)."""
+    """Fill in each row's current interview round (one query for all rows).
+
+    An application with a round booked in the future isn't stale: you're waiting on a date,
+    not on them. (One with an undated round still counts, so it doesn't hide forever.)
+    """
     current = interviews_svc.current_rounds(session, (r.id for r in rows))
+    now = datetime.now(UTC)
     for r in rows:
         if (interview := current.get(r.id)) is not None:
             r.current_round = _round_summary(interview)
+            when = interview.starts_at or interview.deadline_at
+            if interview.status == "scheduled" and when is not None and when >= now:
+                r.stale = False
     return rows
 
 
@@ -320,6 +328,7 @@ def list_applications(
     }[sort]
     today = date.today()
     rows = [_row(workflow, *found, today=today) for found in session.execute(stmt.order_by(order, Application.id))]
+    rows = _with_rounds(session, rows)  # before filtering: a booked interview means it isn't stale
     if tag:
         rows = [r for r in rows if tag in r.tags]
     if stale is not None:
@@ -329,7 +338,7 @@ def list_applications(
     if sort == "stage":
         order_ids = [s.id for s in workflow.stages]
         rows.sort(key=lambda r: order_ids.index(r.stage) if r.stage in order_ids else len(order_ids))
-    return _with_rounds(session, rows)
+    return rows
 
 
 def _check_refs(session: Session, data: dict) -> None:
@@ -619,3 +628,7 @@ router.include_router(notes_router)
 from .attachments import router as attachments_router  # noqa: E402
 
 router.include_router(attachments_router)
+
+from .next_actions import router as next_actions_router  # noqa: E402
+
+router.include_router(next_actions_router)
