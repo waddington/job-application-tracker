@@ -3,12 +3,14 @@ import type { JSX } from "react";
 
 import { Layout } from "./components/Layout";
 import { NAV } from "./nav";
+import { AgencyPage } from "./pages/AgencyPage";
 import { ApplicationPage } from "./pages/ApplicationPage";
 import { ApplicationsPage } from "./pages/ApplicationsPage";
 import { CompaniesPage } from "./pages/CompaniesPage";
 import { CompanyPage } from "./pages/CompanyPage";
 import { NotFound } from "./pages/NotFound";
 import { Placeholder } from "./pages/Placeholder";
+import { RecruitersPage } from "./pages/RecruitersPage";
 
 const rootRoute = createRootRoute({ component: Layout, notFoundComponent: NotFound });
 
@@ -16,6 +18,7 @@ const rootRoute = createRootRoute({ component: Layout, notFoundComponent: NotFou
 const PAGES: Record<string, () => JSX.Element> = {
   "/applications": ApplicationsPage,
   "/companies": CompaniesPage,
+  "/recruiters": RecruitersPage,
 };
 
 const pageRoutes = NAV.map((item) =>
@@ -38,7 +41,13 @@ const companyRoute = createRoute({
   component: CompanyPage,
 });
 
-const routeTree = rootRoute.addChildren([...pageRoutes, applicationRoute, companyRoute]);
+const agencyRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/agencies/$agencyId",
+  component: AgencyPage,
+});
+
+const routeTree = rootRoute.addChildren([...pageRoutes, applicationRoute, companyRoute, agencyRoute]);
 
 export function makeRouter(history?: RouterHistory) {
   return createRouter({ routeTree, history, defaultPreload: "intent" });
