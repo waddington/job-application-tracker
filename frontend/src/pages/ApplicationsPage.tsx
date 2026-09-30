@@ -7,6 +7,7 @@ import {
   Loader,
   MultiSelect,
   ScrollArea,
+  SegmentedControl,
   Select,
   Stack,
   Switch,
@@ -16,9 +17,9 @@ import {
   Title,
   UnstyledButton,
 } from "@mantine/core";
-import { useDebouncedValue } from "@mantine/hooks";
+import { useDebouncedValue, useLocalStorage } from "@mantine/hooks";
 import { IconBriefcase, IconChevronDown, IconChevronUp, IconPlus, IconSearch } from "@tabler/icons-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import type { ApplicationRow } from "../api/client";
 import {
@@ -29,6 +30,7 @@ import {
   type ApplicationFilters,
 } from "../api/hooks";
 import { ApplicationDrawer } from "../components/ApplicationDrawer";
+import { Board } from "../components/Board";
 import { NewApplicationModal } from "../components/NewApplicationModal";
 import { StageBadge } from "../components/StageBadge";
 import { ago } from "../utils/time";
@@ -77,6 +79,21 @@ export function ApplicationsPage() {
   const [sort, setSort] = useState<Sort>("-last_activity");
   const [creating, setCreating] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null);
+  const [view, setView] = useLocalStorage<"list" | "board">({
+    key: "jat.applications.view",
+    defaultValue: "list",
+    getInitialValueInEffect: false, // no flash of the list when the board was chosen
+  });
+  // ?view=board or ?view=list in the address opens that view (and remembers it).
+  useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get("view");
+    if (requested !== "board" && requested !== "list") return;
+    setView(requested);
+    // Apply once, then drop it from the address so it doesn't override later choices.
+    const url = new URL(window.location.href);
+    url.searchParams.delete("view");
+    window.history.replaceState(window.history.state, "", url);
+  }, [setView]);
 
   const { data: workflow } = useWorkflow();
   const { data: agencies } = useAgencies();
@@ -106,9 +123,20 @@ export function ApplicationsPage() {
           )}
           {isFetching && !isLoading && <Loader size="xs" />}
         </Group>
-        <Button leftSection={<IconPlus size={16} />} onClick={() => setCreating(true)}>
-          New application
-        </Button>
+        <Group gap="sm">
+          <SegmentedControl
+            value={view}
+            onChange={(v) => setView(v as "list" | "board")}
+            data={[
+              { value: "list", label: "List" },
+              { value: "board", label: "Board" },
+            ]}
+            aria-label="View"
+          />
+          <Button leftSection={<IconPlus size={16} />} onClick={() => setCreating(true)}>
+            New application
+          </Button>
+        </Group>
       </Group>
 
       <Group gap="sm" align="flex-end" wrap="wrap">
@@ -178,6 +206,8 @@ export function ApplicationsPage() {
             )}
           </Stack>
         </Card>
+      ) : view === "board" && workflow ? (
+        <Board workflow={workflow} rows={rows} onOpen={setOpenId} />
       ) : (
         <ScrollArea>
           <Table highlightOnHover verticalSpacing="sm" miw={760}>

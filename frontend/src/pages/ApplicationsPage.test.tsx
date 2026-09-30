@@ -1,6 +1,6 @@
 import { createMemoryHistory } from "@tanstack/react-router";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { App } from "../App";
 import { makeRouter } from "../router";
@@ -43,6 +43,7 @@ const detail = {
 };
 
 afterEach(() => vi.unstubAllGlobals());
+beforeEach(() => localStorage.clear()); // the chosen view is remembered in localStorage
 
 describe("applications page", () => {
   it("lists applications with stage, route and staleness", async () => {
@@ -170,5 +171,35 @@ describe("applications page", () => {
     expect(calls.filter((c) => c.method === "POST").map((c) => c.path)).toEqual([
       "/api/v1/applications/quick",
     ]);
+  });
+
+  it("switches to the board and shows stage columns", async () => {
+    mockApi({
+      "/api/v1/workflow": WORKFLOW,
+      "/api/v1/agencies": [],
+      "/api/v1/applications": [row(), row({ id: "a2", company_name: "Fabrikam", stage: "screen" })],
+      "/api/v1/health": {},
+    });
+    renderApplications();
+    await screen.findByText("Contoso");
+    fireEvent.click(screen.getByText("Board"));
+    expect(await screen.findByLabelText("Applied column")).toHaveTextContent("Contoso");
+    expect(screen.getByLabelText("Screen column")).toHaveTextContent("Fabrikam");
+    expect(screen.queryByLabelText("Rejected column")).not.toBeInTheDocument();
+  });
+
+  it("opens a board card with Enter", async () => {
+    mockApi({
+      "/api/v1/workflow": WORKFLOW,
+      "/api/v1/agencies": [],
+      "/api/v1/applications": [row()],
+      "GET /api/v1/applications/a1": detail,
+      "/api/v1/health": {},
+    });
+    localStorage.setItem("jat.applications.view", JSON.stringify("board"));
+    renderApplications();
+    const card = await screen.findByLabelText("Contoso: Backend Engineer");
+    fireEvent.keyDown(card, { key: "Enter", code: "Enter" });
+    expect(await screen.findByRole("dialog")).toBeInTheDocument();
   });
 });
