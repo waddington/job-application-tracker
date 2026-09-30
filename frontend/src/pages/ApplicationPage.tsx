@@ -32,6 +32,7 @@ import {
 import { AttachmentsCard } from "../components/Attachments";
 import { LinksCard } from "../components/Links";
 import { NotesCard } from "../components/Notes";
+import { OffersCard } from "../components/Offers";
 import { SentDocumentsCard } from "../components/SentDocuments";
 import { InterviewsCard } from "../components/Interviews";
 
@@ -247,6 +248,7 @@ export function ApplicationPage() {
               <DetailsCard key={app.id} app={app} />
               <InterviewsCard applicationId={app.id} />
               <SentDocumentsCard app={app} />
+              <OffersCard applicationId={app.id} roleId={app.role_id} />
               <NotesCard entity={`application:${app.id}`} />
               <LinksCard entityType="application" entityId={app.id} />
               <AttachmentsCard entityType="application" entityId={app.id} />

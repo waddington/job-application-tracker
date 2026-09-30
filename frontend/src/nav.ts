@@ -2,6 +2,7 @@ import {
   IconBriefcase,
   IconBuilding,
   IconCalendarEvent,
+  IconCash,
   IconChartSankey,
   IconChecklist,
   IconFileText,
@@ -55,6 +56,13 @@ export const NAV: NavItem[] = [
     icon: IconCalendarEvent,
     task: "interviews",
     description: "Interviews and coding tasks: schedule, prep and debriefs.",
+  },
+  {
+    path: "/offers",
+    label: "Offers",
+    icon: IconCash,
+    task: "offers",
+    description: "Offers side by side: salary, bonus, equity, pension, day rate and IR35.",
   },
   {
     path: "/documents",
