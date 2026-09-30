@@ -284,3 +284,82 @@ def test_search_wildcards_are_literal(client, seeded):
 def test_salary_range(client, seeded):
     body = {"company_id": seeded["company"]["id"], "title": "x", "salary_min": 90000, "salary_max": 80000}
     assert client.post("/api/v1/roles", json=body).status_code == 422
+
+
+# --- quick create (PR #14 review) -------------------------------------------------------------------
+
+
+def counts(client):
+    return {name: len(client.get(f"/api/v1/{name}").json()) for name in ("companies", "agencies", "contacts", "roles")}
+
+
+def test_quick_create_reuses_by_name_and_creates_the_rest(client, seeded):
+    body = {
+        "company_name": "  contoso ",  # matches the existing Contoso
+        "role_title": "senior backend engineer",  # matches the existing role
+        "route": "agency",
+        "agency_name": "Blue Yonder Recruitment",  # new
+        "recruiter_name": "Alex Recruiter",  # exists, but at Northwind: a different person here
+        "tags": ["python"],
+    }
+    before = counts(client)
+    created = post(client, "/api/v1/applications/quick", body)
+    after = counts(client)
+    assert created["company_id"] == seeded["company"]["id"]
+    assert created["role_id"] == seeded["role"]["id"]
+    assert after == {**before, "agencies": before["agencies"] + 1, "contacts": before["contacts"] + 1}
+    assert created["agency_name"] == "Blue Yonder Recruitment"
+    assert created["recruiter_id"] != seeded["recruiter"]["id"]
+    assert created["can_undo"] is False
+
+
+def test_quick_create_matches_recruiter_within_agency_and_infers_agency(client, seeded):
+    within = post(
+        client,
+        "/api/v1/applications/quick",
+        {
+            "company_name": "Fabrikam",
+            "role_title": "SRE",
+            "route": "agency",
+            "agency_name": "northwind talent",
+            "recruiter_name": "alex recruiter",
+        },
+    )
+    assert within["recruiter_id"] == seeded["recruiter"]["id"]
+    inferred = post(
+        client,
+        "/api/v1/applications/quick",
+        {"company_name": "Fabrikam", "role_title": "SRE 2", "route": "agency", "recruiter_name": "Alex Recruiter"},
+    )
+    assert inferred["agency_id"] == seeded["agency"]["id"]
+
+
+def test_quick_create_is_all_or_nothing(client, seeded):
+    before = counts(client)
+    r = client.post(
+        "/api/v1/applications/quick",
+        json={
+            "company_name": "Brand New Co",
+            "role_title": "Engineer",
+            "route": "agency",
+            "agency_name": "New Agency",
+            "stage": "not-a-stage",
+        },
+    )
+    assert r.status_code == 422
+    assert counts(client) == before  # no orphan company, role or agency
+
+
+def test_quick_create_validation(client):
+    assert client.post("/api/v1/applications/quick", json={"role_title": "x"}).status_code == 422
+    r = client.post("/api/v1/applications/quick", json={"company_name": "A", "role_title": "x", "agency_name": "Nope"})
+    assert r.status_code == 422  # direct applications can't name an agency
+
+
+def test_can_undo_flag(client, seeded):
+    app = post(client, "/api/v1/applications", {"role_id": seeded["role"]["id"]})
+    assert app["can_undo"] is False
+    moved = post(client, f"/api/v1/applications/{app['id']}/move", {"to_stage": "applied"}, 200)
+    assert moved["can_undo"] is True
+    undone = post(client, f"/api/v1/applications/{app['id']}/undo", {}, 200)
+    assert undone["can_undo"] is False

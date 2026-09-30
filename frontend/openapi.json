@@ -260,6 +260,10 @@
             "title": "Archived",
             "type": "boolean"
           },
+          "can_undo": {
+            "title": "Can Undo",
+            "type": "boolean"
+          },
           "company_id": {
             "title": "Company Id",
             "type": "string"
@@ -413,7 +417,8 @@
           "stale",
           "events",
           "contacts",
-          "allowed_next"
+          "allowed_next",
+          "can_undo"
         ],
         "title": "ApplicationDetail",
         "type": "object"
@@ -1457,6 +1462,147 @@
         "title": "PushResult",
         "type": "object"
       },
+      "QuickApplicationIn": {
+        "additionalProperties": false,
+        "description": "Create an application and, in the same transaction, anything it needs that doesn't exist yet.\n\nCompany, agency and recruiter can each be given by id or by name. A name that matches an\nexisting record (case-insensitively) reuses it; otherwise a new one is created. A recruiter\nname is matched within the application's agency.",
+        "properties": {
+          "agency_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agency Id"
+          },
+          "agency_name": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agency Name"
+          },
+          "applied_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Applied On"
+          },
+          "company_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company Id"
+          },
+          "company_name": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company Name"
+          },
+          "recruiter_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recruiter Id"
+          },
+          "recruiter_name": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recruiter Name"
+          },
+          "role_title": {
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Role Title",
+            "type": "string"
+          },
+          "role_url": {
+            "anyOf": [
+              {
+                "format": "uri",
+                "maxLength": 2083,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role Url"
+          },
+          "route": {
+            "default": "direct",
+            "enum": [
+              "direct",
+              "agency",
+              "referral"
+            ],
+            "title": "Route",
+            "type": "string"
+          },
+          "stage": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stage"
+          },
+          "tags": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          }
+        },
+        "required": [
+          "role_title"
+        ],
+        "title": "QuickApplicationIn",
+        "type": "object"
+      },
       "RoleIn": {
         "additionalProperties": false,
         "properties": {
@@ -2490,6 +2636,48 @@
           }
         },
         "summary": "Create App ",
+        "tags": [
+          "applications"
+        ]
+      }
+    },
+    "/api/v1/applications/quick": {
+      "post": {
+        "description": "One transaction: reuse or create the company, role, agency and recruiter, then the application.\n\nIf anything fails, nothing is saved, so a retry never leaves duplicates behind.",
+        "operationId": "quick_create_api_v1_applications_quick_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuickApplicationIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Quick Create",
         "tags": [
           "applications"
         ]

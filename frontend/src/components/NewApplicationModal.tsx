@@ -1,0 +1,210 @@
+import {
+  Autocomplete,
+  Button,
+  Group,
+  Modal,
+  SegmentedControl,
+  Select,
+  Stack,
+  TagsInput,
+  Text,
+  TextInput,
+} from "@mantine/core";
+import { DateInput } from "@mantine/dates";
+import { useForm } from "@mantine/form";
+import { notifications } from "@mantine/notifications";
+import dayjs from "dayjs";
+import { useEffect } from "react";
+
+import { useAgencies, useCompanies, useContacts, useCreateApplication, useWorkflow } from "../api/hooks";
+
+interface Values {
+  company: string;
+  roleTitle: string;
+  roleUrl: string;
+  route: "direct" | "agency" | "referral";
+  agency: string;
+  recruiter: string;
+  stage: string;
+  appliedOn: string | null;
+  tags: string[];
+}
+
+const EMPTY: Values = {
+  company: "",
+  roleTitle: "",
+  roleUrl: "",
+  route: "direct",
+  agency: "",
+  recruiter: "",
+  stage: "",
+  appliedOn: null,
+  tags: [],
+};
+
+function findByName<T extends { name: string }>(items: T[] | undefined, name: string): T | undefined {
+  const needle = name.trim().toLowerCase();
+  return needle ? items?.find((i) => i.name.toLowerCase() === needle) : undefined;
+}
+
+const unique = (names: string[]) => [...new Set(names)];
+
+export function NewApplicationModal({
+  opened,
+  onClose,
+}: {
+  opened: boolean;
+  onClose: (id?: string) => void;
+}) {
+  const { data: workflow } = useWorkflow();
+  const { data: companies } = useCompanies();
+  const { data: agencies } = useAgencies();
+  const { data: contacts } = useContacts();
+  const create = useCreateApplication();
+
+  const form = useForm<Values>({
+    mode: "controlled",
+    initialValues: EMPTY,
+    validate: {
+      company: (v) => (v.trim() ? null : "Which company?"),
+      roleTitle: (v) => (v.trim() ? null : "What's the role?"),
+      roleUrl: (v) => (!v || /^https?:\/\//.test(v) ? null : "Links start with http:// or https://"),
+      agency: (v, values) =>
+        values.route === "agency" && !v.trim() && !values.recruiter.trim()
+          ? "Add the agency or recruiter"
+          : null,
+    },
+  });
+
+  // The workflow may arrive after the form mounts: default the stage once it does.
+  const initialStage = workflow?.initial;
+  useEffect(() => {
+    if (!initialStage) return;
+    form.setInitialValues({ ...EMPTY, stage: initialStage });
+    if (!form.getValues().stage) form.setFieldValue("stage", initialStage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialStage]);
+
+  const agency = findByName(agencies, form.values.agency);
+  const typedNewAgency = form.values.agency.trim() && !agency;
+  // Recruiters are matched within the chosen agency (the server does the same).
+  const recruitersHere = (contacts ?? []).filter((c) =>
+    agency ? c.agency_id === agency.id : !typedNewAgency,
+  );
+  const recruiterMatch = findByName(recruitersHere, form.values.recruiter);
+  const company = findByName(companies, form.values.company);
+
+  const close = (id?: string) => {
+    form.reset();
+    onClose(id);
+  };
+
+  const submit = form.onSubmit((values) => {
+    const viaAgency = values.route === "agency";
+    create.mutate(
+      {
+        company_id: company?.id ?? null,
+        company_name: company ? null : values.company.trim(),
+        role_title: values.roleTitle.trim(),
+        role_url: values.roleUrl || null,
+        route: values.route,
+        agency_id: viaAgency ? (agency?.id ?? null) : null,
+        agency_name: viaAgency && !agency ? values.agency.trim() || null : null,
+        recruiter_id: viaAgency ? (recruiterMatch?.id ?? null) : null,
+        recruiter_name: viaAgency && !recruiterMatch ? values.recruiter.trim() || null : null,
+        stage: values.stage || null,
+        applied_on: values.appliedOn ? dayjs(values.appliedOn).format("YYYY-MM-DD") : null,
+        tags: values.tags,
+      },
+      {
+        onSuccess: (created) => {
+          notifications.show({
+            color: "teal",
+            title: "Application added",
+            message: `${created.role_title} at ${created.company_name}`,
+          });
+          close(created.id);
+        },
+      },
+    );
+  });
+
+  return (
+    <Modal opened={opened} onClose={() => close()} title="New application" size="lg">
+      <form onSubmit={submit}>
+        <Stack>
+          <Group grow align="flex-start">
+            <Autocomplete
+              label="Company"
+              placeholder="Contoso"
+              data={unique((companies ?? []).map((c) => c.name))}
+              description={form.values.company.trim() && !company ? "New company" : undefined}
+              data-autofocus
+              {...form.getInputProps("company")}
+            />
+            <TextInput
+              label="Role"
+              placeholder="Senior Backend Engineer"
+              {...form.getInputProps("roleTitle")}
+            />
+          </Group>
+          <TextInput label="Job ad link" placeholder="https://…" {...form.getInputProps("roleUrl")} />
+          <div>
+            <Text size="sm" fw={500} mb={4}>
+              How did you apply?
+            </Text>
+            <SegmentedControl
+              data={[
+                { value: "direct", label: "Directly" },
+                { value: "agency", label: "Through a recruiter" },
+                { value: "referral", label: "Referral" },
+              ]}
+              {...form.getInputProps("route")}
+            />
+          </div>
+          {form.values.route === "agency" && (
+            <Group grow align="flex-start">
+              <Autocomplete
+                label="Agency"
+                placeholder="Northwind Talent"
+                data={unique((agencies ?? []).map((a) => a.name))}
+                description={typedNewAgency ? "New agency" : undefined}
+                {...form.getInputProps("agency")}
+              />
+              <Autocomplete
+                label="Recruiter"
+                placeholder="Alex Recruiter"
+                data={unique(recruitersHere.map((c) => c.name))}
+                description={form.values.recruiter.trim() && !recruiterMatch ? "New contact" : undefined}
+                {...form.getInputProps("recruiter")}
+              />
+            </Group>
+          )}
+          <Group grow align="flex-start">
+            <Select
+              label="Stage"
+              data={(workflow?.stages ?? []).map((s) => ({ value: s.id, label: s.name }))}
+              allowDeselect={false}
+              {...form.getInputProps("stage")}
+            />
+            <DateInput
+              label="Applied on"
+              placeholder="Not yet"
+              clearable
+              {...form.getInputProps("appliedOn")}
+            />
+          </Group>
+          <TagsInput label="Tags" placeholder="python, fintech, remote…" {...form.getInputProps("tags")} />
+          <Group justify="flex-end">
+            <Button variant="default" onClick={() => close()}>
+              Cancel
+            </Button>
+            <Button type="submit" loading={create.isPending}>
+              Add application
+            </Button>
+          </Group>
+        </Stack>
+      </form>
+    </Modal>
+  );
+}
