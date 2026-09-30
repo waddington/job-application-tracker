@@ -2,7 +2,7 @@ import { notifications } from "@mantine/notifications";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api, unwrap, type Schemas } from "./client";
-import { keys } from "./hooks";
+import { invalidateApplicationViews, keys } from "./hooks";
 
 function notifyError(error: Error) {
   notifications.show({ color: "red", title: "That didn't work", message: error.message });
@@ -66,7 +66,10 @@ export function useLinkContact() {
           body: { contact_id: args.contactId, relation: args.relation },
         }),
       ),
-    onSuccess: (_d, args) => void qc.invalidateQueries({ queryKey: keys.application(args.appId) }),
+    onSuccess: (_d, args) => {
+      void qc.invalidateQueries({ queryKey: keys.application(args.appId) });
+      invalidateApplicationViews(qc); // company pages list linked people
+    },
     onError: notifyError,
   });
 }
@@ -80,7 +83,10 @@ export function useUnlinkContact() {
       });
       if (error) throw new Error("Couldn't remove that contact");
     },
-    onSuccess: (_d, args) => void qc.invalidateQueries({ queryKey: keys.application(args.appId) }),
+    onSuccess: (_d, args) => {
+      void qc.invalidateQueries({ queryKey: keys.application(args.appId) });
+      invalidateApplicationViews(qc);
+    },
     onError: notifyError,
   });
 }

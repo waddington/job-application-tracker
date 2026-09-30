@@ -1,5 +1,5 @@
 import { notifications } from "@mantine/notifications";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { type QueryClient, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api, unwrap, type ApplicationDetail, type ApplicationRow, type Schemas } from "./client";
 
@@ -42,6 +42,13 @@ export const keys = {
   contacts: ["contacts"] as const,
   roles: ["roles"] as const,
 };
+
+/** Everything that shows applications: lists, the board, company and agency pages. */
+export function invalidateApplicationViews(qc: QueryClient) {
+  for (const key of [["applications"], ["company-summary"], ["agency-summary"]]) {
+    void qc.invalidateQueries({ queryKey: key });
+  }
+}
 
 export function useWorkflow() {
   return useQuery({
@@ -114,7 +121,7 @@ function notifyError(error: Error) {
 function useApplicationInvalidation() {
   const qc = useQueryClient();
   return (detail?: ApplicationDetail) => {
-    void qc.invalidateQueries({ queryKey: ["applications"] });
+    invalidateApplicationViews(qc);
     if (detail) qc.setQueryData(keys.application(detail.id), detail);
   };
 }
@@ -185,7 +192,7 @@ export function useLogActivity() {
         }),
       ),
     onSuccess: (_event, args) => {
-      void qc.invalidateQueries({ queryKey: ["applications"] });
+      invalidateApplicationViews(qc);
       void qc.invalidateQueries({ queryKey: keys.application(args.id) });
     },
     onError: notifyError,

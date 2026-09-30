@@ -89,10 +89,21 @@ function DetailsCard({ app }: { app: ApplicationDetail }) {
             disabled={!dirty}
             loading={update.isPending}
             onClick={() =>
-              update.mutate({
-                id: app.id,
-                body: { applied_on: appliedOn, follow_up_on: followUp, snoozed_until: snoozed, tags },
-              })
+              update.mutate(
+                {
+                  id: app.id,
+                  body: { applied_on: appliedOn, follow_up_on: followUp, snoozed_until: snoozed, tags },
+                },
+                {
+                  // Take whatever the server stored (e.g. normalised values) as the new baseline.
+                  onSuccess: (saved) => {
+                    setAppliedOn(saved.applied_on);
+                    setFollowUp(saved.follow_up_on);
+                    setSnoozed(saved.snoozed_until);
+                    setTags(saved.tags);
+                  },
+                },
+              )
             }
           >
             Save details
@@ -227,7 +238,8 @@ export function ApplicationPage() {
           <Grid.Col span={{ base: 12, md: 8 }}>
             <Stack>
               <ApplicationSummary app={app} />
-              <DetailsCard key={app.updated_at} app={app} />
+              {/* keyed by id, not updated_at: other changes (archive, moves) keep unsaved edits */}
+              <DetailsCard key={app.id} app={app} />
               <Card withBorder>
                 <Stack gap="sm">
                   <Title order={4}>Log activity</Title>

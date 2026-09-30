@@ -113,7 +113,14 @@ export function CompanyPage() {
                           </Text>
                         </Table.Td>
                         <Table.Td>
-                          <StageBadge stage={stages.get(a.stage)} fallback={a.stage_name} />
+                          <Group gap={4}>
+                            <StageBadge stage={stages.get(a.stage)} fallback={a.stage_name} />
+                            {a.archived && (
+                              <Badge size="sm" variant="outline" color="gray">
+                                Archived
+                              </Badge>
+                            )}
+                          </Group>
                         </Table.Td>
                         <Table.Td>
                           <Text size="sm" c={a.stale ? "red" : undefined}>
