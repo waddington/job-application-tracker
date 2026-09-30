@@ -82,11 +82,17 @@ export function ApplicationsPage() {
   const [view, setView] = useLocalStorage<"list" | "board">({
     key: "jat.applications.view",
     defaultValue: "list",
+    getInitialValueInEffect: false, // no flash of the list when the board was chosen
   });
   // ?view=board or ?view=list in the address opens that view (and remembers it).
   useEffect(() => {
     const requested = new URLSearchParams(window.location.search).get("view");
-    if (requested === "board" || requested === "list") setView(requested);
+    if (requested !== "board" && requested !== "list") return;
+    setView(requested);
+    // Apply once, then drop it from the address so it doesn't override later choices.
+    const url = new URL(window.location.href);
+    url.searchParams.delete("view");
+    window.history.replaceState(window.history.state, "", url);
   }, [setView]);
 
   const { data: workflow } = useWorkflow();
