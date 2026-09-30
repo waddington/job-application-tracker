@@ -487,6 +487,53 @@ def unlink_contact(app_id: str, link_id: str, session: SessionDep):
 router.include_router(apps)
 
 
+# --- summaries for detail pages -----------------------------------------------------------------
+
+summaries = APIRouter(tags=["summaries"])
+
+
+def _app_rows(session: Session, workflow: Workflow, *where) -> list[S.ApplicationRow]:
+    stmt = _rows_query().where(*where).order_by(Application.last_activity_at.desc(), Application.id)
+    today = date.today()
+    return [_row(workflow, *found, today=today) for found in session.execute(stmt)]
+
+
+@summaries.get("/companies/{company_id}/summary", response_model=S.CompanySummary)
+def company_summary(company_id: str, session: SessionDep, workflow: WorkflowDep):
+    company = get_or_404(session, Company, company_id)
+    roles = session.scalars(select(Role).where(Role.company_id == company_id).order_by(func.lower(Role.title))).all()
+    rows = _app_rows(session, workflow, Company.id == company_id)
+    # People at the company, plus anyone linked to one of its applications (e.g. an interviewer).
+    linked = select(ApplicationContact.contact_id).join(Application).join(Role).where(Role.company_id == company_id)
+    people = session.scalars(
+        select(Contact)
+        .where(or_(Contact.company_id == company_id, Contact.id.in_(linked)))
+        .order_by(func.lower(Contact.name))
+    ).all()
+    return S.CompanySummary(
+        company=S.CompanyOut.model_validate(company),
+        roles=[S.RoleOut.model_validate(r) for r in roles],
+        applications=rows,
+        contacts=[_contact_out(session, c) for c in people],
+    )
+
+
+@summaries.get("/agencies/{agency_id}/summary", response_model=S.AgencySummary)
+def agency_summary(agency_id: str, session: SessionDep, workflow: WorkflowDep):
+    agency = get_or_404(session, Agency, agency_id)
+    recruiters = session.scalars(
+        select(Contact).where(Contact.agency_id == agency_id).order_by(func.lower(Contact.name))
+    ).all()
+    return S.AgencySummary(
+        agency=S.AgencyOut.model_validate(agency),
+        recruiters=[_contact_out(session, c) for c in recruiters],
+        applications=_app_rows(session, workflow, Application.agency_id == agency_id),
+    )
+
+
+router.include_router(summaries, prefix="")
+
+
 from .backup import router as backup_router  # noqa: E402
 
 router.include_router(backup_router)

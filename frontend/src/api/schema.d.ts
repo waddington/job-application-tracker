@@ -22,6 +22,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/agencies/{agency_id}/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Agency Summary */
+        get: operations["agency_summary_api_v1_agencies__agency_id__summary_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/agencies/{item_id}": {
         parameters: {
             query?: never;
@@ -271,6 +288,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/companies/{company_id}/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Company Summary */
+        get: operations["company_summary_api_v1_companies__company_id__summary_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/companies/{item_id}": {
         parameters: {
             query?: never;
@@ -436,6 +470,14 @@ export interface components {
             name?: string | null;
             /** Website */
             website?: string | null;
+        };
+        /** AgencySummary */
+        AgencySummary: {
+            agency: components["schemas"]["AgencyOut"];
+            /** Applications */
+            applications: components["schemas"]["ApplicationRow"][];
+            /** Recruiters */
+            recruiters: components["schemas"]["ContactOut"][];
         };
         /** ApplicationContactIn */
         ApplicationContactIn: {
@@ -694,6 +736,16 @@ export interface components {
             name?: string | null;
             /** Website */
             website?: string | null;
+        };
+        /** CompanySummary */
+        CompanySummary: {
+            /** Applications */
+            applications: components["schemas"]["ApplicationRow"][];
+            company: components["schemas"]["CompanyOut"];
+            /** Contacts */
+            contacts: components["schemas"]["ContactOut"][];
+            /** Roles */
+            roles: components["schemas"]["RoleOut"][];
         };
         /** ContactDetailIn */
         ContactDetailIn: {
@@ -1041,6 +1093,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AgencyOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    agency_summary_api_v1_agencies__agency_id__summary_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                agency_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgencySummary"];
                 };
             };
             /** @description Validation Error */
@@ -1661,6 +1744,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CompanyOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    company_summary_api_v1_companies__company_id__summary_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                company_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompanySummary"];
                 };
             };
             /** @description Validation Error */

@@ -159,6 +159,34 @@
         "title": "AgencyPatch",
         "type": "object"
       },
+      "AgencySummary": {
+        "properties": {
+          "agency": {
+            "$ref": "#/components/schemas/AgencyOut"
+          },
+          "applications": {
+            "items": {
+              "$ref": "#/components/schemas/ApplicationRow"
+            },
+            "title": "Applications",
+            "type": "array"
+          },
+          "recruiters": {
+            "items": {
+              "$ref": "#/components/schemas/ContactOut"
+            },
+            "title": "Recruiters",
+            "type": "array"
+          }
+        },
+        "required": [
+          "agency",
+          "recruiters",
+          "applications"
+        ],
+        "title": "AgencySummary",
+        "type": "object"
+      },
       "ApplicationContactIn": {
         "additionalProperties": false,
         "properties": {
@@ -1038,6 +1066,42 @@
           }
         },
         "title": "CompanyPatch",
+        "type": "object"
+      },
+      "CompanySummary": {
+        "properties": {
+          "applications": {
+            "items": {
+              "$ref": "#/components/schemas/ApplicationRow"
+            },
+            "title": "Applications",
+            "type": "array"
+          },
+          "company": {
+            "$ref": "#/components/schemas/CompanyOut"
+          },
+          "contacts": {
+            "items": {
+              "$ref": "#/components/schemas/ContactOut"
+            },
+            "title": "Contacts",
+            "type": "array"
+          },
+          "roles": {
+            "items": {
+              "$ref": "#/components/schemas/RoleOut"
+            },
+            "title": "Roles",
+            "type": "array"
+          }
+        },
+        "required": [
+          "company",
+          "roles",
+          "applications",
+          "contacts"
+        ],
+        "title": "CompanySummary",
         "type": "object"
       },
       "ContactDetailIn": {
@@ -2260,6 +2324,48 @@
         ]
       }
     },
+    "/api/v1/agencies/{agency_id}/summary": {
+      "get": {
+        "operationId": "agency_summary_api_v1_agencies__agency_id__summary_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "agency_id",
+            "required": true,
+            "schema": {
+              "title": "Agency Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgencySummary"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Agency Summary",
+        "tags": [
+          "summaries"
+        ]
+      }
+    },
     "/api/v1/agencies/{item_id}": {
       "delete": {
         "operationId": "delete_item_api_v1_agencies__item_id__delete",
@@ -3268,6 +3374,48 @@
         "summary": "Create Item",
         "tags": [
           "companies"
+        ]
+      }
+    },
+    "/api/v1/companies/{company_id}/summary": {
+      "get": {
+        "operationId": "company_summary_api_v1_companies__company_id__summary_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "company_id",
+            "required": true,
+            "schema": {
+              "title": "Company Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanySummary"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Company Summary",
+        "tags": [
+          "summaries"
         ]
       }
     },
