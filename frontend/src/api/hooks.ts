@@ -177,71 +177,14 @@ export function useLogActivity() {
   });
 }
 
-export interface NewApplication {
-  companyId: string | null;
-  companyName: string;
-  roleTitle: string;
-  roleUrl?: string;
-  route: "direct" | "agency" | "referral";
-  agencyId: string | null;
-  agencyName: string;
-  recruiterId: string | null;
-  recruiterName: string;
-  stage: string;
-  appliedOn: string | null;
-  tags: string[];
-}
-
-/** Create the application, creating its company, role, agency and recruiter first if they're new. */
+/** Create an application (and any new company, role, agency or recruiter) in one server transaction. */
 export function useCreateApplication() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: NewApplication) => {
-      let companyId = input.companyId;
-      if (!companyId) {
-        companyId = unwrap(
-          await api.POST("/api/v1/companies", { body: { name: input.companyName.trim() } }),
-        ).id;
-      }
-      const role = unwrap(
-        await api.POST("/api/v1/roles", {
-          body: { company_id: companyId, title: input.roleTitle.trim(), url: input.roleUrl || null },
-        }),
-      );
-      let agencyId = input.agencyId;
-      let recruiterId = input.recruiterId;
-      if (input.route === "agency") {
-        if (!agencyId && input.agencyName.trim()) {
-          agencyId = unwrap(
-            await api.POST("/api/v1/agencies", { body: { name: input.agencyName.trim() } }),
-          ).id;
-        }
-        if (!recruiterId && input.recruiterName.trim()) {
-          recruiterId = unwrap(
-            await api.POST("/api/v1/contacts", {
-              body: { name: input.recruiterName.trim(), agency_id: agencyId, details: [] },
-            }),
-          ).id;
-        }
-      } else {
-        agencyId = null;
-        recruiterId = null;
-      }
-      return unwrap(
-        await api.POST("/api/v1/applications", {
-          body: {
-            role_id: role.id,
-            route: input.route,
-            agency_id: agencyId,
-            recruiter_id: recruiterId,
-            stage: input.stage,
-            applied_on: input.appliedOn,
-            tags: input.tags,
-          },
-        }),
-      );
-    },
-    onSuccess: () => {
+    mutationFn: async (body: Schemas["QuickApplicationIn"]) =>
+      unwrap(await api.POST("/api/v1/applications/quick", { body })),
+    // Settled, not just success: keep pick-lists fresh whatever happened.
+    onSettled: () => {
       for (const key of [["applications"], keys.companies, keys.agencies, keys.contacts, keys.roles]) {
         void qc.invalidateQueries({ queryKey: key });
       }

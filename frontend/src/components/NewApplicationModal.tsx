@@ -14,6 +14,7 @@ import { DateInput } from "@mantine/dates";
 import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
 import dayjs from "dayjs";
+import { useEffect } from "react";
 
 import { useAgencies, useCompanies, useContacts, useCreateApplication, useWorkflow } from "../api/hooks";
 
@@ -29,13 +30,24 @@ interface Values {
   tags: string[];
 }
 
-function findByName<T extends { id: string; name: string }>(
-  items: T[] | undefined,
-  name: string,
-): T | undefined {
+const EMPTY: Values = {
+  company: "",
+  roleTitle: "",
+  roleUrl: "",
+  route: "direct",
+  agency: "",
+  recruiter: "",
+  stage: "",
+  appliedOn: null,
+  tags: [],
+};
+
+function findByName<T extends { name: string }>(items: T[] | undefined, name: string): T | undefined {
   const needle = name.trim().toLowerCase();
   return needle ? items?.find((i) => i.name.toLowerCase() === needle) : undefined;
 }
+
+const unique = (names: string[]) => [...new Set(names)];
 
 export function NewApplicationModal({
   opened,
@@ -52,17 +64,7 @@ export function NewApplicationModal({
 
   const form = useForm<Values>({
     mode: "controlled",
-    initialValues: {
-      company: "",
-      roleTitle: "",
-      roleUrl: "",
-      route: "direct",
-      agency: "",
-      recruiter: "",
-      stage: workflow?.initial ?? "interested",
-      appliedOn: null,
-      tags: [],
-    },
+    initialValues: EMPTY,
     validate: {
       company: (v) => (v.trim() ? null : "Which company?"),
       roleTitle: (v) => (v.trim() ? null : "What's the role?"),
@@ -74,47 +76,69 @@ export function NewApplicationModal({
     },
   });
 
+  // The workflow may arrive after the form mounts: default the stage once it does.
+  const initialStage = workflow?.initial;
+  useEffect(() => {
+    if (!initialStage) return;
+    form.setInitialValues({ ...EMPTY, stage: initialStage });
+    if (!form.getValues().stage) form.setFieldValue("stage", initialStage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialStage]);
+
   const agency = findByName(agencies, form.values.agency);
-  const recruiterOptions = (contacts ?? [])
-    .filter((c) => !agency || c.agency_id === agency.id)
-    .map((c) => c.name);
+  const typedNewAgency = form.values.agency.trim() && !agency;
+  // Recruiters are matched within the chosen agency (the server does the same).
+  const recruitersHere = (contacts ?? []).filter((c) =>
+    agency ? c.agency_id === agency.id : !typedNewAgency,
+  );
+  const recruiterMatch = findByName(recruitersHere, form.values.recruiter);
   const company = findByName(companies, form.values.company);
 
-  const submit = form.onSubmit(async (values) => {
-    const recruiter = findByName(contacts, values.recruiter);
-    const created = await create.mutateAsync({
-      companyId: company?.id ?? null,
-      companyName: values.company,
-      roleTitle: values.roleTitle,
-      roleUrl: values.roleUrl || undefined,
-      route: values.route,
-      agencyId: agency?.id ?? (recruiter?.agency_id || null),
-      agencyName: values.agency,
-      recruiterId: recruiter?.id ?? null,
-      recruiterName: values.recruiter,
-      stage: values.stage,
-      appliedOn: values.appliedOn ? dayjs(values.appliedOn).format("YYYY-MM-DD") : null,
-      tags: values.tags,
-    });
-    notifications.show({
-      color: "teal",
-      title: "Application added",
-      message: `${created.role_title} at ${created.company_name}`,
-    });
+  const close = (id?: string) => {
     form.reset();
-    onClose(created.id);
+    onClose(id);
+  };
+
+  const submit = form.onSubmit((values) => {
+    const viaAgency = values.route === "agency";
+    create.mutate(
+      {
+        company_id: company?.id ?? null,
+        company_name: company ? null : values.company.trim(),
+        role_title: values.roleTitle.trim(),
+        role_url: values.roleUrl || null,
+        route: values.route,
+        agency_id: viaAgency ? (agency?.id ?? null) : null,
+        agency_name: viaAgency && !agency ? values.agency.trim() || null : null,
+        recruiter_id: viaAgency ? (recruiterMatch?.id ?? null) : null,
+        recruiter_name: viaAgency && !recruiterMatch ? values.recruiter.trim() || null : null,
+        stage: values.stage || null,
+        applied_on: values.appliedOn ? dayjs(values.appliedOn).format("YYYY-MM-DD") : null,
+        tags: values.tags,
+      },
+      {
+        onSuccess: (created) => {
+          notifications.show({
+            color: "teal",
+            title: "Application added",
+            message: `${created.role_title} at ${created.company_name}`,
+          });
+          close(created.id);
+        },
+      },
+    );
   });
 
   return (
-    <Modal opened={opened} onClose={() => onClose()} title="New application" size="lg">
+    <Modal opened={opened} onClose={() => close()} title="New application" size="lg">
       <form onSubmit={submit}>
         <Stack>
           <Group grow align="flex-start">
             <Autocomplete
               label="Company"
               placeholder="Contoso"
-              data={(companies ?? []).map((c) => c.name)}
-              description={form.values.company && !company ? "New company" : undefined}
+              data={unique((companies ?? []).map((c) => c.name))}
+              description={form.values.company.trim() && !company ? "New company" : undefined}
               data-autofocus
               {...form.getInputProps("company")}
             />
@@ -143,19 +167,15 @@ export function NewApplicationModal({
               <Autocomplete
                 label="Agency"
                 placeholder="Northwind Talent"
-                data={(agencies ?? []).map((a) => a.name)}
-                description={form.values.agency && !agency ? "New agency" : undefined}
+                data={unique((agencies ?? []).map((a) => a.name))}
+                description={typedNewAgency ? "New agency" : undefined}
                 {...form.getInputProps("agency")}
               />
               <Autocomplete
                 label="Recruiter"
                 placeholder="Alex Recruiter"
-                data={recruiterOptions}
-                description={
-                  form.values.recruiter && !findByName(contacts, form.values.recruiter)
-                    ? "New contact"
-                    : undefined
-                }
+                data={unique(recruitersHere.map((c) => c.name))}
+                description={form.values.recruiter.trim() && !recruiterMatch ? "New contact" : undefined}
                 {...form.getInputProps("recruiter")}
               />
             </Group>
@@ -176,7 +196,7 @@ export function NewApplicationModal({
           </Group>
           <TagsInput label="Tags" placeholder="python, fintech, remote…" {...form.getInputProps("tags")} />
           <Group justify="flex-end">
-            <Button variant="default" onClick={() => onClose()}>
+            <Button variant="default" onClick={() => close()}>
               Cancel
             </Button>
             <Button type="submit" loading={create.isPending}>

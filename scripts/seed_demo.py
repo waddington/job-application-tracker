@@ -3,8 +3,8 @@
     uv run python scripts/seed_demo.py /tmp/jat-demo
     uv run jat --data-dir /tmp/jat-demo serve
 
-Every name here is invented; example.com addresses only. Refuses to touch a directory that
-already has a database, so it can't mix demo data into real data.
+Every name here is invented; example.com addresses only. Refuses any directory that isn't
+new or empty, so it can't mix demo data into real data.
 """
 
 from __future__ import annotations
@@ -98,8 +98,9 @@ APPLICATIONS = [
 
 
 def seed(path: Path) -> None:
-    if db_path(path).exists():
-        sys.exit(f"{path} already has a database; pick an empty directory for demo data.")
+    # Only ever a missing or empty directory, so demo data can't land in real data (or ~).
+    if path.exists() and any(path.iterdir()):
+        sys.exit(f"{path} isn't empty; pick a new or empty directory for demo data.")
     init_data_dir(path, commit=False)
     migrate(db_path(path))
     engine = make_engine(db_path(path))

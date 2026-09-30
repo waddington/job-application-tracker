@@ -223,7 +223,19 @@ export function ApplicationsPage() {
             </Table.Thead>
             <Table.Tbody>
               {rows.map((row) => (
-                <Table.Tr key={row.id} onClick={() => setOpenId(row.id)} style={{ cursor: "pointer" }}>
+                <Table.Tr
+                  key={row.id}
+                  onClick={() => setOpenId(row.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setOpenId(row.id);
+                    }
+                  }}
+                  tabIndex={0}
+                  aria-label={`Open ${row.role_title} at ${row.company_name}`}
+                  style={{ cursor: "pointer" }}
+                >
                   <Table.Td>
                     <Text fw={600} size="sm">
                       {row.company_name}
