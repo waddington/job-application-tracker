@@ -250,6 +250,27 @@ def assign_event_seq(session: Session, flush_context, instances) -> None:
         obj.seq = current + offset
 
 
+@event.listens_for(Session, "before_flush")
+def remove_orphan_links(session: Session, flush_context, instances) -> None:
+    """Links point at their entity by type and id (no foreign key), so delete them with it."""
+    kinds = {
+        Application: "application",
+        Company: "company",
+        Role: "role",
+        Agency: "agency",
+        Contact: "contact",
+        Interview: "interview",
+    }
+    for obj in list(session.deleted):
+        kind = kinds.get(type(obj))
+        if kind is None:
+            continue
+        with session.no_autoflush:
+            links = session.scalars(select(Link).where(Link.entity_type == kind, Link.entity_id == obj.id)).all()
+        for link in links:
+            session.delete(link)
+
+
 # Tables whose rows are exported to export/*.jsonl, in foreign-key-safe order.
 DERIVED_TABLES = {"note_index"}
 
