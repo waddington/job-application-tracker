@@ -1,3 +1,4 @@
+from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 
 import pytest
@@ -53,7 +54,7 @@ def test_move_validates_and_records(session, role):
     move(session, W, app, "interviewing", note="Recruiter booked tech round")
     assert app.stage == "interviewing"
     with pytest.raises(TransitionError, match="allowed:"):
-        move(session, W, app, "applied")
+        move(session, replace(W, transitions="configured"), app, "applied")
     assert stages(session, app)[-1] == ("applied", "interviewing")
     assert history(session, app.id)[-1].summary == "Recruiter booked tech round"
 
