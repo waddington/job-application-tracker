@@ -79,8 +79,11 @@ roadmap is `docs/ROADMAP.yaml`, shown by the PM dashboard (see "Project manageme
   `uv run jat serve` (http://127.0.0.1:8770; API docs at `/api/docs`). Development:
   `uv run jat serve --dev` plus `pnpm --dir frontend dev` (http://127.0.0.1:5173, which proxies `/api`).
 - Frontend checks (run in `frontend/`): `pnpm typecheck`, `pnpm lint`, `pnpm test`,
-  `pnpm format:check`. TypeScript is pinned to 5.9 (typescript-eslint doesn't support TS 7
-  yet) and jsdom to 26 (Node 22.5 can't `require()` ESM).
+  `pnpm format:check`. TypeScript is pinned to 5.9 (typescript-eslint doesn't support TS 7 yet).
+- **Node >= 22.12** (`.nvmrc` says `22`; Node 22.23.3 is installed in nvm, alongside Kai's
+  22.5.1). Vite 8's native rolldown binary needs it, and `engine-strict` makes pnpm fail
+  loudly on older Node. In a non-interactive shell, put
+  `/home/kai/.nvm/versions/node/v22.23.3/bin` first on `PATH` before running pnpm.
 - After merging a PR that changes the app, rebuild the frontend in the main checkout and
   restart `jat serve`.
 - Once they exist, start with `docs/OVERVIEW.md` (the map: processes, data flow, state) and
