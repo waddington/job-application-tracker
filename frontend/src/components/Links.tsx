@@ -58,7 +58,11 @@ function LinkRow({ link }: { link: LinkItem }) {
   const update = useUpdateLink();
   const remove = useDeleteLink();
   const Icon = ICONS[link.kind] ?? IconLink;
-  const save = () => update.mutate({ id: link.id, body: { title } }, { onSuccess: () => setEditing(false) });
+  const label = link.title || host(link.url);
+  const save = () => {
+    if (title.trim() === (link.title ?? "")) return setEditing(false); // nothing changed
+    update.mutate({ id: link.id, body: { title } }, { onSuccess: () => setEditing(false) });
+  };
 
   return (
     <Group justify="space-between" wrap="nowrap" gap="xs">
@@ -76,6 +80,7 @@ function LinkRow({ link }: { link: LinkItem }) {
             aria-label="Link title"
             placeholder="Leave empty for a default"
             style={{ flex: 1 }}
+            onBlur={save}
             autoFocus
           />
         ) : (
@@ -89,7 +94,7 @@ function LinkRow({ link }: { link: LinkItem }) {
               truncate="end"
               display="block"
             >
-              {link.title || host(link.url)}
+              {label}
             </Anchor>
             <Text size="xs" c="dimmed" truncate="end">
               {host(link.url)}
@@ -123,7 +128,7 @@ function LinkRow({ link }: { link: LinkItem }) {
                   setTitle(link.title ?? "");
                   setEditing(true);
                 }}
-                aria-label={`Rename ${link.title}`}
+                aria-label={`Rename ${label}`}
               >
                 <IconPencil size={16} />
               </ActionIcon>
@@ -134,7 +139,7 @@ function LinkRow({ link }: { link: LinkItem }) {
                 color="gray"
                 loading={remove.isPending}
                 onClick={() => remove.mutate(link.id)}
-                aria-label={`Remove ${link.title}`}
+                aria-label={`Remove ${label}`}
               >
                 <IconTrash size={16} />
               </ActionIcon>

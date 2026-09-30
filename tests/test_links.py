@@ -56,3 +56,28 @@ def test_link_validation(client, seeded):
     made = post(client, "/api/v1/links", {**company, "url": "https://contoso.example.com/careers"})
     assert made["title"] == "contoso.example.com"
     assert client.patch(f"/api/v1/links/{made['id']}", json={"url": None}).status_code == 422
+
+
+def test_changing_the_url_updates_a_default_title_only(client, seeded):
+    company = {"entity_type": "company", "entity_id": seeded["company"]["id"]}
+    doc = post(client, "/api/v1/links", {**company, "url": "https://docs.google.com/document/d/a"})
+    moved = client.patch(f"/api/v1/links/{doc['id']}", json={"url": "https://docs.google.com/spreadsheets/d/a"})
+    assert moved.json()["title"] == "Google Sheet" and moved.json()["kind"] == "google_sheet"
+    named = post(client, "/api/v1/links", {**company, "url": "https://example.com/a", "title": "Brief"})
+    moved = client.patch(f"/api/v1/links/{named['id']}", json={"url": "https://example.com/b"})
+    assert moved.json()["title"] == "Brief"
+
+
+def test_links_go_with_contacts_and_with_an_applications_interviews(client, seeded):
+    recruiter = {"entity_type": "contact", "entity_id": seeded["recruiter"]["id"]}
+    post(client, "/api/v1/links", {**recruiter, "url": "https://www.linkedin.com/in/someone"})
+    app = post(client, "/api/v1/applications", {"role_id": seeded["role"]["id"]})
+    interview = post(client, f"/api/v1/applications/{app['id']}/interviews", {"title": "Take-home"})
+    on_interview = {"entity_type": "interview", "entity_id": interview["id"]}
+    post(client, "/api/v1/links", {**on_interview, "url": "https://example.com/repo"})
+
+    # The application's delete cascades to its interviews in the database: their links go too.
+    assert client.delete(f"/api/v1/applications/{app['id']}").status_code == 204
+    assert client.get("/api/v1/links", params=on_interview).json() == []
+    assert client.delete(f"/api/v1/contacts/{seeded['recruiter']['id']}").status_code == 204
+    assert client.get("/api/v1/links", params=recruiter).json() == []

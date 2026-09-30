@@ -94,8 +94,11 @@ def create_link(body: S.LinkIn, session: SessionDep):
 def update_link(link_id: str, body: S.LinkPatch, session: SessionDep):
     link = get_or_404(session, Link, link_id)
     data = values(body, partial=True)
+    url = data.get("url") or link.url
     if "title" in data:
-        data["title"] = (data["title"] or "").strip() or default_title(data.get("url") or link.url)
+        data["title"] = (data["title"] or "").strip() or default_title(url)
+    elif "url" in data and link.title == default_title(link.url):
+        data["title"] = default_title(url)  # a default title follows the new URL; a chosen one stays
     for key, value in data.items():
         setattr(link, key, value)
     session.flush()
