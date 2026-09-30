@@ -108,6 +108,11 @@ want. The Obsidian plugins work on plain files but aren't a web app and have no 
 - **FR9:** An interview has a type (screen, technical, coding task, system design,
   behavioural, final), date and time or deadline, format and location or link,
   interviewers, prep notes, debrief notes and questions asked.
+- **FR9a:** Interviews for an application are numbered rounds, and each round has a short
+  free-text description of what it is (e.g. "Round 2 · Engineering manager chat",
+  "Round 3 · System design test"). Descriptions come from a suggestion list built from past
+  rounds. The board, list and application page show the current or next round next to the
+  stage, so "Interviewing" says which interview and what it is.
 - **FR10:** Coding interviews and take-home tasks also hold instructions, repo or platform
   links, a deadline and attachments.
 
