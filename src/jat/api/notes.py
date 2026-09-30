@@ -31,7 +31,11 @@ def _store(request: Request) -> NoteStore:
 
 
 def _excerpt(body: str, limit: int = 180) -> str:
-    text = re.sub(r"[#>*_`~\[\]()!-]+", " ", body)  # a plain-text taste of the Markdown
+    # A plain-text taste of the Markdown: no table rules, checkboxes, pipes or markup characters.
+    text = re.sub(r"^\s*\|?[\s:|-]+\|?\s*$", " ", body, flags=re.MULTILINE)
+    text = re.sub(r"\[[ xX]\]", " ", text)
+    text = re.sub(r"[*_`~]+", "", text)  # emphasis and code markers vanish
+    text = re.sub(r"[#>\[\]()!|-]+", " ", text)
     text = " ".join(text.split())
     return text if len(text) <= limit else text[: limit - 1].rstrip() + "…"
 

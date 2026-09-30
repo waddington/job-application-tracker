@@ -14,7 +14,7 @@ def test_notes_round_trip_through_files(client, seeded, app):
         {"title": "Call with Alex", "body": "## Salary\n\n- **£650/day**, outside IR35\n", "links": [link]},
     )
     assert made["path"].endswith("-call-with-alex.md")
-    assert made["excerpt"] == "Salary £650/day , outside IR35"
+    assert made["excerpt"] == "Salary £650/day, outside IR35"
     data_dir = app.state.jat.data_dir
     assert (data_dir / "notes" / made["path"]).read_text().endswith("- **£650/day**, outside IR35\n")
 
