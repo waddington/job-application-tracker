@@ -11,6 +11,7 @@ import { CompanyPage } from "./pages/CompanyPage";
 import { DocumentsPage } from "./pages/DocumentsPage";
 import { InterviewsPage } from "./pages/InterviewsPage";
 import { NotesPage } from "./pages/NotesPage";
+import { NextActionsPage } from "./pages/NextActionsPage";
 import { NotFound } from "./pages/NotFound";
 import { Placeholder } from "./pages/Placeholder";
 import { RecruitersPage } from "./pages/RecruitersPage";
@@ -19,6 +20,7 @@ const rootRoute = createRootRoute({ component: Layout, notFoundComponent: NotFou
 
 // Pages that are built; everything else in NAV shows its "coming soon" placeholder.
 const PAGES: Record<string, () => JSX.Element> = {
+  "/": NextActionsPage,
   "/applications": ApplicationsPage,
   "/companies": CompaniesPage,
   "/documents": DocumentsPage,
