@@ -33,6 +33,10 @@ DEFAULT_CONFIG = """\
 [snapshot]
 # Seconds without writes before the app commits a snapshot to this git repo.
 debounce_seconds = 60
+
+# [workflow]
+# transitions = "any"        # move applications between any stages (default)
+# transitions = "configured" # only allow the moves each stage lists in `next` (Jira-style)
 """
 
 

@@ -662,6 +662,8 @@ export interface components {
             stage_name: string;
             /** Stale */
             stale: boolean;
+            /** Suggested Next */
+            suggested_next: string[];
             /** Tags */
             tags: string[];
             /**

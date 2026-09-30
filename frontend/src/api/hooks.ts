@@ -11,10 +11,13 @@ export interface WorkflowStage {
   color: string;
   next: string[];
   allowed_next: string[];
+  /** The usual next stages. With transitions "any", allowed_next is every other stage. */
+  suggested_next: string[];
 }
 
 export interface Workflow {
   initial: string;
+  transitions: "any" | "configured";
   skip_forward: boolean;
   reopen_from: string[];
   stages: WorkflowStage[];

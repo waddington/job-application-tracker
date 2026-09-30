@@ -4,6 +4,7 @@ Defaults live here. A data directory can override them in config.toml:
 
     [workflow]
     initial = "interested"
+    transitions = "any"            # any: move between any stages | configured: only the moves below
     skip_forward = true            # allow jumping ahead to any later active stage
 
     [[workflow.stages]]
@@ -13,7 +14,13 @@ Defaults live here. A data directory can override them in config.toml:
     stale_after_days = 7           # Next actions flags it after this long with no activity
     next = ["screen", "interviewing"]
 
-Rules:
+With `transitions = "any"` (the default) an application can move from any stage to any
+other: processes skip steps and loop back, and every move is still timestamped. The rules
+below then only suggest the usual next stages. With `transitions = "configured"` they're
+enforced, Jira-style. A config that lists its own stages but no `transitions` keeps them
+enforced, as it was written before this setting existed.
+
+Rules (suggestions, or enforced when configured):
 - An active stage may move to any stage listed in its `next`.
 - With skip_forward, an active stage may also move to any later active stage.
 - Any active stage may move to a closed stage (rejected, withdrawn, ghosted, declined) or a
@@ -29,6 +36,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 KINDS = ("active", "success", "closed")
+TRANSITIONS = ("any", "configured")
 
 
 class WorkflowError(ValueError):
@@ -55,6 +63,7 @@ class Workflow:
     initial: str
     skip_forward: bool = True
     reopen_from: tuple[str, ...] = ("ghosted",)
+    transitions: str = "any"
     _index: dict[str, int] = field(default_factory=dict, compare=False, repr=False)
 
     def __post_init__(self):
@@ -68,6 +77,8 @@ class Workflow:
             for n in s.next:
                 if n not in self._index:
                     raise WorkflowError(f"stage {s.id!r}: next stage {n!r} doesn't exist")
+        if self.transitions not in TRANSITIONS:
+            raise WorkflowError(f"transitions must be one of {TRANSITIONS}")
         if self.initial not in self._index:
             raise WorkflowError(f"initial stage {self.initial!r} doesn't exist")
         for r in self.reopen_from:
@@ -85,6 +96,14 @@ class Workflow:
 
     def allowed_next(self, from_id: str) -> list[str]:
         """Every stage `from_id` may move to, in workflow order."""
+        if self.transitions == "any":
+            # from_id needn't exist: an application left in a stage since removed from
+            # config.toml can still be moved on.
+            return [s.id for s in self.stages if s.id != from_id]
+        return self.suggested_next(from_id)
+
+    def suggested_next(self, from_id: str) -> list[str]:
+        """The usual next stages from `from_id` (the configured rules), in workflow order."""
         src = self.stage(from_id)
         allowed: set[str] = set(src.next)
         if src.is_active:
@@ -104,6 +123,7 @@ class Workflow:
     def as_dict(self) -> dict:
         return {
             "initial": self.initial,
+            "transitions": self.transitions,
             "skip_forward": self.skip_forward,
             "reopen_from": list(self.reopen_from),
             "stages": [
@@ -115,6 +135,7 @@ class Workflow:
                     "color": s.color,
                     "next": list(s.next),
                     "allowed_next": self.allowed_next(s.id),
+                    "suggested_next": self.suggested_next(s.id),
                 }
                 for s in self.stages
             ],
@@ -175,11 +196,17 @@ def workflow_from_config(data: dict | None) -> Workflow:
         reopen_from = _str_list(data["reopen_from"], "[workflow] reopen_from")
     else:  # keep "ghosted can be reopened" whenever there's a ghosted stage
         reopen_from = tuple(s for s in DEFAULT_WORKFLOW.reopen_from if any(st.id == s for st in stages))
+    # A config.toml that defines its own stages was written when transitions were always
+    # enforced: keep enforcing them unless it says otherwise.
+    transitions = data.get("transitions", "configured" if raw_stages is not None else "any")
+    if transitions not in TRANSITIONS:
+        raise WorkflowError(f'[workflow] transitions must be "any" or "configured", not {transitions!r}')
     return Workflow(
         stages=stages,
         initial=str(data.get("initial") or (stages[0].id if stages else "")),
         skip_forward=skip_forward,
         reopen_from=reopen_from,
+        transitions=transitions,
     )
 
 

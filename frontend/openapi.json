@@ -423,6 +423,13 @@
             "title": "Stale",
             "type": "boolean"
           },
+          "suggested_next": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Suggested Next",
+            "type": "array"
+          },
           "tags": {
             "items": {
               "type": "string"
@@ -463,6 +470,7 @@
           "events",
           "contacts",
           "allowed_next",
+          "suggested_next",
           "can_undo",
           "duplicates"
         ],

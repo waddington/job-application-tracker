@@ -54,6 +54,7 @@ const detail = {
   events: [],
   contacts: [],
   allowed_next: [],
+  suggested_next: [],
   can_undo: false,
   duplicates: [],
 };

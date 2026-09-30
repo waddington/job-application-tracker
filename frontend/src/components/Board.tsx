@@ -18,7 +18,7 @@ import { useState } from "react";
 
 import type { ApplicationRow } from "../api/client";
 import { useMoveApplication, type Workflow } from "../api/hooks";
-import { buildColumns, canDrop, visibleColumns, type Column } from "../utils/board";
+import { buildColumns, canDrop, isSuggested, visibleColumns, type Column } from "../utils/board";
 import { ago } from "../utils/time";
 import { RoundBadge } from "./Interviews";
 
@@ -111,15 +111,19 @@ function StageColumn({
   onOpen,
 }: {
   column: Column;
-  dropState: "idle" | "allowed" | "blocked";
+  dropState: "idle" | "suggested" | "allowed" | "blocked";
   onOpen: (id: string) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: column.stage.id });
   const closed = column.stage.kind !== "active";
+  // Usual next stages stand out; any other stage still takes the drop (unless the workflow
+  // is set to configured transitions, when it's faded out).
   const border =
-    dropState === "allowed"
+    dropState === "suggested"
       ? `2px dashed var(--mantine-color-${isOver ? "teal" : "blue"}-5)`
-      : "1px solid var(--mantine-color-default-border)";
+      : dropState === "allowed"
+        ? `1px dashed var(--mantine-color-${isOver ? "teal-5" : "gray-5"})`
+        : "1px solid var(--mantine-color-default-border)";
   return (
     <Paper
       ref={setNodeRef}
@@ -213,9 +217,11 @@ export function Board({
                 dropState={
                   !active || column.stage.id === active.stage
                     ? "idle"
-                    : canDrop(workflow, active.stage, column.stage.id)
-                      ? "allowed"
-                      : "blocked"
+                    : !canDrop(workflow, active.stage, column.stage.id)
+                      ? "blocked"
+                      : isSuggested(workflow, active.stage, column.stage.id)
+                        ? "suggested"
+                        : "allowed"
                 }
               />
             ))}

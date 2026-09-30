@@ -399,6 +399,7 @@ class ApplicationDetail(ApplicationRow):
     events: list[EventOut]
     contacts: list[ApplicationContactOut]
     allowed_next: list[str]
+    suggested_next: list[str]  # the usual next stages; with transitions = "any", allowed_next is every stage
     can_undo: bool
     duplicates: list[DuplicateOut]
 
