@@ -54,6 +54,13 @@ roadmap is `docs/ROADMAP.yaml`, shown by the PM dashboard (see "Project manageme
 - No hosted backends, telemetry or cloud sync. Any integration (Google Docs links, email
   import) is opt-in and read-only unless Kai says otherwise.
 
+## Project management
+- PM dashboard: `python3 -m tools.pm` (http://127.0.0.1:8767), run from the main checkout.
+  Standard library only. It reads `docs/ROADMAP.yaml` and takes live task status from
+  `worktree-<task id>` branches and their PRs (via `gh`).
+- Tests: `python3 -m unittest discover -s tests -t .`
+- After merging a PR that changes `tools/pm`, restart the dashboard so it loads the new code.
+
 ## Code
 - The stack isn't chosen yet. Decide it in an RFC (see "Delivering an item"), then record the
   run, test and lint commands here.
