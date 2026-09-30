@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -17,6 +18,7 @@ from .api.routers import router as api_v1
 from .config import Settings, resolve_data_dir
 from .datadir import CODE_ROOT, check_outside_code_repo, is_git_repo
 from .db import current_revision, db_path, head_revision, make_engine, session_factory
+from .snapshot.git import SnapshotService
 
 DEFAULT_DIST = CODE_ROOT / "frontend" / "dist"
 DEV_ORIGINS = ["http://127.0.0.1:5173", "http://localhost:5173"]
@@ -73,12 +75,22 @@ def _mount_frontend(app: FastAPI, dist: Path) -> None:
         return FileResponse(index)  # client-side routes
 
 
-def create_app(data_dir: Path, *, dist: Path = DEFAULT_DIST, dev: bool = False) -> FastAPI:
+def create_app(
+    data_dir: Path, *, dist: Path = DEFAULT_DIST, dev: bool = False, snapshot_debounce: float | None = None
+) -> FastAPI:
     """Build the app for a data directory whose database already exists and is migrated."""
     check_outside_code_repo(data_dir)
     if not db_path(data_dir).exists():
         raise RuntimeError(f"No database at {db_path(data_dir)}. Run `jat init` first.")
+
+    @asynccontextmanager
+    async def lifespan(app: FastAPI):
+        yield
+        app.state.snapshots.close()  # write any pending snapshot before exiting
+        app.state.engine.dispose()
+
     app = FastAPI(
+        lifespan=lifespan,
         title="Job Application Tracker",
         version=__version__,
         docs_url="/api/docs",
@@ -91,6 +103,8 @@ def create_app(data_dir: Path, *, dist: Path = DEFAULT_DIST, dev: bool = False) 
     app.state.jat = AppState(data_dir=data_dir, git_repo=is_git_repo(data_dir))
     app.state.workflow = WorkflowCache(data_dir)
     app.state.writes = WriteNotifier()
+    app.state.snapshots = SnapshotService(data_dir, engine, debounce_seconds=snapshot_debounce)
+    app.state.writes.subscribe(app.state.snapshots.mark_dirty)
     if dev:
         app.add_middleware(CORSMiddleware, allow_origins=DEV_ORIGINS, allow_methods=["*"], allow_headers=["*"])
     app.include_router(_api_router())

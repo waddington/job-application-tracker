@@ -382,3 +382,8 @@ def unlink_contact(app_id: str, link_id: str, session: SessionDep):
 
 
 router.include_router(apps)
+
+
+from .backup import router as backup_router  # noqa: E402
+
+router.include_router(backup_router)
