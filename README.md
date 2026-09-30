@@ -88,8 +88,8 @@ recruiters send roles that go somewhere.
 
 > 🚧 **Early development, but usable day to day.** Tracking, recruiters, interview rounds,
 > notes, links, files and emails, CV versions, the *Next actions* page, insights (Sankey
-> diagram, funnel stats, recruiter scorecards), offer comparison and one-click backups all work
-> today. Full-text search is next. Everything marked ✅ is merged and running.
+> diagram, funnel stats, recruiter scorecards), offer comparison, one-click backups and
+> full-text search all work today. Everything marked ✅ is merged and running.
 
 | | Feature | Status |
 |---|---|---|
@@ -109,6 +109,7 @@ recruiters send roles that go somewhere.
 | 📈 | **Insights**: conversion per stage, median time in stage, direct vs recruiter outcomes and weekly activity | ✅ Available |
 | 🏅 | **Recruiter scorecard**: roles sent, interview rate, where they ended up, time to first update and last contact, per recruiter and per agency | ✅ Available |
 | 💷 | **Offer comparison**: salary, bonus, equity, pension and holiday, or day rate, IR35 and length for contracts, side by side with a worth-a-year figure; replies due show in Next actions | ✅ Available |
+| 🔎 | **Search everything**: one box (press <kbd>/</kbd>) finds applications, people and their emails and phone numbers, interview debriefs, offers, timeline entries, Markdown notes, CVs, files, emails and links | ✅ Available |
 | 💾 | **Backups built in**: automatic git snapshots of your private data folder, readable JSON Lines export, a one-click zip of everything (or `jat archive`), one-command restore | ✅ Available |
 
 The full plan is in the [product requirements](docs/prd/tracker.md) and the
