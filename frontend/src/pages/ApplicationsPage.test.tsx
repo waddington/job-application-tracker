@@ -171,4 +171,20 @@ describe("applications page", () => {
       "/api/v1/applications/quick",
     ]);
   });
+
+  it("switches to the board and shows stage columns", async () => {
+    mockApi({
+      "/api/v1/workflow": WORKFLOW,
+      "/api/v1/agencies": [],
+      "/api/v1/applications": [row(), row({ id: "a2", company_name: "Fabrikam", stage: "screen" })],
+      "/api/v1/health": {},
+    });
+    renderApplications();
+    await screen.findByText("Contoso");
+    fireEvent.click(screen.getByText("Board"));
+    expect(await screen.findByLabelText("Applied column")).toHaveTextContent("Contoso");
+    expect(screen.getByLabelText("Screen column")).toHaveTextContent("Fabrikam");
+    expect(screen.queryByLabelText("Rejected column")).not.toBeInTheDocument();
+    localStorage.clear();
+  });
 });

@@ -44,7 +44,7 @@ No job-board scraping. No SaaS. No account. **Your job search stays on your disk
 | | Feature | Status |
 |---|---|---|
 | 📋 | **Applications list** with filters (stage, source, recruiter, company, tags, "no activity in 7+ days") | ✅ Available |
-| 🗂️ | **Kanban board**: drag applications between stages, with only valid moves allowed | Planned |
+| 🗂️ | **Kanban board**: drag applications between stages, with only valid moves allowed | ✅ Available |
 | 🔁 | **Configurable workflow**: your stages, your transitions, full timestamped history | ✅ Available |
 | 🧑‍💼 | **Recruiter CRM**: agencies, recruiters, multiple contact details, every role they've sent | Planned |
 | ⚠️ | **Duplicate-submission warning**: know before two agencies put you forward for the same job | Planned |

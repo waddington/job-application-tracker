@@ -19,7 +19,7 @@ import {
 } from "@mantine/core";
 import { useDebouncedValue, useLocalStorage } from "@mantine/hooks";
 import { IconBriefcase, IconChevronDown, IconChevronUp, IconPlus, IconSearch } from "@tabler/icons-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import type { ApplicationRow } from "../api/client";
 import {
@@ -83,6 +83,11 @@ export function ApplicationsPage() {
     key: "jat.applications.view",
     defaultValue: "list",
   });
+  // ?view=board or ?view=list in the address opens that view (and remembers it).
+  useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get("view");
+    if (requested === "board" || requested === "list") setView(requested);
+  }, [setView]);
 
   const { data: workflow } = useWorkflow();
   const { data: agencies } = useAgencies();
