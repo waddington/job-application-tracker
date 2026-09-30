@@ -141,11 +141,8 @@ def from_data(data) -> Roadmap:
         if not isinstance(raw_phase, dict) or not raw_phase.get("id"):
             roadmap.errors.append(f"phase #{i + 1} needs an id")
             continue
-        phase = Phase(
-            id=str(raw_phase["id"]),
-            name=str(raw_phase.get("name") or raw_phase["id"]),
-            goal=str(raw_phase.get("goal") or ""),
-        )
+        phase = Phase(id=str(raw_phase["id"]), name=str(raw_phase.get("name") or raw_phase["id"]),
+                      goal=str(raw_phase.get("goal") or ""))
         for raw in raw_phase.get("tasks") or []:
             task = _task(raw, phase.id, roadmap.errors)
             if task:
@@ -214,7 +211,7 @@ def _find_cycle(roadmap: Roadmap) -> list[str] | None:
             if nxt not in graph:
                 continue
             if state.get(nxt) == 1:
-                return path[path.index(nxt) :] + [nxt]
+                return path[path.index(nxt):] + [nxt]
             if state.get(nxt) is None and (found := visit(nxt)):
                 return found
         path.pop()

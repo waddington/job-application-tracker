@@ -118,17 +118,8 @@ def collect(root: Path, repo: str) -> Snapshot:
     except (subprocess.SubprocessError, OSError) as exc:
         live.warnings.append(f"git unavailable: {exc}")
     try:
-        args = [
-            "gh",
-            "pr",
-            "list",
-            "--state",
-            "all",
-            "--limit",
-            "200",
-            "--json",
-            "number,title,state,headRefName,url,isDraft,updatedAt",
-        ]
+        args = ["gh", "pr", "list", "--state", "all", "--limit", "200",
+                "--json", "number,title,state,headRefName,url,isDraft,updatedAt"]
         if repo:
             args += ["--repo", repo]
         live.prs = parse_prs(_run(args, root, timeout=30))
