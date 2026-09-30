@@ -29,6 +29,7 @@ export function mockApi(routes: Record<string, unknown | Handler>) {
 
 export const WORKFLOW = {
   initial: "interested",
+  transitions: "configured",
   skip_forward: true,
   reopen_from: ["ghosted"],
   stages: [
@@ -40,6 +41,7 @@ export const WORKFLOW = {
       color: "gray",
       next: ["applied"],
       allowed_next: ["applied", "rejected"],
+      suggested_next: ["applied", "rejected"],
     },
     {
       id: "applied",
@@ -49,6 +51,7 @@ export const WORKFLOW = {
       color: "blue",
       next: ["screen"],
       allowed_next: ["screen", "rejected"],
+      suggested_next: ["screen", "rejected"],
     },
     {
       id: "screen",
@@ -58,6 +61,7 @@ export const WORKFLOW = {
       color: "cyan",
       next: [],
       allowed_next: ["rejected"],
+      suggested_next: ["rejected"],
     },
     {
       id: "rejected",
@@ -67,6 +71,7 @@ export const WORKFLOW = {
       color: "red",
       next: [],
       allowed_next: [],
+      suggested_next: [],
     },
   ],
 };

@@ -39,6 +39,7 @@ const detail = {
   ],
   contacts: [],
   allowed_next: ["screen", "rejected"],
+  suggested_next: ["screen", "rejected"],
   can_undo: true,
   duplicates: [],
 };

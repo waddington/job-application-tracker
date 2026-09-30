@@ -25,7 +25,9 @@ export function buildColumns(workflow: Workflow, rows: ApplicationRow[]): Column
           stale_after_days: null,
           color: "gray",
           next: [],
-          allowed_next: [],
+          // A stage since removed from config.toml: with any-to-any moves, it can go anywhere.
+          allowed_next: workflow.transitions === "any" ? workflow.stages.map((s) => s.id) : [],
+          suggested_next: [],
         },
         rows: list,
       });
@@ -37,6 +39,11 @@ export function buildColumns(workflow: Workflow, rows: ApplicationRow[]): Column
 export function canDrop(workflow: Workflow, from: string, to: string): boolean {
   if (from === to) return false;
   return workflow.stages.find((s) => s.id === from)?.allowed_next.includes(to) ?? false;
+}
+
+/** Is `to` one of the usual next stages from `from` (highlighted while dragging)? */
+export function isSuggested(workflow: Workflow, from: string, to: string): boolean {
+  return workflow.stages.find((s) => s.id === from)?.suggested_next.includes(to) ?? false;
 }
 
 /** Closed stages are tucked away unless a drag is in progress or the user asked to see them. */

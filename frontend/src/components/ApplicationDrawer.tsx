@@ -114,6 +114,17 @@ export function ApplicationSummary({ app }: { app: ApplicationDetail }) {
   const names = new Map([...stages.values()].map((s) => [s.id, s.name]));
   const move = useMoveApplication();
   const undo = useUndoMove();
+  // Usual next stages first; with any-to-any moves, every other stage follows.
+  const usual = app.allowed_next.filter((id) => app.suggested_next.includes(id));
+  const others = app.allowed_next.filter((id) => !app.suggested_next.includes(id));
+  const moveItem = (stageId: string) => (
+    <Menu.Item
+      key={stageId}
+      onClick={() => move.mutate({ id: app.id, to_stage: stageId, stageName: names.get(stageId) })}
+    >
+      {names.get(stageId) ?? stageId}
+    </Menu.Item>
+  );
   return (
     <Stack>
       <div>
@@ -152,14 +163,15 @@ export function ApplicationSummary({ app }: { app: ApplicationDetail }) {
             </Button>
           </Menu.Target>
           <Menu.Dropdown>
-            {app.allowed_next.map((stageId) => (
-              <Menu.Item
-                key={stageId}
-                onClick={() => move.mutate({ id: app.id, to_stage: stageId, stageName: names.get(stageId) })}
-              >
-                {names.get(stageId) ?? stageId}
-              </Menu.Item>
-            ))}
+            {usual.length > 0 && others.length > 0 && <Menu.Label>Usual next</Menu.Label>}
+            {usual.map(moveItem)}
+            {usual.length > 0 && others.length > 0 && (
+              <>
+                <Menu.Divider />
+                <Menu.Label>Other stages</Menu.Label>
+              </>
+            )}
+            {others.map(moveItem)}
           </Menu.Dropdown>
         </Menu>
         <Button
