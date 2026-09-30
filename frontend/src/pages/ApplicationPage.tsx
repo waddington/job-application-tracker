@@ -32,6 +32,7 @@ import {
 import { AttachmentsCard } from "../components/Attachments";
 import { LinksCard } from "../components/Links";
 import { NotesCard } from "../components/Notes";
+import { SentDocumentsCard } from "../components/SentDocuments";
 import { InterviewsCard } from "../components/Interviews";
 
 const RELATIONS: { value: Schemas["ApplicationContactIn"]["relation"]; label: string }[] = [
@@ -245,6 +246,7 @@ export function ApplicationPage() {
               {/* keyed by id, not updated_at: other changes (archive, moves) keep unsaved edits */}
               <DetailsCard key={app.id} app={app} />
               <InterviewsCard applicationId={app.id} />
+              <SentDocumentsCard app={app} />
               <NotesCard entity={`application:${app.id}`} />
               <LinksCard entityType="application" entityId={app.id} />
               <AttachmentsCard entityType="application" entityId={app.id} />

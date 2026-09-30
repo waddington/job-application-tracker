@@ -41,6 +41,7 @@ const detail = {
   allowed_next: ["screen", "rejected"],
   suggested_next: ["screen", "rejected"],
   can_undo: true,
+  documents: [],
   duplicates: [],
 };
 

@@ -8,6 +8,7 @@ import { ApplicationPage } from "./pages/ApplicationPage";
 import { ApplicationsPage } from "./pages/ApplicationsPage";
 import { CompaniesPage } from "./pages/CompaniesPage";
 import { CompanyPage } from "./pages/CompanyPage";
+import { DocumentsPage } from "./pages/DocumentsPage";
 import { InterviewsPage } from "./pages/InterviewsPage";
 import { NotesPage } from "./pages/NotesPage";
 import { NotFound } from "./pages/NotFound";
@@ -20,6 +21,7 @@ const rootRoute = createRootRoute({ component: Layout, notFoundComponent: NotFou
 const PAGES: Record<string, () => JSX.Element> = {
   "/applications": ApplicationsPage,
   "/companies": CompaniesPage,
+  "/documents": DocumentsPage,
   "/interviews": InterviewsPage,
   "/notes": NotesPage,
   "/recruiters": RecruitersPage,
