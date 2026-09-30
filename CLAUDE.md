@@ -1,12 +1,14 @@
 # job-application-tracker: instructions for Claude
 
 ## What this is
-A local-first tracker for Kai's software-engineering job search. Kai's brief (2026-09-30):
+A local-first **web app** for tracking Kai's software-engineering job search (not Obsidian-based).
+Kai's brief (2026-09-30):
 applications come in directly and through recruiters, and one recruiter can have several
 roles. Each application moves through stages and statuses governed by a workflow or state
 machine. Kai needs an overview, a clear view of what to chase, and somewhere to keep details:
 notes on the role, interview and call notes (probably Markdown files or Google Doc links),
-PDFs and email exports. It runs locally.
+PDFs and email exports. It runs locally. The product plan is `docs/prd/tracker.md`; the
+roadmap is `docs/ROADMAP.yaml`, shown by the PM dashboard (see "Project management").
 
 ## Ownership
 - Kai is hands-off on this repo. **Claude manages all PRs, merges and local state**, and Kai
@@ -20,8 +22,12 @@ PDFs and email exports. It runs locally.
 ## Public repo: personal data never gets committed
 - This repo is public, but the data is Kai's job search: companies, recruiters, contacts,
   salaries, notes, CVs, PDFs and email exports. **None of it goes into git.**
-- Personal data and runtime state live in git-ignored `data/` and `var/`, resolved to the main
-  checkout path so they survive worktrees. Never delete them without asking.
+- **Kai's data lives outside this repo** in
+  `/home/kai/Documents/Projects/job-application-tracker-data`, in a format that is easy to back
+  up (Kai, 2026-09-30). The app takes that path from config or an env var, never from a
+  hard-coded value in the repo. Never delete or rewrite it without asking.
+- Claude's own runtime state (`var/RESUME.md` etc.) lives in git-ignored `var/`, resolved to the
+  main checkout path so it survives worktrees. `data/` stays ignored as a safety net.
 - Tests, fixtures, screenshots, docs and examples use made-up data only (fake companies,
   `example.com` addresses). Real names, emails and phone numbers never appear in code,
   commits, PR descriptions or issues.
@@ -56,8 +62,9 @@ PDFs and email exports. It runs locally.
   `# --- <Name> (github/gitignore) ---` header. Skip it if that template is already there. Don't
   duplicate lines the file already has, and keep the repo-specific entries (worktrees,
   `data/`, `var/`) intact.
-- Prefer a plain-file data model (Markdown with frontmatter, attachments next to it) so the data
-  stays readable and portable without the app.
+- The data format must stay readable and restorable without the app (the stack RFC picks it).
+- **No scraping or external job feeds.** All data comes from Kai, or from Claude looking things
+  up and filling them in when Kai asks. The app itself never fetches job data.
 
 ## Keep going: the continuous delivery loop
 **Never stop because a piece of work is finished.** After every merge, pick the next item and
@@ -99,4 +106,4 @@ Tell Kai in a line or two what was added and why.
   applications, no replying to recruiters.
 - No paid services, no API keys or accounts created for Kai, no service installs, and no runtime
   dependencies beyond the stack Kai signs off in the stack RFC without asking first.
-- Never delete `data/` or `var/`.
+- Never delete the data directory or `var/`.
