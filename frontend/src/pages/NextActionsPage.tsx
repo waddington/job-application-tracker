@@ -20,6 +20,7 @@ import { api, unwrap, type ApplicationRow } from "../api/client";
 import { stageLookup, useLogActivity, useUpdateApplication, useWorkflow } from "../api/hooks";
 import { useSaveInterview, type Interview } from "../api/interviewHooks";
 import { ApplicationDrawer } from "../components/ApplicationDrawer";
+import { ChaseActions } from "../components/ChaseActions";
 import { StageBadge } from "../components/StageBadge";
 import { ago, formatDate, formatDateTime } from "../utils/time";
 
@@ -235,7 +236,12 @@ export function NextActionsPage() {
                 row={r}
                 onOpen={setOpenId}
                 detail={`due ${formatDate(r.follow_up_on)}`}
-                action={<FollowedUpButton row={r} />}
+                action={
+                  <Group gap={4} wrap="nowrap">
+                    <FollowedUpButton row={r} />
+                    <ChaseActions row={r} />
+                  </Group>
+                }
               />
             ))}
           </Section>
@@ -246,7 +252,13 @@ export function NextActionsPage() {
           </Section>
           <Section title="Gone quiet" count={data.stale.length} hint="Past their stage's threshold">
             {data.stale.map((r) => (
-              <AppLine key={r.id} row={r} onOpen={setOpenId} detail={ago(r.days_since_activity)} />
+              <AppLine
+                key={r.id}
+                row={r}
+                onOpen={setOpenId}
+                detail={ago(r.days_since_activity)}
+                action={<ChaseActions row={r} />}
+              />
             ))}
           </Section>
         </>
