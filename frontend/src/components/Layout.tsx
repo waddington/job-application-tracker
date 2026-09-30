@@ -4,6 +4,7 @@ import {
   Burger,
   Group,
   NavLink,
+  Stack,
   Text,
   Title,
   Tooltip,
@@ -15,6 +16,7 @@ import { IconMoon, IconSun, IconTarget } from "@tabler/icons-react";
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 
 import { NAV } from "../nav";
+import { ApiStatus } from "./ApiStatus";
 
 function ColorSchemeToggle() {
   const { setColorScheme } = useMantineColorScheme();
@@ -75,9 +77,12 @@ export function Layout() {
             onClick={close}
           />
         ))}
-        <Text size="xs" c="dimmed" mt="auto" p="xs">
-          Local-first · your data stays on this machine
-        </Text>
+        <Stack gap={4} mt="auto" p="xs">
+          <ApiStatus />
+          <Text size="xs" c="dimmed">
+            Local-first · your data stays on this machine
+          </Text>
+        </Stack>
       </AppShell.Navbar>
 
       <AppShell.Main>
