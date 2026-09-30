@@ -924,6 +924,12 @@
             "title": "Inline",
             "type": "boolean"
           },
+          "meta": {
+            "additionalProperties": true,
+            "default": {},
+            "title": "Meta",
+            "type": "object"
+          },
           "original_name": {
             "title": "Original Name",
             "type": "string"
