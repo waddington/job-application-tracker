@@ -3,16 +3,27 @@
 > An open-source (Apache-2.0), self-hosted, local-first web app for tracking a job search,
 > built for software engineers. It tracks applications, recruiters and agencies (one
 > recruiter can have many roles), configurable interview stages with timestamped history,
-> Markdown notes, attachments and exported emails, CV and cover-letter versions, interviews
-> and coding tasks, and a "Next actions" page for stalled applications. It never scrapes job
-> boards or contacts anyone, and all data stays in one local directory outside the code.
+> numbered interview rounds described in the user's own words ("Round 2 · System design
+> test"), duplicate-submission warnings, Markdown notes, attachments and exported emails,
+> CV and cover-letter versions, and a "Next actions" page for stalled applications. It never
+> scrapes job boards or contacts anyone, and all data stays in one local directory outside
+> the code.
 
-Status: early development. The PM dashboard (`python3 -m tools.pm`) works; the tracker app is
-being built phase by phase.
+Status: early development, usable for tracking. Available now: applications list and
+filters, Kanban board, application/company/recruiter/agency pages, recruiter CRM with
+multiple contact details, interview rounds and coding tasks, duplicate warnings, and
+git-backed snapshots with restore. Planned next: notes, links, attachments, `.eml` import,
+CV versions, Next actions, insights (Sankey, funnel stats), offers, `.ics` export and search.
+
+Stack: Python 3.12, FastAPI, SQLAlchemy, Alembic and SQLite (with a JSON Lines export
+committed to the user's private data repo); React 19, TypeScript, Mantine and TanStack
+Router/Query. Run with `uv run jat --data-dir <dir> serve` (http://127.0.0.1:8770); try
+demo data with `uv run python scripts/seed_demo.py /tmp/jat-demo`.
 
 ## Docs
-- [README](README.md): overview, features, FAQ
+- [README](README.md): overview, screenshots, features, getting started, FAQ
 - [Product requirements](docs/prd/tracker.md): goals, user stories, functional requirements
+- [Stack RFC](docs/rfc/stack.md): architecture and data format
 - [Roadmap](docs/ROADMAP.yaml): phases P0–P6 with task status
 - [Planning process](docs/planning/README.md)
 
