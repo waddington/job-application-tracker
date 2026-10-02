@@ -96,7 +96,8 @@ def next_actions(
     ]
     offer_deadlines = _offer_outs(sorted(due, key=lambda row: (row[0].respond_by, row[2].lower())))
     waiting = sorted(
-        (r for r in rows if r.awaiting_reply_since is not None),
+        # A follow-up that's due is the more urgent list; don't show it twice.
+        (r for r in rows if r.awaiting_reply_since is not None and r.id not in chasing),
         key=lambda r: (r.awaiting_reply_since, r.company_name.lower()),
     )
     people = session.scalars(

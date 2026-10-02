@@ -22,11 +22,14 @@ function WaitingToggle({
   pending,
   onChange,
   compact,
+  who,
 }: {
   since: string | null | undefined;
   pending: boolean;
   onChange: (since: string | null) => void;
   compact?: boolean;
+  /** Who it's about, for screen readers when several sit in one list. */
+  who?: string;
 }) {
   if (!since) {
     return (
@@ -56,6 +59,7 @@ function WaitingToggle({
         leftSection={<IconMessageCheck size={14} />}
         loading={pending}
         onClick={() => onChange(null)}
+        aria-label={who ? `Heard back from ${who}` : undefined}
       >
         Heard back
       </Button>
@@ -68,16 +72,19 @@ export function ApplicationWaiting({
   id,
   since,
   compact,
+  who,
 }: {
   id: string;
   since: string | null | undefined;
   compact?: boolean;
+  who?: string;
 }) {
   const update = useUpdateApplication();
   return (
     <WaitingToggle
       since={since}
       compact={compact}
+      who={who}
       pending={update.isPending}
       onChange={(value) => update.mutate({ id, body: { awaiting_reply_since: value } })}
     />
@@ -89,16 +96,19 @@ export function PersonWaiting({
   id,
   since,
   compact,
+  who,
 }: {
   id: string;
   since: string | null | undefined;
   compact?: boolean;
+  who?: string;
 }) {
   const update = useSetPersonWaiting();
   return (
     <WaitingToggle
       since={since}
       compact={compact}
+      who={who}
       pending={update.isPending}
       onChange={(value) => update.mutate({ id, since: value })}
     />

@@ -81,7 +81,7 @@ describe("waiting to hear back", () => {
     const section = (await screen.findByRole("heading", { name: "Waiting to hear back" })).closest(
       ".mantine-Card-root",
     ) as HTMLElement;
-    expect(within(section).getByText("Waiting 9 days")).toHaveStyle({
+    expect(within(section).getByText("Waiting 9 days · time to chase")).toHaveStyle({
       color: "var(--mantine-color-red-text)",
     });
     expect(within(section).getByText("Waiting 2 days")).toBeInTheDocument();
@@ -91,7 +91,7 @@ describe("waiting to hear back", () => {
     );
     expect(within(section).getByText("Waiting 3 days")).toBeInTheDocument();
 
-    fireEvent.click(within(section).getAllByRole("button", { name: "Heard back" })[2]!);
+    fireEvent.click(within(section).getByRole("button", { name: "Heard back from Alex Recruiter" }));
     await waitFor(() => {
       const patch = calls.find((c) => c.method === "PATCH" && c.path === "/api/v1/contacts/c1");
       expect(patch?.body).toEqual({ awaiting_reply_since: null });

@@ -27,6 +27,17 @@ def test_moving_on_means_you_heard_back(client, seeded):
     client.patch(f"/api/v1/applications/{app['id']}", json={"awaiting_reply_since": date.today().isoformat()})
     r = client.post(f"/api/v1/applications/{app['id']}/move", json={"to_stage": "screen"})
     assert r.status_code == 200 and r.json()["awaiting_reply_since"] is None
+    # Undoing an accidental move puts the waiting back.
+    r = client.post(f"/api/v1/applications/{app['id']}/undo")
+    assert r.json()["awaiting_reply_since"] == date.today().isoformat()
+
+
+def test_a_due_follow_up_is_listed_once(client, seeded):
+    app = post(client, "/api/v1/applications", {"role_id": seeded["role"]["id"], "stage": "applied"})
+    body = {"awaiting_reply_since": "2026-09-20", "follow_up_on": "2026-09-30"}
+    assert client.patch(f"/api/v1/applications/{app['id']}", json=body).status_code == 200
+    out = client.get("/api/v1/next-actions", params={"today": "2026-10-02"}).json()
+    assert [a["id"] for a in out["follow_ups"]] == [app["id"]] and out["waiting"] == []
 
 
 def test_waiting_on_a_person(client, seeded):

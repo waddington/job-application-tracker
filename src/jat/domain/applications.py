@@ -6,7 +6,7 @@ history. Nothing here updates or deletes an event: undo appends a correcting eve
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any
 
 from sqlalchemy import select
@@ -91,10 +91,12 @@ def move(
         to_stage=to_stage,
         occurred_at=when,
         summary=note,
+        # It moved on, so you heard back. Remember any waiting date so an undo can put it back.
+        data={"was_waiting_since": app.awaiting_reply_since.isoformat()} if app.awaiting_reply_since else {},
     )
     session.add(event)
     app.stage = to_stage
-    app.awaiting_reply_since = None  # it moved on: you heard back
+    app.awaiting_reply_since = None
     _touch(app, when)
     session.flush()
     return event
@@ -141,6 +143,8 @@ def undo_last_move(session: Session, app: Application, *, note: str | None = Non
     )
     session.add(event)
     app.stage = last.from_stage
+    if was := (last.data or {}).get("was_waiting_since"):
+        app.awaiting_reply_since = date.fromisoformat(was)
     session.flush()
     # An undone move isn't real activity: recompute so a stale application stays flagged.
     app.last_activity_at = _activity_time(_recorded(session, app.id), app.last_activity_at)

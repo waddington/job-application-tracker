@@ -203,7 +203,7 @@ function PersonWaitingLine({ person }: { person: Contact }) {
         <Text size="xs" c="dimmed">
           {waitingLabel(person.awaiting_reply_since!)}
         </Text>
-        <PersonWaiting id={person.id} since={person.awaiting_reply_since} compact />
+        <PersonWaiting id={person.id} since={person.awaiting_reply_since} compact who={person.name} />
       </Group>
     </Group>
   );
@@ -303,11 +303,17 @@ export function NextActionsPage() {
                 detail={
                   <Text span size="xs" c={overdue(r) ? "red" : "dimmed"}>
                     {waitingLabel(r.awaiting_reply_since!)}
+                    {overdue(r) ? " · time to chase" : ""}
                   </Text>
                 }
                 action={
                   <Group gap={4} wrap="nowrap">
-                    <ApplicationWaiting id={r.id} since={r.awaiting_reply_since} compact />
+                    <ApplicationWaiting
+                      id={r.id}
+                      since={r.awaiting_reply_since}
+                      compact
+                      who={r.company_name}
+                    />
                     <ChaseActions row={r} />
                   </Group>
                 }
