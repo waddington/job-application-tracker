@@ -143,6 +143,10 @@ job-board feeds. It tracks the applications *you* make.
 
 ## 🚀 Getting started
 
+> 📖 **The [user guide](docs/guide/README.md)** covers everything below in more depth: where
+> your data lives and how the app finds it, backups and restoring, using it on a second
+> computer, customising stages, every command, and troubleshooting.
+
 You need Python 3.12+ with [uv](https://docs.astral.sh/uv/), and Node.js 22.12+ with
 [pnpm](https://pnpm.io/) to build the web UI.
 
@@ -173,7 +177,9 @@ uv run jat serve            # → http://127.0.0.1:8770 (keeps running)
 ```
 
 Later, from another terminal, `uv run jat push` sends the snapshots to your private remote
-(never forced). Run `jat` from the repo root, where it reads `.env`.
+(never forced). Run `jat` from the repo root, where it reads `.env`. There's no settings
+page for the data location: it's `--data-dir` or `JAT_DATA_DIR`
+([details](docs/guide/your-data.md#how-the-app-finds-your-data)).
 
 The server only listens on `127.0.0.1` by default. `uv run jat --help` lists the other
 commands (`archive`, `export`, `restore`, `snapshot`, `migrate`, `info`).
@@ -205,7 +211,8 @@ separate from the code. Nothing is uploaded anywhere.
 make and doesn't search for jobs.
 
 **Can I use it for non-software jobs?** Yes. It's built with tech hiring in mind (recruiters,
-coding interviews, take-home tasks), but the workflow is configurable.
+coding interviews, take-home tasks), but the stages are configurable
+([Customising](docs/guide/customising.md)).
 
 **What format is my data in?** A SQLite database for speed, plus a plain-text export
 (one JSON Lines file per table) that's committed to your data repo. You can read it, diff it,
@@ -214,7 +221,13 @@ and rebuild the database from it with `jat restore`.
 **How do I back it up?** It's automatic if the data folder is a git repo: every change is
 snapshotted, and `jat push` sends it to your private remote. For a single file to keep
 anywhere, click *Download a backup* in the sidebar (or run `jat archive`): a zip with your
-data, notes and files. Unzip it and run `jat restore` to get everything back.
+data, notes and files. Unzip it and run `jat init` on the folder to get everything back.
+See [Your data](docs/guide/your-data.md).
+
+**Can I use it on two computers?** Yes, one at a time: clone your private data repo on the
+second computer, point `JAT_DATA_DIR` at it and run `jat init`. When you switch, push on one,
+then pull and `jat restore --force` on the other.
+[Step by step](docs/guide/your-data.md#using-it-on-a-second-computer).
 
 **Can I track which interview round I'm at?** Yes. Each application has numbered rounds
 with your own description ("Round 2 · Engineering manager chat", "Round 3 · System design

@@ -69,6 +69,9 @@ roadmap is `docs/ROADMAP.yaml`, shown by the PM dashboard (see "Project manageme
   the same PR. The `readme-refresh-*` roadmap tasks do a fuller pass over both the README and
   `llms.txt`: screenshots and GIFs made with fake data only, and `llms.txt` checked against
   what's actually available.
+- The user guide (`docs/guide/`) documents everything a user can do or configure. A change
+  that adds or alters a feature, command, setting or data-folder behaviour updates the guide
+  in the same PR, checked against the code (no guessed steps).
 
 ## Code
 - Stack (accepted RFC `docs/rfc/stack.md`): Python 3.12 + uv + FastAPI + SQLite in `src/jat`,

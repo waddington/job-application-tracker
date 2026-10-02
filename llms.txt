@@ -34,6 +34,8 @@ The JSON API is documented at http://127.0.0.1:8770/api/docs; insights live unde
 
 ## Docs
 - [README](README.md): overview, screenshots, features, getting started, FAQ
+- [User guide](docs/guide/README.md): install, where data lives (`--data-dir` / `JAT_DATA_DIR`),
+  backups, restore, second computer, every page, customising stages, commands, troubleshooting
 - [Product requirements](docs/prd/tracker.md): goals, user stories, functional requirements
 - [Stack RFC](docs/rfc/stack.md): architecture and data format
 - [Roadmap](docs/ROADMAP.yaml): phases P0–P6 with task status
