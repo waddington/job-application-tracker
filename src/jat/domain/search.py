@@ -246,7 +246,7 @@ def _activity(session: Session, places: Places) -> Iterator[Candidate]:
             t.id,
             t.text,
             places.path(t.entity_type, t.entity_id) or "/next-actions",
-            subtitle="Done" if t.done_at else "To-do",
+            subtitle="Done" if t.done_at else None,
             subtitle_searchable=False,
             updated=t.updated_at,
         )

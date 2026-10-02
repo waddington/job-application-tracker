@@ -182,3 +182,18 @@ export const meeting = (overrides: Record<string, unknown> = {}) => ({
   application_company_name: null,
   ...overrides,
 });
+
+/** A to-do from /todos (open, about Alex Morgan, no date, by default). */
+export const todo = (overrides: Record<string, unknown> = {}) => ({
+  id: "t1",
+  text: "Reply to their message",
+  due_on: null,
+  done_at: null,
+  entity_type: "contact",
+  entity_id: "c1",
+  about: "Alex Morgan",
+  company_id: null,
+  created_at: "2026-10-01T00:00:00Z",
+  updated_at: "2026-10-01T00:00:00Z",
+  ...overrides,
+});

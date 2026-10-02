@@ -26,6 +26,7 @@ import { ContactFormModal } from "../components/ContactFormModal";
 import { DeleteButton } from "../components/DeleteButton";
 import { EditNameModal } from "../components/EditNameModal";
 import { LinksCard } from "../components/Links";
+import { TodosCard } from "../components/Todos";
 import { RolesCard } from "../components/Roles";
 import { NotesCard } from "../components/Notes";
 import { StageBadge } from "../components/StageBadge";
@@ -191,6 +192,7 @@ export function CompanyPage() {
         </Grid.Col>
         <Grid.Col span={{ base: 12, md: 4 }}>
           <Stack>
+            <TodosCard entityType="company" entityId={company.id} />
             <RolesCard
               title="Roles"
               filters={{ company_id: company.id }}

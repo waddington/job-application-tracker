@@ -20,10 +20,12 @@ import { api, unwrap, type ApplicationRow, type Contact } from "../api/client";
 import { stageLookup, useLogActivity, useUpdateApplication, useWorkflow } from "../api/hooks";
 import { useSaveInterview, type Interview } from "../api/interviewHooks";
 import { headline, type Offer } from "../api/offerHooks";
+import type { Todo } from "../api/todoHooks";
 import { ApplicationWaiting, daysWaiting, PersonWaiting, waitingLabel } from "../components/Waiting";
 import { ApplicationDrawer } from "../components/ApplicationDrawer";
 import { MeetingLine, MeetingOutcome } from "../components/Meetings";
 import { RoleLine } from "../components/Roles";
+import { AddTodo, TodoLine } from "../components/Todos";
 import { ChaseActions } from "../components/ChaseActions";
 import { StageBadge } from "../components/StageBadge";
 import { ago, formatDate, formatDateTime } from "../utils/time";
@@ -243,6 +245,29 @@ function OutcomeButtons({ interview }: { interview: Interview }) {
 }
 
 /** Home: what to chase, what's coming up and what needs an outcome (PRD FR18, US5). */
+/** Your own to-dos, always shown (it's where you add one), with what each is about. */
+function TodosSection({ todos }: { todos: Todo[] }) {
+  return (
+    <Card withBorder>
+      <Stack gap="sm">
+        <Group justify="space-between">
+          <Group gap="xs">
+            <Title order={4}>To-dos</Title>
+            {todos.length > 0 && <Badge variant="light">{todos.length}</Badge>}
+          </Group>
+          <Text size="xs" c="dimmed">
+            Your own reminders; tick them off when done
+          </Text>
+        </Group>
+        {todos.map((t) => (
+          <TodoLine key={t.id} todo={t} />
+        ))}
+        <AddTodo />
+      </Stack>
+    </Card>
+  );
+}
+
 export function NextActionsPage() {
   const { data, isLoading } = useNextActions();
   const [openId, setOpenId] = useState<string | null>(null);
@@ -287,9 +312,10 @@ export function NextActionsPage() {
         <IconChecklist size={26} stroke={1.6} />
         <Title order={2}>Next actions</Title>
       </Group>
+      {data && <TodosSection todos={data.todos ?? []} />}
       {isLoading || !data ? (
         <Loader />
-      ) : !total ? (
+      ) : !total && !data.todos?.length ? (
         <Card withBorder p="xl">
           <Stack align="center" gap="xs">
             <IconConfetti size={32} stroke={1.4} />

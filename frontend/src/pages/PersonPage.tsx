@@ -24,6 +24,7 @@ import { ContactFormModal } from "../components/ContactFormModal";
 import { DeleteButton } from "../components/DeleteButton";
 import { roundStatus } from "../components/Interviews";
 import { LinksCard } from "../components/Links";
+import { TodosCard } from "../components/Todos";
 import { MeetingsCard } from "../components/Meetings";
 import { RolesCard } from "../components/Roles";
 import { NotesCard } from "../components/Notes";
@@ -170,6 +171,7 @@ export function PersonPage() {
         <Grid.Col span={{ base: 12, md: 4 }}>
           <Stack>
             <ContactCard contact={contact} />
+            <TodosCard entityType="contact" entityId={contact.id} />
             <LinksCard entityType="contact" entityId={contact.id} />
             <AttachmentsCard entityType="contact" entityId={contact.id} />
           </Stack>

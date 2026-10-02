@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { App } from "../App";
 import { makeRouter } from "../router";
-import { mockApi, row, WORKFLOW } from "../test/mockApi";
+import { mockApi, row, todo, WORKFLOW } from "../test/mockApi";
 
 function renderHome() {
   render(<App router={makeRouter(createMemoryHistory({ initialEntries: ["/next-actions"] }))} />);
@@ -197,5 +197,49 @@ describe("next actions", () => {
     renderHome();
     expect(await screen.findByRole("button", { name: "Snooze Litware" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /as Ghosted/ })).not.toBeInTheDocument();
+  });
+
+  it("lists your to-dos and adds one about a person", async () => {
+    const calls = mockApi({
+      "/api/v1/workflow": WORKFLOW,
+      "/api/v1/next-actions": {
+        follow_ups: [],
+        stale: [],
+        upcoming: [],
+        awaiting_outcome: [],
+        todos: [
+          todo({ due_on: "2026-09-29" }),
+          todo({ id: "t2", text: "Update my CV", entity_type: null, entity_id: null, about: null }),
+        ],
+        today: "2026-09-30",
+      },
+      "GET /api/v1/contacts": [{ id: "c2", name: "Riley Chen", details: [] }],
+      "GET /api/v1/companies": [],
+      "GET /api/v1/agencies": [],
+      "GET /api/v1/role-summaries": [],
+      "GET /api/v1/applications": [],
+      "POST /api/v1/todos": todo({ id: "t3" }),
+      "/api/v1/health": {},
+    });
+    renderHome();
+    expect(await screen.findByText("Reply to their message")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Alex Morgan" })).toHaveAttribute("href", "/people/c1");
+    expect(screen.getByText(/^Overdue/)).toBeInTheDocument();
+    expect(screen.getByText("Update my CV")).toBeInTheDocument();
+    // Only to-dos: you're not "all caught up".
+    expect(screen.queryByText("All caught up")).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("New to-do"), { target: { value: "They messaged me: reply" } });
+    fireEvent.click(screen.getAllByLabelText("About")[0]!);
+    fireEvent.click(await screen.findByRole("option", { name: "Riley Chen", hidden: true }));
+    fireEvent.click(screen.getByRole("button", { name: "Add" }));
+    await waitFor(() =>
+      expect(calls.find((c) => c.method === "POST")?.body).toEqual({
+        text: "They messaged me: reply",
+        due_on: null,
+        entity_type: "contact",
+        entity_id: "c2",
+      }),
+    );
   });
 });
