@@ -39,6 +39,16 @@ is built and merged, but not yet tested in real use. Numbers in brackets are pul
 - **One-click backup**: the whole data directory as a zip, or `jat archive` (#39).
 - **Full-text search** across everything, notes included; press `/` (#40).
 
+### Since real use began
+- **Delete** companies, roles, agencies, people and applications (#43).
+- **User guide** in `docs/guide/` (#44).
+- **People pages**, in-house recruiters, adding people from a company or an application, and
+  renaming companies and agencies (#45).
+- **Waiting to hear back**, on applications and people (#46).
+- **Overview** home page, a **Timeline** across everything (by day or as lanes), a grouped
+  menu, **New application** and a numbered **How it works** on every page; Next actions moves
+  to `/next-actions` (#48).
+
 ### Under the hood
 - Python 3.12, FastAPI, SQLAlchemy, Alembic and SQLite; React 19, TypeScript, Mantine and
   TanStack Router/Query (#6–#9).

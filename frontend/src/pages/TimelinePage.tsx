@@ -15,7 +15,7 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { IconTimeline } from "@tabler/icons-react";
-import { Link, useRouter } from "@tanstack/react-router";
+import { Link, useRouter, useRouterState } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { Fragment, useMemo, useState } from "react";
 
@@ -126,7 +126,7 @@ export function TimelineRow({ item, showDate }: { item: TimelineItem; showDate?:
           : timeOf(item)}
       </Text>
       <Badge size="sm" variant="light" color={cat.color} w={112} style={{ flexShrink: 0 }}>
-        {cat.label}
+        {cat.one}
       </Badge>
       <Stack gap={2} style={{ minWidth: 0 }}>
         <Text size="sm" fw={500}>
@@ -273,7 +273,7 @@ function LanesView({ items, now, since }: { items: TimelineItem[]; now: string; 
                       transform: "translateX(-50%)",
                     }}
                   >
-                    {t.format(short ? "D MMM" : "MMM YY")}
+                    {t.format(short ? "D MMM" : "MMM YYYY")}
                   </Text>
                 ))}
               </Box>
@@ -387,7 +387,9 @@ function LanesView({ items, now, since }: { items: TimelineItem[]; now: string; 
 }
 
 export function TimelinePage() {
-  const [view, setView] = useState<"list" | "lanes">("list");
+  // ?view=lanes opens straight into lanes (handy for a bookmark).
+  const search: Record<string, unknown> = useRouterState({ select: (s) => s.location.search });
+  const [view, setView] = useState<"list" | "lanes">(search.view === "lanes" ? "lanes" : "list");
   const [period, setPeriod] = useState("90");
   const [categories, setCategories] = useState<string[]>([]);
   const [about, setAbout] = useState<string | null>(null);

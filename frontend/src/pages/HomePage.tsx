@@ -109,7 +109,10 @@ export function HomePage() {
     .filter((s) => s.kind === "active")
     .map((s) => ({ stage: s, count: active.filter((r) => r.stage === s.id).length }))
     .filter((p) => p.count > 0);
-  const past = (recent?.items ?? []).filter((i) => new Date(i.at) <= new Date(recent!.now)).slice(0, 8);
+  // What happened, not what was set up: a burst of new companies would crowd it out.
+  const past = (recent?.items ?? [])
+    .filter((i) => i.category !== "added" && new Date(i.at) <= new Date(recent!.now))
+    .slice(0, 8);
 
   return (
     <Stack>

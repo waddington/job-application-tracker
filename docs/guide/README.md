@@ -7,7 +7,7 @@ move it between computers. Start at the top if you're new.
    up for real, and updating to a newer version.
 2. [Your data](your-data.md): where it lives, how the app finds it, what's in the folder,
    snapshots and pushing, backups, restoring, and using it on a second computer.
-3. [Using the app](using-the-app.md): a tour of every page, from Next actions to Insights,
+3. [Using the app](using-the-app.md): a tour of every page, from the Overview and Timeline to Insights,
    including archiving and deleting.
 4. [Customising](customising.md): your own stages and staleness thresholds, strict
    Jira-style transitions, and snapshot timing (`config.toml`).

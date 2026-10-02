@@ -156,8 +156,10 @@ want. The Obsidian plugins work on plain files but aren't a web app and have no 
 
 ## 7. UX
 
-- Navigation: Next actions (home), Applications (list and board), Recruiters, Companies,
-  Interviews, Documents, Notes, Insights.
+- Navigation, grouped: Today (Overview as home, Next actions, Timeline); Your applications
+  (Applications as list and board, Interviews, Offers); People and companies (Recruiters,
+  Companies); Files and notes (Documents, Notes); Review (Insights). New application and a
+  numbered "How it works" help sit in the header on every page.
 - Desktop first, but usable on a phone-width window. Light and dark themes.
 - Keyboard-friendly: `/` focuses search, and there are shortcuts for changing stage and
   adding a note.

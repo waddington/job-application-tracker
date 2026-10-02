@@ -14,16 +14,16 @@ export interface TimelineFilters {
   application_id?: string;
 }
 
-export const CATEGORIES: { value: TimelineCategory; label: string; color: string }[] = [
-  { value: "stage", label: "Stage moves", color: "blue" },
-  { value: "message", label: "Messages", color: "cyan" },
-  { value: "interview", label: "Interviews", color: "violet" },
-  { value: "offer", label: "Offers", color: "teal" },
-  { value: "note", label: "Notes", color: "yellow" },
-  { value: "document", label: "Documents sent", color: "grape" },
-  { value: "file", label: "Files", color: "orange" },
-  { value: "added", label: "Added", color: "gray" },
-  { value: "other", label: "Other", color: "dark" },
+export const CATEGORIES: { value: TimelineCategory; label: string; one: string; color: string }[] = [
+  { value: "stage", label: "Stage moves", one: "Stage", color: "blue" },
+  { value: "message", label: "Messages", one: "Message", color: "cyan" },
+  { value: "interview", label: "Interviews", one: "Interview", color: "violet" },
+  { value: "offer", label: "Offers", one: "Offer", color: "teal" },
+  { value: "note", label: "Notes", one: "Note", color: "yellow" },
+  { value: "document", label: "Documents sent", one: "Document", color: "grape" },
+  { value: "file", label: "Files", one: "File", color: "orange" },
+  { value: "added", label: "Added", one: "Added", color: "gray" },
+  { value: "other", label: "Other", one: "Other", color: "dark" },
 ];
 
 export const categoryOf = (value: TimelineCategory) => CATEGORIES.find((c) => c.value === value)!;
