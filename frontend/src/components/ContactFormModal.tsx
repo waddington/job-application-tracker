@@ -5,8 +5,10 @@ import { IconPlus, IconTrash } from "@tabler/icons-react";
 import { useEffect } from "react";
 
 import type { Contact, Schemas } from "../api/client";
-import { useSaveContact } from "../api/peopleHooks";
+import { useCreateCompany } from "../api/detailHooks";
+import { useCreateAgency, useSaveContact } from "../api/peopleHooks";
 import { useAgencies, useCompanies } from "../api/hooks";
+import { CreatableSelect } from "./CreatableSelect";
 
 type Kind = Schemas["ContactDetailIn"]["kind"];
 
@@ -34,12 +36,16 @@ const KINDS: { value: Kind; label: string }[] = [
   { value: "other", label: "Other" },
 ];
 
-function fromContact(contact: Contact | null | undefined, agencyId: string | null): Values {
+function fromContact(
+  contact: Contact | null | undefined,
+  agencyId: string | null,
+  companyId: string | null = null,
+): Values {
   return {
     name: contact?.name ?? "",
     title: contact?.title ?? "",
     agencyId: contact ? contact.agency_id : agencyId,
-    companyId: contact?.company_id ?? null,
+    companyId: contact ? contact.company_id : companyId,
     details: contact?.details.map((d) => ({
       key: d.id,
       kind: d.kind as Kind,
@@ -55,17 +61,25 @@ export function ContactFormModal({
   onClose,
   contact,
   defaultAgencyId = null,
+  defaultCompanyId = null,
+  onSaved,
 }: {
   opened: boolean;
   onClose: () => void;
   contact?: Contact | null;
   defaultAgencyId?: string | null;
+  /** A new person starts at this company (e.g. added from its page). */
+  defaultCompanyId?: string | null;
+  /** Called with the saved person, e.g. to link them to an application straight away. */
+  onSaved?: (contact: Contact) => void;
 }) {
   const { data: agencies } = useAgencies();
   const { data: companies } = useCompanies();
   const save = useSaveContact();
+  const createAgency = useCreateAgency();
+  const createCompany = useCreateCompany();
   const form = useForm<Values>({
-    initialValues: fromContact(contact, defaultAgencyId),
+    initialValues: fromContact(contact, defaultAgencyId, defaultCompanyId),
     validate: {
       name: (v) => (v.trim() ? null : "Who is it?"),
       details: {
@@ -85,11 +99,11 @@ export function ContactFormModal({
   // Reload the form whenever a different contact (or a new one) is opened.
   useEffect(() => {
     if (!opened) return;
-    const values = fromContact(contact, defaultAgencyId);
+    const values = fromContact(contact, defaultAgencyId, defaultCompanyId);
     form.setInitialValues(values);
     form.setValues(values);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [opened, contact?.id, defaultAgencyId]);
+  }, [opened, contact?.id, defaultAgencyId, defaultCompanyId]);
 
   const submit = form.onSubmit((values) =>
     save.mutate(
@@ -105,7 +119,12 @@ export function ContactFormModal({
             .map((d) => ({ kind: d.kind, value: d.value.trim(), label: d.label.trim() || null })),
         },
       },
-      { onSuccess: onClose },
+      {
+        onSuccess: (saved) => {
+          onSaved?.(saved);
+          onClose();
+        },
+      },
     ),
   );
 
@@ -113,7 +132,7 @@ export function ContactFormModal({
     <Modal
       opened={opened}
       onClose={onClose}
-      title={contact ? `Edit ${contact.name}` : "New contact"}
+      title={contact ? `Edit ${contact.name}` : "New person"}
       size="lg"
     >
       <form onSubmit={submit}>
@@ -123,22 +142,27 @@ export function ContactFormModal({
             <TextInput label="Job title" placeholder="Senior Consultant" {...form.getInputProps("title")} />
           </Group>
           <Group grow align="flex-start">
-            <Select
+            <CreatableSelect
               label="Agency"
-              placeholder="None"
+              description="For agency recruiters"
+              placeholder="None (type to add one)"
               clearable
-              searchable
-              data={(agencies ?? []).map((a) => ({ value: a.id, label: a.name }))}
-              {...form.getInputProps("agencyId")}
+              items={(agencies ?? []).map((a) => ({ value: a.id, label: a.name }))}
+              value={form.values.agencyId}
+              onChange={(v) => form.setFieldValue("agencyId", v)}
+              onCreate={async (name) => (await createAgency.mutateAsync({ name })).id}
+              creating={createAgency.isPending}
             />
-            <Select
+            <CreatableSelect
               label="Company"
-              description="For hiring managers and interviewers"
-              placeholder="None"
+              description="Where they work, if not at an agency"
+              placeholder="None (type to add one)"
               clearable
-              searchable
-              data={(companies ?? []).map((c) => ({ value: c.id, label: c.name }))}
-              {...form.getInputProps("companyId")}
+              items={(companies ?? []).map((c) => ({ value: c.id, label: c.name }))}
+              value={form.values.companyId}
+              onChange={(v) => form.setFieldValue("companyId", v)}
+              onCreate={async (name) => (await createCompany.mutateAsync({ name })).id}
+              creating={createCompany.isPending}
             />
           </Group>
           <Text size="sm" fw={500}>
@@ -191,7 +215,7 @@ export function ContactFormModal({
               Cancel
             </Button>
             <Button type="submit" loading={save.isPending}>
-              {contact ? "Save" : "Add contact"}
+              {contact ? "Save" : "Add person"}
             </Button>
           </Group>
         </Stack>

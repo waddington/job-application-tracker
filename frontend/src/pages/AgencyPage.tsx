@@ -12,19 +12,21 @@ import {
   Text,
   Title,
 } from "@mantine/core";
-import { IconArrowLeft, IconPlus, IconUsers } from "@tabler/icons-react";
+import { IconArrowLeft, IconPencil, IconPlus, IconUsers } from "@tabler/icons-react";
 import { Link, useParams, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 
 import type { Contact } from "../api/client";
 import { useAgencySummary } from "../api/detailHooks";
 import { stageLookup, useWorkflow } from "../api/hooks";
+import { useUpdateAgency } from "../api/peopleHooks";
 import { ApplicationDrawer } from "../components/ApplicationDrawer";
 import { AttachmentsCard } from "../components/Attachments";
 import { LinksCard } from "../components/Links";
 import { NotesCard } from "../components/Notes";
 import { ContactCard } from "../components/ContactCard";
 import { DeleteButton } from "../components/DeleteButton";
+import { EditNameModal } from "../components/EditNameModal";
 import { ContactFormModal } from "../components/ContactFormModal";
 import { StageBadge } from "../components/StageBadge";
 import { ago } from "../utils/time";
@@ -37,6 +39,8 @@ export function AgencyPage() {
   const [openId, setOpenId] = useState<string | null>(null);
   const [editing, setEditing] = useState<Contact | null | undefined>(undefined);
   const router = useRouter();
+  const [editingName, setEditingName] = useState(false);
+  const updateAgency = useUpdateAgency();
 
   if (isError) return <Alert color="red">Couldn't load this agency.</Alert>;
   if (isLoading || !data) return <Loader />;
@@ -59,13 +63,36 @@ export function AgencyPage() {
             </Anchor>
           )}
         </Group>
-        <DeleteButton
-          kind="agency"
-          id={agency.id}
-          name={agency.name}
-          confirm={`Delete ${agency.name}? Its recruiters and the roles it sent stay, without an agency.`}
-          onDeleted={() => router.history.push("/recruiters")}
-        />
+        <Group gap="xs">
+          <Button
+            variant="default"
+            size="xs"
+            leftSection={<IconPencil size={14} />}
+            onClick={() => setEditingName(true)}
+          >
+            Edit
+          </Button>
+          <DeleteButton
+            kind="agency"
+            id={agency.id}
+            name={agency.name}
+            confirm={`Delete ${agency.name}? Its recruiters and the roles it sent stay, without an agency.`}
+            onDeleted={() => router.history.push("/recruiters")}
+          />
+        </Group>
+        {editingName && (
+          <EditNameModal
+            opened
+            onClose={() => setEditingName(false)}
+            title={`Edit ${agency.name}`}
+            name={agency.name}
+            website={agency.website}
+            saving={updateAgency.isPending}
+            onSave={(body) =>
+              updateAgency.mutate({ id: agency.id, body }, { onSuccess: () => setEditingName(false) })
+            }
+          />
+        )}
       </Group>
       <Grid gap="lg">
         <Grid.Col span={{ base: 12, md: 7 }}>

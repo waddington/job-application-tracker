@@ -10,13 +10,20 @@ finds anything.
   and IR35).
 - An **application** is you going for a role, by one **route**: directly, through an
   agency or recruiter, or by referral. Most of the app is about applications.
-- An **agency** is a recruitment agency; a **recruiter** (or any other person: hiring
-  manager, interviewer, referrer) is a **contact** with as many emails, phone numbers and
-  links as you like.
+- An **agency** is a recruitment agency. A **person** is anyone you deal with: an agency
+  recruiter, an in-house recruiter or head of talent, a hiring manager, an interviewer, a
+  referrer. Each has a page with as many emails, phone numbers and links as you like.
 
 Create an application with **New application** on the Applications page: pick or type the
-company and role, the route, and the recruiter if there is one. Companies and roles typed in
-for the first time are created for you.
+company and role, and how it came about:
+
+- **Directly**: you applied, or someone at the company reached out. Put them in *Who reached
+  out?* (an in-house recruiter or head of talent) and they're added as a person at the
+  company.
+- **Through a recruiter**: an agency and/or a recruiter there.
+- **Referral**: link the person who referred you from the application's People card.
+
+Companies, roles, agencies and people typed in for the first time are created for you.
 
 ## Next actions (home)
 
@@ -64,7 +71,10 @@ Everything about one application:
 - **Offer**: pay and terms, and revised offers (see [Offers](#offers)).
 - **Notes**, **Links** (job ads, Google Docs, repos) and **Files** (PDFs, images, exported
   emails).
-- **People**: recruiters, hiring managers, interviewers linked to it.
+- **People**: who's involved, and as what (agency recruiter, internal recruiter / talent,
+  hiring manager, interviewer, referrer, other). Pick someone you already have and **Link
+  person**, or **New person** to add someone and link them in one go (they start at the
+  application's company).
 - **Log activity**: record a call, email, message or anything else on the timeline.
 - **Timeline**: every stage move, activity, interview change and offer, in order.
 
@@ -96,17 +106,28 @@ Companies, agencies, roles and people have **Delete** too:
 A company or role that still has applications can't be deleted: delete or archive those
 first. Your data repo's history still has everything until you rewrite it.
 
-## Recruiters and agencies
+## People, recruiters and agencies
 
-The **Recruiters** page lists agencies and their recruiters, with every email, phone number
-and link (click to email, call or open). An **agency page** shows its recruiters and every
-role it put you forward for. Applications for the same job through two routes (say, directly
-and via an agency) show a **duplicate warning**.
+The **Recruiters** page lists everyone: agencies and their recruiters, people at companies,
+and independents, with every email, phone number and link (click to email, call or open).
+**New agency** and **New person** are at the top right. In a person's form you can also type
+a new agency or company name and pick **+ Add "…"** to create it there and then.
+
+Each **person** has a page, a dossier: their job title and where they work, how to reach
+them, every application they're part of (and as what), the interviews they were in, and your
+notes, links and files about them. Click a name anywhere to open it; **Edit** and **Delete**
+are at the top.
+
+An **agency page** shows its recruiters and every role it put you forward for. Applications
+for the same job through two routes (say, directly and via an agency) show a **duplicate
+warning**.
 
 ## Companies
 
 A list of companies with how many applications and how many need chasing. A **company
-page** has its applications, roles, people, an *About* box, notes, links and files.
+page** has its applications, roles, people (**Add person** for the people you talk to there),
+an *About* box, notes, links and files. **Edit** at the top renames it or sets its website;
+agencies have the same.
 
 ## Interviews
 

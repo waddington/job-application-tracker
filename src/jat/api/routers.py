@@ -9,7 +9,17 @@ from fastapi import APIRouter, HTTPException, Query, Response
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session, aliased
 
-from ..db.models import Agency, Application, ApplicationContact, Company, Contact, ContactDetail, Interview, Role
+from ..db.models import (
+    Agency,
+    Application,
+    ApplicationContact,
+    Company,
+    Contact,
+    ContactDetail,
+    Interview,
+    InterviewContact,
+    Role,
+)
 from ..domain import applications as svc
 from ..domain import duplicates as dup
 from ..domain import interviews as interviews_svc
@@ -381,7 +391,8 @@ def _check_refs(session: Session, data: dict) -> None:
 def _check_route(session: Session, merged: dict) -> dict:
     """Validate route/agency/recruiter together (after merging a PATCH into the current values).
 
-    - direct: no agency and no recruiter.
+    - direct: no agency. A recruiter is allowed if they're in-house (not from an agency):
+      someone at the company who reached out.
     - agency: an agency or a recruiter; a missing agency is taken from the recruiter.
     - a recruiter who belongs to an agency must match the application's agency.
     Returns the values to set (possibly with agency_id filled in).
@@ -389,8 +400,12 @@ def _check_route(session: Session, merged: dict) -> dict:
     route, agency_id, recruiter_id = merged.get("route"), merged.get("agency_id"), merged.get("recruiter_id")
     recruiter = session.get(Contact, recruiter_id) if recruiter_id else None
     updates: dict = {}
-    if route == "direct" and (agency_id or recruiter_id):
-        raise HTTPException(422, "A direct application can't have an agency or recruiter; change the route first.")
+    if route == "direct" and agency_id:
+        raise HTTPException(422, "A direct application can't have an agency; change the route first.")
+    if route == "direct" and recruiter is not None and recruiter.agency_id:
+        raise HTTPException(
+            422, f"{recruiter.name} works for an agency, so this isn't a direct application; change the route."
+        )
     if route == "agency":
         if not agency_id and recruiter is not None and recruiter.agency_id:
             agency_id = updates["agency_id"] = recruiter.agency_id
@@ -479,8 +494,30 @@ def quick_create(body: S.QuickApplicationIn, session: SessionDep, workflow: Work
             agency = session.get(Agency, recruiter.agency_id)
         agency_id = agency.id if agency else None
         recruiter_id = recruiter.id if recruiter else None
-    elif body.agency_id or body.agency_name or body.recruiter_id or body.recruiter_name:
-        raise HTTPException(422, "Only applications through a recruiter can have an agency or recruiter.")
+    elif body.agency_id or body.agency_name:
+        raise HTTPException(422, "Only applications through a recruiter can have an agency.")
+    elif body.recruiter_id or (body.recruiter_name or "").strip():
+        if body.route != "direct":
+            raise HTTPException(422, "A referral can't have a recruiter; link the referrer as a person instead.")
+        # Someone at the company reached out (an in-house recruiter or head of talent).
+        if body.recruiter_id:
+            recruiter = get_or_404(session, Contact, body.recruiter_id)
+        else:
+            name = (body.recruiter_name or "").strip()
+            recruiter = session.scalars(
+                select(Contact)
+                .where(
+                    Contact.company_id == company.id,
+                    Contact.agency_id.is_(None),
+                    func.lower(Contact.name) == name.lower(),
+                )
+                .limit(1)
+            ).first()
+            if recruiter is None:
+                recruiter = Contact(name=name, company_id=company.id)
+                session.add(recruiter)
+                session.flush()
+        recruiter_id = recruiter.id
 
     data = {"route": body.route, "agency_id": agency_id, "recruiter_id": recruiter_id}
     data.update(_check_route(session, data))
@@ -635,6 +672,45 @@ def agency_summary(agency_id: str, session: SessionDep, workflow: WorkflowDep):
         agency=S.AgencyOut.model_validate(agency),
         recruiters=[_contact_out(session, c) for c in recruiters],
         applications=_app_rows(session, workflow, Application.agency_id == agency_id),
+    )
+
+
+@summaries.get("/contacts/{contact_id}/summary", response_model=S.ContactSummary)
+def contact_summary(contact_id: str, session: SessionDep, workflow: WorkflowDep):
+    """A person's page: their details, the applications they're part of and their interviews."""
+    from .interviews import _outs as interview_outs
+    from .interviews import _query as interview_query
+
+    contact = get_or_404(session, Contact, contact_id)
+    relations: dict[str, list[str]] = {}
+    for app_id, relation in session.execute(
+        select(ApplicationContact.application_id, ApplicationContact.relation)
+        .where(ApplicationContact.contact_id == contact_id)
+        .order_by(ApplicationContact.id)
+    ):
+        relations.setdefault(app_id, []).append(relation)
+    for app_id in session.scalars(select(Application.id).where(Application.recruiter_id == contact_id)):
+        relations.setdefault(app_id, []).insert(0, "source")  # they brought it to you
+    rows = _app_rows(session, workflow, Application.id.in_(list(relations))) if relations else []
+    sat_in = select(InterviewContact.interview_id).where(InterviewContact.contact_id == contact_id)
+    interviews = interview_outs(
+        session,
+        session.execute(
+            interview_query()
+            .where(Interview.id.in_(sat_in))
+            .order_by(func.coalesce(Interview.starts_at, Interview.deadline_at, Interview.created_at).desc())
+        ),
+    )
+    agency = session.get(Agency, contact.agency_id) if contact.agency_id else None
+    company = session.get(Company, contact.company_id) if contact.company_id else None
+    return S.ContactSummary(
+        contact=_contact_out(session, contact),
+        agency_name=agency.name if agency else None,
+        company_name=company.name if company else None,
+        applications=[
+            S.PersonApplication(**r.model_dump(), relations=list(dict.fromkeys(relations[r.id]))) for r in rows
+        ],
+        interviews=interviews,
     )
 
 

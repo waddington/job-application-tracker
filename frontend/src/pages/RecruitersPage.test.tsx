@@ -117,7 +117,7 @@ describe("recruiters", () => {
     fireEvent.change(within(dialog).getAllByLabelText("Value")[0]!, { target: { value: "new@example.com" } });
     fireEvent.click(within(dialog).getByRole("button", { name: "Add a detail" }));
     fireEvent.change(within(dialog).getAllByLabelText("Value")[1]!, { target: { value: "+44 7700 900009" } });
-    fireEvent.click(within(dialog).getByRole("button", { name: "Add contact" }));
+    fireEvent.click(within(dialog).getByRole("button", { name: "Add person" }));
     await waitFor(() => {
       const post = calls.find((c) => c.method === "POST" && c.path === "/api/v1/contacts");
       expect(post?.body).toMatchObject({
@@ -144,7 +144,7 @@ describe("recruiters", () => {
     const dialog = await screen.findByRole("dialog");
     fireEvent.change(within(dialog).getByLabelText("Name"), { target: { value: "X" } });
     fireEvent.change(within(dialog).getAllByLabelText("Value")[0]!, { target: { value: "not-an-email" } });
-    fireEvent.click(within(dialog).getByRole("button", { name: "Add contact" }));
+    fireEvent.click(within(dialog).getByRole("button", { name: "Add person" }));
     expect(await within(dialog).findByText("That doesn't look like an email address")).toBeInTheDocument();
     expect(calls.some((c) => c.method === "POST")).toBe(false);
   });

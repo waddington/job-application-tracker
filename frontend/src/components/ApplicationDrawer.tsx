@@ -192,7 +192,9 @@ export function ApplicationSummary({ app }: { app: ApplicationDetail }) {
             ? `Through ${[app.recruiter_name, app.agency_name].filter(Boolean).join(" at ") || "an agency"}`
             : app.route === "referral"
               ? "Referral"
-              : "Applied directly"}
+              : app.recruiter_name
+                ? `Directly, via ${app.recruiter_name} at ${app.company_name}`
+                : "Applied directly"}
         </Text>
         <Text size="sm">
           <b>Applied on:</b> {formatDate(app.applied_on)}

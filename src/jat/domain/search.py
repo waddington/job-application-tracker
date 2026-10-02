@@ -139,12 +139,8 @@ class Places:
             return f"/companies/{role.company_id}"
         if entity_type == "interview" and (app_id := self.interviews.get(entity_id)):
             return f"/applications/{app_id}"
-        if entity_type == "contact" and (contact := self.contacts.get(entity_id)):
-            if contact.agency_id:
-                return f"/agencies/{contact.agency_id}"
-            if contact.company_id:
-                return f"/companies/{contact.company_id}"
-            return "/recruiters"
+        if entity_type == "contact" and entity_id in self.contacts:
+            return f"/people/{entity_id}"
         if entity_type == "document":
             return "/documents"
         return None
@@ -197,7 +193,7 @@ def _contacts(session: Session, places: Places) -> Iterator[Candidate]:
             "contact",
             c.id,
             c.name,
-            places.path("contact", c.id) or "/recruiters",
+            f"/people/{c.id}",
             subtitle=c.title,
             fields=details.get(c.id, []),
             updated=c.updated_at,

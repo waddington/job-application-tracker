@@ -13,7 +13,7 @@ import {
   Textarea,
   Title,
 } from "@mantine/core";
-import { IconArrowLeft, IconBuilding } from "@tabler/icons-react";
+import { IconArrowLeft, IconBuilding, IconPencil, IconPlus } from "@tabler/icons-react";
 import { Link, useParams, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 
@@ -22,7 +22,9 @@ import { useCompanySummary, useUpdateCompany } from "../api/detailHooks";
 import { stageLookup, useWorkflow } from "../api/hooks";
 import { ApplicationDrawer } from "../components/ApplicationDrawer";
 import { AttachmentsCard } from "../components/Attachments";
+import { ContactFormModal } from "../components/ContactFormModal";
 import { DeleteButton } from "../components/DeleteButton";
+import { EditNameModal } from "../components/EditNameModal";
 import { LinksCard } from "../components/Links";
 import { NotesCard } from "../components/Notes";
 import { StageBadge } from "../components/StageBadge";
@@ -61,6 +63,9 @@ export function CompanyPage() {
   const { data: workflow } = useWorkflow();
   const stages = stageLookup(workflow);
   const [openId, setOpenId] = useState<string | null>(null);
+  const [addingPerson, setAddingPerson] = useState(false);
+  const [editingName, setEditingName] = useState(false);
+  const update = useUpdateCompany();
   const router = useRouter();
 
   if (isError) return <Alert color="red">Couldn't load this company.</Alert>;
@@ -84,18 +89,41 @@ export function CompanyPage() {
             </Anchor>
           )}
         </Group>
-        <DeleteButton
-          kind="company"
-          id={company.id}
-          name={company.name}
-          blocked={
-            applications.length
-              ? `${company.name} still has ${applications.length === 1 ? "an application. Delete it first, or archive it instead." : `${applications.length} applications. Delete them first, or archive them instead.`}`
-              : null
-          }
-          confirm={`Delete ${company.name} and its roles? Its people stay, without a company.`}
-          onDeleted={() => router.history.push("/companies")}
-        />
+        <Group gap="xs">
+          <Button
+            variant="default"
+            size="xs"
+            leftSection={<IconPencil size={14} />}
+            onClick={() => setEditingName(true)}
+          >
+            Edit
+          </Button>
+          <DeleteButton
+            kind="company"
+            id={company.id}
+            name={company.name}
+            blocked={
+              applications.length
+                ? `${company.name} still has ${applications.length === 1 ? "an application. Delete it first, or archive it instead." : `${applications.length} applications. Delete them first, or archive them instead.`}`
+                : null
+            }
+            confirm={`Delete ${company.name} and its roles? Its people stay, without a company.`}
+            onDeleted={() => router.history.push("/companies")}
+          />
+        </Group>
+        {editingName && (
+          <EditNameModal
+            opened
+            onClose={() => setEditingName(false)}
+            title={`Edit ${company.name}`}
+            name={company.name}
+            website={company.website}
+            saving={update.isPending}
+            onSave={(body) =>
+              update.mutate({ id: company.id, body }, { onSuccess: () => setEditingName(false) })
+            }
+          />
+        )}
       </Group>
       <Grid gap="lg">
         <Grid.Col span={{ base: 12, md: 8 }}>
@@ -203,15 +231,23 @@ export function CompanyPage() {
               </Stack>
             </Card>
             <Card withBorder>
-              <Title order={4} mb="sm">
-                People
-              </Title>
+              <Group justify="space-between" mb="sm">
+                <Title order={4}>People</Title>
+                <Button
+                  size="xs"
+                  variant="light"
+                  leftSection={<IconPlus size={14} />}
+                  onClick={() => setAddingPerson(true)}
+                >
+                  Add person
+                </Button>
+              </Group>
               <Stack gap={6}>
                 {contacts.map((c) => (
                   <div key={c.id}>
-                    <Text size="sm" fw={600}>
+                    <Anchor component={Link} to={`/people/${c.id}`} size="sm" fw={600}>
                       {c.name}
-                    </Text>
+                    </Anchor>
                     <Text size="xs" c="dimmed">
                       {[c.title, ...c.details.map((d) => d.value)].filter(Boolean).join(" · ")}
                     </Text>
@@ -219,11 +255,17 @@ export function CompanyPage() {
                 ))}
                 {!contacts.length && (
                   <Text size="sm" c="dimmed">
-                    No one yet. Link people from an application page.
+                    No one yet. Add the people you talk to here: in-house recruiters, hiring managers,
+                    interviewers.
                   </Text>
                 )}
               </Stack>
             </Card>
+            <ContactFormModal
+              opened={addingPerson}
+              onClose={() => setAddingPerson(false)}
+              defaultCompanyId={company.id}
+            />
           </Stack>
         </Grid.Col>
       </Grid>

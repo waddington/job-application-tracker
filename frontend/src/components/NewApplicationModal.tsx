@@ -100,8 +100,15 @@ export function NewApplicationModal({
   const recruitersHere = (contacts ?? []).filter((c) =>
     agency ? c.agency_id === agency.id : !typedNewAgency,
   );
-  const recruiterMatch = findByName(recruitersHere, form.values.recruiter);
   const company = findByName(companies, form.values.company);
+  // On a direct application, the "recruiter" is someone at the company (in-house).
+  const peopleAtCompany = (contacts ?? []).filter(
+    (c) => !c.agency_id && company && c.company_id === company.id,
+  );
+  const recruiterMatch = findByName(
+    form.values.route === "direct" ? peopleAtCompany : recruitersHere,
+    form.values.recruiter,
+  );
 
   // Warn, while typing, about an application for the same job (PRD FR5). Never blocks saving.
   const [dupCompany] = useDebouncedValue(form.values.company, 300);
@@ -129,6 +136,7 @@ export function NewApplicationModal({
 
   const submit = form.onSubmit((values) => {
     const viaAgency = values.route === "agency";
+    const withRecruiter = viaAgency || values.route === "direct";
     create.mutate(
       {
         company_id: company?.id ?? null,
@@ -138,8 +146,8 @@ export function NewApplicationModal({
         route: values.route,
         agency_id: viaAgency ? (agency?.id ?? null) : null,
         agency_name: viaAgency && !agency ? values.agency.trim() || null : null,
-        recruiter_id: viaAgency ? (recruiterMatch?.id ?? null) : null,
-        recruiter_name: viaAgency && !recruiterMatch ? values.recruiter.trim() || null : null,
+        recruiter_id: withRecruiter ? (recruiterMatch?.id ?? null) : null,
+        recruiter_name: withRecruiter && !recruiterMatch ? values.recruiter.trim() || null : null,
         stage: values.stage || null,
         applied_on: values.appliedOn ? dayjs(values.appliedOn).format("YYYY-MM-DD") : null,
         tags: values.tags,
@@ -197,6 +205,19 @@ export function NewApplicationModal({
               {...form.getInputProps("route")}
             />
           </div>
+          {form.values.route === "direct" && (
+            <Autocomplete
+              label="Who reached out? (optional)"
+              description={
+                form.values.recruiter.trim() && !recruiterMatch
+                  ? "New person at the company"
+                  : "An in-house recruiter or head of talent, if they contacted you"
+              }
+              placeholder="Riley Chen"
+              data={unique(peopleAtCompany.map((c) => c.name))}
+              {...form.getInputProps("recruiter")}
+            />
+          )}
           {form.values.route === "agency" && (
             <Group grow align="flex-start">
               <Autocomplete

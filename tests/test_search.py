@@ -55,8 +55,8 @@ def test_search_across_everything(client, seeded):
     assert ("application", app_link) in kinds("contoso senior backend")
     assert ("application", app_link) in kinds("fintech")  # tags
     assert ("agency", f"/agencies/{agency}") in kinds("northwind")
-    # A recruiter found by their email opens their agency's page.
-    assert ("contact", f"/agencies/{agency}") in kinds("alex@northwind.example.com")
+    # A recruiter found by their email opens their own page.
+    assert ("contact", f"/people/{recruiter}") in kinds("alex@northwind.example.com")
     assert ("interview", app_link) in kinds("idempotency")
     assert ("timeline", app_link) in kinds("budget moved")
     assert ("offer", app_link) in kinds("cycle-to-work")
