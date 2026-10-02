@@ -101,3 +101,4 @@ phases:
       - {id: meetings, name: "Book or log calls and meetings with people, outside any one application", owner: lead, status: done, estimate_h: 4, depends: [people, home-timeline], prd: docs/prd/tracker.md}
       - {id: role-decisions, name: "Roles to decide: add roles a recruiter pitched, then apply or pass on each", owner: lead, status: done, estimate_h: 4, depends: [meetings], prd: docs/prd/tracker.md}
       - {id: docs-refresh, name: "Docs refresh: new screenshots and demo GIF, README, llms.txt and guide checked against the code", owner: lead, status: done, estimate_h: 2, depends: [role-decisions]}
+      - {id: overview-early, name: "Overview before the first application: show roles to decide, calls and people, not just getting started", owner: lead, status: done, estimate_h: 1, depends: [home-timeline, role-decisions]}

@@ -1,6 +1,7 @@
 import {
   Accordion,
   Anchor,
+  Button,
   Card,
   Group,
   Loader,
@@ -16,7 +17,7 @@ import { Link } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { useMemo, type ReactNode } from "react";
 
-import { stageLookup, useApplications, useWorkflow } from "../api/hooks";
+import { stageLookup, useApplications, useContacts, useWorkflow } from "../api/hooks";
 import { useTimeline } from "../api/timelineHooks";
 import { HowItWorks, NewApplicationButton } from "../components/HowItWorks";
 import { ago, formatDate, formatDateTime } from "../utils/time";
@@ -90,6 +91,7 @@ export function HomePage() {
   const today = dayjs().format("YYYY-MM-DD"); // so "the last two weeks" moves on at midnight
   const since = useMemo(() => dayjs(today).subtract(14, "day").format(), [today]);
   const { data: recent } = useTimeline({ since });
+  const { data: contacts } = useContacts();
 
   const stages = stageLookup(workflow);
   const active = (rows ?? []).filter((r) => r.stage_kind === "active");
@@ -114,10 +116,20 @@ export function HomePage() {
     .filter((s) => s.kind === "active")
     .map((s) => ({ stage: s, count: active.filter((r) => r.stage === s.id).length }))
     .filter((p) => p.count > 0);
-  // What happened, not what was set up: a burst of new companies would crowd it out.
+  // What happened, not what was set up: a burst of new companies would crowd it out. Before
+  // the first application, though, setting things up is most of what's happened.
   const past = (recent?.items ?? [])
-    .filter((i) => i.category !== "added" && new Date(i.at) <= new Date(recent!.now))
+    .filter((i) => (fresh || i.category !== "added") && new Date(i.at) <= new Date(recent!.now))
     .slice(0, 8);
+  // Nothing at all yet: just the getting-started steps. Once there are people, calls or roles,
+  // show them (with a shorter nudge towards the first application).
+  const blank = fresh && !contacts?.length && !toDecide.length && !calls.length && !past.length;
+  const plural = (n: number, one: string) => `${n} ${one}${n === 1 ? "" : "s"}`;
+  const sofar = [
+    toDecide.length ? `${plural(toDecide.length, "role")} to decide on` : null,
+    calls.length ? `${plural(calls.length, "call")} coming up` : null,
+    contacts?.length ? `${contacts.length === 1 ? "1 person" : `${contacts.length} people`} added` : null,
+  ].filter(Boolean);
 
   return (
     <Stack>
@@ -136,7 +148,7 @@ export function HomePage() {
         <Text c="red" size="sm">
           Couldn't load your applications. Is the tracker still running?
         </Text>
-      ) : fresh ? (
+      ) : blank ? (
         <Card withBorder padding="lg">
           <Title order={3} size="h4" mb="xs">
             Getting started
@@ -151,6 +163,31 @@ export function HomePage() {
         </Card>
       ) : (
         <>
+          {fresh && (
+            <Card withBorder padding="md">
+              <Group justify="space-between" wrap="wrap" gap="sm">
+                <div>
+                  <Title order={3} size="h5">
+                    No applications yet
+                  </Title>
+                  <Text size="sm" c="dimmed">
+                    {sofar.length ? `So far: ${sofar.join(", ")}. ` : ""}
+                    {toDecide.length
+                      ? "Apply for one of the roles (under Roles) and it becomes an application."
+                      : "Add one when you go for a role: it only needs a company and a title."}
+                  </Text>
+                </div>
+                <Group gap="xs">
+                  {toDecide.length > 0 && (
+                    <Button component={Link} to="/roles" variant="light">
+                      Roles to decide
+                    </Button>
+                  )}
+                  <NewApplicationButton />
+                </Group>
+              </Group>
+            </Card>
+          )}
           <SimpleGrid cols={{ base: 2, sm: 3, lg: 5 }}>
             <Stat label="Active" value={active.length} to="/applications" hint="applications in play" />
             <Stat

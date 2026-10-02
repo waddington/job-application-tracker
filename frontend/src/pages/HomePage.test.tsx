@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { App } from "../App";
 import { makeRouter } from "../router";
-import { item, mockApi, row, WORKFLOW } from "../test/mockApi";
+import { item, meeting, mockApi, roleSummary, row, WORKFLOW } from "../test/mockApi";
 
 function renderAt(path: string) {
   render(<App router={makeRouter(createMemoryHistory({ initialEntries: [path] }))} />);
@@ -37,6 +37,39 @@ describe("overview", () => {
     expect(screen.getByText("Add an application")).toBeInTheDocument();
     // The header's (full and phone-sized) and the card's.
     expect(screen.getAllByRole("button", { name: "New application" })).toHaveLength(3);
+  });
+
+  it("before the first application, shows the roles, calls and people you have", async () => {
+    mockApi({
+      "/api/v1/workflow": WORKFLOW,
+      "/api/v1/applications": [],
+      "/api/v1/contacts": [{ id: "c1", name: "Alex Morgan", details: [] }],
+      "/api/v1/next-actions": {
+        ...NOTHING,
+        roles_to_decide: [roleSummary({ title: "Platform Engineer", company_name: "Fabrikam" })],
+        meetings: [meeting()],
+        meetings_to_close: [],
+      },
+      "/api/v1/timeline": {
+        items: [
+          item({ id: "contact:c1", category: "added", title: "Added Alex Morgan", application_id: null }),
+        ],
+        now: "2026-10-02T10:00:00Z",
+      },
+      "/api/v1/health": {},
+    });
+    renderAt("/");
+    expect(
+      await screen.findByText(
+        /So far: 1 role to decide on, 1 call coming up, 1 person added\. Apply for one of the roles/,
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Getting started" })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Roles to decide" })).toHaveAttribute("href", "/roles");
+    expect(screen.getByText("Call with Alex Morgan: Market catch-up")).toBeInTheDocument();
+    expect(screen.getByText(/Platform Engineer at Fabrikam/)).toBeInTheDocument();
+    // Setting things up is most of what's happened so far, so it shows.
+    expect(screen.getByText("Added Alex Morgan")).toBeInTheDocument();
   });
 
   it("sums up where things stand", async () => {
