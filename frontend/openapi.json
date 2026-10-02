@@ -3725,6 +3725,14 @@
             "title": "Today",
             "type": "string"
           },
+          "todos": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/TodoOut"
+            },
+            "title": "Todos",
+            "type": "array"
+          },
           "upcoming": {
             "items": {
               "$ref": "#/components/schemas/InterviewOut"
@@ -6632,6 +6640,212 @@
           "name"
         ],
         "title": "TimelinePerson",
+        "type": "object"
+      },
+      "TodoIn": {
+        "additionalProperties": false,
+        "description": "A to-do in your own words. Leave `entity_type` and `entity_id` out for one about nothing in\nparticular, or give both to put it on a company, agency, person, role or application.",
+        "properties": {
+          "due_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due On"
+          },
+          "entity_id": {
+            "anyOf": [
+              {
+                "maxLength": 36,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entity Id"
+          },
+          "entity_type": {
+            "anyOf": [
+              {
+                "enum": [
+                  "application",
+                  "company",
+                  "role",
+                  "agency",
+                  "contact"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entity Type"
+          },
+          "text": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "TodoIn",
+        "type": "object"
+      },
+      "TodoOut": {
+        "properties": {
+          "about": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "About"
+          },
+          "company_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company Id"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "done_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Done At"
+          },
+          "due_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due On"
+          },
+          "entity_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entity Id"
+          },
+          "entity_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entity Type"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "text",
+          "due_on",
+          "done_at",
+          "entity_type",
+          "entity_id",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "TodoOut",
+        "type": "object"
+      },
+      "TodoPatch": {
+        "additionalProperties": false,
+        "description": "`done: true` ticks it off (stamping `done_at`); `done: false` brings it back.",
+        "properties": {
+          "done": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Done"
+          },
+          "due_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due On"
+          },
+          "text": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          }
+        },
+        "title": "TodoPatch",
         "type": "object"
       },
       "ValidationError": {
@@ -11236,7 +11450,7 @@
     },
     "/api/v1/search": {
       "get": {
-        "description": "Everything matching every word of `q`: applications, companies, agencies, people and\ntheir contact details, interview prep and debriefs, offers, timeline entries, notes,\ndocuments, files, emails and links. Title matches first, then the most recent.",
+        "description": "Everything matching every word of `q`: applications, companies, agencies, people and\ntheir contact details, interview prep and debriefs, calls, to-dos, offers, timeline entries, notes,\ndocuments, files, emails and links. Title matches first, then the most recent.",
         "operationId": "search_api_v1_search_get",
         "parameters": [
           {
@@ -11455,6 +11669,239 @@
         "summary": "Timeline",
         "tags": [
           "timeline"
+        ]
+      }
+    },
+    "/api/v1/todos": {
+      "get": {
+        "description": "Open to-dos by default, in the order Next actions shows them (pass your local `today`;\nit defaults to UTC's): due in the next two weeks, then undated, then later. `status=done`\nlists ticked-off ones, most recently done first; `all` lists open ones, then done ones.\nFilter to one thing with `entity_type` and `entity_id` (both, or neither).",
+        "operationId": "list_todos_api_v1_todos_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "entity_type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "application",
+                    "company",
+                    "role",
+                    "agency",
+                    "contact"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Entity Type"
+            }
+          },
+          {
+            "in": "query",
+            "name": "entity_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Entity Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "default": "open",
+              "enum": [
+                "open",
+                "done",
+                "all"
+              ],
+              "title": "Status",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "today",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Today"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TodoOut"
+                  },
+                  "title": "Response List Todos Api V1 Todos Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Todos",
+        "tags": [
+          "to-dos"
+        ]
+      },
+      "post": {
+        "operationId": "create_todo_api_v1_todos_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TodoIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TodoOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Todo",
+        "tags": [
+          "to-dos"
+        ]
+      }
+    },
+    "/api/v1/todos/{todo_id}": {
+      "delete": {
+        "operationId": "delete_todo_api_v1_todos__todo_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "todo_id",
+            "required": true,
+            "schema": {
+              "title": "Todo Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Todo",
+        "tags": [
+          "to-dos"
+        ]
+      },
+      "patch": {
+        "operationId": "update_todo_api_v1_todos__todo_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "todo_id",
+            "required": true,
+            "schema": {
+              "title": "Todo Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TodoPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TodoOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Todo",
+        "tags": [
+          "to-dos"
         ]
       }
     },

@@ -17,6 +17,8 @@ from .meetings import query as _meeting_query
 from .offers import _outs as _offer_outs
 from .offers import _query as _offer_query
 from .roles import to_decide as roles_to_decide
+from .todos import open_todos
+from .todos import out as _todo_out
 
 router = APIRouter(tags=["next actions"])
 
@@ -34,6 +36,7 @@ class NextActions(BaseModel):
     meetings: list[S.MeetingOut] = []  # calls and meetings booked in the next two weeks, soonest first
     meetings_to_close: list[S.MeetingOut] = []  # their time has passed but they're still "scheduled"
     roles_to_decide: list[S.RoleSummary] = []  # no application and not passed on yet, oldest first
+    todos: list[S.TodoOut] = []  # open to-dos: due in two weeks (soonest first), undated, then later
     today: date
 
 
@@ -135,4 +138,5 @@ def next_actions(
         meetings=meetings,
         meetings_to_close=meetings_to_close,
         roles_to_decide=roles_to_decide(session),
+        todos=[_todo_out(session, t) for t in open_todos(session, today)],
     )

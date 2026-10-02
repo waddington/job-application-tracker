@@ -288,6 +288,18 @@ class Link(IdMixin, Base):
     created_at: Mapped[datetime] = mapped_column(default=utcnow)
 
 
+class Todo(IdMixin, TimestampMixin, Base):
+    """A to-do in your own words ("reply to Alex", "look into what they do"), on its own or about
+    one thing. It points at that thing by type and id, like a link (no foreign key)."""
+
+    __tablename__ = "todos"
+    text: Mapped[str] = mapped_column(String(500))
+    due_on: Mapped[date | None] = mapped_column(index=True)
+    done_at: Mapped[datetime | None] = mapped_column(index=True)
+    entity_type: Mapped[str | None] = mapped_column(String(20))
+    entity_id: Mapped[str | None] = mapped_column(String(36), index=True)
+
+
 class NoteIndex(IdMixin, Base):
     """Index of Markdown notes under notes/. Derived data: rebuilt from the files, never exported."""
 
@@ -328,8 +340,8 @@ ENTITY_MODELS: dict[str, type[Base]] = {
 def remove_orphan_links(session: Session, flush_context, instances) -> None:
     """Links and attachments point at their entity by type and id (no foreign key).
 
-    When the entity goes, its links go with it. Its attachments are only detached: the files
-    are yours, so they stay (unattached) rather than vanish with a record.
+    When the entity goes, its links go with it. Its attachments and to-dos are only detached:
+    the files and your words are yours, so they stay (unattached) rather than vanish with a record.
 
     Deleting an application also removes its interviews in the database (ON DELETE CASCADE),
     out of the ORM's sight, so theirs are collected here too.
@@ -351,6 +363,8 @@ def remove_orphan_links(session: Session, flush_context, instances) -> None:
             attached = select(Attachment).where(Attachment.entity_type == kind, Attachment.entity_id == entity_id)
             for attachment in session.scalars(attached):
                 attachment.entity_type = attachment.entity_id = None
+            for todo in session.scalars(select(Todo).where(Todo.entity_type == kind, Todo.entity_id == entity_id)):
+                todo.entity_type = todo.entity_id = None
 
 
 @event.listens_for(Session, "before_flush")

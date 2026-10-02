@@ -28,6 +28,7 @@ from jat.db.models import (
     Meeting,
     Offer,
     Role,
+    Todo,
 )
 from jat.domain.applications import create_application, history, log_activity, move
 from jat.domain.workflow import DEFAULT_WORKFLOW as W
@@ -324,6 +325,26 @@ def seed(path: Path) -> None:
                     meeting_url="https://meet.example.com/catch-up",
                     agenda="- Day rates for platform roles\n- Anything fully remote?",
                 ),
+            ]
+        )
+        # To-dos in your own words: about a person, a company, a role, and one about nothing.
+        fabrikam_role = s.query(Role).filter_by(title="Platform Engineer (contract)").one()
+        s.add_all(
+            [
+                Todo(text="They messaged me on LinkedIn: reply", entity_type="contact", entity_id=first_recruiter.id),
+                Todo(
+                    text="See what Northwind Pay actually builds: do I like the product?",
+                    entity_type="company",
+                    entity_id=startup.id,
+                    due_on=date.today(),
+                ),
+                Todo(
+                    text="Ask who's on the platform team",
+                    entity_type="role",
+                    entity_id=fabrikam_role.id,
+                    due_on=date.today() + timedelta(days=2),
+                ),
+                Todo(text="Update my portfolio site", done_at=days_ago(2)),
             ]
         )
         # A CV with two versions, the newer one sent to Contoso.

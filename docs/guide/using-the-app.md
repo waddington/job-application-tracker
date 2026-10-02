@@ -61,12 +61,13 @@ applied too.
 
 Where things stand, at a glance:
 
-- **Counts**: active applications, how many need attention (follow-ups due, gone quiet and
-  roles to decide),
+- **Counts**: active applications, how many need attention (to-dos due, follow-ups due,
+  gone quiet and roles to decide),
   interviews in the next two weeks, how many you're waiting to hear back from, and offers to
   answer soon. Each one opens the page with the details.
 - **Pipeline**: active applications by stage.
-- **Needs attention** and **Coming up**: the top of [Next actions](#next-actions). Coming
+- **Needs attention** and **Coming up**: the top of [Next actions](#next-actions). Needs
+  attention starts with your [to-dos](#to-dos) due today or earlier, or with no date. Coming
   up lists up to six interviews, task deadlines and calls in time order, then offer reply
   deadlines.
 - **Recent activity**: the last two weeks of the [Timeline](#timeline), leaving out
@@ -83,6 +84,9 @@ or roles) but no applications, the Overview shows it as usual (recent activity t
 
 What needs doing, in this order:
 
+- **To-dos**: your own reminders (see [To-dos](#to-dos)): the ones due in the next two weeks
+  (overdue first), then the ones with no date, then later ones. Add one here, about anything
+  or nothing in particular.
 - **Offers to answer**: pending offers with a reply due in the next two weeks, or overdue.
 - **Waiting to hear back**: applications and people you've replied to (see
   [Waiting to hear back](#waiting-to-hear-back)), longest first. It turns red once you've
@@ -102,6 +106,24 @@ On the others: set a follow-up date (tomorrow, in 3 days, next week), **snooze**
 1 week, 2 weeks) so it stops nagging, or mark it **Ghosted**. A snoozed application, one with
 a follow-up date in the future, or one with an interview booked ahead never counts as gone
 quiet.
+
+### To-dos
+
+Short reminders in your own words, for anything the tracker doesn't already chase: *they
+messaged me, I need to reply*, *look into the company to see if I like what they do*, *ask
+for the salary band*.
+
+- **Add one** from the *To-dos* card on an application, company, agency or person page; from
+  the to-do button (a list with ticks) on a role, wherever roles are listed; or at the top of
+  Next actions, where **About** picks what it's about (or leave it empty). A date is optional.
+- **Tick it off** with its checkbox; **Undo** in the message that pops up brings it back. It
+  leaves Next actions and the Overview; on its page it stays ticked (the last three), and
+  **Done recently** under Next actions' to-dos lists the last ten, so you can untick one.
+- **Edit** (the pencil) changes the words or the date; the bin deletes it (with **Undo** too).
+- Overdue to-dos are marked in red, today's in orange. Each one links to what it's about (a
+  role's opens its company).
+- Deleting what a to-do is about keeps the to-do, about nothing in particular. Search finds
+  to-dos too.
 
 ## Timeline
 
@@ -287,7 +309,7 @@ How the search is going, for all time or the last 30 or 90 days:
 
 Type in the box at the top (or press <kbd>/</kbd>) and press Enter. It finds applications,
 companies, agencies, people (including their emails and phone numbers), interview prep and
-debriefs, calls and meetings (their agenda and notes), offers, timeline entries, notes,
+debriefs, calls and meetings (their agenda and notes), to-dos, offers, timeline entries, notes,
 documents, files, emails and links. Every word
 must match; case and accents don't matter.
 

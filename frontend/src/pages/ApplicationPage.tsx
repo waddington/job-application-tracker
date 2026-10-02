@@ -31,6 +31,7 @@ import {
 } from "../components/ApplicationDrawer";
 import { AttachmentsCard } from "../components/Attachments";
 import { LinksCard } from "../components/Links";
+import { TodosCard } from "../components/Todos";
 import { NotesCard } from "../components/Notes";
 import { relationLabel, RELATIONS, type Relation } from "../api/peopleHooks";
 import { ContactFormModal } from "../components/ContactFormModal";
@@ -298,6 +299,7 @@ export function ApplicationPage() {
           </Grid.Col>
           <Grid.Col span={{ base: 12, md: 4 }}>
             <Stack>
+              <TodosCard entityType="application" entityId={app.id} />
               <RoleCard app={app} />
               <PeopleCard app={app} />
             </Stack>

@@ -396,6 +396,50 @@ class LinkOut(Out):
     created_at: datetime
 
 
+# --- to-dos ------------------------------------------------------------------------------
+
+TodoAbout = Literal["application", "company", "role", "agency", "contact"]
+
+
+class TodoIn(In):
+    """A to-do in your own words. Leave `entity_type` and `entity_id` out for one about nothing in
+    particular, or give both to put it on a company, agency, person, role or application."""
+
+    text: str = Field(min_length=1, max_length=500)
+    due_on: date | None = None
+    entity_type: TodoAbout | None = None
+    entity_id: str | None = Field(default=None, min_length=1, max_length=36)
+
+    @model_validator(mode="after")
+    def _both_or_neither(self):
+        if (self.entity_type is None) != (self.entity_id is None):
+            raise ValueError("give both entity_type and entity_id, or neither")
+        return self
+
+
+class TodoPatch(Patch):
+    """`done: true` ticks it off (stamping `done_at`); `done: false` brings it back."""
+
+    not_null = frozenset({"text", "done"})
+
+    text: str | None = Field(default=None, min_length=1, max_length=500)
+    due_on: date | None = None
+    done: bool | None = None
+
+
+class TodoOut(Out):
+    id: str
+    text: str
+    due_on: date | None
+    done_at: datetime | None
+    entity_type: str | None
+    entity_id: str | None
+    about: str | None = None  # what it's about: "Alex Morgan", "Contoso · Backend Engineer"
+    company_id: str | None = None  # a role's company (roles have no page of their own)
+    created_at: datetime
+    updated_at: datetime
+
+
 # --- notes -------------------------------------------------------------------------------
 
 NoteLink = Annotated[

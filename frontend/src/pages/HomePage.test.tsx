@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { App } from "../App";
 import { makeRouter } from "../router";
-import { item, meeting, mockApi, roleSummary, row, WORKFLOW } from "../test/mockApi";
+import { item, meeting, mockApi, roleSummary, row, todo, WORKFLOW } from "../test/mockApi";
 
 function renderAt(path: string) {
   render(<App router={makeRouter(createMemoryHistory({ initialEntries: [path] }))} />);
@@ -112,6 +112,11 @@ describe("overview", () => {
         ...NOTHING,
         stale: [row({ id: "a2", company_name: "Fabrikam", days_since_activity: 12 })],
         waiting: [row({ id: "a3", awaiting_reply_since: "2026-09-30" })],
+        // Due today, and one for next month: only the first needs attention now.
+        todos: [
+          todo({ due_on: "2026-10-02" }),
+          todo({ id: "t2", text: "Renew my portfolio", due_on: "2026-11-01" }),
+        ],
         // A round with no date yet: not "in the next two weeks".
         upcoming: [
           {
@@ -129,7 +134,13 @@ describe("overview", () => {
     });
     renderAt("/");
     expect(await screen.findByRole("link", { name: "Active: 3" })).toHaveAttribute("href", "/applications");
-    expect(screen.getByRole("link", { name: "Needs attention: 1" })).toHaveAttribute("href", "/next-actions");
+    expect(screen.getByRole("link", { name: "Needs attention: 2" })).toHaveAttribute("href", "/next-actions");
+    expect(screen.getByRole("link", { name: "Reply to their message" })).toHaveAttribute(
+      "href",
+      "/people/c1",
+    );
+    expect(screen.getByText("To-do · Alex Morgan · Today")).toBeInTheDocument();
+    expect(screen.queryByText("Renew my portfolio")).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Waiting: 1" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Interviews: 0" })).toBeInTheDocument();
     expect(screen.queryByText(/1970/)).not.toBeInTheDocument();

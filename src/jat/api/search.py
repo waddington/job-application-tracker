@@ -17,8 +17,8 @@ router = APIRouter(tags=["search"])
 
 
 class SearchHit(BaseModel):
-    # application | company | agency | contact | interview | meeting | offer | timeline | note | document
-    # | file | link
+    # application | company | agency | contact | interview | meeting | todo | offer | timeline | note
+    # | document | file | link
     kind: str
     id: str
     title: str
@@ -37,7 +37,7 @@ def search(
     limit: int = Query(50, ge=1, le=200),
 ):
     """Everything matching every word of `q`: applications, companies, agencies, people and
-    their contact details, interview prep and debriefs, offers, timeline entries, notes,
+    their contact details, interview prep and debriefs, calls, to-dos, offers, timeline entries, notes,
     documents, files, emails and links. Title matches first, then the most recent.
     """
     # Each search reads every table and every note file (after syncing the note index): fine

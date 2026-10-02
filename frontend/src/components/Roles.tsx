@@ -13,15 +13,17 @@ import {
   Textarea,
   TextInput,
   Title,
+  Tooltip,
 } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import { useForm } from "@mantine/form";
-import { IconPencil, IconPlus } from "@tabler/icons-react";
+import { IconListCheck, IconPencil, IconPlus } from "@tabler/icons-react";
 import { Link, useRouter } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { useState } from "react";
 
 import { useContacts, useCompanies, useWorkflow } from "../api/hooks";
+import { useTodos } from "../api/todoHooks";
 import { useCreateCompany } from "../api/detailHooks";
 import { useMeetings } from "../api/meetingHooks";
 import {
@@ -35,6 +37,7 @@ import {
 import type { Schemas } from "../api/client";
 import { CreatableSelect } from "./CreatableSelect";
 import { DeleteButton } from "./DeleteButton";
+import { AddTodo, TodoLine } from "./Todos";
 
 type WorkMode = NonNullable<Schemas["RoleIn"]["work_mode"]>;
 type Employment = NonNullable<Schemas["RoleIn"]["employment_type"]>;
@@ -463,57 +466,84 @@ export function RoleLine({ role, showSource = true }: { role: RoleSummary; showS
   const status = ROLE_STATUS[role.status];
   const money = pay(role);
   const [editing, setEditing] = useState(false);
+  const [addingTodo, setAddingTodo] = useState(false);
+  // All open to-dos, one shared request, picked out per role.
+  const { data: openTodos } = useTodos();
+  const todos = (openTodos ?? []).filter((t) => t.entity_type === "role" && t.entity_id === role.id);
   return (
-    <Group justify="space-between" wrap="nowrap" align="flex-start">
-      <div style={{ minWidth: 0 }}>
-        <Group gap={6} wrap="nowrap">
-          <Text fw={600} size="sm" truncate="end">
-            {role.title}
+    <Stack gap={6}>
+      <Group justify="space-between" wrap="nowrap" align="flex-start">
+        <div style={{ minWidth: 0 }}>
+          <Group gap={6} wrap="nowrap">
+            <Text fw={600} size="sm" truncate="end">
+              {role.title}
+            </Text>
+            <Anchor component={Link} to={`/companies/${role.company_id}`} size="sm">
+              {role.company_name}
+            </Anchor>
+          </Group>
+          <Text size="xs" c="dimmed">
+            {[
+              money,
+              role.work_mode,
+              role.location,
+              showSource && role.contact_name
+                ? `from ${role.contact_name}${role.agency_name ? ` (${role.agency_name})` : ""}`
+                : null,
+              role.status === "passed" && role.decision_reason ? `passed: ${role.decision_reason}` : null,
+            ]
+              .filter(Boolean)
+              .join(" · ")}
           </Text>
-          <Anchor component={Link} to={`/companies/${role.company_id}`} size="sm">
-            {role.company_name}
-          </Anchor>
+        </div>
+        <Group gap="xs" wrap="nowrap">
+          <Badge size="xs" variant="light" color={status.color}>
+            {status.label}
+          </Badge>
+          <RoleActions role={role} />
+          <ActionIcon
+            variant="subtle"
+            color="gray"
+            size="sm"
+            aria-label={`Edit ${role.title}`}
+            onClick={() => setEditing(true)}
+          >
+            <IconPencil size={14} />
+          </ActionIcon>
+          <Tooltip label="Add a to-do">
+            <ActionIcon
+              variant="subtle"
+              color="gray"
+              size="sm"
+              aria-label={`Add a to-do about ${role.title}`}
+              onClick={() => setAddingTodo((v) => !v)}
+            >
+              <IconListCheck size={14} />
+            </ActionIcon>
+          </Tooltip>
+          {editing && <RoleFormModal opened onClose={() => setEditing(false)} role={role} />}
+          {role.status !== "applied" && (
+            <DeleteButton
+              compact
+              kind="role"
+              id={role.id}
+              name={role.title}
+              confirm={`Delete the role ${role.title} at ${role.company_name}? Passing on it keeps a record instead.`}
+            />
+          )}
         </Group>
-        <Text size="xs" c="dimmed">
-          {[
-            money,
-            role.work_mode,
-            role.location,
-            showSource && role.contact_name
-              ? `from ${role.contact_name}${role.agency_name ? ` (${role.agency_name})` : ""}`
-              : null,
-            role.status === "passed" && role.decision_reason ? `passed: ${role.decision_reason}` : null,
-          ]
-            .filter(Boolean)
-            .join(" · ")}
-        </Text>
-      </div>
-      <Group gap="xs" wrap="nowrap">
-        <Badge size="xs" variant="light" color={status.color}>
-          {status.label}
-        </Badge>
-        <RoleActions role={role} />
-        <ActionIcon
-          variant="subtle"
-          color="gray"
-          size="sm"
-          aria-label={`Edit ${role.title}`}
-          onClick={() => setEditing(true)}
-        >
-          <IconPencil size={14} />
-        </ActionIcon>
-        {editing && <RoleFormModal opened onClose={() => setEditing(false)} role={role} />}
-        {role.status !== "applied" && (
-          <DeleteButton
-            compact
-            kind="role"
-            id={role.id}
-            name={role.title}
-            confirm={`Delete the role ${role.title} at ${role.company_name}? Passing on it keeps a record instead.`}
-          />
-        )}
       </Group>
-    </Group>
+      {(todos.length > 0 || addingTodo) && (
+        <Stack gap={6} pl="md">
+          {todos.map((t) => (
+            <TodoLine key={t.id} todo={t} showAbout={false} />
+          ))}
+          {addingTodo && (
+            <AddTodo about={{ type: "role", id: role.id }} autoFocus onAdded={() => setAddingTodo(false)} />
+          )}
+        </Stack>
+      )}
+    </Stack>
   );
 }
 

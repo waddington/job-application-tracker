@@ -22,6 +22,7 @@ from jat.db.models import (
     Meeting,
     Offer,
     Role,
+    Todo,
 )
 
 
@@ -106,6 +107,12 @@ def populate(session) -> dict[str, str]:
                 title="Market catch-up",
                 starts_at=datetime(2026, 9, 30, 14, 0, tzinfo=UTC),
                 agenda="Contract rates",
+            ),
+            Todo(
+                text="Reply to Alex about rates",
+                due_on=date(2026, 10, 3),
+                entity_type="contact",
+                entity_id=recruiter.id,
             ),
             Offer(
                 application_id=app.id,

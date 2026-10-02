@@ -19,7 +19,9 @@ import { useMemo, type ReactNode } from "react";
 
 import { stageLookup, useApplications, useContacts, useWorkflow } from "../api/hooks";
 import { useTimeline } from "../api/timelineHooks";
+import { todoPath } from "../api/todoHooks";
 import { HowItWorks, NewApplicationButton } from "../components/HowItWorks";
+import { dueLabel } from "../components/Todos";
 import { ago, formatDate, formatDateTime } from "../utils/time";
 import { useNextActions } from "./NextActionsPage";
 import { TimelineRow } from "./TimelinePage";
@@ -113,6 +115,8 @@ export function HomePage() {
   const booked = (next?.upcoming ?? []).filter((i) => i.starts_at || i.deadline_at);
   const calls = next?.meetings ?? [];
   const toDecide = next?.roles_to_decide ?? [];
+  // Your to-dos that want doing now: due today or before, or with no date.
+  const todos = (next?.todos ?? []).filter((t) => !t.due_on || t.due_on <= next!.today);
   const waiting = (next?.waiting.length ?? 0) + (next?.waiting_people.length ?? 0);
   const pipeline = (workflow?.stages ?? [])
     .filter((s) => s.kind === "active")
@@ -129,7 +133,14 @@ export function HomePage() {
   // if one of them fails, show the usual Overview rather than claim there's nothing.
   const settling = fresh && (contactsPending || nextPending || recentPending);
   const allLoaded = !contactsFailed && !nextFailed && !recentFailed;
-  const blank = fresh && allLoaded && !contacts?.length && !toDecide.length && !calls.length && !past.length;
+  const blank =
+    fresh &&
+    allLoaded &&
+    !contacts?.length &&
+    !toDecide.length &&
+    !calls.length &&
+    !past.length &&
+    !next?.todos?.length;
   const sofar = [
     toDecide.length ? `${plural(toDecide.length, "role")} to decide on` : null,
     calls.length ? `${plural(calls.length, "call")} coming up` : null,
@@ -197,9 +208,9 @@ export function HomePage() {
             <Stat label="Active" value={active.length} to="/applications" hint="applications in play" />
             <Stat
               label="Needs attention"
-              value={next && attention.length + toDecide.length}
+              value={next && attention.length + toDecide.length + todos.length}
               to="/next-actions"
-              hint="follow-ups, gone quiet, roles to decide"
+              hint="to-dos, follow-ups, gone quiet, roles to decide"
             />
             <Stat
               label="Interviews"
@@ -237,10 +248,27 @@ export function HomePage() {
 
           <SimpleGrid cols={{ base: 1, md: 2 }}>
             <Panel title="Needs attention" link={{ to: "/next-actions", label: "All next actions" }}>
-              {attention.length + toDecide.length === 0 ? (
+              {attention.length + toDecide.length + todos.length === 0 ? (
                 <Empty>Nothing to chase. Nice.</Empty>
               ) : (
                 <Stack gap={6}>
+                  {todos.slice(0, 4).map((t) => (
+                    <div key={t.id}>
+                      <Anchor component={Link} to={todoPath(t) ?? "/next-actions"} size="sm" fw={500}>
+                        {t.text}
+                      </Anchor>
+                      <Text size="xs" c="dimmed">
+                        {["To-do", t.about, t.due_on ? dueLabel(t.due_on, next!.today).label : null]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </Text>
+                    </div>
+                  ))}
+                  {todos.length > 4 && (
+                    <Anchor component={Link} to="/next-actions" size="xs" c="dimmed">
+                      and {todos.length - 4} more to-dos
+                    </Anchor>
+                  )}
                   {attention.slice(0, 6).map(({ row, why }) => (
                     <div key={row.id}>
                       <Anchor component={Link} to={`/applications/${row.id}`} size="sm" fw={500}>

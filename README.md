@@ -56,11 +56,11 @@ are at the top of every page.
 
 ![The Overview: counts, the pipeline by stage, what needs attention, what's coming up and recent activity](docs/screenshots/overview.png)
 
-**Next actions.** Offers to answer, who you're waiting to hear back from, interviews and calls
-waiting for an outcome, follow-ups due, roles to decide on, what's coming up and what's gone
-quiet. Follow up, snooze or mark Ghosted in one click.
+**Next actions.** Your own to-dos, offers to answer, who you're waiting to hear back from,
+interviews and calls waiting for an outcome, follow-ups due, roles to decide on, what's coming
+up and what's gone quiet. Follow up, snooze or mark Ghosted in one click.
 
-![Next actions: offers to answer, waiting to hear back, follow-ups, roles to decide and what's coming up](docs/screenshots/next-actions.png)
+![Next actions: your to-dos, offers to answer, waiting to hear back, follow-ups, roles to decide and what's coming up](docs/screenshots/next-actions.png)
 
 **Recruiters, their calls and the roles they pitch.** Book a call with an agenda, note how it
 went, add the roles they mentioned, then apply for or pass on each. Every person has a page
@@ -119,7 +119,7 @@ recruiters send roles that go somewhere.
 
 > 🚧 **Early development (0.1.0).** Every planned feature is built but hasn't been tested in
 > real use yet, so expect rough edges. See the [changelog](CHANGELOG.md). Tracking,
-> recruiters and person pages, calls and meetings, roles to decide, interview rounds, notes,
+> recruiters and person pages, calls and meetings, roles to decide, to-dos, interview rounds, notes,
 > links, files and emails, CV versions, the Overview, *Next actions* and *Timeline* pages,
 > waiting to hear back, insights (Sankey diagram, funnel stats, recruiter scorecards), offer
 > comparison, one-click backups and full-text search all work today. Everything marked ✅ is
@@ -142,6 +142,7 @@ recruiters send roles that go somewhere.
 | 🏠 | **Overview** (the home page): counts, the pipeline by stage, what needs attention, what's coming up and recent activity; a numbered *How it works* and **New application** on every page | ✅ Available |
 | 🕰️ | **Timeline** across everything: every application, company, agency and person, by day or as lanes against time, filtered by period, category or who it's about | ✅ Available |
 | ⏰ | **Next actions**: offers to answer, who you're waiting on, follow-ups due, roles to decide, interviews, calls and deadlines coming up, rounds and calls waiting for an outcome, and applications gone quiet | ✅ Available |
+| ✅ | **To-dos** in your own words ("they messaged me, reply"), on their own or about a person, company, agency, role or application, with an optional date; see them on Next actions, the Overview and the page they're about, and tick them off (with undo) | ✅ Available |
 | 🤔 | **Roles to decide**: add the roles a recruiter mentions on a call, then apply (it makes the application, through them) or pass with a reason | ✅ Available |
 | 📞 | **Calls and meetings** with people, outside any one application: book a recruiter catch-up with an agenda, then note how it went; shows on Next actions, the Overview and the Timeline | ✅ Available |
 | 📨 | **Waiting to hear back**: mark that you've replied, on an application or a person, and see who to chase | ✅ Available |

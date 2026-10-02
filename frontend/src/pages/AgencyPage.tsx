@@ -23,6 +23,7 @@ import { useUpdateAgency } from "../api/peopleHooks";
 import { ApplicationDrawer } from "../components/ApplicationDrawer";
 import { AttachmentsCard } from "../components/Attachments";
 import { LinksCard } from "../components/Links";
+import { TodosCard } from "../components/Todos";
 import { NotesCard } from "../components/Notes";
 import { ContactCard } from "../components/ContactCard";
 import { DeleteButton } from "../components/DeleteButton";
@@ -148,6 +149,7 @@ export function AgencyPage() {
         </Grid.Col>
         <Grid.Col span={{ base: 12, md: 5 }}>
           <Stack>
+            <TodosCard entityType="agency" entityId={agency.id} />
             <Group justify="space-between">
               <Title order={4}>Recruiters</Title>
               <Button

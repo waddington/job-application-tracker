@@ -23,6 +23,8 @@ function useRefreshPeople() {
       ["timeline"],
       ["meetings"],
       ["role-summaries"],
+      ["next-actions"], // names in waiting, calls and to-dos
+      ["todos"],
     ]) {
       void qc.invalidateQueries({ queryKey: key });
     }
