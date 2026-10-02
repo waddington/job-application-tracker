@@ -48,6 +48,8 @@ is built and merged, but not yet tested in real use. Numbers in brackets are pul
 - **Overview** home page, a **Timeline** across everything (by day or as lanes), a grouped
   menu, **New application** and a numbered **How it works** on every page; Next actions moves
   to `/next-actions` (#48).
+- **Calls and meetings** with people, booked or logged, outside any one application: on
+  person pages, Next actions, the Overview, the Timeline and search (#49).
 
 ### Under the hood
 - Python 3.12, FastAPI, SQLAlchemy, Alembic and SQLite; React 19, TypeScript, Mantine and

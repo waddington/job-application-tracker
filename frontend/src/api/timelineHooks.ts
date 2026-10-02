@@ -17,6 +17,7 @@ export interface TimelineFilters {
 export const CATEGORIES: { value: TimelineCategory; label: string; one: string; color: string }[] = [
   { value: "stage", label: "Stage moves", one: "Stage", color: "blue" },
   { value: "message", label: "Messages", one: "Message", color: "cyan" },
+  { value: "meeting", label: "Calls and meetings", one: "Call", color: "pink" },
   { value: "interview", label: "Interviews", one: "Interview", color: "violet" },
   { value: "offer", label: "Offers", one: "Offer", color: "teal" },
   { value: "note", label: "Notes", one: "Note", color: "yellow" },

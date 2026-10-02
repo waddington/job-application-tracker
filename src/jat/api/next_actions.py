@@ -8,10 +8,12 @@ from fastapi import APIRouter
 from pydantic import AwareDatetime, BaseModel
 from sqlalchemy import func, select
 
-from ..db.models import Application, Contact, Interview, Offer
+from ..db.models import Application, Contact, Interview, Meeting, Offer
 from . import schemas as S
 from .deps import SessionDep, WorkflowDep
 from .interviews import _outs, _query
+from .meetings import outs as _meeting_outs
+from .meetings import query as _meeting_query
 from .offers import _outs as _offer_outs
 from .offers import _query as _offer_query
 
@@ -28,6 +30,8 @@ class NextActions(BaseModel):
     offer_deadlines: list[S.OfferOut] = []  # pending offers to answer in the next two weeks (or overdue)
     waiting: list[S.ApplicationRow] = []  # you replied and are waiting to hear back, longest first
     waiting_people: list[S.ContactOut] = []  # people you replied to outside an application, longest first
+    meetings: list[S.MeetingOut] = []  # calls and meetings booked in the next two weeks, soonest first
+    meetings_to_close: list[S.MeetingOut] = []  # their time has passed but they're still "scheduled"
     today: date
 
 
@@ -106,6 +110,17 @@ def next_actions(
         .order_by(Contact.awaiting_reply_since, Contact.name)
     )
     waiting_people = [_contact_out(session, c) for c in people]
+    booked_meetings = _meeting_query().where(Meeting.status == "scheduled")
+    meetings = _meeting_outs(
+        session.execute(
+            booked_meetings.where(
+                Meeting.starts_at >= now, Meeting.starts_at < start + timedelta(days=UPCOMING_DAYS)
+            ).order_by(Meeting.starts_at, Meeting.id)
+        )
+    )
+    meetings_to_close = _meeting_outs(
+        session.execute(booked_meetings.where(Meeting.starts_at < now).order_by(Meeting.starts_at.desc(), Meeting.id))
+    )
     return NextActions(
         waiting=waiting,
         waiting_people=waiting_people,
@@ -115,4 +130,6 @@ def next_actions(
         awaiting_outcome=past,
         today=today,
         offer_deadlines=offer_deadlines,
+        meetings=meetings,
+        meetings_to_close=meetings_to_close,
     )

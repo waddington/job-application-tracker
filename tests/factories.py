@@ -19,6 +19,7 @@ from jat.db.models import (
     Interview,
     InterviewContact,
     Link,
+    Meeting,
     Offer,
     Role,
 )
@@ -100,6 +101,12 @@ def populate(session) -> dict[str, str]:
             ApplicationDocument(application_id=app.id, document_version_id=version.id, sent_on=date(2026, 9, 28)),
             Event(application_id=app.id, kind="stage_change", from_stage="applied", to_stage="screen", data={}),
             Link(entity_type="role", entity_id=role.id, url="https://docs.example.com/d/1", title="JD notes"),
+            Meeting(
+                contact_id=recruiter.id,
+                title="Market catch-up",
+                starts_at=datetime(2026, 9, 30, 14, 0, tzinfo=UTC),
+                agenda="Contract rates",
+            ),
             Offer(
                 application_id=app.id,
                 respond_by=date(2026, 10, 9),

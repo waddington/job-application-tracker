@@ -57,11 +57,11 @@ What needs doing, newest problems first:
 - **Waiting to hear back**: applications and people you've replied to (see
   [Waiting to hear back](#waiting-to-hear-back)), longest first. It turns red once you've
   waited as long as the stage allows; **Heard back** clears it.
-- **How did it go?**: interview rounds whose time has passed; mark them *Done* or *Didn't
-  happen*.
+- **How did it go?**: interview rounds and calls whose time has passed; mark them *Done* (a
+  call: *Happened*, which asks how it went) or *Didn't happen*.
 - **Follow up**: applications whose follow-up date is today or earlier.
-- **Coming up**: interviews and task deadlines in the next two weeks, then rounds not
-  booked yet.
+- **Coming up**: interviews, task deadlines and [calls](#calls-and-meetings) in the next two
+  weeks, soonest first, then rounds not booked yet.
 - **Gone quiet**: active applications with no activity for as long as their stage allows
   or more (7 days in Applied, 5 in Screen and Interviewing, and so on; see
   [Customising](customising.md)).
@@ -73,12 +73,13 @@ quiet.
 
 ## Timeline
 
-Everything that happened across the whole search, newest first, with interviews and offer
-reply deadlines still ahead under *Coming up*. It includes:
+Everything that happened across the whole search, newest first, with interviews, calls and
+offer reply deadlines still ahead under *Coming up*. It includes:
 
 - everything on application timelines: stage moves, calls, emails, notes, interviews,
   offers, files and documents sent;
 - each interview at its own time;
+- calls and meetings with people (not ones that didn't happen);
 - notes on people, companies and agencies;
 - people you're waiting to hear back from;
 - companies, agencies and people being added.
@@ -88,8 +89,8 @@ Archived applications are included.
 - **Period**: the last 30 days, 3 months (the default) or year, or all time.
 - **About**: one company, agency or person. An application's entries count for its company,
   its agency and the people on it.
-- **Categories**: stage moves, messages, interviews, offers, notes, documents sent, files,
-  added, other. Pick any number.
+- **Categories**: stage moves, messages, calls and meetings, interviews, offers, notes,
+  documents sent, files, added, other. Pick any number.
 - **List** groups entries by day. **Lanes** draws one row per application, company, agency or
   person against time: dots for what happened (hollow for what's ahead) and a dashed line for
   now. Hover a dot to see what it was; click it to open its application (or
@@ -152,7 +153,7 @@ time it was sent. The file itself is kept too.
   *Archived* filter on the Applications page, or with search. Switch it off to bring it back.
 - **Delete** (top right of the page) removes it for good, with its interviews, offer,
   timeline, record of documents sent and links. Its notes and files stay (files become
-  unattached).
+  unattached), and so do calls about it (they're just no longer about an application).
 
 Companies, agencies, roles and people have **Delete** too:
 
@@ -161,7 +162,7 @@ Companies, agencies, roles and people have **Delete** too:
 | A company | its roles and their links | its people (no longer at a company), notes and files |
 | A role | nothing else | — |
 | An agency | nothing else | its recruiters and applications (no longer with an agency) |
-| A person | them from applications and interviews | the applications |
+| A person | them from applications and interviews, and their calls and meetings | the applications |
 
 A company or role that still has applications can't be deleted: delete or archive those
 first. Your data repo's history still has everything until you rewrite it.
@@ -174,9 +175,26 @@ and independents, with every email, phone number and link (click to email, call 
 a new agency or company name and pick **+ Add "…"** to create it there and then.
 
 Each **person** has a page, a dossier: their job title and where they work, how to reach
-them, every application they're part of (and as what), the interviews they were in, and your
-notes, links and files about them. Click a name anywhere to open it; **Edit** and **Delete**
+them, your calls and meetings with them, every application they're part of (and as what),
+the interviews they were in, and your notes, links and files about them. Click a name anywhere to open it; **Edit** and **Delete**
 are at the top.
+
+### Calls and meetings
+
+For a call or meeting with someone that isn't an interview round, such as a catch-up with a
+recruiter about the market, or a chat with a hiring manager before you apply, use **Calls and
+meetings** on their page:
+
+- **Book a call**: who it's with, what it's about, when, how (phone, video or in person), a
+  meeting link or where, and an agenda (what to ask, what to tell them).
+- To log a call that already happened, pick **Happened** as its status and say how it went.
+- Once its time has passed, it waits under *How did it go?* on Next actions. **Happened**
+  asks for notes; **Didn't happen** closes it.
+- If it's about one application, pick it under **About an application**; the call then shows
+  with that application on the Timeline.
+
+Calls show under *Coming up* on Next actions and the Overview, on the Timeline, and in
+search. Interview rounds for an application stay on the application's page.
 
 An **agency page** shows its recruiters and every role it put you forward for. Applications
 for the same job through two routes (say, directly and via an agency) show a **duplicate
@@ -234,7 +252,8 @@ How the search is going, for all time or the last 30 or 90 days:
 
 Type in the box at the top (or press <kbd>/</kbd>) and press Enter. It finds applications,
 companies, agencies, people (including their emails and phone numbers), interview prep and
-debriefs, offers, timeline entries, notes, documents, files, emails and links. Every word
+debriefs, calls and meetings (their agenda and notes), offers, timeline entries, notes,
+documents, files, emails and links. Every word
 must match; case and accents don't matter.
 
 ## Dark mode

@@ -22,6 +22,7 @@ import { useSaveInterview, type Interview } from "../api/interviewHooks";
 import { headline, type Offer } from "../api/offerHooks";
 import { ApplicationWaiting, daysWaiting, PersonWaiting, waitingLabel } from "../components/Waiting";
 import { ApplicationDrawer } from "../components/ApplicationDrawer";
+import { MeetingLine, MeetingOutcome } from "../components/Meetings";
 import { ChaseActions } from "../components/ChaseActions";
 import { StageBadge } from "../components/StageBadge";
 import { ago, formatDate, formatDateTime } from "../utils/time";
@@ -254,8 +255,21 @@ export function NextActionsPage() {
     const limit = staleAfter.get(r.stage);
     return limit != null && daysWaiting(r.awaiting_reply_since!) >= limit;
   };
+  const meetings = data?.meetings ?? [];
+  const meetingsToClose = data?.meetings_to_close ?? [];
+  // Calls and interviews in one list by time; rounds not booked yet go last.
+  const comingUp = [
+    ...meetings.map((m) => ({ key: m.id, at: m.starts_at, node: <MeetingLine key={m.id} meeting={m} /> })),
+    ...(data?.upcoming ?? []).map((i) => ({
+      key: i.id,
+      at: i.starts_at ?? i.deadline_at ?? "9999",
+      node: <InterviewLine key={i.id} interview={i} />,
+    })),
+  ].sort((a, b) => (new Date(a.at).getTime() || Infinity) - (new Date(b.at).getTime() || Infinity));
   const total = data
     ? offers.length +
+      meetings.length +
+      meetingsToClose.length +
       waiting.length +
       waitingPeople.length +
       data.follow_ups.length +
@@ -323,9 +337,16 @@ export function NextActionsPage() {
               <PersonWaitingLine key={p.id} person={p} />
             ))}
           </Section>
-          <Section title="How did it go?" count={data.awaiting_outcome.length} hint="Their time has passed">
+          <Section
+            title="How did it go?"
+            count={data.awaiting_outcome.length + meetingsToClose.length}
+            hint="Their time has passed"
+          >
             {data.awaiting_outcome.map((i) => (
               <InterviewLine key={i.id} interview={i} action={<OutcomeButtons interview={i} />} />
+            ))}
+            {meetingsToClose.map((m) => (
+              <MeetingLine key={m.id} meeting={m} action={<MeetingOutcome meeting={m} />} />
             ))}
           </Section>
           <Section title="Follow up" count={data.follow_ups.length} hint="Follow-up date is today or earlier">
@@ -344,10 +365,12 @@ export function NextActionsPage() {
               />
             ))}
           </Section>
-          <Section title="Coming up" count={data.upcoming.length} hint="Next two weeks, then unbooked rounds">
-            {data.upcoming.map((i) => (
-              <InterviewLine key={i.id} interview={i} />
-            ))}
+          <Section
+            title="Coming up"
+            count={comingUp.length}
+            hint="Interviews and calls in the next two weeks, then unbooked rounds"
+          >
+            {comingUp.map((c) => c.node)}
           </Section>
           <Section title="Gone quiet" count={data.stale.length} hint="Past their stage's threshold">
             {data.stale.map((r) => (

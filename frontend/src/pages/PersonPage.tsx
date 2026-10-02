@@ -24,6 +24,7 @@ import { ContactFormModal } from "../components/ContactFormModal";
 import { DeleteButton } from "../components/DeleteButton";
 import { roundStatus } from "../components/Interviews";
 import { LinksCard } from "../components/Links";
+import { MeetingsCard } from "../components/Meetings";
 import { NotesCard } from "../components/Notes";
 import { StageBadge } from "../components/StageBadge";
 import { PersonWaiting } from "../components/Waiting";
@@ -84,7 +85,7 @@ export function PersonPage() {
             kind="contact"
             id={contact.id}
             name={contact.name}
-            confirm={`Delete ${contact.name}? They come off the applications and interviews they're on; the applications themselves stay.`}
+            confirm={`Delete ${contact.name}? They come off the applications and interviews they're on, and their calls are deleted; the applications themselves stay.`}
             onDeleted={() => router.history.push("/recruiters")}
           />
         </Group>
@@ -92,6 +93,7 @@ export function PersonPage() {
       <Grid gap="lg">
         <Grid.Col span={{ base: 12, md: 8 }}>
           <Stack>
+            <MeetingsCard contactId={contact.id} name={contact.name} />
             <Card withBorder>
               <Title order={4} mb="sm">
                 Applications

@@ -773,3 +773,7 @@ router.include_router(search_router)
 from .timeline import router as timeline_router  # noqa: E402
 
 router.include_router(timeline_router)
+
+from .meetings import router as meetings_router  # noqa: E402
+
+router.include_router(meetings_router)

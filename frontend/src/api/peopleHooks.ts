@@ -21,6 +21,7 @@ function useRefreshPeople() {
       ["application"],
       ["contact-summary"],
       ["timeline"],
+      ["meetings"],
     ]) {
       void qc.invalidateQueries({ queryKey: key });
     }
