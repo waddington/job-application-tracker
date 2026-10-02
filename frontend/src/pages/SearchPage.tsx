@@ -10,6 +10,7 @@ import {
   IconHistory,
   IconLink,
   IconNotes,
+  IconPhone,
   IconSearch,
   IconUser,
   type Icon,
@@ -24,6 +25,7 @@ const KINDS: Record<string, { label: string; icon: Icon }> = {
   agency: { label: "Agency", icon: IconBuildingSkyscraper },
   contact: { label: "Person", icon: IconUser },
   interview: { label: "Interview", icon: IconCalendarEvent },
+  meeting: { label: "Call", icon: IconPhone },
   offer: { label: "Offer", icon: IconCash },
   timeline: { label: "Timeline", icon: IconHistory },
   note: { label: "Note", icon: IconNotes },
@@ -98,7 +100,7 @@ export function SearchPage() {
       {!q ? (
         <Text c="dimmed" size="sm">
           Type in the search box at the top (or press <b>/</b>) to search applications, people, notes,
-          interview debriefs, offers, emails, files and links.
+          interview debriefs, calls, offers, emails, files and links.
         </Text>
       ) : isError ? (
         <Text c="red">Search didn't work. Is the tracker running?</Text>

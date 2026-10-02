@@ -176,6 +176,25 @@ class InterviewContact(IdMixin, Base):
     contact_id: Mapped[str] = mapped_column(ForeignKey("contacts.id", ondelete="CASCADE"), index=True)
 
 
+class Meeting(IdMixin, TimestampMixin, Base):
+    """A call or meeting with a person, booked or already had: a recruiter catch-up about the
+    market, a chat with a hiring manager before applying. Not tied to an application unless one
+    comes out of it (interview rounds on an application are Interviews)."""
+
+    __tablename__ = "meetings"
+    contact_id: Mapped[str] = mapped_column(ForeignKey("contacts.id", ondelete="CASCADE"), index=True)
+    application_id: Mapped[str | None] = mapped_column(ForeignKey("applications.id", ondelete="SET NULL"), index=True)
+    kind: Mapped[str] = mapped_column(String(20), default="call")  # call | video | in_person
+    title: Mapped[str | None] = mapped_column(String(200))  # what it's about
+    status: Mapped[str] = mapped_column(String(20), default="scheduled")  # scheduled | done | cancelled
+    starts_at: Mapped[datetime] = mapped_column(index=True)
+    ends_at: Mapped[datetime | None]
+    location: Mapped[str | None] = mapped_column(String(300))
+    meeting_url: Mapped[str | None] = mapped_column(String(1000))
+    agenda: Mapped[str | None] = mapped_column(Text)  # what to ask, what to say
+    notes: Mapped[str | None] = mapped_column(Text)  # how it went
+
+
 class Offer(IdMixin, TimestampMixin, Base):
     """An offer on an application, with its pay and terms (FR4, offer comparison).
 

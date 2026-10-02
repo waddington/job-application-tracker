@@ -31,6 +31,7 @@ from jat.db.models import (
     Event,
     Interview,
     Link,
+    Meeting,
     NoteIndex,
     Offer,
     Role,
@@ -222,6 +223,20 @@ def _activity(session: Session, places: Places) -> Iterator[Candidate]:
             fields=[i.prep or "", i.debrief or "", i.questions or "", i.task_instructions or "", i.location or ""],
             subtitle_searchable=False,
             updated=i.updated_at,
+        )
+    # Calls and meetings with people: what they were about and how they went.
+    for m in session.scalars(select(Meeting)):
+        who = places.contacts.get(m.contact_id)
+        kind = {"call": "Call", "video": "Video call", "in_person": "Meeting"}.get(m.kind, m.kind)
+        yield Candidate(
+            "meeting",
+            m.id,
+            f"{kind}: {m.title}" if m.title else kind,
+            f"/people/{m.contact_id}",
+            subtitle=who.name if who else None,
+            fields=[m.agenda or "", m.notes or "", m.location or ""],
+            subtitle_searchable=False,
+            updated=m.updated_at,
         )
     for o in session.scalars(select(Offer)):
         yield Candidate(

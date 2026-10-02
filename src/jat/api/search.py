@@ -17,7 +17,9 @@ router = APIRouter(tags=["search"])
 
 
 class SearchHit(BaseModel):
-    kind: str  # application | company | agency | contact | interview | offer | timeline | note | document | file | link
+    # application | company | agency | contact | interview | meeting | offer | timeline | note | document
+    # | file | link
+    kind: str
     id: str
     title: str
     subtitle: str | None

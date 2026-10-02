@@ -627,6 +627,69 @@ class QuickApplicationIn(In):
         return self
 
 
+# --- meetings (calls and meetings with people) ------------------------------------------
+
+MeetingKind = Literal["call", "video", "in_person"]
+
+
+class MeetingIn(In):
+    """A call or meeting with a person. Book one ahead (`scheduled`) or log one you've had (`done`)."""
+
+    contact_id: str
+    application_id: str | None = None
+    kind: MeetingKind = "call"
+    title: str | None = Field(default=None, max_length=200)
+    status: InterviewStatus = "scheduled"
+    starts_at: AwareDatetime
+    ends_at: AwareDatetime | None = None
+    location: str | None = Field(default=None, max_length=300)
+    meeting_url: HttpUrl | None = None
+    agenda: str | None = None
+    notes: str | None = None
+
+
+class MeetingPatch(Patch):
+    not_null = frozenset({"contact_id", "kind", "status", "starts_at"})
+
+    contact_id: str | None = None
+    application_id: str | None = None
+    kind: MeetingKind | None = None
+    title: str | None = Field(default=None, max_length=200)
+    status: InterviewStatus | None = None
+    starts_at: AwareDatetime | None = None
+    ends_at: AwareDatetime | None = None
+    location: str | None = Field(default=None, max_length=300)
+    meeting_url: HttpUrl | None = None
+    agenda: str | None = None
+    notes: str | None = None
+
+
+class MeetingOut(Out):
+    id: str
+    contact_id: str
+    application_id: str | None
+    kind: str
+    title: str | None
+    status: str
+    starts_at: datetime
+    ends_at: datetime | None
+    location: str | None
+    meeting_url: str | None
+    agenda: str | None
+    notes: str | None
+    created_at: datetime
+    updated_at: datetime
+    # Who it's with, and the application if there is one, for lists across people.
+    label: str  # "Call with Alex Morgan: market catch-up"
+    contact_name: str
+    agency_id: str | None = None
+    agency_name: str | None = None
+    company_id: str | None = None
+    company_name: str | None = None
+    role_title: str | None = None  # the linked application's role
+    application_company_name: str | None = None
+
+
 # --- offers ------------------------------------------------------------------------------
 
 OfferStatus = Literal["pending", "accepted", "declined", "withdrawn"]

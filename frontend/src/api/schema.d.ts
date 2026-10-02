@@ -807,6 +807,48 @@ export interface paths {
         patch: operations["update_link_api_v1_links__link_id__patch"];
         trace?: never;
     };
+    "/api/v1/meetings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Meetings
+         * @description Calls and meetings, soonest first. `upcoming` keeps scheduled ones from `since` on (the
+         *     start of your local day; defaults to the start of today in UTC). `agency_id` and
+         *     `company_id` match the person's agency or company.
+         */
+        get: operations["list_meetings_api_v1_meetings_get"];
+        put?: never;
+        /** Create Meeting */
+        post: operations["create_meeting_api_v1_meetings_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/meetings/{meeting_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Meeting */
+        get: operations["get_meeting_api_v1_meetings__meeting_id__get"];
+        put?: never;
+        post?: never;
+        /** Delete Meeting */
+        delete: operations["delete_meeting_api_v1_meetings__meeting_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Meeting */
+        patch: operations["update_meeting_api_v1_meetings__meeting_id__patch"];
+        trace?: never;
+    };
     "/api/v1/next-actions": {
         parameters: {
             query?: never;
@@ -1927,6 +1969,126 @@ export interface components {
             /** Url */
             url?: string | null;
         };
+        /**
+         * MeetingIn
+         * @description A call or meeting with a person. Book one ahead (`scheduled`) or log one you've had (`done`).
+         */
+        MeetingIn: {
+            /** Agenda */
+            agenda?: string | null;
+            /** Application Id */
+            application_id?: string | null;
+            /** Contact Id */
+            contact_id: string;
+            /** Ends At */
+            ends_at?: string | null;
+            /**
+             * Kind
+             * @default call
+             * @enum {string}
+             */
+            kind: "call" | "video" | "in_person";
+            /** Location */
+            location?: string | null;
+            /** Meeting Url */
+            meeting_url?: string | null;
+            /** Notes */
+            notes?: string | null;
+            /**
+             * Starts At
+             * Format: date-time
+             */
+            starts_at: string;
+            /**
+             * Status
+             * @default scheduled
+             * @enum {string}
+             */
+            status: "scheduled" | "done" | "cancelled";
+            /** Title */
+            title?: string | null;
+        };
+        /** MeetingOut */
+        MeetingOut: {
+            /** Agency Id */
+            agency_id?: string | null;
+            /** Agency Name */
+            agency_name?: string | null;
+            /** Agenda */
+            agenda: string | null;
+            /** Application Company Name */
+            application_company_name?: string | null;
+            /** Application Id */
+            application_id: string | null;
+            /** Company Id */
+            company_id?: string | null;
+            /** Company Name */
+            company_name?: string | null;
+            /** Contact Id */
+            contact_id: string;
+            /** Contact Name */
+            contact_name: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Ends At */
+            ends_at: string | null;
+            /** Id */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Label */
+            label: string;
+            /** Location */
+            location: string | null;
+            /** Meeting Url */
+            meeting_url: string | null;
+            /** Notes */
+            notes: string | null;
+            /** Role Title */
+            role_title?: string | null;
+            /**
+             * Starts At
+             * Format: date-time
+             */
+            starts_at: string;
+            /** Status */
+            status: string;
+            /** Title */
+            title: string | null;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** MeetingPatch */
+        MeetingPatch: {
+            /** Agenda */
+            agenda?: string | null;
+            /** Application Id */
+            application_id?: string | null;
+            /** Contact Id */
+            contact_id?: string | null;
+            /** Ends At */
+            ends_at?: string | null;
+            /** Kind */
+            kind?: ("call" | "video" | "in_person") | null;
+            /** Location */
+            location?: string | null;
+            /** Meeting Url */
+            meeting_url?: string | null;
+            /** Notes */
+            notes?: string | null;
+            /** Starts At */
+            starts_at?: string | null;
+            /** Status */
+            status?: ("scheduled" | "done" | "cancelled") | null;
+            /** Title */
+            title?: string | null;
+        };
         /** MoveIn */
         MoveIn: {
             /** Note */
@@ -1942,6 +2104,16 @@ export interface components {
             awaiting_outcome: components["schemas"]["InterviewOut"][];
             /** Follow Ups */
             follow_ups: components["schemas"]["ApplicationRow"][];
+            /**
+             * Meetings
+             * @default []
+             */
+            meetings: components["schemas"]["MeetingOut"][];
+            /**
+             * Meetings To Close
+             * @default []
+             */
+            meetings_to_close: components["schemas"]["MeetingOut"][];
             /**
              * Offer Deadlines
              * @default []
@@ -2580,7 +2752,7 @@ export interface components {
              * Category
              * @enum {string}
              */
-            category: "stage" | "message" | "interview" | "offer" | "note" | "file" | "document" | "added" | "other";
+            category: "stage" | "message" | "meeting" | "interview" | "offer" | "note" | "file" | "document" | "added" | "other";
             /** Company Id */
             company_id?: string | null;
             /** Company Name */
@@ -4742,6 +4914,171 @@ export interface operations {
             };
         };
     };
+    list_meetings_api_v1_meetings_get: {
+        parameters: {
+            query?: {
+                contact_id?: string | null;
+                agency_id?: string | null;
+                company_id?: string | null;
+                application_id?: string | null;
+                status?: ("scheduled" | "done" | "cancelled") | null;
+                upcoming?: boolean;
+                since?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MeetingOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_meeting_api_v1_meetings_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MeetingIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MeetingOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_meeting_api_v1_meetings__meeting_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                meeting_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MeetingOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_meeting_api_v1_meetings__meeting_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                meeting_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_meeting_api_v1_meetings__meeting_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                meeting_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MeetingPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MeetingOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     next_actions_api_v1_next_actions_get: {
         parameters: {
             query?: {
@@ -5260,7 +5597,7 @@ export interface operations {
             query?: {
                 since?: string | null;
                 until?: string | null;
-                category?: ("stage" | "message" | "interview" | "offer" | "note" | "file" | "document" | "added" | "other")[] | null;
+                category?: ("stage" | "message" | "meeting" | "interview" | "offer" | "note" | "file" | "document" | "added" | "other")[] | null;
                 company_id?: string | null;
                 agency_id?: string | null;
                 contact_id?: string | null;

@@ -25,6 +25,7 @@ from ..db.models import (
     Event,
     Interview,
     InterviewContact,
+    Meeting,
     NoteIndex,
     Offer,
     Role,
@@ -33,11 +34,12 @@ from ..domain import interviews as interviews_svc
 from ..domain import offers as offers_svc
 from ..domain.applications import STAGE_CHANGE
 from .deps import SessionDep, WorkflowDep
+from .meetings import label as meeting_label
 from .notes import _sync
 
 router = APIRouter(tags=["timeline"])
 
-Category = Literal["stage", "message", "interview", "offer", "note", "file", "document", "added", "other"]
+Category = Literal["stage", "message", "meeting", "interview", "offer", "note", "file", "document", "added", "other"]
 CATEGORIES: tuple[str, ...] = Category.__args__
 
 
@@ -242,6 +244,27 @@ def timeline(
                     title=f"Reply due on the offer: {offers_svc.headline(o)}",
                 )
             )
+
+    # Calls and meetings with people, at their time (cancelled ones didn't happen).
+    for m in session.scalars(select(Meeting).where(Meeting.status != "cancelled")):
+        c = contacts.get(m.contact_id)
+        if c is None:
+            continue
+        fields = dict(
+            id=f"meeting:{m.id}",
+            at=m.starts_at,
+            all_day=False,
+            category="meeting",
+            title=f"{meeting_label(m, c.name)} ({'booked' if m.status == 'scheduled' else m.status})",
+            detail=m.notes or m.agenda,
+        )
+        if m.application_id in apps:
+            item = on_app(m.application_id, **fields)
+            if all(p.id != c.id for p in item.people):
+                item.people.insert(0, TimelinePerson(id=c.id, name=c.name))
+            items.append(item)
+        else:
+            items.append(about_contact(c, **fields))
 
     for c in companies.values():
         items.append(
