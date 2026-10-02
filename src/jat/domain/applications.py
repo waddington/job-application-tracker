@@ -94,6 +94,7 @@ def move(
     )
     session.add(event)
     app.stage = to_stage
+    app.awaiting_reply_since = None  # it moved on: you heard back
     _touch(app, when)
     session.flush()
     return event

@@ -165,6 +165,8 @@ def update_contact(contact_id: str, body: S.ContactPatch, session: SessionDep):
     contact = get_or_404(session, Contact, contact_id)
     data = body.model_dump(mode="json", exclude_unset=True, exclude={"details"})
     _validate_contact(session, data)
+    if "awaiting_reply_since" in data:
+        data["awaiting_reply_since"] = body.awaiting_reply_since  # a date, not its JSON string
     for key, value in data.items():
         setattr(contact, key, value)
     if body.details is not None:
@@ -217,7 +219,15 @@ def _row(
     snoozed = app.snoozed_until is not None and app.snoozed_until > today
     # A follow-up planned for later counts as a snooze: you've decided when to chase it.
     snoozed = snoozed or (app.follow_up_on is not None and app.follow_up_on > today)
-    stale = kind == "active" and stale_after is not None and days >= stale_after and not snoozed and not app.archived
+    # Waiting to hear back is listed on its own in Next actions, not as gone quiet.
+    stale = (
+        kind == "active"
+        and stale_after is not None
+        and days >= stale_after
+        and not snoozed
+        and not app.archived
+        and app.awaiting_reply_since is None
+    )
     base = S.ApplicationOut.model_validate(app).model_dump()
     return S.ApplicationRow(
         **base,
@@ -559,9 +569,15 @@ def update_app(app_id: str, body: S.ApplicationPatch, session: SessionDep, workf
     _check_refs(session, data)
     current = {"route": app.route, "agency_id": app.agency_id, "recruiter_id": app.recruiter_id}
     data.update(_check_route(session, {**current, **data}))
+    was_waiting = app.awaiting_reply_since
     for key, value in data.items():
         setattr(app, key, value)
     session.flush()
+    if "awaiting_reply_since" in data and (was_waiting is None) != (app.awaiting_reply_since is None):
+        summary = "Replied; waiting to hear back" if app.awaiting_reply_since else "Heard back"
+        svc.log_activity(
+            session, app, "manual", summary=summary, data={"awaiting_reply": bool(app.awaiting_reply_since)}
+        )
     return _detail(session, workflow, app_id)
 
 

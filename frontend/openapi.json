@@ -289,6 +289,18 @@
             "title": "Archived",
             "type": "boolean"
           },
+          "awaiting_reply_since": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Awaiting Reply Since"
+          },
           "can_undo": {
             "title": "Can Undo",
             "type": "boolean"
@@ -613,6 +625,18 @@
             ],
             "title": "Archived"
           },
+          "awaiting_reply_since": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Awaiting Reply Since"
+          },
           "follow_up_on": {
             "anyOf": [
               {
@@ -733,6 +757,18 @@
           "archived": {
             "title": "Archived",
             "type": "boolean"
+          },
+          "awaiting_reply_since": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Awaiting Reply Since"
           },
           "company_id": {
             "title": "Company Id",
@@ -1519,6 +1555,18 @@
             ],
             "title": "Agency Id"
           },
+          "awaiting_reply_since": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Awaiting Reply Since"
+          },
           "company_id": {
             "anyOf": [
               {
@@ -1593,6 +1641,18 @@
               }
             ],
             "title": "Agency Id"
+          },
+          "awaiting_reply_since": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Awaiting Reply Since"
           },
           "company_id": {
             "anyOf": [
@@ -1955,6 +2015,18 @@
           "archived": {
             "title": "Archived",
             "type": "boolean"
+          },
+          "awaiting_reply_since": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Awaiting Reply Since"
           },
           "company_id": {
             "title": "Company Id",
@@ -3159,6 +3231,22 @@
             },
             "title": "Upcoming",
             "type": "array"
+          },
+          "waiting": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/ApplicationRow"
+            },
+            "title": "Waiting",
+            "type": "array"
+          },
+          "waiting_people": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/ContactOut"
+            },
+            "title": "Waiting People",
+            "type": "array"
           }
         },
         "required": [
@@ -4128,6 +4216,18 @@
           "archived": {
             "title": "Archived",
             "type": "boolean"
+          },
+          "awaiting_reply_since": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Awaiting Reply Since"
           },
           "company_id": {
             "title": "Company Id",

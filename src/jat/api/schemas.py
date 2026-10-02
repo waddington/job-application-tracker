@@ -121,6 +121,7 @@ class ContactPatch(Patch):
     agency_id: str | None = None
     company_id: str | None = None
     details: list[ContactDetailIn] | None = None  # replaces all details when sent
+    awaiting_reply_since: date | None = None  # you replied and are waiting; null: you heard back
 
 
 class ContactOut(Out):
@@ -130,6 +131,7 @@ class ContactOut(Out):
     agency_id: str | None
     company_id: str | None
     details: list[ContactDetailOut] = []
+    awaiting_reply_since: date | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -211,6 +213,7 @@ class ApplicationPatch(Patch):
     applied_on: date | None = None
     follow_up_on: date | None = None
     snoozed_until: date | None = None
+    awaiting_reply_since: date | None = None  # you replied and are waiting; null: you heard back
     tags: list[str] | None = None
     archived: bool | None = None
 
@@ -225,6 +228,7 @@ class ApplicationOut(Out):
     applied_on: date | None
     follow_up_on: date | None
     snoozed_until: date | None
+    awaiting_reply_since: date | None = None
     last_activity_at: datetime
     tags: list[str]
     archived: bool
