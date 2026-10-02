@@ -41,6 +41,7 @@ import { ago, formatDate, formatDateTime } from "../utils/time";
 import { DuplicateWarning } from "./DuplicateWarning";
 import { RoundBadge } from "./Interviews";
 import { StageBadge } from "./StageBadge";
+import { ApplicationWaiting } from "./Waiting";
 
 const ACTIVITY_ICONS: Record<string, typeof IconNote> = {
   call: IconPhone,
@@ -184,6 +185,7 @@ export function ApplicationSummary({ app }: { app: ApplicationDetail }) {
         >
           Undo last move
         </Button>
+        {app.stage_kind === "active" && <ApplicationWaiting id={app.id} since={app.awaiting_reply_since} />}
       </Group>
       <Stack gap={4}>
         <Text size="sm">

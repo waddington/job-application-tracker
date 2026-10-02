@@ -1083,6 +1083,8 @@ export interface components {
             applied_on: string | null;
             /** Archived */
             archived: boolean;
+            /** Awaiting Reply Since */
+            awaiting_reply_since?: string | null;
             /** Can Undo */
             can_undo: boolean;
             /** Company Id */
@@ -1181,6 +1183,8 @@ export interface components {
             applied_on?: string | null;
             /** Archived */
             archived?: boolean | null;
+            /** Awaiting Reply Since */
+            awaiting_reply_since?: string | null;
             /** Follow Up On */
             follow_up_on?: string | null;
             /** Recruiter Id */
@@ -1207,6 +1211,8 @@ export interface components {
             applied_on: string | null;
             /** Archived */
             archived: boolean;
+            /** Awaiting Reply Since */
+            awaiting_reply_since?: string | null;
             /** Company Id */
             company_id: string;
             /** Company Name */
@@ -1436,6 +1442,8 @@ export interface components {
         ContactOut: {
             /** Agency Id */
             agency_id: string | null;
+            /** Awaiting Reply Since */
+            awaiting_reply_since?: string | null;
             /** Company Id */
             company_id: string | null;
             /**
@@ -1464,6 +1472,8 @@ export interface components {
         ContactPatch: {
             /** Agency Id */
             agency_id?: string | null;
+            /** Awaiting Reply Since */
+            awaiting_reply_since?: string | null;
             /** Company Id */
             company_id?: string | null;
             /** Details */
@@ -1585,6 +1595,8 @@ export interface components {
             applied_on: string | null;
             /** Archived */
             archived: boolean;
+            /** Awaiting Reply Since */
+            awaiting_reply_since?: string | null;
             /** Company Id */
             company_id: string;
             /** Company Name */
@@ -1921,6 +1933,16 @@ export interface components {
             today: string;
             /** Upcoming */
             upcoming: components["schemas"]["InterviewOut"][];
+            /**
+             * Waiting
+             * @default []
+             */
+            waiting: components["schemas"]["ApplicationRow"][];
+            /**
+             * Waiting People
+             * @default []
+             */
+            waiting_people: components["schemas"]["ContactOut"][];
         };
         /**
          * NoteIn
@@ -2154,6 +2176,8 @@ export interface components {
             applied_on: string | null;
             /** Archived */
             archived: boolean;
+            /** Awaiting Reply Since */
+            awaiting_reply_since?: string | null;
             /** Company Id */
             company_id: string;
             /** Company Name */

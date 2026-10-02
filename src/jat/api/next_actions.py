@@ -6,9 +6,9 @@ from datetime import UTC, date, datetime, timedelta
 
 from fastapi import APIRouter
 from pydantic import AwareDatetime, BaseModel
-from sqlalchemy import func
+from sqlalchemy import func, select
 
-from ..db.models import Application, Interview, Offer
+from ..db.models import Application, Contact, Interview, Offer
 from . import schemas as S
 from .deps import SessionDep, WorkflowDep
 from .interviews import _outs, _query
@@ -26,6 +26,8 @@ class NextActions(BaseModel):
     upcoming: list[S.InterviewOut]  # booked in the next two weeks, then rounds with no date yet
     awaiting_outcome: list[S.InterviewOut]  # their time has passed but they're still "scheduled"
     offer_deadlines: list[S.OfferOut] = []  # pending offers to answer in the next two weeks (or overdue)
+    waiting: list[S.ApplicationRow] = []  # you replied and are waiting to hear back, longest first
+    waiting_people: list[S.ContactOut] = []  # people you replied to outside an application, longest first
     today: date
 
 
@@ -41,7 +43,7 @@ def next_actions(
 
     Only open applications count: archived ones, and ones in a closed or success stage, are done.
     """
-    from .routers import list_applications  # routers includes this module's router
+    from .routers import _contact_out, list_applications  # routers includes this module's router
 
     now = datetime.now(UTC)
     start = (since or now.replace(hour=0, minute=0, second=0, microsecond=0)).astimezone(UTC)
@@ -93,7 +95,20 @@ def next_actions(
         and row[0].respond_by <= today + timedelta(days=UPCOMING_DAYS)
     ]
     offer_deadlines = _offer_outs(sorted(due, key=lambda row: (row[0].respond_by, row[2].lower())))
+    waiting = sorted(
+        # A follow-up that's due is the more urgent list; don't show it twice.
+        (r for r in rows if r.awaiting_reply_since is not None and r.id not in chasing),
+        key=lambda r: (r.awaiting_reply_since, r.company_name.lower()),
+    )
+    people = session.scalars(
+        select(Contact)
+        .where(Contact.awaiting_reply_since.is_not(None))
+        .order_by(Contact.awaiting_reply_since, Contact.name)
+    )
+    waiting_people = [_contact_out(session, c) for c in people]
     return NextActions(
+        waiting=waiting,
+        waiting_people=waiting_people,
         follow_ups=follow_ups,
         stale=stale,
         upcoming=upcoming + unbooked,

@@ -16,10 +16,11 @@ import { Link } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { useEffect, useState, type ReactNode } from "react";
 
-import { api, unwrap, type ApplicationRow } from "../api/client";
+import { api, unwrap, type ApplicationRow, type Contact } from "../api/client";
 import { stageLookup, useLogActivity, useUpdateApplication, useWorkflow } from "../api/hooks";
 import { useSaveInterview, type Interview } from "../api/interviewHooks";
 import { headline, type Offer } from "../api/offerHooks";
+import { ApplicationWaiting, daysWaiting, PersonWaiting, waitingLabel } from "../components/Waiting";
 import { ApplicationDrawer } from "../components/ApplicationDrawer";
 import { ChaseActions } from "../components/ChaseActions";
 import { StageBadge } from "../components/StageBadge";
@@ -184,6 +185,30 @@ function OfferLine({ offer, today }: { offer: Offer; today: string }) {
   );
 }
 
+function PersonWaitingLine({ person }: { person: Contact }) {
+  const where = person.title ?? "";
+  return (
+    <Group justify="space-between" wrap="nowrap">
+      <div style={{ minWidth: 0 }}>
+        <Anchor component={Link} to={`/people/${person.id}`} size="sm" fw={600}>
+          {person.name}
+        </Anchor>
+        {where && (
+          <Text size="xs" c="dimmed" truncate="end">
+            {where}
+          </Text>
+        )}
+      </div>
+      <Group gap="xs" wrap="nowrap">
+        <Text size="xs" c="dimmed">
+          {waitingLabel(person.awaiting_reply_since!)}
+        </Text>
+        <PersonWaiting id={person.id} since={person.awaiting_reply_since} compact who={person.name} />
+      </Group>
+    </Group>
+  );
+}
+
 function OutcomeButtons({ interview }: { interview: Interview }) {
   const save = useSaveInterview();
   const [clicked, setClicked] = useState<"done" | "cancelled" | null>(null);
@@ -220,8 +245,19 @@ export function NextActionsPage() {
   const { data, isLoading } = useNextActions();
   const [openId, setOpenId] = useState<string | null>(null);
   const offers = data?.offer_deadlines ?? [];
+  const waiting = data?.waiting ?? [];
+  const waitingPeople = data?.waiting_people ?? [];
+  const { data: workflow } = useWorkflow();
+  const staleAfter = new Map((workflow?.stages ?? []).map((s) => [s.id, s.stale_after_days]));
+  // Waited as long as the stage allows: time to chase.
+  const overdue = (r: ApplicationRow) => {
+    const limit = staleAfter.get(r.stage);
+    return limit != null && daysWaiting(r.awaiting_reply_since!) >= limit;
+  };
   const total = data
     ? offers.length +
+      waiting.length +
+      waitingPeople.length +
       data.follow_ups.length +
       data.stale.length +
       data.upcoming.length +
@@ -252,6 +288,39 @@ export function NextActionsPage() {
           <Section title="Offers to answer" count={offers.length} hint="Reply due in the next two weeks">
             {offers.map((o) => (
               <OfferLine key={o.id} offer={o} today={data.today} />
+            ))}
+          </Section>
+          <Section
+            title="Waiting to hear back"
+            count={waiting.length + waitingPeople.length}
+            hint="You replied; red means time to chase"
+          >
+            {waiting.map((r) => (
+              <AppLine
+                key={r.id}
+                row={r}
+                onOpen={setOpenId}
+                detail={
+                  <Text span size="xs" c={overdue(r) ? "red" : "dimmed"}>
+                    {waitingLabel(r.awaiting_reply_since!)}
+                    {overdue(r) ? " · time to chase" : ""}
+                  </Text>
+                }
+                action={
+                  <Group gap={4} wrap="nowrap">
+                    <ApplicationWaiting
+                      id={r.id}
+                      since={r.awaiting_reply_since}
+                      compact
+                      who={r.company_name}
+                    />
+                    <ChaseActions row={r} />
+                  </Group>
+                }
+              />
+            ))}
+            {waitingPeople.map((p) => (
+              <PersonWaitingLine key={p.id} person={p} />
             ))}
           </Section>
           <Section title="How did it go?" count={data.awaiting_outcome.length} hint="Their time has passed">

@@ -26,6 +26,7 @@ import { roundStatus } from "../components/Interviews";
 import { LinksCard } from "../components/Links";
 import { NotesCard } from "../components/Notes";
 import { StageBadge } from "../components/StageBadge";
+import { PersonWaiting } from "../components/Waiting";
 import { ago, formatDateTime } from "../utils/time";
 
 /** A person's page: who they are, how to reach them, what they've been part of, and your notes. */
@@ -70,6 +71,7 @@ export function PersonPage() {
           </div>
         </Group>
         <Group gap="xs">
+          <PersonWaiting id={contact.id} since={contact.awaiting_reply_since} />
           <Button
             variant="default"
             size="xs"
