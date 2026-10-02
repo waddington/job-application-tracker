@@ -15,7 +15,8 @@ use (see CHANGELOG.md). Available now: an Overview home page (counts, pipeline, 
 attention, what's coming up, recent activity, a numbered "How it works"), a Timeline across
 every application, company, agency and person (by day or as lanes; `GET /api/v1/timeline`),
 a Next actions page (follow-ups due, applications gone quiet, interviews coming up, one-click
-follow-up, snooze and Ghosted, waiting to hear back), person pages, renaming and deleting, applications list and Kanban board (move between any stages), application,
+follow-up, snooze and Ghosted, waiting to hear back), person pages with booked and logged
+calls and meetings (`/api/v1/meetings`), renaming and deleting, applications list and Kanban board (move between any stages), application,
 company, recruiter and agency pages, recruiter CRM, numbered interview rounds, duplicate
 warnings, Markdown notes as real files, links, file attachments and `.eml` import onto the
 timeline, versioned CVs and cover letters, an Insights page (Sankey diagram of stage flows

@@ -178,7 +178,7 @@ export function MeetingFormModal({
           )}
           <Select
             label="About an application (optional)"
-            description="If it's about one role you've applied for. It then shows on that application's timeline too."
+            description="If it's about one role you've applied for: it then shows with that application on the Timeline."
             placeholder="Not about one application"
             searchable
             clearable
@@ -350,17 +350,23 @@ export function MeetingsCard({ contactId, name }: { contactId: string; name: str
       ) : (
         <Stack gap="sm">
           {[...ahead, ...toClose].map((m) => (
-            <MeetingLine
-              key={m.id}
-              meeting={m}
-              showWho={false}
-              action={
-                <Group gap={4} wrap="nowrap">
-                  {toClose.includes(m) && <MeetingOutcome meeting={m} />}
-                  <MeetingMenu meeting={m} onEdit={() => setEditing(m)} />
-                </Group>
-              }
-            />
+            <Stack key={m.id} gap={4}>
+              <MeetingLine
+                meeting={m}
+                showWho={false}
+                action={
+                  <Group gap={4} wrap="nowrap">
+                    {toClose.includes(m) && <MeetingOutcome meeting={m} />}
+                    <MeetingMenu meeting={m} onEdit={() => setEditing(m)} />
+                  </Group>
+                }
+              />
+              {m.agenda && (
+                <Text size="sm" component="div" c="dimmed">
+                  <Markdown>{m.agenda}</Markdown>
+                </Text>
+              )}
+            </Stack>
           ))}
           {past.map((m) => (
             <Stack key={m.id} gap={4}>

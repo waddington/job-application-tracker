@@ -25,6 +25,7 @@ from jat.db.models import (
     Document,
     DocumentVersion,
     Interview,
+    Meeting,
     Offer,
     Role,
 )
@@ -256,6 +257,29 @@ def seed(path: Path) -> None:
                     contract_months=6,
                     received_on=date.today() - timedelta(days=1),
                     respond_by=date.today() + timedelta(days=9),
+                ),
+            ]
+        )
+        # Calls with a recruiter that aren't about one application: one had, one booked.
+        first_recruiter = next(iter(recruiters.values()))
+        s.add_all(
+            [
+                Meeting(
+                    contact_id=first_recruiter.id,
+                    kind="call",
+                    title="Market catch-up",
+                    status="done",
+                    starts_at=days_ago(6),
+                    notes="Contract market is picking up. Three roles to look at: **Fabrikam**, "
+                    "**Proseware** and a stealth fintech.",
+                ),
+                Meeting(
+                    contact_id=first_recruiter.id,
+                    kind="video",
+                    title="Roles for the new year",
+                    starts_at=days_ago(-1),
+                    meeting_url="https://meet.example.com/catch-up",
+                    agenda="- Day rates for platform roles\n- Anything fully remote?",
                 ),
             ]
         )
