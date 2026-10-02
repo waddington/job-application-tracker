@@ -9,6 +9,7 @@ import { ApplicationsPage } from "./pages/ApplicationsPage";
 import { CompaniesPage } from "./pages/CompaniesPage";
 import { CompanyPage } from "./pages/CompanyPage";
 import { DocumentsPage } from "./pages/DocumentsPage";
+import { HomePage } from "./pages/HomePage";
 import { InsightsPage } from "./pages/InsightsPage";
 import { InterviewsPage } from "./pages/InterviewsPage";
 import { OffersPage } from "./pages/OffersPage";
@@ -19,12 +20,15 @@ import { PersonPage } from "./pages/PersonPage";
 import { Placeholder } from "./pages/Placeholder";
 import { RecruitersPage } from "./pages/RecruitersPage";
 import { SearchPage } from "./pages/SearchPage";
+import { TimelinePage } from "./pages/TimelinePage";
 
 const rootRoute = createRootRoute({ component: Layout, notFoundComponent: NotFound });
 
 // Pages that are built; everything else in NAV shows its "coming soon" placeholder.
 const PAGES: Record<string, () => JSX.Element> = {
-  "/": NextActionsPage,
+  "/": HomePage,
+  "/next-actions": NextActionsPage,
+  "/timeline": TimelinePage,
   "/applications": ApplicationsPage,
   "/companies": CompaniesPage,
   "/documents": DocumentsPage,

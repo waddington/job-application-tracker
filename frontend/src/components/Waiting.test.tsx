@@ -77,7 +77,7 @@ describe("waiting to hear back", () => {
       "/api/v1/workflow": WORKFLOW,
       "/api/v1/health": {},
     });
-    renderAt("/");
+    renderAt("/next-actions");
     const section = (await screen.findByRole("heading", { name: "Waiting to hear back" })).closest(
       ".mantine-Card-root",
     ) as HTMLElement;
