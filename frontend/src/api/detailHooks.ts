@@ -45,10 +45,9 @@ export function useUpdateCompany() {
           body: args.body,
         }),
       ),
-    onSuccess: (_data, args) => {
+    onSuccess: () => {
       void qc.invalidateQueries({ queryKey: keys.companies });
-      void qc.invalidateQueries({ queryKey: ["company-summary", args.id] });
-      void qc.invalidateQueries({ queryKey: ["applications"] });
+      invalidateApplicationViews(qc); // everything that shows the company's name
     },
     onError: notifyError,
   });

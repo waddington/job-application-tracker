@@ -516,7 +516,11 @@ def quick_create(body: S.QuickApplicationIn, session: SessionDep, workflow: Work
             name = (body.recruiter_name or "").strip()
             recruiter = session.scalars(
                 select(Contact)
-                .where(Contact.company_id == company.id, func.lower(Contact.name) == name.lower())
+                .where(
+                    Contact.company_id == company.id,
+                    Contact.agency_id.is_(None),
+                    func.lower(Contact.name) == name.lower(),
+                )
                 .limit(1)
             ).first()
             if recruiter is None:
@@ -702,7 +706,7 @@ def contact_summary(contact_id: str, session: SessionDep, workflow: WorkflowDep)
     ):
         relations.setdefault(app_id, []).append(relation)
     for app_id in session.scalars(select(Application.id).where(Application.recruiter_id == contact_id)):
-        relations.setdefault(app_id, []).insert(0, "recruiter")
+        relations.setdefault(app_id, []).insert(0, "source")  # they brought it to you
     rows = _app_rows(session, workflow, Application.id.in_(list(relations))) if relations else []
     sat_in = select(InterviewContact.interview_id).where(InterviewContact.contact_id == contact_id)
     interviews = interview_outs(

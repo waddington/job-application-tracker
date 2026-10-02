@@ -570,7 +570,7 @@ class AgencySummary(BaseModel):
 
 
 class PersonApplication(ApplicationRow):
-    relations: list[str]  # how they're involved: "recruiter" (brought it), or linked as hiring_manager…
+    relations: list[str]  # "source" (they brought it to you), then how they're linked: hiring_manager…
 
 
 class ContactSummary(BaseModel):

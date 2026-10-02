@@ -36,7 +36,7 @@ describe("people", () => {
         agency_name: null,
         company_name: "Contoso",
         applications: [
-          { ...row({ route: "direct", agency_id: null }), relations: ["recruiter", "hiring_manager"] },
+          { ...row({ route: "direct", agency_id: null }), relations: ["source", "hiring_manager"] },
         ],
         interviews: [],
       },

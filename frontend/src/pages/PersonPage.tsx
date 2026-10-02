@@ -109,7 +109,7 @@ export function PersonPage() {
                           </Anchor>
                           <Text size="xs" c="dimmed">
                             {a.relations
-                              .map((r) => (r === "recruiter" ? "Brought it to you" : relationLabel(r)))
+                              .map((r) => (r === "source" ? "Brought it to you" : relationLabel(r)))
                               .join(", ")}
                           </Text>
                         </Table.Td>
