@@ -60,6 +60,7 @@ export function invalidateApplicationViews(qc: QueryClient) {
     ["next-actions"],
     ["offers"],
     ["contact-summary"],
+    ["timeline"],
   ]) {
     void qc.invalidateQueries({ queryKey: key });
   }

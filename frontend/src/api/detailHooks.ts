@@ -30,7 +30,11 @@ export function useCreateCompany() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (body: Schemas["CompanyIn"]) => unwrap(await api.POST("/api/v1/companies", { body })),
-    onSuccess: () => void qc.invalidateQueries({ queryKey: keys.companies }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: keys.companies });
+      void qc.invalidateQueries({ queryKey: ["timeline"] });
+      void qc.invalidateQueries({ queryKey: ["timeline"] });
+    },
     onError: notifyError,
   });
 }

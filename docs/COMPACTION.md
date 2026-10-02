@@ -35,6 +35,9 @@ what section 8 says. End with section 9's resume steps and one line: the next ac
   `gh pr merge N --merge --delete-branch` after a reviewer pass, fixing every `must_fix` and the
   reasonable `should_fix`. Docs-only PRs may skip review, but a large docs change gets a
   fact-check reviewer.
+- **PM dashboard.** "keep the PM dashboard up to date, or even backfill items if they were not
+  added". Every task from Kai's feedback gets a `docs/ROADMAP.yaml` entry (phase P7, id = branch
+  name minus `worktree-`) in the PR that builds it; set it to `done` just before merging.
 - **No agent-team skill in this repo.** Plain `general-purpose` reviewer subagents.
 - **Visibility.** After each merge: fast-forward main, rebuild the frontend on main, restart the
   tracker if the backend changed (Kai is using it live), check both apps answer, and give a
@@ -110,7 +113,8 @@ None. The next work is whatever Kai asks for next.
 ### 5. The delivery loop
 
 1. `git worktree add .claude/worktrees/<name> -b worktree-<name> origin/main` (stack on an
-   unmerged branch when needed), then EnterWorktree with `path`.
+   unmerged branch when needed), then EnterWorktree with `path`. Add the task to
+   `docs/ROADMAP.yaml` (P7, `status: building`) in the first commit.
 2. Backend: domain logic, API, tests; regenerate OpenAPI. Commit and push.
 3. Frontend: hooks, components, pages, tests. Commit and push.
 4. Update `docs/guide/` (and README row, `llms.txt`) if user-facing.

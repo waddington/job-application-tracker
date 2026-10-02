@@ -1,7 +1,14 @@
 # Using the app
 
-A tour of every page. The sidebar has them all; the search box at the top (press <kbd>/</kbd>)
-finds anything.
+A tour of every page. The sidebar has them all, in groups: *Today* (Overview, Next actions,
+Timeline), *Your applications*, *People and companies*, *Files and notes* and *Review*. Along
+the top, on every page:
+
+- the name, which takes you back to the [Overview](#overview-home);
+- **New application**;
+- the search box (press <kbd>/</kbd>), which finds anything;
+- **?** (*How it works*), the everyday loop in five numbered steps;
+- light/dark mode.
 
 ## The basics: companies, roles and applications
 
@@ -14,8 +21,9 @@ finds anything.
   recruiter, an in-house recruiter or head of talent, a hiring manager, an interviewer, a
   referrer. Each has a page with as many emails, phone numbers and links as you like.
 
-Create an application with **New application** on the Applications page: pick or type the
-company and role, and how it came about:
+Create an application with **New application** at the top of any page: pick or type the
+company and role, and how it came about. You don't need to add the company, agency or
+recruiter first:
 
 - **Directly**: you applied, or someone at the company reached out. Put them in *Who reached
   out?* (an in-house recruiter or head of talent) and they're added as a person at the
@@ -25,7 +33,23 @@ company and role, and how it came about:
 
 Companies, roles, agencies and people typed in for the first time are created for you.
 
-## Next actions (home)
+## Overview (home)
+
+Where things stand, at a glance:
+
+- **Counts**: active applications, how many need attention (follow-ups due and gone quiet),
+  interviews in the next two weeks, how many you're waiting to hear back from, and offers to
+  answer soon. Each one opens the page with the details.
+- **Pipeline**: active applications by stage.
+- **Needs attention** and **Coming up**: the top of [Next actions](#next-actions).
+- **Recent activity**: the last two weeks of the [Timeline](#timeline), leaving out
+  companies, agencies and people being added.
+- **How it works**: the same numbered steps as the **?** button.
+
+With no applications yet, it shows a *Getting started* card instead, with a **New
+application** button.
+
+## Next actions
 
 What needs doing, newest problems first:
 
@@ -46,6 +70,31 @@ On the others: set a follow-up date (tomorrow, in 3 days, next week), **snooze**
 1 week, 2 weeks) so it stops nagging, or mark it **Ghosted**. A snoozed application, one with
 a follow-up date in the future, or one with an interview booked ahead never counts as gone
 quiet.
+
+## Timeline
+
+Everything that happened across the whole search, newest first, with interviews and offer
+reply deadlines still ahead under *Coming up*. It includes:
+
+- everything on application timelines: stage moves, calls, emails, notes, interviews,
+  offers, files and documents sent;
+- each interview at its own time;
+- notes on people, companies and agencies;
+- people you're waiting to hear back from;
+- companies, agencies and people being added.
+
+Archived applications are included.
+
+- **Period**: the last 30 days, 3 months (the default) or year, or all time.
+- **About**: one company, agency or person. An application's entries count for its company,
+  its agency and the people on it.
+- **Categories**: stage moves, messages, interviews, offers, notes, documents sent, files,
+  added, other. Pick any number.
+- **List** groups entries by day. **Lanes** draws one row per application, company, agency or
+  person against time: dots for what happened (hollow for what's ahead) and a dashed line for
+  now. Hover a dot to see what it was; click it to open its application (or
+  the person, company or agency it's about). Bookmark
+  `/timeline?view=lanes` to open straight into lanes.
 
 ## Applications: list and board
 

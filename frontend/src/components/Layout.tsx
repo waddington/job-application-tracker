@@ -3,6 +3,7 @@ import {
   Anchor,
   AppShell,
   Burger,
+  Divider,
   Group,
   NavLink,
   Stack,
@@ -16,9 +17,10 @@ import { useDisclosure } from "@mantine/hooks";
 import { IconDownload, IconMoon, IconSun, IconTarget } from "@tabler/icons-react";
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 
-import { NAV } from "../nav";
+import { NAV, NAV_GROUPS } from "../nav";
 import { ApiStatus } from "./ApiStatus";
 import { HeaderSearch } from "./HeaderSearch";
+import { HelpButton, NewApplicationButton } from "./HowItWorks";
 
 function ColorSchemeToggle() {
   const { setColorScheme } = useMantineColorScheme();
@@ -58,29 +60,49 @@ export function Layout() {
               size="sm"
               aria-label="Toggle navigation"
             />
-            <IconTarget size={22} />
-            <Title order={1} size="h4">
-              Job Application Tracker
-            </Title>
+            <Anchor
+              component={Link}
+              to="/"
+              underline="never"
+              c="inherit"
+              aria-label="Job Application Tracker: overview"
+            >
+              <Group gap="xs" wrap="nowrap">
+                <IconTarget size={22} />
+                <Title order={1} size="h4" visibleFrom="xs">
+                  Job Application Tracker
+                </Title>
+              </Group>
+            </Anchor>
           </Group>
           <Group gap="sm" wrap="nowrap">
+            <NewApplicationButton compact />
             <HeaderSearch />
+            <HelpButton />
             <ColorSchemeToggle />
           </Group>
         </Group>
       </AppShell.Header>
 
       <AppShell.Navbar p="xs" aria-label="Main navigation">
-        {NAV.map((item) => (
-          <NavLink
-            key={item.path}
-            component={Link}
-            to={item.path}
-            label={item.label}
-            leftSection={<item.icon size={18} stroke={1.6} />}
-            active={item.path === "/" ? pathname === "/" : pathname.startsWith(item.path)}
-            onClick={close}
-          />
+        {NAV_GROUPS.map((group, n) => (
+          <div key={group} role="group" aria-label={group}>
+            {n > 0 && <Divider my={4} />}
+            <Text size="xs" fw={600} c="dimmed" tt="uppercase" px="sm" pt={6} pb={2}>
+              {group}
+            </Text>
+            {NAV.filter((item) => item.group === group).map((item) => (
+              <NavLink
+                key={item.path}
+                component={Link}
+                to={item.path}
+                label={item.label}
+                leftSection={<item.icon size={18} stroke={1.6} />}
+                active={item.path === "/" ? pathname === "/" : pathname.startsWith(item.path)}
+                onClick={close}
+              />
+            ))}
+          </div>
         ))}
         <Stack gap={4} mt="auto" p="xs">
           <ApiStatus />

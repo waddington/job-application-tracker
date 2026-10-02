@@ -7,7 +7,7 @@ import { makeRouter } from "../router";
 import { mockApi, row, WORKFLOW } from "../test/mockApi";
 
 function renderHome() {
-  render(<App router={makeRouter(createMemoryHistory({ initialEntries: ["/"] }))} />);
+  render(<App router={makeRouter(createMemoryHistory({ initialEntries: ["/next-actions"] }))} />);
 }
 
 const interview = (overrides: Record<string, unknown> = {}) => ({

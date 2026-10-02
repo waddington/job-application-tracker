@@ -46,8 +46,9 @@ No job-board scraping. No SaaS. No account. **Your job search stays on your disk
 
 ![A quick tour: Next actions, the Kanban board, offers side by side, Insights and search](docs/screenshots/demo.gif)
 
-**Next actions, your home page.** Offers to answer, what to chase today, what's coming up,
-and interviews waiting for an outcome. Follow up, snooze or mark Ghosted in one click.
+**Next actions.** Offers to answer, what to chase today, what's coming up, and interviews
+waiting for an outcome. Follow up, snooze or mark Ghosted in one click. (The home page is an
+Overview that sums this up, with recent activity from the Timeline.)
 
 ![Next actions: follow-ups due, interviews coming up and applications gone quiet](docs/screenshots/next-actions.png)
 
@@ -102,13 +103,18 @@ recruiters send roles that go somewhere.
 | 🗂️ | **Kanban board**: drag applications between any stages, with the usual next stages highlighted | ✅ Available |
 | 🔁 | **Flexible workflow**: move from any stage to any stage (or switch on Jira-style allowed transitions), full timestamped history and undo | ✅ Available |
 | 🧑‍💼 | **Recruiter CRM**: agencies, recruiters, multiple contact details, every role they've sent | ✅ Available |
+| 🪪 | **People pages**: a page per person (agency recruiter, in-house recruiter, hiring manager…) with contact details, notes and every application they're part of | ✅ Available |
+| 🗑️ | **Rename and delete** companies, roles, agencies, people and applications (or archive them) | ✅ Available |
 | ⚠️ | **Duplicate-submission warning**: know before two agencies put you forward for the same job | ✅ Available |
 | 📝 | **Markdown notes** on applications, companies, agencies and people, plus general notes: real `.md` files you can edit anywhere | ✅ Available |
 | 🔗 | **Links** on applications, companies and agencies: job ads, Google Docs, take-home repos, with icons and default titles | ✅ Available |
 | 📎 | **Files and emails**: drop PDFs, images or exported emails (`.eml`) on an application, company or agency; emails land on the timeline at the time they were sent | ✅ Available |
 | 📄 | **CV and cover-letter versions**: every tailored version with its file, which one each application got, and where each was used | ✅ Available |
 | 💻 | **Interview rounds and coding tasks**: numbered rounds in your own words ("Round 2 · System design test") shown on the board, plus times, interviewers, prep, debrief, questions asked and take-home briefs | ✅ Available |
-| ⏰ | **Next actions** (the home page): follow-ups due, applications gone quiet, interviews and deadlines coming up, and rounds waiting for an outcome | ✅ Available |
+| 🏠 | **Overview** (the home page): counts, the pipeline by stage, what needs attention, what's coming up and recent activity; a numbered *How it works* and **New application** on every page | ✅ Available |
+| 🕰️ | **Timeline** across everything: every application, company, agency and person, by day or as lanes against time, filtered by period, category or who it's about | ✅ Available |
+| ⏰ | **Next actions**: follow-ups due, applications gone quiet, interviews and deadlines coming up, and rounds waiting for an outcome | ✅ Available |
+| 📨 | **Waiting to hear back**: mark that you've replied, on an application or a person, and see who to chase | ✅ Available |
 | 😴 | **One-click chasing**: set a follow-up reminder, snooze, or mark Ghosted straight from Next actions | ✅ Available |
 | 📊 | **Sankey diagram** of your funnel: applications → screens → interviews → offers, filtered by date range and route, with counts on hover | ✅ Available |
 | 📈 | **Insights**: conversion per stage, median time in stage, direct vs recruiter outcomes and weekly activity | ✅ Available |
@@ -199,6 +205,7 @@ progress and live PR status of the build itself. It needs nothing but Python; th
 | **P4** Next actions | Stale applications, follow-ups, snooze, upcoming items |
 | **P5** Insights | Sankey, funnel stats, recruiter scorecard |
 | **P6** Extras | Offers, backup archive, full-text search |
+| **P7** Feedback from real use | Deleting, people pages, waiting to hear back, Overview, Timeline, help |
 
 ## ❓ FAQ
 

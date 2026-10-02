@@ -142,7 +142,7 @@ describe("offers", () => {
       "/api/v1/workflow": WORKFLOW,
       "/api/v1/health": {},
     });
-    renderAt("/");
+    renderAt("/next-actions");
     const section = (await screen.findByRole("heading", { name: "Offers to answer" })).closest(
       ".mantine-Card-root",
     ) as HTMLElement;

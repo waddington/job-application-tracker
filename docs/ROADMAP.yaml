@@ -86,3 +86,15 @@ phases:
       - {id: backup-export, name: "One-click backup archive of the data directory", owner: lead, status: done, estimate_h: 2, depends: [data-dir], prd: docs/prd/tracker.md}
       - {id: search, name: "Full-text search across notes and entities", owner: lead, status: done, estimate_h: 3, depends: [notes], prd: docs/prd/tracker.md}
       - {id: readme-refresh-4, name: "README and llms.txt refresh: extras, install guide, v1 release notes", owner: lead, status: done, estimate_h: 1, depends: [offers, backup-export, search]}
+
+  - id: P7
+    name: Feedback from real use
+    goal: Gaps Kai finds while using it for real, fixed as they come up
+    tasks:
+      - {id: status-wording, name: "Docs say early development (0.1.0), not yet tested in real use", owner: lead, status: done, estimate_h: 0.5, depends: [readme-refresh-4]}
+      - {id: delete-entities, name: "Delete companies, roles, agencies, people and applications", owner: lead, status: done, estimate_h: 2, depends: [detail-pages], prd: docs/prd/tracker.md}
+      - {id: user-guide, name: "User guide: install, your data, a second computer, every page and command", owner: lead, status: done, estimate_h: 2, depends: [readme-refresh-4]}
+      - {id: people, name: "Person pages, in-house recruiters, add people from companies and applications, rename companies and agencies", owner: lead, status: done, estimate_h: 4, depends: [recruiters], prd: docs/prd/tracker.md}
+      - {id: waiting, name: "Waiting to hear back, on applications and people", owner: lead, status: done, estimate_h: 3, depends: [next-actions, people], prd: docs/prd/tracker.md}
+      - {id: compaction-doc, name: "Compaction prompt for the build session", owner: lead, status: done, estimate_h: 0.5, depends: []}
+      - {id: home-timeline, name: "Overview home page, timeline across everything, grouped menu and how-it-works help", owner: lead, status: done, estimate_h: 5, depends: [next-actions, waiting], prd: docs/prd/tracker.md}

@@ -770,3 +770,6 @@ router.include_router(offers_router)
 from .search import router as search_router  # noqa: E402
 
 router.include_router(search_router)
+from .timeline import router as timeline_router  # noqa: E402
+
+router.include_router(timeline_router)

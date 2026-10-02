@@ -134,9 +134,6 @@ export function ApplicationsPage() {
             ]}
             aria-label="View"
           />
-          <Button leftSection={<IconPlus size={16} />} onClick={() => setCreating(true)}>
-            New application
-          </Button>
         </Group>
       </Group>
 

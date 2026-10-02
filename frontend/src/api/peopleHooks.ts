@@ -20,6 +20,7 @@ function useRefreshPeople() {
       ["applications"],
       ["application"],
       ["contact-summary"],
+      ["timeline"],
     ]) {
       void qc.invalidateQueries({ queryKey: key });
     }

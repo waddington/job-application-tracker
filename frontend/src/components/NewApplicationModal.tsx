@@ -169,12 +169,19 @@ export function NewApplicationModal({
     <Modal opened={opened} onClose={() => close()} title="New application" size="lg">
       <form onSubmit={submit}>
         <Stack>
+          <Text size="sm" c="dimmed">
+            Type names as you go: a company, agency or person you haven't added yet is created for you.
+          </Text>
           <Group grow align="flex-start">
             <Autocomplete
               label="Company"
               placeholder="Contoso"
               data={unique((companies ?? []).map((c) => c.name))}
-              description={form.values.company.trim() && !company ? "New company" : undefined}
+              description={
+                form.values.company.trim() && !company
+                  ? "New company: it's added for you"
+                  : "Pick one or type a new name"
+              }
               data-autofocus
               {...form.getInputProps("company")}
             />
@@ -224,14 +231,20 @@ export function NewApplicationModal({
                 label="Agency"
                 placeholder="Northwind Talent"
                 data={unique((agencies ?? []).map((a) => a.name))}
-                description={typedNewAgency ? "New agency" : undefined}
+                description={
+                  typedNewAgency ? "New agency: it's added for you" : "Pick one or type a new name"
+                }
                 {...form.getInputProps("agency")}
               />
               <Autocomplete
                 label="Recruiter"
                 placeholder="Alex Recruiter"
                 data={unique(recruitersHere.map((c) => c.name))}
-                description={form.values.recruiter.trim() && !recruiterMatch ? "New contact" : undefined}
+                description={
+                  form.values.recruiter.trim() && !recruiterMatch
+                    ? "New person: they're added for you"
+                    : "Optional"
+                }
                 {...form.getInputProps("recruiter")}
               />
             </Group>

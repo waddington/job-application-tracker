@@ -6,13 +6,28 @@ import {
   IconChartSankey,
   IconChecklist,
   IconFileText,
+  IconHome,
   IconNotes,
+  IconTimeline,
   IconUsers,
   type Icon,
 } from "@tabler/icons-react";
 
+export type NavGroup = "Today" | "Your applications" | "People and companies" | "Files and notes" | "Review";
+
+/** Menu headings, in order. */
+export const NAV_GROUPS: NavGroup[] = [
+  "Today",
+  "Your applications",
+  "People and companies",
+  "Files and notes",
+  "Review",
+];
+
 export interface NavItem {
   path: string;
+  /** The heading it sits under in the menu. */
+  group: NavGroup;
   label: string;
   icon: Icon;
   /** Roadmap task that builds the page (shown on its placeholder). */
@@ -20,17 +35,35 @@ export interface NavItem {
   description: string;
 }
 
-// Navigation from docs/prd/tracker.md §7. Next actions is the home page.
+// Navigation from docs/prd/tracker.md §7, grouped so the menu reads as a map of the app.
 export const NAV: NavItem[] = [
   {
     path: "/",
+    group: "Today",
+    label: "Overview",
+    icon: IconHome,
+    task: "home",
+    description: "Where things stand: what needs doing, what's coming up and what happened lately.",
+  },
+  {
+    path: "/next-actions",
+    group: "Today",
     label: "Next actions",
     icon: IconChecklist,
     task: "next-actions",
     description: "Stale applications, follow-ups, upcoming interviews and deadlines.",
   },
   {
+    path: "/timeline",
+    group: "Today",
+    label: "Timeline",
+    icon: IconTimeline,
+    task: "timeline",
+    description: "Everything that happened, across every application, company, agency and person.",
+  },
+  {
     path: "/applications",
+    group: "Your applications",
     label: "Applications",
     icon: IconBriefcase,
     task: "app-list",
@@ -38,6 +71,7 @@ export const NAV: NavItem[] = [
   },
   {
     path: "/recruiters",
+    group: "People and companies",
     label: "Recruiters",
     icon: IconUsers,
     task: "recruiters",
@@ -45,6 +79,7 @@ export const NAV: NavItem[] = [
   },
   {
     path: "/companies",
+    group: "People and companies",
     label: "Companies",
     icon: IconBuilding,
     task: "detail-pages",
@@ -52,6 +87,7 @@ export const NAV: NavItem[] = [
   },
   {
     path: "/interviews",
+    group: "Your applications",
     label: "Interviews",
     icon: IconCalendarEvent,
     task: "interviews",
@@ -59,6 +95,7 @@ export const NAV: NavItem[] = [
   },
   {
     path: "/offers",
+    group: "Your applications",
     label: "Offers",
     icon: IconCash,
     task: "offers",
@@ -66,6 +103,7 @@ export const NAV: NavItem[] = [
   },
   {
     path: "/documents",
+    group: "Files and notes",
     label: "Documents",
     icon: IconFileText,
     task: "documents",
@@ -73,6 +111,7 @@ export const NAV: NavItem[] = [
   },
   {
     path: "/notes",
+    group: "Files and notes",
     label: "Notes",
     icon: IconNotes,
     task: "notes",
@@ -80,6 +119,7 @@ export const NAV: NavItem[] = [
   },
   {
     path: "/insights",
+    group: "Review",
     label: "Insights",
     icon: IconChartSankey,
     task: "sankey",

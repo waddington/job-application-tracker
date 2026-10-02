@@ -87,8 +87,9 @@ database version. Use it whenever you're not sure.
 uv run jat serve
 ```
 
-That's it. The home page is **Next actions**: what to chase, what's coming up, and offers to
-answer. See [Using the app](using-the-app.md).
+That's it. The home page is the **Overview**: where things stand, what needs attention and
+what's coming up. Press **New application** (top right) to add your first one, or **?** for how
+it works. See [Using the app](using-the-app.md).
 
 ## Updating to a newer version
 
