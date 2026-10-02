@@ -494,8 +494,26 @@ def quick_create(body: S.QuickApplicationIn, session: SessionDep, workflow: Work
             agency = session.get(Agency, recruiter.agency_id)
         agency_id = agency.id if agency else None
         recruiter_id = recruiter.id if recruiter else None
-    elif body.agency_id or body.agency_name or body.recruiter_id or body.recruiter_name:
-        raise HTTPException(422, "Only applications through a recruiter can have an agency or recruiter.")
+    elif body.agency_id or body.agency_name:
+        raise HTTPException(422, "Only applications through a recruiter can have an agency.")
+    elif body.recruiter_id or (body.recruiter_name or "").strip():
+        if body.route != "direct":
+            raise HTTPException(422, "A referral can't have a recruiter; link the referrer as a person instead.")
+        # Someone at the company reached out (an in-house recruiter or head of talent).
+        if body.recruiter_id:
+            recruiter = get_or_404(session, Contact, body.recruiter_id)
+        else:
+            name = (body.recruiter_name or "").strip()
+            recruiter = session.scalars(
+                select(Contact)
+                .where(Contact.company_id == company.id, func.lower(Contact.name) == name.lower())
+                .limit(1)
+            ).first()
+            if recruiter is None:
+                recruiter = Contact(name=name, company_id=company.id)
+                session.add(recruiter)
+                session.flush()
+        recruiter_id = recruiter.id
 
     data = {"route": body.route, "agency_id": agency_id, "recruiter_id": recruiter_id}
     data.update(_check_route(session, data))

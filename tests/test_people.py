@@ -40,3 +40,16 @@ def test_person_summary(client, seeded):
     lonely = client.get(f"/api/v1/contacts/{manager['id']}/summary").json()
     assert (lonely["applications"], len(lonely["interviews"])) == ([], 1)
     assert client.get("/api/v1/contacts/nope/summary").status_code == 404
+
+
+def test_quick_create_direct_with_an_in_house_recruiter(client, seeded):
+    body = {"company_name": "Fabrikam", "role_title": "Platform Engineer", "route": "direct"}
+    body["recruiter_name"] = "Jo Park"
+    app = post(client, "/api/v1/applications/quick", body)
+    jo = client.get(f"/api/v1/contacts/{app['recruiter_id']}").json()
+    assert (jo["name"], jo["agency_id"], jo["company_id"] is not None) == ("Jo Park", None, True)
+    # The same name at the same company is the same person.
+    again = post(client, "/api/v1/applications/quick", {**body, "role_title": "SRE"})
+    assert again["recruiter_id"] == app["recruiter_id"]
+    r = client.post("/api/v1/applications/quick", json={**body, "route": "referral"})
+    assert r.status_code == 422
