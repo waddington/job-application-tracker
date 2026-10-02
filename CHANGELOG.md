@@ -59,6 +59,9 @@ is built and merged, but not yet tested in real use. Numbers in brackets are pul
   instead of only the getting-started steps (#52).
 - **Favicon**: the header's target mark shows in the browser tab, and as the icon when the
   tracker is added to a phone's home screen (#54).
+- **To-dos**: short reminders in your own words, on their own or about a person, company,
+  agency, role or application, with an optional date. Add and tick them off on Next actions,
+  the Overview and the page they're about; search finds them (#55).
 
 ### Under the hood
 - Python 3.12, FastAPI, SQLAlchemy, Alembic and SQLite; React 19, TypeScript, Mantine and
