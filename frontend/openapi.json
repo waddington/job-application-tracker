@@ -5670,6 +5670,11 @@
             ],
             "title": "Role Title"
           },
+          "seq": {
+            "default": 0,
+            "title": "Seq",
+            "type": "integer"
+          },
           "title": {
             "title": "Title",
             "type": "string"

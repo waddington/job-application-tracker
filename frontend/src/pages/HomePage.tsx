@@ -87,7 +87,8 @@ export function HomePage() {
   const { data: rows, isLoading, isError } = useApplications({});
   const { data: workflow } = useWorkflow();
   const { data: next } = useNextActions();
-  const since = useMemo(() => dayjs().startOf("day").subtract(14, "day").format(), []);
+  const today = dayjs().format("YYYY-MM-DD"); // so "the last two weeks" moves on at midnight
+  const since = useMemo(() => dayjs(today).subtract(14, "day").format(), [today]);
   const { data: recent } = useTimeline({ since });
 
   const stages = stageLookup(workflow);
@@ -104,6 +105,8 @@ export function HomePage() {
       why: `Gone quiet: last activity ${ago(r.days_since_activity)}`,
     })),
   ];
+  // Next actions lists rounds with no date yet after the booked ones; they aren't "coming up".
+  const booked = (next?.upcoming ?? []).filter((i) => i.starts_at || i.deadline_at);
   const waiting = (next?.waiting.length ?? 0) + (next?.waiting_people.length ?? 0);
   const pipeline = (workflow?.stages ?? [])
     .filter((s) => s.kind === "active")
@@ -156,7 +159,7 @@ export function HomePage() {
             />
             <Stat
               label="Interviews"
-              value={next?.upcoming.length}
+              value={next && booked.length}
               to="/interviews"
               hint="in the next two weeks"
             />
@@ -209,11 +212,11 @@ export function HomePage() {
               )}
             </Panel>
             <Panel title="Coming up" link={{ to: "/interviews", label: "All interviews" }}>
-              {(next?.upcoming.length ?? 0) + (next?.offer_deadlines.length ?? 0) === 0 ? (
+              {booked.length + (next?.offer_deadlines.length ?? 0) === 0 ? (
                 <Empty>No interviews or offer deadlines in the next two weeks.</Empty>
               ) : (
                 <Stack gap={6}>
-                  {next!.upcoming.slice(0, 6).map((i) => (
+                  {booked.slice(0, 6).map((i) => (
                     <div key={i.id}>
                       <Anchor component={Link} to={`/applications/${i.application_id}`} size="sm" fw={500}>
                         {i.company_name} · {i.label}

@@ -32,7 +32,7 @@ describe("app shell", () => {
       "href",
       "/",
     );
-    expect(screen.getByRole("button", { name: "New application" })).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: "New application" }).length).toBeGreaterThan(0);
     expect(screen.getByRole("link", { name: "Download a backup" })).toHaveAttribute(
       "href",
       "/api/v1/backup/archive",

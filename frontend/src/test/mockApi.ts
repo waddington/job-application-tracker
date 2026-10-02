@@ -104,3 +104,22 @@ export function row(overrides: Record<string, unknown> = {}) {
     ...overrides,
   };
 }
+
+/** A Timeline entry (an application's logged call, by default). */
+export const item = (overrides: Record<string, unknown> = {}) => ({
+  id: "event:e1",
+  at: "2026-10-01T09:30:00Z",
+  all_day: false,
+  category: "message",
+  title: "Call with Alex",
+  detail: null,
+  application_id: "a1",
+  role_title: "Backend Engineer",
+  company_id: "co1",
+  company_name: "Contoso",
+  agency_id: "ag1",
+  agency_name: "Northwind Talent",
+  people: [{ id: "c1", name: "Alex Recruiter" }],
+  archived: false,
+  ...overrides,
+});

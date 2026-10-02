@@ -1,4 +1,4 @@
-import { ActionIcon, Button, List, Modal, Stack, Text, ThemeIcon, Tooltip } from "@mantine/core";
+import { ActionIcon, Box, Button, List, Modal, Stack, Text, ThemeIcon, Tooltip } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { IconHelp, IconPlus } from "@tabler/icons-react";
 import { useRouter } from "@tanstack/react-router";
@@ -108,14 +108,35 @@ export function HelpButton() {
 }
 
 /** "New application" from any page; opens the new application's page once it's added. */
-export function NewApplicationButton({ size = "sm" }: { size?: "xs" | "sm" | "md" }) {
+export function NewApplicationButton({
+  size = "sm",
+  compact,
+}: {
+  size?: "xs" | "sm" | "md";
+  compact?: boolean;
+}) {
   const [opened, { open, close }] = useDisclosure();
   const router = useRouter();
   return (
     <>
-      <Button size={size} leftSection={<IconPlus size={16} />} onClick={open}>
-        New application
-      </Button>
+      {compact ? (
+        <>
+          <Box visibleFrom="sm">
+            <Button size={size} leftSection={<IconPlus size={16} />} onClick={open}>
+              New application
+            </Button>
+          </Box>
+          <Tooltip label="New application">
+            <ActionIcon hiddenFrom="sm" size="lg" aria-label="New application" onClick={open}>
+              <IconPlus size={18} />
+            </ActionIcon>
+          </Tooltip>
+        </>
+      ) : (
+        <Button size={size} leftSection={<IconPlus size={16} />} onClick={open}>
+          New application
+        </Button>
+      )}
       <NewApplicationModal
         opened={opened}
         onClose={(id) => {

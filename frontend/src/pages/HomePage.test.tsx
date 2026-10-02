@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { App } from "../App";
 import { makeRouter } from "../router";
-import { mockApi, row, WORKFLOW } from "../test/mockApi";
+import { item, mockApi, row, WORKFLOW } from "../test/mockApi";
 
 function renderAt(path: string) {
   render(<App router={makeRouter(createMemoryHistory({ initialEntries: [path] }))} />);
@@ -21,24 +21,6 @@ const NOTHING = {
   today: "2026-10-02",
 };
 
-export const item = (overrides: Record<string, unknown> = {}) => ({
-  id: "event:e1",
-  at: "2026-10-01T09:30:00Z",
-  all_day: false,
-  category: "message",
-  title: "Call with Alex",
-  detail: null,
-  application_id: "a1",
-  role_title: "Backend Engineer",
-  company_id: "co1",
-  company_name: "Contoso",
-  agency_id: "ag1",
-  agency_name: "Northwind Talent",
-  people: [{ id: "c1", name: "Alex Recruiter" }],
-  archived: false,
-  ...overrides,
-});
-
 afterEach(() => vi.unstubAllGlobals());
 
 describe("overview", () => {
@@ -53,8 +35,8 @@ describe("overview", () => {
     renderAt("/");
     expect(await screen.findByRole("heading", { name: "Getting started" })).toBeInTheDocument();
     expect(screen.getByText("Add an application")).toBeInTheDocument();
-    // One in the header, one in the card.
-    expect(screen.getAllByRole("button", { name: "New application" })).toHaveLength(2);
+    // The header's (full and phone-sized) and the card's.
+    expect(screen.getAllByRole("button", { name: "New application" })).toHaveLength(3);
   });
 
   it("sums up where things stand", async () => {
@@ -69,6 +51,17 @@ describe("overview", () => {
         ...NOTHING,
         stale: [row({ id: "a2", company_name: "Fabrikam", days_since_activity: 12 })],
         waiting: [row({ id: "a3", awaiting_reply_since: "2026-09-30" })],
+        // A round with no date yet: not "in the next two weeks".
+        upcoming: [
+          {
+            id: "i9",
+            application_id: "a1",
+            company_name: "Contoso",
+            label: "Round 3",
+            starts_at: null,
+            deadline_at: null,
+          },
+        ],
       },
       "/api/v1/timeline": { items: [item()], now: "2026-10-02T10:00:00Z" },
       "/api/v1/health": {},
@@ -77,6 +70,8 @@ describe("overview", () => {
     expect(await screen.findByRole("link", { name: "Active: 3" })).toHaveAttribute("href", "/applications");
     expect(screen.getByRole("link", { name: "Needs attention: 1" })).toHaveAttribute("href", "/next-actions");
     expect(screen.getByRole("link", { name: "Waiting: 1" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Interviews: 0" })).toBeInTheDocument();
+    expect(screen.queryByText(/1970/)).not.toBeInTheDocument();
     expect(screen.getByText(/Gone quiet: last activity 12 days ago/)).toBeInTheDocument();
     expect(screen.getByText("Applied 2")).toBeInTheDocument();
     expect(screen.getByText("Screen 1")).toBeInTheDocument();

@@ -92,7 +92,8 @@ Archived applications are included.
   added, other. Pick any number.
 - **List** groups entries by day. **Lanes** draws one row per application, company, agency or
   person against time: dots for what happened (hollow for what's ahead) and a dashed line for
-  now. Hover a dot to see what it was; click it to open the application. Bookmark
+  now. Hover a dot to see what it was; click it to open its application (or
+  the person, company or agency it's about). Bookmark
   `/timeline?view=lanes` to open straight into lanes.
 
 ## Applications: list and board

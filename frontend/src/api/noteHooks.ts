@@ -35,6 +35,7 @@ function useRefreshNotes() {
   return () => {
     void qc.invalidateQueries({ queryKey: ["notes"] });
     void qc.invalidateQueries({ queryKey: ["note"] });
+    void qc.invalidateQueries({ queryKey: ["timeline"] });
     invalidateApplicationViews(qc); // notes on an application go on its timeline
   };
 }

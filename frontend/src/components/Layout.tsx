@@ -76,7 +76,7 @@ export function Layout() {
             </Anchor>
           </Group>
           <Group gap="sm" wrap="nowrap">
-            <NewApplicationButton />
+            <NewApplicationButton compact />
             <HeaderSearch />
             <HelpButton />
             <ColorSchemeToggle />

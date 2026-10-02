@@ -97,4 +97,4 @@ phases:
       - {id: people, name: "Person pages, in-house recruiters, add people from companies and applications, rename companies and agencies", owner: lead, status: done, estimate_h: 4, depends: [recruiters], prd: docs/prd/tracker.md}
       - {id: waiting, name: "Waiting to hear back, on applications and people", owner: lead, status: done, estimate_h: 3, depends: [next-actions, people], prd: docs/prd/tracker.md}
       - {id: compaction-doc, name: "Compaction prompt for the build session", owner: lead, status: done, estimate_h: 0.5, depends: []}
-      - {id: home-timeline, name: "Overview home page, timeline across everything, grouped menu and how-it-works help", owner: lead, status: building, estimate_h: 5, depends: [next-actions, waiting], prd: docs/prd/tracker.md}
+      - {id: home-timeline, name: "Overview home page, timeline across everything, grouped menu and how-it-works help", owner: lead, status: done, estimate_h: 5, depends: [next-actions, waiting], prd: docs/prd/tracker.md}

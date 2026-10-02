@@ -2596,6 +2596,11 @@ export interface components {
             people: components["schemas"]["TimelinePerson"][];
             /** Role Title */
             role_title?: string | null;
+            /**
+             * Seq
+             * @default 0
+             */
+            seq: number;
             /** Title */
             title: string;
         };

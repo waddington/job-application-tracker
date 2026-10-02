@@ -48,6 +48,7 @@ class TimelinePerson(BaseModel):
 
 class TimelineItem(BaseModel):
     id: str  # "<source>:<id>", unique within the response
+    seq: int = 0  # breaks ties between events logged at the same moment
     at: datetime
     all_day: bool  # `at` stands for a calendar date (shown without a time)
     category: Category
@@ -191,6 +192,7 @@ def timeline(
                 on_app(
                     e.application_id,
                     id=f"event:{e.id}",
+                    seq=e.seq,
                     at=e.occurred_at,
                     all_day=False,
                     category=_event_category(e),
@@ -207,9 +209,11 @@ def timeline(
         when = i.starts_at or i.deadline_at
         if when is None or i.application_id not in apps:
             continue
-        due = i.starts_at is None
-        status = "due" if due else ("booked" if i.status == "scheduled" else i.status)
-        panel = [p for cid in on_panel[i.id] if (p := person(cid))]
+        # A done round says so; a scheduled one is booked (a time) or due (a deadline).
+        status = i.status if i.status != "scheduled" else ("due" if i.starts_at is None else "booked")
+        # The panel plus the application's people, so filtering by the recruiter still finds it.
+        ids = list(dict.fromkeys([*on_panel[i.id], *people[i.application_id]]))
+        panel = [p for cid in ids if (p := person(cid))]
         items.append(
             on_app(
                 i.application_id,
@@ -218,12 +222,16 @@ def timeline(
                 all_day=False,
                 category="interview",
                 title=f"{interviews_svc.label(i)} ({status})",
-                people=panel or None,
+                people=panel,
             )
         )
 
-    for o in session.scalars(select(Offer).where(Offer.status == "pending", Offer.respond_by.is_not(None))):
-        if o.application_id in apps:
+    # A revised offer replaces the one before it (as on Next actions): only the newest counts.
+    newest: dict[str, Offer] = {}
+    for o in session.scalars(select(Offer).order_by(Offer.created_at.desc(), Offer.id.desc())):
+        newest.setdefault(o.application_id, o)
+    for o in newest.values():
+        if o.status == "pending" and o.respond_by is not None and o.application_id in apps:
             items.append(
                 on_app(
                     o.application_id,
@@ -322,5 +330,5 @@ def timeline(
         return not (application_id and item.application_id != application_id)
 
     out = [i for i in items if keep(i)]
-    out.sort(key=lambda i: (i.at, i.id), reverse=True)
+    out.sort(key=lambda i: (i.at, i.seq, i.id), reverse=True)
     return Timeline(items=out, now=now)

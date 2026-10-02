@@ -79,3 +79,33 @@ def test_offer_reply_due_and_archived(client, seeded):
     reply = next(i for i in items if i["id"].startswith("offer-reply:"))
     assert reply["all_day"] is True and reply["at"].startswith(str(due))
     assert all(i["archived"] for i in items)
+
+
+def test_revised_offer_and_panel(client, seeded):
+    app = post(
+        client,
+        "/api/v1/applications",
+        {
+            "role_id": seeded["role"]["id"],
+            "stage": "offer",
+            "route": "agency",
+            "agency_id": seeded["agency"]["id"],
+            "recruiter_id": seeded["recruiter"]["id"],
+        },
+    )
+    soon = date.today() + timedelta(days=3)
+    later = date.today() + timedelta(days=9)
+    post(client, f"/api/v1/applications/{app['id']}/offers", {"salary": 80000, "respond_by": str(soon)})
+    post(client, f"/api/v1/applications/{app['id']}/offers", {"salary": 90000, "respond_by": str(later)})
+    replies = [i for i in _timeline(client, category=["offer"]) if i["id"].startswith("offer-reply:")]
+    assert [r["at"][:10] for r in replies] == [str(later)]
+
+    hm = post(client, "/api/v1/contacts", {"name": "Riley Chen", "company_id": seeded["company"]["id"]})
+    post(
+        client,
+        f"/api/v1/applications/{app['id']}/interviews",
+        {"title": "Final", "starts_at": _iso(2), "interviewer_ids": [hm["id"]]},
+    )
+    by_recruiter = _timeline(client, contact_id=seeded["recruiter"]["id"], category=["interview"])
+    final = next(i for i in by_recruiter if i["id"].startswith("interview:"))
+    assert {p["name"] for p in final["people"]} == {"Riley Chen", "Alex Recruiter"}

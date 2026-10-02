@@ -177,6 +177,15 @@ function ListView({ items, now }: { items: TimelineItem[]; now: string }) {
   );
 }
 
+/** Where a dot goes: its application, else the person, company or agency it's about. */
+function hrefOf(item: TimelineItem): string {
+  if (item.application_id) return `/applications/${item.application_id}`;
+  if (item.people[0]) return `/people/${item.people[0].id}`;
+  if (item.company_id) return `/companies/${item.company_id}`;
+  if (item.agency_id) return `/agencies/${item.agency_id}`;
+  return "/timeline";
+}
+
 interface Lane {
   key: string;
   label: string;
@@ -295,11 +304,7 @@ function LanesView({ items, now, since }: { items: TimelineItem[]; now: string; 
                   >
                     {lane.label}
                   </Anchor>
-                  <Box
-                    role="list"
-                    aria-label={lane.label}
-                    style={{ position: "relative", flex: 1, height: 28 }}
-                  >
+                  <Box style={{ position: "relative", flex: 1, height: 28 }}>
                     <Box
                       style={{
                         position: "absolute",
@@ -320,39 +325,43 @@ function LanesView({ items, now, since }: { items: TimelineItem[]; now: string; 
                         borderLeft: "1px dashed var(--mantine-color-red-5)",
                       }}
                     />
-                    {lane.items.map((item) => {
-                      const cat = categoryOf(item.category);
-                      const when = `${dayjs(dayOf(item)).format("D MMM YYYY")}${item.all_day ? "" : ` ${timeOf(item)}`}`;
-                      return (
-                        <Tooltip key={item.id} label={`${when} · ${item.title}`} withArrow>
-                          <Box
-                            component="button"
-                            role="listitem"
-                            aria-label={`${when}: ${item.title}`}
-                            onClick={() =>
-                              item.application_id &&
-                              router.history.push(`/applications/${item.application_id}`)
-                            }
-                            style={{
-                              position: "absolute",
-                              top: 8,
-                              left: `calc(${pct(item.at)}% - 6px)`,
-                              width: 12,
-                              height: 12,
-                              padding: 0,
-                              borderRadius: "50%",
-                              border: isAhead(item, now)
-                                ? `2px solid var(--mantine-color-${cat.color}-6)`
-                                : "2px solid var(--mantine-color-body)",
-                              background: isAhead(item, now)
-                                ? "var(--mantine-color-body)"
-                                : `var(--mantine-color-${cat.color}-6)`,
-                              cursor: item.application_id ? "pointer" : "default",
-                            }}
-                          />
-                        </Tooltip>
-                      );
-                    })}
+                    <Box
+                      component="ul"
+                      aria-label={lane.label}
+                      style={{ position: "absolute", inset: 0, margin: 0, padding: 0, listStyle: "none" }}
+                    >
+                      {lane.items.map((item) => {
+                        const cat = categoryOf(item.category);
+                        const when = `${dayjs(dayOf(item)).format("D MMM YYYY")}${item.all_day ? "" : ` ${timeOf(item)}`}`;
+                        return (
+                          <li key={item.id}>
+                            <Tooltip label={`${when} · ${item.title}`} withArrow>
+                              <Box
+                                component="button"
+                                aria-label={`${when} · ${cat.one}: ${item.title}`}
+                                onClick={() => router.history.push(hrefOf(item))}
+                                style={{
+                                  position: "absolute",
+                                  top: 8,
+                                  left: `calc(${pct(item.at)}% - 6px)`,
+                                  width: 12,
+                                  height: 12,
+                                  padding: 0,
+                                  borderRadius: "50%",
+                                  border: isAhead(item, now)
+                                    ? `2px solid var(--mantine-color-${cat.color}-6)`
+                                    : "2px solid var(--mantine-color-body)",
+                                  background: isAhead(item, now)
+                                    ? "var(--mantine-color-body)"
+                                    : `var(--mantine-color-${cat.color}-6)`,
+                                  cursor: "pointer",
+                                }}
+                              />
+                            </Tooltip>
+                          </li>
+                        );
+                      })}
+                    </Box>
                   </Box>
                 </Box>
               );

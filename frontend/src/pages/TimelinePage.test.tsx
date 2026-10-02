@@ -4,8 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { App } from "../App";
 import { makeRouter } from "../router";
-import { mockApi } from "../test/mockApi";
-import { item } from "./HomePage.test";
+import { item, mockApi } from "../test/mockApi";
 
 function renderTimeline() {
   render(<App router={makeRouter(createMemoryHistory({ initialEntries: ["/timeline"] }))} />);
@@ -81,13 +80,13 @@ describe("timeline", () => {
     renderTimeline();
     fireEvent.click(await screen.findByText("Lanes"));
     const lane = await screen.findByRole("list", { name: "Contoso · Backend Engineer" });
-    expect(within(lane).getAllByRole("listitem")).toHaveLength(2);
+    expect(within(lane).getAllByRole("button")).toHaveLength(2);
     fireEvent.click(screen.getByText("Company"));
     expect(await screen.findByRole("list", { name: "Fabrikam" })).toBeInTheDocument();
     expect(screen.getByRole("list", { name: "Contoso" })).toBeInTheDocument();
     fireEvent.click(screen.getByText("Person"));
     expect(
-      within(await screen.findByRole("list", { name: "Alex Recruiter" })).getAllByRole("listitem"),
+      within(await screen.findByRole("list", { name: "Alex Recruiter" })).getAllByRole("button"),
     ).toHaveLength(2);
   });
 });
