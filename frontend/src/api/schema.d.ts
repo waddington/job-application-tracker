@@ -969,6 +969,29 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/timeline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Timeline
+         * @description Everything in [since, until), newest first, archived applications included.
+         *
+         *     Filter by `category` (any of them), or by one company, agency, person or application: an
+         *     application's items count for its company, its agency and the people on it.
+         */
+        get: operations["timeline_api_v1_timeline_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/workflow": {
         parameters: {
             query?: never;
@@ -2522,6 +2545,66 @@ export interface components {
             routes: components["schemas"]["RouteStatsOut"][];
             /** Stages */
             stages: components["schemas"]["StageStatsOut"][];
+        };
+        /** Timeline */
+        Timeline: {
+            /** Items */
+            items: components["schemas"]["TimelineItem"][];
+            /**
+             * Now
+             * Format: date-time
+             */
+            now: string;
+        };
+        /** TimelineItem */
+        TimelineItem: {
+            /** Agency Id */
+            agency_id?: string | null;
+            /** Agency Name */
+            agency_name?: string | null;
+            /** All Day */
+            all_day: boolean;
+            /** Application Id */
+            application_id?: string | null;
+            /**
+             * Archived
+             * @default false
+             */
+            archived: boolean;
+            /**
+             * At
+             * Format: date-time
+             */
+            at: string;
+            /**
+             * Category
+             * @enum {string}
+             */
+            category: "stage" | "message" | "interview" | "offer" | "note" | "file" | "document" | "added" | "other";
+            /** Company Id */
+            company_id?: string | null;
+            /** Company Name */
+            company_name?: string | null;
+            /** Detail */
+            detail?: string | null;
+            /** Id */
+            id: string;
+            /**
+             * People
+             * @default []
+             */
+            people: components["schemas"]["TimelinePerson"][];
+            /** Role Title */
+            role_title?: string | null;
+            /** Title */
+            title: string;
+        };
+        /** TimelinePerson */
+        TimelinePerson: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
         };
         /** ValidationError */
         ValidationError: {
@@ -5154,6 +5237,43 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SearchHit"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    timeline_api_v1_timeline_get: {
+        parameters: {
+            query?: {
+                since?: string | null;
+                until?: string | null;
+                category?: ("stage" | "message" | "interview" | "offer" | "note" | "file" | "document" | "added" | "other")[] | null;
+                company_id?: string | null;
+                agency_id?: string | null;
+                contact_id?: string | null;
+                application_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Timeline"];
                 };
             };
             /** @description Validation Error */
