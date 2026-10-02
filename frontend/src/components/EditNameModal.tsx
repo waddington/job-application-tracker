@@ -23,7 +23,10 @@ export function EditNameModal({
     initialValues: { name, website: website ?? "" },
     validate: {
       name: (v) => (v.trim() ? null : "It needs a name"),
-      website: (v) => (!v.trim() || /^https?:\/\//.test(v.trim()) ? null : "Websites start with https://"),
+      website: (v) =>
+        !v.trim() || /^https?:\/\/[^\s/]+\.[^\s]+$/.test(v.trim())
+          ? null
+          : "Like https://contoso.example.com",
     },
   });
   return (

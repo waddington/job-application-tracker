@@ -37,7 +37,12 @@ export function CreatableSelect({
       disabled={props.disabled || creating}
       onChange={(next) => {
         if (next === NEW) {
-          void onCreate(typed).then(onChange);
+          onCreate(typed)
+            .then((id) => {
+              setSearch("");
+              onChange(id);
+            })
+            .catch(() => setSearch(typed)); // the error is shown; keep what was typed to try again
         } else {
           onChange(next);
         }

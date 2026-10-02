@@ -34,7 +34,7 @@ def test_person_summary(client, seeded):
     out = client.get(f"/api/v1/contacts/{talent['id']}/summary").json()
     assert (out["contact"]["title"], out["company_name"], out["agency_name"]) == ("Head of Talent", "Contoso", None)
     relations = {a["id"]: a["relations"] for a in out["applications"]}
-    assert relations == {app["id"]: ["recruiter", "internal_recruiter"], other["id"]: ["hiring_manager"]}
+    assert relations == {app["id"]: ["source", "internal_recruiter"], other["id"]: ["hiring_manager"]}
     assert [i["label"] for i in out["interviews"]] == ["Round 1 · Intro call"]
 
     lonely = client.get(f"/api/v1/contacts/{manager['id']}/summary").json()
