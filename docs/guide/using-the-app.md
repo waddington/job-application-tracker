@@ -73,8 +73,11 @@ Where things stand, at a glance:
   companies, agencies and people being added.
 - **How it works**: the same numbered steps as the **?** button.
 
-With no applications yet, it shows a *Getting started* card instead, with a **New
-application** button.
+With nothing in the tracker yet, it shows a *Getting started* card instead, with a **New
+application** button. Once you've added anything else (people, companies, agencies, calls
+or roles) but no applications, the Overview shows it as usual (recent activity then includes what you've added), under a short
+*No applications yet* card that sums up what you have and links to **Roles to decide** and
+**New application**.
 
 ## Next actions
 
