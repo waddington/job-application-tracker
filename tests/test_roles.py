@@ -94,6 +94,11 @@ def test_passed_on_the_timeline_and_validation(client, seeded):
     assert bad.status_code == 422
     bad = client.patch(f"/api/v1/roles/{role['id']}", json={"decision": "maybe"})
     assert bad.status_code == 422
+    # The call has to be with the person who told you about it.
+    riley = post(client, "/api/v1/contacts", {"name": "Riley Chen", "company_id": seeded["company"]["id"]})
+    alexs = post(client, "/api/v1/meetings", {"contact_id": seeded["recruiter"]["id"], "starts_at": _iso(-1)})
+    bad = client.patch(f"/api/v1/roles/{role['id']}", json={"contact_id": riley["id"], "meeting_id": alexs["id"]})
+    assert bad.status_code == 422
 
 
 def test_deleting_the_call_or_person_keeps_the_role(client, seeded):

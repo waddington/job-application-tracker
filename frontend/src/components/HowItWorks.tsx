@@ -86,8 +86,8 @@ export function HowItWorks() {
       </List>
       <Text size="xs" c="dimmed">
         Someone got in touch without a specific role? Add them on <b>Recruiters</b> (agency recruiters) or on
-        the company's page (people who work there), then <b>Book a call</b> on their page. After the call, add the roles they mentioned and decide on
-        each under <b>Roles</b>.
+        the company's page (people who work there), then <b>Book a call</b> on their page. After the call, add
+        the roles they mentioned and decide on each under <b>Roles</b>.
       </Text>
     </Stack>
   );

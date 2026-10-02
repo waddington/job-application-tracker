@@ -1,4 +1,5 @@
 import {
+  ActionIcon,
   Anchor,
   Badge,
   Button,
@@ -15,7 +16,7 @@ import {
 } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import { useForm } from "@mantine/form";
-import { IconPlus } from "@tabler/icons-react";
+import { IconPencil, IconPlus } from "@tabler/icons-react";
 import { Link, useRouter } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { useState } from "react";
@@ -76,12 +77,15 @@ export function pay(role: RoleSummary): string | null {
 export function RoleFormModal({
   opened,
   onClose,
+  role,
   contactId,
   meetingId,
   companyId,
 }: {
   opened: boolean;
   onClose: () => void;
+  /** Edit this role instead of adding one. */
+  role?: RoleSummary;
   contactId?: string;
   meetingId?: string;
   companyId?: string;
@@ -92,19 +96,19 @@ export function RoleFormModal({
   const save = useSaveRole();
   const form = useForm<Values>({
     initialValues: {
-      companyId: companyId ?? null,
-      title: "",
-      url: "",
-      location: "",
-      workMode: null,
-      employment: null,
-      salaryMin: "",
-      salaryMax: "",
-      dayRate: "",
-      ir35: null,
-      contactId: contactId ?? null,
-      meetingId: meetingId ?? null,
-      description: "",
+      companyId: role?.company_id ?? companyId ?? null,
+      title: role?.title ?? "",
+      url: role?.url ?? "",
+      location: role?.location ?? "",
+      workMode: (role?.work_mode as WorkMode | null) ?? null,
+      employment: (role?.employment_type as Employment | null) ?? null,
+      salaryMin: role?.salary_min ?? "",
+      salaryMax: role?.salary_max ?? "",
+      dayRate: role?.day_rate ?? "",
+      ir35: (role?.ir35 as IR35 | null) ?? null,
+      contactId: role ? (role.contact_id ?? null) : (contactId ?? null),
+      meetingId: role ? (role.meeting_id ?? null) : (meetingId ?? null),
+      description: role?.description ?? "",
     },
     validate: {
       companyId: (v) => (v ? null : "Which company? Type a new name to add it."),
@@ -113,7 +117,8 @@ export function RoleFormModal({
     },
   });
   const { data: theirCalls } = useMeetings(
-    form.values.contactId ? { contact_id: form.values.contactId } : {},
+    { contact_id: form.values.contactId ?? undefined },
+    !!form.values.contactId,
   );
   const contract = form.values.employment === "contract";
 
@@ -138,28 +143,30 @@ export function RoleFormModal({
       meeting_id: v.contactId ? v.meetingId : null,
       description: blank(v.description),
     };
-    save.mutate(
-      { body },
-      {
-        onSuccess: () => {
-          if (!another) return onClose();
-          // Keep who and which call, clear the rest: the next role from the same call.
-          form.setValues({
-            title: "",
-            url: "",
-            location: "",
-            salaryMin: "",
-            salaryMax: "",
-            dayRate: "",
-            description: "",
-          });
-        },
+    save.mutate(role ? { id: role.id, body } : { body }, {
+      onSuccess: () => {
+        if (!another || role) return onClose();
+        // Keep who and which call, clear the rest: the next role from the same call.
+        form.setValues({
+          title: "",
+          url: "",
+          location: "",
+          salaryMin: "",
+          salaryMax: "",
+          dayRate: "",
+          description: "",
+        });
       },
-    );
+    });
   });
 
   return (
-    <Modal opened={opened} onClose={onClose} title="Add a role to decide on" size="lg">
+    <Modal
+      opened={opened}
+      onClose={onClose}
+      title={role ? `Edit ${role.title}` : "Add a role to decide on"}
+      size="lg"
+    >
       <form onSubmit={submit}>
         <Stack>
           <Text size="sm" c="dimmed">
@@ -187,6 +194,10 @@ export function RoleFormModal({
               clearable
               data={(contacts ?? []).map((c) => ({ value: c.id, label: c.name }))}
               {...form.getInputProps("contactId")}
+              onChange={(v) => {
+                form.setFieldValue("contactId", v);
+                if (v !== form.values.contactId) form.setFieldValue("meetingId", null);
+              }}
             />
             <Select
               label="On which call"
@@ -267,15 +278,24 @@ export function RoleFormModal({
             {...form.getInputProps("description")}
           />
           <Group justify="flex-end">
-            <Button variant="default" onClick={onClose}>
+            <Button variant="default" onClick={onClose} style={{ order: 0 }}>
               Cancel
             </Button>
-            <Button type="submit" variant="light" disabled={save.isPending} data-another="yes">
-              Add and add another
+            {/* "Add role" first: pressing Enter submits with the first submit button. */}
+            <Button type="submit" loading={save.isPending} style={{ order: 2 }}>
+              {role ? "Save" : "Add role"}
             </Button>
-            <Button type="submit" loading={save.isPending}>
-              Add role
-            </Button>
+            {!role && (
+              <Button
+                type="submit"
+                variant="light"
+                disabled={save.isPending}
+                data-another="yes"
+                style={{ order: 1 }}
+              >
+                Add and add another
+              </Button>
+            )}
           </Group>
         </Stack>
       </form>
@@ -288,7 +308,7 @@ export function ApplyModal({ role, onClose }: { role: RoleSummary; onClose: () =
   const { data: workflow } = useWorkflow();
   const apply = useApplyForRole();
   const router = useRouter();
-  const [stage, setStage] = useState<string | null>("applied");
+  const [picked, setStage] = useState<string | null>(null);
   const [appliedOn, setAppliedOn] = useState<string | null>(dayjs().format("YYYY-MM-DD"));
   const how = role.agency_id
     ? `Through ${role.agency_name}${role.contact_name ? ` (${role.contact_name})` : ""}`
@@ -296,6 +316,7 @@ export function ApplyModal({ role, onClose }: { role: RoleSummary; onClose: () =
       ? `Directly, with ${role.contact_name} as your contact`
       : "Directly";
   const hasApplied = workflow?.stages.some((s) => s.id === "applied");
+  const stage = picked ?? (hasApplied ? "applied" : (workflow?.initial ?? null));
 
   const submit = () =>
     apply.mutate(
@@ -324,7 +345,7 @@ export function ApplyModal({ role, onClose }: { role: RoleSummary; onClose: () =
           <Select
             label="Stage"
             data={(workflow?.stages ?? []).map((s) => ({ value: s.id, label: s.name }))}
-            value={hasApplied ? stage : (stage ?? workflow?.initial ?? null)}
+            value={stage}
             onChange={setStage}
             allowDeselect={false}
           />
@@ -441,6 +462,7 @@ export function RoleActions({ role }: { role: RoleSummary }) {
 export function RoleLine({ role, showSource = true }: { role: RoleSummary; showSource?: boolean }) {
   const status = ROLE_STATUS[role.status];
   const money = pay(role);
+  const [editing, setEditing] = useState(false);
   return (
     <Group justify="space-between" wrap="nowrap" align="flex-start">
       <div style={{ minWidth: 0 }}>
@@ -471,6 +493,16 @@ export function RoleLine({ role, showSource = true }: { role: RoleSummary; showS
           {status.label}
         </Badge>
         <RoleActions role={role} />
+        <ActionIcon
+          variant="subtle"
+          color="gray"
+          size="sm"
+          aria-label={`Edit ${role.title}`}
+          onClick={() => setEditing(true)}
+        >
+          <IconPencil size={14} />
+        </ActionIcon>
+        {editing && <RoleFormModal opened onClose={() => setEditing(false)} role={role} />}
         {role.status !== "applied" && (
           <DeleteButton
             compact

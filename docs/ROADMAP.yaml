@@ -99,4 +99,4 @@ phases:
       - {id: compaction-doc, name: "Compaction prompt for the build session", owner: lead, status: done, estimate_h: 0.5, depends: []}
       - {id: home-timeline, name: "Overview home page, timeline across everything, grouped menu and how-it-works help", owner: lead, status: done, estimate_h: 5, depends: [next-actions, waiting], prd: docs/prd/tracker.md}
       - {id: meetings, name: "Book or log calls and meetings with people, outside any one application", owner: lead, status: done, estimate_h: 4, depends: [people, home-timeline], prd: docs/prd/tracker.md}
-      - {id: role-decisions, name: "Roles to decide: add roles a recruiter pitched, then apply or pass on each", owner: lead, status: building, estimate_h: 4, depends: [meetings], prd: docs/prd/tracker.md}
+      - {id: role-decisions, name: "Roles to decide: add roles a recruiter pitched, then apply or pass on each", owner: lead, status: done, estimate_h: 4, depends: [meetings], prd: docs/prd/tracker.md}

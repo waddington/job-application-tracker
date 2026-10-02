@@ -383,6 +383,11 @@ export function MeetingsCard({ contactId, name }: { contactId: string; name: str
                   <Markdown>{m.agenda}</Markdown>
                 </Text>
               )}
+              {(roles ?? [])
+                .filter((r) => r.meeting_id === m.id)
+                .map((r) => (
+                  <RoleLine key={r.id} role={r} showSource={false} />
+                ))}
             </Stack>
           ))}
           {past.map((m) => (

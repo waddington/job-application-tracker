@@ -48,7 +48,8 @@ any. Add them as **roles** first, then decide on each:
   one, otherwise directly with them as your contact. Pick the stage (Applied by default) and
   the date.
 - **Pass** keeps the role with your reason ("rate too low"), under *Passed*. **Reconsider**
-  puts it back.
+  puts it back. The pencil edits a role; the bin deletes it (not once you've applied).
+- Deleting a call keeps the roles from it; they just aren't linked to a call any more.
 
 The **Roles** page shows roles *To decide* (the default), *Applied*, *Passed* or *All*. Roles
 to decide also show on Next actions and count towards *Needs attention* on the Overview. On
@@ -187,7 +188,7 @@ Companies, agencies, roles and people have **Delete** too:
 | A company | its roles and their links | its people (no longer at a company), notes and files |
 | A role | nothing else | — |
 | An agency | nothing else | its recruiters and applications (no longer with an agency) |
-| A person | them from applications and interviews, and their calls and meetings | the applications |
+| A person | them from applications and interviews, and their calls and meetings | the applications, and the roles they mentioned (no longer linked to them) |
 
 A company or role that still has applications can't be deleted: delete or archive those
 first. Your data repo's history still has everything until you rewrite it.
