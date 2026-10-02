@@ -39,7 +39,8 @@ const STEPS: { title: string; body: ReactNode }[] = [
     title: "Check Next actions",
     body: (
       <>
-        Follow-ups that are due, applications that have gone quiet, interviews coming up and people to chase.
+        Follow-ups that are due, applications that have gone quiet, interviews and calls coming up, and people
+        to chase.
       </>
     ),
   },
@@ -85,7 +86,7 @@ export function HowItWorks() {
       </List>
       <Text size="xs" c="dimmed">
         Someone got in touch without a specific role? Add them on <b>Recruiters</b> (agency recruiters) or on
-        the company's page (people who work there).
+        the company's page (people who work there), then <b>Book a call</b> on their page.
       </Text>
     </Stack>
   );

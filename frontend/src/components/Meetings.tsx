@@ -147,7 +147,12 @@ export function MeetingFormModal({
               <Text size="sm" fw={500} mb={4}>
                 How
               </Text>
-              <SegmentedControl fullWidth data={MEETING_KINDS} {...form.getInputProps("kind")} />
+              <SegmentedControl
+                fullWidth
+                aria-label="How"
+                data={MEETING_KINDS}
+                {...form.getInputProps("kind")}
+              />
             </div>
           </Group>
           <div>
@@ -155,6 +160,7 @@ export function MeetingFormModal({
               Status
             </Text>
             <SegmentedControl
+              aria-label="Status"
               data={[
                 { value: "scheduled", label: "Booked" },
                 { value: "done", label: "Happened" },
@@ -276,7 +282,13 @@ export function MeetingOutcome({ meeting }: { meeting: Meeting }) {
   const [closing, setClosing] = useState(false);
   return (
     <Group gap={4} wrap="nowrap">
-      <Button size="compact-xs" variant="light" color="teal" onClick={() => setClosing(true)}>
+      <Button
+        size="compact-xs"
+        variant="light"
+        color="teal"
+        aria-label={`Happened: ${meeting.label}`}
+        onClick={() => setClosing(true)}
+      >
         Happened
       </Button>
       <Button
@@ -284,6 +296,7 @@ export function MeetingOutcome({ meeting }: { meeting: Meeting }) {
         variant="subtle"
         color="gray"
         loading={save.isPending}
+        aria-label={`Didn't happen: ${meeting.label}`}
         onClick={() => save.mutate({ id: meeting.id, body: { status: "cancelled" } })}
       >
         Didn't happen

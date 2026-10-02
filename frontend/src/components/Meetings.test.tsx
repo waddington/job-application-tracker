@@ -121,8 +121,8 @@ describe("calls and meetings", () => {
     expect(await screen.findByText("Three roles to look at")).toBeInTheDocument();
     // The done one's badge, and the button on the one still booked.
     expect(screen.getAllByText("Happened")).toHaveLength(2);
-    expect(screen.getByRole("button", { name: "Happened" })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Didn't happen" }));
+    expect(screen.getByRole("button", { name: /^Happened/ })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /^Didn't happen/ }));
     await waitFor(() =>
       expect(calls.find((c) => c.method === "PATCH")?.body).toEqual({ status: "cancelled" }),
     );
@@ -154,6 +154,6 @@ describe("calls and meetings", () => {
     ).toBeInTheDocument();
     const outcome = screen.getByRole("heading", { name: "How did it go?" }).closest(".mantine-Card-root")!;
     expect(within(outcome as HTMLElement).getByText("Call with Alex Morgan: Intro")).toBeInTheDocument();
-    expect(within(outcome as HTMLElement).getByRole("button", { name: "Happened" })).toBeInTheDocument();
+    expect(within(outcome as HTMLElement).getByRole("button", { name: /^Happened/ })).toBeInTheDocument();
   });
 });
