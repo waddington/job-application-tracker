@@ -35,6 +35,7 @@ from jat.db.models import (
     NoteIndex,
     Offer,
     Role,
+    Todo,
 )
 
 SNIPPET = 70  # characters either side of the match
@@ -237,6 +238,17 @@ def _activity(session: Session, places: Places) -> Iterator[Candidate]:
             fields=[m.agenda or "", m.notes or "", m.location or ""],
             subtitle_searchable=False,
             updated=m.updated_at,
+        )
+    # Your to-dos, open and done: they open where they belong.
+    for t in session.scalars(select(Todo)):
+        yield Candidate(
+            "todo",
+            t.id,
+            t.text,
+            places.path(t.entity_type, t.entity_id) or "/next-actions",
+            subtitle="Done" if t.done_at else "To-do",
+            subtitle_searchable=False,
+            updated=t.updated_at,
         )
     for o in session.scalars(select(Offer)):
         yield Candidate(

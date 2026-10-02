@@ -1022,7 +1022,7 @@ export interface paths {
         /**
          * Search
          * @description Everything matching every word of `q`: applications, companies, agencies, people and
-         *     their contact details, interview prep and debriefs, offers, timeline entries, notes,
+         *     their contact details, interview prep and debriefs, calls, to-dos, offers, timeline entries, notes,
          *     documents, files, emails and links. Title matches first, then the most recent.
          */
         get: operations["search_api_v1_search_get"];
@@ -1055,6 +1055,46 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/v1/todos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Todos
+         * @description Open to-dos by default (dated first, soonest first); `status=done` lists ticked-off ones,
+         *     most recent first. Filter to one thing with `entity_type` and `entity_id`.
+         */
+        get: operations["list_todos_api_v1_todos_get"];
+        put?: never;
+        /** Create Todo */
+        post: operations["create_todo_api_v1_todos_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/todos/{todo_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Todo */
+        delete: operations["delete_todo_api_v1_todos__todo_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Todo */
+        patch: operations["update_todo_api_v1_todos__todo_id__patch"];
         trace?: never;
     };
     "/api/v1/workflow": {
@@ -2154,6 +2194,11 @@ export interface components {
              * Format: date
              */
             today: string;
+            /**
+             * Todos
+             * @default []
+             */
+            todos: components["schemas"]["TodoOut"][];
             /** Upcoming */
             upcoming: components["schemas"]["InterviewOut"][];
             /**
@@ -2905,6 +2950,62 @@ export interface components {
             id: string;
             /** Name */
             name: string;
+        };
+        /**
+         * TodoIn
+         * @description A to-do in your own words. Leave `entity_type` and `entity_id` out for one about nothing in
+         *     particular, or give both to put it on a company, agency, person, role or application.
+         */
+        TodoIn: {
+            /** Due On */
+            due_on?: string | null;
+            /** Entity Id */
+            entity_id?: string | null;
+            /** Entity Type */
+            entity_type?: ("application" | "company" | "role" | "agency" | "contact") | null;
+            /** Text */
+            text: string;
+        };
+        /** TodoOut */
+        TodoOut: {
+            /** About */
+            about?: string | null;
+            /** Company Id */
+            company_id?: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Done At */
+            done_at: string | null;
+            /** Due On */
+            due_on: string | null;
+            /** Entity Id */
+            entity_id: string | null;
+            /** Entity Type */
+            entity_type: string | null;
+            /** Id */
+            id: string;
+            /** Text */
+            text: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /**
+         * TodoPatch
+         * @description `done: true` ticks it off (stamping `done_at`); `done: false` brings it back.
+         */
+        TodoPatch: {
+            /** Done */
+            done?: boolean | null;
+            /** Due On */
+            due_on?: string | null;
+            /** Text */
+            text?: string | null;
         };
         /** ValidationError */
         ValidationError: {
@@ -5773,6 +5874,136 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Timeline"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_todos_api_v1_todos_get: {
+        parameters: {
+            query?: {
+                entity_type?: ("application" | "company" | "role" | "agency" | "contact") | null;
+                entity_id?: string | null;
+                status?: "open" | "done" | "all";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TodoOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_todo_api_v1_todos_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TodoIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TodoOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_todo_api_v1_todos__todo_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                todo_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_todo_api_v1_todos__todo_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                todo_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TodoPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TodoOut"];
                 };
             };
             /** @description Validation Error */
