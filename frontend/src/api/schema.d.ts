@@ -532,6 +532,26 @@ export interface paths {
         patch: operations["update_contact_api_v1_contacts__contact_id__patch"];
         trace?: never;
     };
+    "/api/v1/contacts/{contact_id}/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Contact Summary
+         * @description A person's page: their details, the applications they're part of and their interviews.
+         */
+        get: operations["contact_summary_api_v1_contacts__contact_id__summary_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/documents": {
         parameters: {
             query?: never;
@@ -1038,7 +1058,7 @@ export interface components {
              * Relation
              * @enum {string}
              */
-            relation: "recruiter" | "hiring_manager" | "interviewer" | "referrer" | "other";
+            relation: "recruiter" | "internal_recruiter" | "hiring_manager" | "interviewer" | "referrer" | "other";
         };
         /** ApplicationContactOut */
         ApplicationContactOut: {
@@ -1452,6 +1472,21 @@ export interface components {
             name?: string | null;
             /** Title */
             title?: string | null;
+        };
+        /**
+         * ContactSummary
+         * @description Everything about one person: who they are and what they've been part of.
+         */
+        ContactSummary: {
+            /** Agency Name */
+            agency_name: string | null;
+            /** Applications */
+            applications: components["schemas"]["PersonApplication"][];
+            /** Company Name */
+            company_name: string | null;
+            contact: components["schemas"]["ContactOut"];
+            /** Interviews */
+            interviews: components["schemas"]["InterviewOut"][];
         };
         /** DocumentDetail */
         DocumentDetail: {
@@ -2108,6 +2143,67 @@ export interface components {
             start_on?: string | null;
             /** Status */
             status?: ("pending" | "accepted" | "declined" | "withdrawn") | null;
+        };
+        /** PersonApplication */
+        PersonApplication: {
+            /** Agency Id */
+            agency_id: string | null;
+            /** Agency Name */
+            agency_name: string | null;
+            /** Applied On */
+            applied_on: string | null;
+            /** Archived */
+            archived: boolean;
+            /** Company Id */
+            company_id: string;
+            /** Company Name */
+            company_name: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            current_round?: components["schemas"]["RoundSummary"] | null;
+            /** Days Since Activity */
+            days_since_activity: number;
+            /** Follow Up On */
+            follow_up_on: string | null;
+            /** Id */
+            id: string;
+            /**
+             * Last Activity At
+             * Format: date-time
+             */
+            last_activity_at: string;
+            /** Recruiter Id */
+            recruiter_id: string | null;
+            /** Recruiter Name */
+            recruiter_name: string | null;
+            /** Relations */
+            relations: string[];
+            /** Role Id */
+            role_id: string;
+            /** Role Title */
+            role_title: string;
+            /** Route */
+            route: string;
+            /** Snoozed Until */
+            snoozed_until: string | null;
+            /** Stage */
+            stage: string;
+            /** Stage Kind */
+            stage_kind: string;
+            /** Stage Name */
+            stage_name: string;
+            /** Stale */
+            stale: boolean;
+            /** Tags */
+            tags: string[];
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
         };
         /** PushResult */
         PushResult: {
@@ -3835,6 +3931,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ContactOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    contact_summary_api_v1_contacts__contact_id__summary_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                contact_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContactSummary"];
                 };
             };
             /** @description Validation Error */

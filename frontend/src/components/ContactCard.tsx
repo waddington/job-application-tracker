@@ -1,5 +1,6 @@
 import { ActionIcon, Anchor, Card, Group, Stack, Text, Tooltip } from "@mantine/core";
 import { IconBrandLinkedin, IconLink, IconMail, IconPencil, IconPhone, IconPoint } from "@tabler/icons-react";
+import { Link } from "@tanstack/react-router";
 
 import type { Contact } from "../api/client";
 import { DeleteButton } from "./DeleteButton";
@@ -26,7 +27,9 @@ export function ContactCard({ contact, onEdit }: { contact: Contact; onEdit?: ()
     <Card withBorder padding="sm">
       <Group justify="space-between" align="flex-start" wrap="nowrap">
         <Stack gap={4}>
-          <Text fw={600}>{contact.name}</Text>
+          <Anchor component={Link} to={`/people/${contact.id}`} fw={600} c="inherit">
+            {contact.name}
+          </Anchor>
           {contact.title && (
             <Text size="xs" c="dimmed">
               {contact.title}

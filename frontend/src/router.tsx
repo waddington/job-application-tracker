@@ -15,6 +15,7 @@ import { OffersPage } from "./pages/OffersPage";
 import { NotesPage } from "./pages/NotesPage";
 import { NextActionsPage } from "./pages/NextActionsPage";
 import { NotFound } from "./pages/NotFound";
+import { PersonPage } from "./pages/PersonPage";
 import { Placeholder } from "./pages/Placeholder";
 import { RecruitersPage } from "./pages/RecruitersPage";
 import { SearchPage } from "./pages/SearchPage";
@@ -54,6 +55,12 @@ const companyRoute = createRoute({
   component: CompanyPage,
 });
 
+const personRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/people/$personId",
+  component: PersonPage,
+});
+
 const agencyRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/agencies/$agencyId",
@@ -73,6 +80,7 @@ const routeTree = rootRoute.addChildren([
   applicationRoute,
   companyRoute,
   agencyRoute,
+  personRoute,
   searchRoute,
 ]);
 

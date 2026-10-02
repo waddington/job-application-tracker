@@ -15,12 +15,12 @@ import {
   Title,
 } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
-import { IconArrowLeft, IconTrash } from "@tabler/icons-react";
+import { IconArrowLeft, IconPlus, IconTrash } from "@tabler/icons-react";
 import { Link, useParams, useRouter } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { useState } from "react";
 
-import type { ApplicationDetail, Schemas } from "../api/client";
+import type { ApplicationDetail } from "../api/client";
 import { useLinkContact, useUnlinkContact } from "../api/detailHooks";
 import { useApplication, useContacts, useRoles, useUpdateApplication } from "../api/hooks";
 import {
@@ -32,18 +32,12 @@ import {
 import { AttachmentsCard } from "../components/Attachments";
 import { LinksCard } from "../components/Links";
 import { NotesCard } from "../components/Notes";
+import { relationLabel, RELATIONS, type Relation } from "../api/peopleHooks";
+import { ContactFormModal } from "../components/ContactFormModal";
 import { DeleteButton } from "../components/DeleteButton";
 import { OffersCard } from "../components/Offers";
 import { SentDocumentsCard } from "../components/SentDocuments";
 import { InterviewsCard } from "../components/Interviews";
-
-const RELATIONS: { value: Schemas["ApplicationContactIn"]["relation"]; label: string }[] = [
-  { value: "recruiter", label: "Recruiter" },
-  { value: "hiring_manager", label: "Hiring manager" },
-  { value: "interviewer", label: "Interviewer" },
-  { value: "referrer", label: "Referrer" },
-  { value: "other", label: "Other" },
-];
 
 const toDate = (value: string | null) => (value ? dayjs(value).format("YYYY-MM-DD") : null);
 
@@ -127,8 +121,13 @@ function PeopleCard({ app }: { app: ApplicationDetail }) {
   const unlink = useUnlinkContact();
   const [contactId, setContactId] = useState<string | null>(null);
   const [relation, setRelation] = useState<string | null>("interviewer");
+  const [creating, setCreating] = useState(false);
   const byId = new Map((contacts ?? []).map((c) => [c.id, c]));
-  const relationLabel = new Map(RELATIONS.map((r) => [r.value as string, r.label]));
+  const linkAs = (id: string) =>
+    link.mutate(
+      { appId: app.id, contactId: id, relation: (relation ?? "other") as Relation },
+      { onSuccess: () => setContactId(null) },
+    );
 
   return (
     <Card withBorder>
@@ -145,11 +144,17 @@ function PeopleCard({ app }: { app: ApplicationDetail }) {
           return (
             <Group key={l.id} justify="space-between" wrap="nowrap">
               <div>
-                <Text size="sm" fw={600}>
-                  {person?.name ?? "Unknown contact"}
-                </Text>
+                {person ? (
+                  <Anchor component={Link} to={`/people/${person.id}`} size="sm" fw={600}>
+                    {person.name}
+                  </Anchor>
+                ) : (
+                  <Text size="sm" fw={600}>
+                    Unknown contact
+                  </Text>
+                )}
                 <Text size="xs" c="dimmed">
-                  {relationLabel.get(l.relation) ?? l.relation}
+                  {relationLabel(l.relation)}
                   {email ? ` · ${email}` : ""}
                 </Text>
               </div>
@@ -176,22 +181,30 @@ function PeopleCard({ app }: { app: ApplicationDetail }) {
           />
           <Select label="As" data={RELATIONS} value={relation} onChange={setRelation} allowDeselect={false} />
         </Group>
-        <Button
-          variant="light"
-          disabled={!contactId || !relation}
-          loading={link.isPending}
-          onClick={() =>
-            contactId &&
-            relation &&
-            link.mutate(
-              { appId: app.id, contactId, relation: relation as Schemas["ApplicationContactIn"]["relation"] },
-              { onSuccess: () => setContactId(null) },
-            )
-          }
-        >
-          Link person
-        </Button>
+        <Group grow>
+          <Button
+            variant="light"
+            disabled={!contactId || !relation}
+            loading={link.isPending}
+            onClick={() => contactId && linkAs(contactId)}
+          >
+            Link person
+          </Button>
+          <Button variant="default" leftSection={<IconPlus size={14} />} onClick={() => setCreating(true)}>
+            New person
+          </Button>
+        </Group>
+        <Text size="xs" c="dimmed">
+          Someone new? <b>New person</b> adds them (at {app.company_name} unless you change it) and links them
+          as the role chosen above.
+        </Text>
       </Stack>
+      <ContactFormModal
+        opened={creating}
+        onClose={() => setCreating(false)}
+        defaultCompanyId={app.company_id}
+        onSaved={(saved) => linkAs(saved.id)}
+      />
     </Card>
   );
 }
