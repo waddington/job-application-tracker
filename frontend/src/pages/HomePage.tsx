@@ -107,6 +107,7 @@ export function HomePage() {
   ];
   // Next actions lists rounds with no date yet after the booked ones; they aren't "coming up".
   const booked = (next?.upcoming ?? []).filter((i) => i.starts_at || i.deadline_at);
+  const calls = next?.meetings ?? [];
   const waiting = (next?.waiting.length ?? 0) + (next?.waiting_people.length ?? 0);
   const pipeline = (workflow?.stages ?? [])
     .filter((s) => s.kind === "active")
@@ -212,8 +213,8 @@ export function HomePage() {
               )}
             </Panel>
             <Panel title="Coming up" link={{ to: "/interviews", label: "All interviews" }}>
-              {booked.length + (next?.offer_deadlines.length ?? 0) === 0 ? (
-                <Empty>No interviews or offer deadlines in the next two weeks.</Empty>
+              {booked.length + calls.length + (next?.offer_deadlines.length ?? 0) === 0 ? (
+                <Empty>No interviews, calls or offer deadlines in the next two weeks.</Empty>
               ) : (
                 <Stack gap={6}>
                   {booked.slice(0, 6).map((i) => (
@@ -223,6 +224,16 @@ export function HomePage() {
                       </Anchor>
                       <Text size="xs" c="dimmed">
                         {i.starts_at ? formatDateTime(i.starts_at) : `Due ${formatDateTime(i.deadline_at!)}`}
+                      </Text>
+                    </div>
+                  ))}
+                  {calls.slice(0, 6).map((m) => (
+                    <div key={m.id}>
+                      <Anchor component={Link} to={`/people/${m.contact_id}`} size="sm" fw={500}>
+                        {m.label}
+                      </Anchor>
+                      <Text size="xs" c="dimmed">
+                        {formatDateTime(m.starts_at)}
                       </Text>
                     </div>
                   ))}
