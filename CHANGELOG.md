@@ -50,6 +50,8 @@ is built and merged, but not yet tested in real use. Numbers in brackets are pul
   to `/next-actions` (#48).
 - **Calls and meetings** with people, booked or logged, outside any one application: on
   person pages, Next actions, the Overview, the Timeline and search (#49).
+- **Roles to decide**: add roles a recruiter mentioned (from the call), then apply or pass on
+  each; a Roles page, and roles on Next actions, the Overview and the Timeline (#50).
 
 ### Under the hood
 - Python 3.12, FastAPI, SQLAlchemy, Alembic and SQLite; React 19, TypeScript, Mantine and
