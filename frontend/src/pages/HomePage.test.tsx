@@ -28,6 +28,7 @@ describe("overview", () => {
     mockApi({
       "/api/v1/workflow": WORKFLOW,
       "/api/v1/applications": [],
+      "/api/v1/contacts": [],
       "/api/v1/next-actions": NOTHING,
       "/api/v1/timeline": { items: [], now: "2026-10-02T10:00:00Z" },
       "/api/v1/health": {},
@@ -61,7 +62,7 @@ describe("overview", () => {
     renderAt("/");
     expect(
       await screen.findByText(
-        /So far: 1 role to decide on, 1 call coming up, 1 person added\. Apply for one of the roles/,
+        /So far: 1 role to decide on, 1 call coming up, 1 person added\. Apply for one of the roles and/,
       ),
     ).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Getting started" })).not.toBeInTheDocument();
@@ -70,6 +71,33 @@ describe("overview", () => {
     expect(screen.getByText(/Platform Engineer at Fabrikam/)).toBeInTheDocument();
     // Setting things up is most of what's happened so far, so it shows.
     expect(screen.getByText("Added Alex Morgan")).toBeInTheDocument();
+  });
+
+  it("doesn't flash the getting-started card while the rest is still loading", async () => {
+    let release: () => void = () => {};
+    const held = new Promise<void>((resolve) => (release = resolve));
+    mockApi({
+      "/api/v1/workflow": WORKFLOW,
+      "/api/v1/applications": [],
+      "/api/v1/contacts": [{ id: "c1", name: "Alex Morgan", details: [] }],
+      "/api/v1/next-actions": NOTHING,
+      "/api/v1/timeline": { items: [], now: "2026-10-02T10:00:00Z" },
+      "/api/v1/health": {},
+    });
+    // Hold the people request back: until it answers, the page mustn't decide it's empty.
+    const fetchMock = globalThis.fetch;
+    vi.stubGlobal("fetch", async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = input instanceof Request ? input.url : String(input);
+      if (url.includes("/api/v1/contacts")) await held;
+      return fetchMock(input, init);
+    });
+    renderAt("/");
+    await screen.findByRole("heading", { name: "Overview" });
+    await new Promise((r) => setTimeout(r, 50));
+    expect(screen.queryByRole("heading", { name: "Getting started" })).not.toBeInTheDocument();
+    release();
+    expect(await screen.findByText(/So far: 1 person added\./)).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Getting started" })).not.toBeInTheDocument();
   });
 
   it("sums up where things stand", async () => {

@@ -84,14 +84,16 @@ const Empty = ({ children }: { children: ReactNode }) => (
   </Text>
 );
 
+const plural = (n: number, one: string) => `${n} ${one}${n === 1 ? "" : "s"}`;
+
 export function HomePage() {
   const { data: rows, isLoading, isError } = useApplications({});
   const { data: workflow } = useWorkflow();
-  const { data: next } = useNextActions();
+  const { data: next, isPending: nextPending, isError: nextFailed } = useNextActions();
   const today = dayjs().format("YYYY-MM-DD"); // so "the last two weeks" moves on at midnight
   const since = useMemo(() => dayjs(today).subtract(14, "day").format(), [today]);
-  const { data: recent } = useTimeline({ since });
-  const { data: contacts } = useContacts();
+  const { data: recent, isPending: recentPending, isError: recentFailed } = useTimeline({ since });
+  const { data: contacts, isPending: contactsPending, isError: contactsFailed } = useContacts();
 
   const stages = stageLookup(workflow);
   const active = (rows ?? []).filter((r) => r.stage_kind === "active");
@@ -123,8 +125,11 @@ export function HomePage() {
     .slice(0, 8);
   // Nothing at all yet: just the getting-started steps. Once there are people, calls or roles,
   // show them (with a shorter nudge towards the first application).
-  const blank = fresh && !contacts?.length && !toDecide.length && !calls.length && !past.length;
-  const plural = (n: number, one: string) => `${n} ${one}${n === 1 ? "" : "s"}`;
+  // Wait for all of it before choosing, so the getting-started card doesn't flash up and go;
+  // if one of them fails, show the usual Overview rather than claim there's nothing.
+  const settling = fresh && (contactsPending || nextPending || recentPending);
+  const allLoaded = !contactsFailed && !nextFailed && !recentFailed;
+  const blank = fresh && allLoaded && !contacts?.length && !toDecide.length && !calls.length && !past.length;
   const sofar = [
     toDecide.length ? `${plural(toDecide.length, "role")} to decide on` : null,
     calls.length ? `${plural(calls.length, "call")} coming up` : null,
@@ -142,7 +147,7 @@ export function HomePage() {
         </div>
       </Group>
 
-      {isLoading ? (
+      {isLoading || settling ? (
         <Loader />
       ) : isError || rows === undefined ? (
         <Text c="red" size="sm">
@@ -173,7 +178,7 @@ export function HomePage() {
                   <Text size="sm" c="dimmed">
                     {sofar.length ? `So far: ${sofar.join(", ")}. ` : ""}
                     {toDecide.length
-                      ? "Apply for one of the roles (under Roles) and it becomes an application."
+                      ? "Apply for one of the roles and it becomes an application."
                       : "Add one when you go for a role: it only needs a company and a title."}
                   </Text>
                 </div>

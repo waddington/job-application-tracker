@@ -74,8 +74,8 @@ Where things stand, at a glance:
 - **How it works**: the same numbered steps as the **?** button.
 
 With nothing in the tracker yet, it shows a *Getting started* card instead, with a **New
-application** button. Once you've added people, calls or roles but no applications, the
-Overview shows them as usual (recent activity then includes what you've added), under a short
+application** button. Once you've added anything else (people, companies, agencies, calls
+or roles) but no applications, the Overview shows it as usual (recent activity then includes what you've added), under a short
 *No applications yet* card that sums up what you have and links to **Roles to decide** and
 **New application**.
 
