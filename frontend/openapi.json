@@ -3705,6 +3705,14 @@
             "title": "Offer Deadlines",
             "type": "array"
           },
+          "roles_to_decide": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/RoleSummary"
+            },
+            "title": "Roles To Decide",
+            "type": "array"
+          },
           "stale": {
             "items": {
               "$ref": "#/components/schemas/ApplicationRow"
@@ -5045,6 +5053,17 @@
             "title": "Company Id",
             "type": "string"
           },
+          "contact_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contact Id"
+          },
           "currency": {
             "anyOf": [
               {
@@ -5069,6 +5088,29 @@
               }
             ],
             "title": "Day Rate"
+          },
+          "decision": {
+            "anyOf": [
+              {
+                "const": "passed",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decision"
+          },
+          "decision_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decision Reason"
           },
           "description": {
             "anyOf": [
@@ -5123,6 +5165,17 @@
               }
             ],
             "title": "Location"
+          },
+          "meeting_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Meeting Id"
           },
           "salary_max": {
             "anyOf": [
@@ -5198,6 +5251,17 @@
             "title": "Company Id",
             "type": "string"
           },
+          "contact_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contact Id"
+          },
           "created_at": {
             "format": "date-time",
             "title": "Created At",
@@ -5224,6 +5288,40 @@
               }
             ],
             "title": "Day Rate"
+          },
+          "decided_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decided On"
+          },
+          "decision": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decision"
+          },
+          "decision_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decision Reason"
           },
           "description": {
             "anyOf": [
@@ -5272,6 +5370,17 @@
               }
             ],
             "title": "Location"
+          },
+          "meeting_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Meeting Id"
           },
           "salary_max": {
             "anyOf": [
@@ -5361,6 +5470,17 @@
             ],
             "title": "Company Id"
           },
+          "contact_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contact Id"
+          },
           "currency": {
             "anyOf": [
               {
@@ -5385,6 +5505,29 @@
               }
             ],
             "title": "Day Rate"
+          },
+          "decision": {
+            "anyOf": [
+              {
+                "const": "passed",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decision"
+          },
+          "decision_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decision Reason"
           },
           "description": {
             "anyOf": [
@@ -5439,6 +5582,17 @@
               }
             ],
             "title": "Location"
+          },
+          "meeting_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Meeting Id"
           },
           "salary_max": {
             "anyOf": [
@@ -5509,6 +5663,285 @@
           }
         },
         "title": "RolePatch",
+        "type": "object"
+      },
+      "RoleSummary": {
+        "description": "A role with where it came from and where it stands: still to decide, applied, or passed.",
+        "properties": {
+          "agency_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agency Id"
+          },
+          "agency_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agency Name"
+          },
+          "application_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Application Ids",
+            "type": "array"
+          },
+          "company_id": {
+            "title": "Company Id",
+            "type": "string"
+          },
+          "company_name": {
+            "title": "Company Name",
+            "type": "string"
+          },
+          "contact_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contact Id"
+          },
+          "contact_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contact Name"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency"
+          },
+          "day_rate": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Day Rate"
+          },
+          "decided_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decided On"
+          },
+          "decision": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decision"
+          },
+          "decision_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decision Reason"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "employment_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Employment Type"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "ir35": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ir35"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
+          "meeting_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Meeting Id"
+          },
+          "meeting_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Meeting Label"
+          },
+          "salary_max": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Salary Max"
+          },
+          "salary_min": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Salary Min"
+          },
+          "status": {
+            "enum": [
+              "to_decide",
+              "applied",
+              "passed"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "work_mode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Work Mode"
+          }
+        },
+        "required": [
+          "id",
+          "company_id",
+          "title",
+          "url",
+          "location",
+          "work_mode",
+          "employment_type",
+          "salary_min",
+          "salary_max",
+          "currency",
+          "day_rate",
+          "ir35",
+          "description",
+          "created_at",
+          "updated_at",
+          "company_name",
+          "status",
+          "application_ids"
+        ],
+        "title": "RoleSummary",
         "type": "object"
       },
       "RoundSummary": {
@@ -10454,6 +10887,113 @@
         "summary": "Update Offer",
         "tags": [
           "offers"
+        ]
+      }
+    },
+    "/api/v1/role-summaries": {
+      "get": {
+        "description": "Roles with where they came from and where they stand, oldest first.\n\n`status`: `to_decide` (no application and not passed), `applied` (has an application) or\n`passed`. Filter by company, by who told you about it, or by the call it came up in.",
+        "operationId": "role_summaries_api_v1_role_summaries_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "to_decide",
+                    "applied",
+                    "passed"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "company_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Company Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "contact_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Contact Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "meeting_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Meeting Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RoleSummary"
+                  },
+                  "title": "Response Role Summaries Api V1 Role Summaries Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Role Summaries",
+        "tags": [
+          "roles"
         ]
       }
     },

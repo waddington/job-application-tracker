@@ -150,6 +150,10 @@ class RoleFields(In):
     day_rate: int | None = Field(default=None, ge=0)
     ir35: IR35 | None = None
     description: str | None = None
+    contact_id: str | None = None  # who told you about it
+    meeting_id: str | None = None  # the call it came up in
+    decision: Literal["passed"] | None = None  # null: still to decide (or you applied)
+    decision_reason: str | None = None
 
 
 class RoleIn(RoleFields):
@@ -183,8 +187,28 @@ class RoleOut(Out):
     day_rate: int | None
     ir35: str | None
     description: str | None
+    contact_id: str | None = None
+    meeting_id: str | None = None
+    decision: str | None = None
+    decision_reason: str | None = None
+    decided_on: date | None = None
     created_at: datetime
     updated_at: datetime
+
+
+RoleStatus = Literal["to_decide", "applied", "passed"]
+
+
+class RoleSummary(RoleOut):
+    """A role with where it came from and where it stands: still to decide, applied, or passed."""
+
+    company_name: str
+    status: RoleStatus  # applied once it has an application, whatever `decision` says
+    application_ids: list[str]
+    contact_name: str | None = None
+    agency_id: str | None = None  # the person's agency
+    agency_name: str | None = None
+    meeting_label: str | None = None
 
 
 # --- applications ------------------------------------------------------------------------

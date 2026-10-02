@@ -16,6 +16,7 @@ from .meetings import outs as _meeting_outs
 from .meetings import query as _meeting_query
 from .offers import _outs as _offer_outs
 from .offers import _query as _offer_query
+from .roles import to_decide as roles_to_decide
 
 router = APIRouter(tags=["next actions"])
 
@@ -32,6 +33,7 @@ class NextActions(BaseModel):
     waiting_people: list[S.ContactOut] = []  # people you replied to outside an application, longest first
     meetings: list[S.MeetingOut] = []  # calls and meetings booked in the next two weeks, soonest first
     meetings_to_close: list[S.MeetingOut] = []  # their time has passed but they're still "scheduled"
+    roles_to_decide: list[S.RoleSummary] = []  # no application and not passed on yet, oldest first
     today: date
 
 
@@ -132,4 +134,5 @@ def next_actions(
         offer_deadlines=offer_deadlines,
         meetings=meetings,
         meetings_to_close=meetings_to_close,
+        roles_to_decide=roles_to_decide(session),
     )

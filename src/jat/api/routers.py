@@ -18,6 +18,7 @@ from ..db.models import (
     ContactDetail,
     Interview,
     InterviewContact,
+    Meeting,
     Role,
 )
 from ..domain import applications as svc
@@ -37,6 +38,12 @@ router = APIRouter(prefix="/api/v1")
 
 def _validate_role(session: Session, data: dict) -> None:
     require(session, Company, data.get("company_id"), "company_id")
+    require(session, Contact, data.get("contact_id"), "contact_id")
+    require(session, Meeting, data.get("meeting_id"), "meeting_id")
+    if "decision" in data:  # passing on it, or changing your mind
+        data["decided_on"] = date.today() if data["decision"] else None
+        if not data["decision"]:
+            data["decision_reason"] = None
 
 
 def _count_applications(session: Session, *where) -> int:
@@ -777,3 +784,7 @@ router.include_router(timeline_router)
 from .meetings import router as meetings_router  # noqa: E402
 
 router.include_router(meetings_router)
+
+from .roles import router as roles_router  # noqa: E402
+
+router.include_router(roles_router)
