@@ -11674,7 +11674,7 @@
     },
     "/api/v1/todos": {
       "get": {
-        "description": "Open to-dos by default (dated first, soonest first); `status=done` lists ticked-off ones,\nmost recent first. Filter to one thing with `entity_type` and `entity_id`.",
+        "description": "Open to-dos by default, in the order Next actions shows them (pass your local `today`;\nit defaults to UTC's): due in the next two weeks, then undated, then later. `status=done`\nlists ticked-off ones, most recently done first; `all` lists open ones, then done ones.\nFilter to one thing with `entity_type` and `entity_id` (both, or neither).",
         "operationId": "list_todos_api_v1_todos_get",
         "parameters": [
           {
@@ -11729,6 +11729,23 @@
               ],
               "title": "Status",
               "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "today",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Today"
             }
           }
         ],

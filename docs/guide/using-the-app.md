@@ -116,9 +116,10 @@ for the salary band*.
 - **Add one** from the *To-dos* card on an application, company, agency or person page; from
   the to-do button (a list with ticks) on a role, wherever roles are listed; or at the top of
   Next actions, where **About** picks what it's about (or leave it empty). A date is optional.
-- **Tick it off** with its checkbox. It leaves Next actions and the Overview; on its page it
-  stays ticked (the last three) so you can untick one by mistake.
-- **Edit** (the pencil) changes the words or the date; the bin deletes it.
+- **Tick it off** with its checkbox; **Undo** in the message that pops up brings it back. It
+  leaves Next actions and the Overview; on its page it stays ticked (the last three), and
+  **Done recently** under Next actions' to-dos lists the last ten, so you can untick one.
+- **Edit** (the pencil) changes the words or the date; the bin deletes it (with **Undo** too).
 - Overdue to-dos are marked in red, today's in orange. Each one links to what it's about (a
   role's opens its company).
 - Deleting what a to-do is about keeps the to-do, about nothing in particular. Search finds

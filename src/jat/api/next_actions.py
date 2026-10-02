@@ -138,5 +138,5 @@ def next_actions(
         meetings=meetings,
         meetings_to_close=meetings_to_close,
         roles_to_decide=roles_to_decide(session),
-        todos=[_todo_out(session, t) for t in open_todos(session, today, UPCOMING_DAYS)],
+        todos=[_todo_out(session, t) for t in open_todos(session, today)],
     )

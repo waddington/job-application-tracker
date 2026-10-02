@@ -14,13 +14,13 @@ import { IconChecklist, IconConfetti } from "@tabler/icons-react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import dayjs from "dayjs";
-import { useEffect, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 
 import { api, unwrap, type ApplicationRow, type Contact } from "../api/client";
 import { stageLookup, useLogActivity, useUpdateApplication, useWorkflow } from "../api/hooks";
 import { useSaveInterview, type Interview } from "../api/interviewHooks";
 import { headline, type Offer } from "../api/offerHooks";
-import type { Todo } from "../api/todoHooks";
+import { useTodos, type Todo } from "../api/todoHooks";
 import { ApplicationWaiting, daysWaiting, PersonWaiting, waitingLabel } from "../components/Waiting";
 import { ApplicationDrawer } from "../components/ApplicationDrawer";
 import { MeetingLine, MeetingOutcome } from "../components/Meetings";
@@ -29,18 +29,7 @@ import { AddTodo, TodoLine } from "../components/Todos";
 import { ChaseActions } from "../components/ChaseActions";
 import { StageBadge } from "../components/StageBadge";
 import { ago, formatDate, formatDateTime } from "../utils/time";
-
-const localDay = () => dayjs().format("YYYY-MM-DD");
-
-/** Your local date, updated when the clock passes midnight (so an open tab rolls over). */
-function useToday() {
-  const [today, setToday] = useState(localDay);
-  useEffect(() => {
-    const timer = setInterval(() => setToday(localDay()), 60_000);
-    return () => clearInterval(timer);
-  }, []);
-  return today;
-}
+import { useToday } from "../utils/useToday";
 
 export function useNextActions() {
   // "Today" is your local day, not UTC's: send the date and the start of it with its offset.
@@ -244,9 +233,11 @@ function OutcomeButtons({ interview }: { interview: Interview }) {
   );
 }
 
-/** Home: what to chase, what's coming up and what needs an outcome (PRD FR18, US5). */
-/** Your own to-dos, always shown (it's where you add one), with what each is about. */
+/** Your own to-dos, always shown (it's where you add one), with what each is about. Ticked-off
+ * ones are under "Done recently", so one ticked by mistake (or about nothing) can come back. */
 function TodosSection({ todos }: { todos: Todo[] }) {
+  const [showDone, setShowDone] = useState(false);
+  const { data: done } = useTodos({ status: "done" }, showDone);
   return (
     <Card withBorder>
       <Stack gap="sm">
@@ -263,11 +254,30 @@ function TodosSection({ todos }: { todos: Todo[] }) {
           <TodoLine key={t.id} todo={t} />
         ))}
         <AddTodo />
+        <Anchor
+          component="button"
+          type="button"
+          size="xs"
+          c="dimmed"
+          style={{ alignSelf: "flex-start" }}
+          onClick={() => setShowDone((v) => !v)}
+        >
+          {showDone ? "Hide done" : "Done recently"}
+        </Anchor>
+        {showDone &&
+          (done?.length ? (
+            done.slice(0, 10).map((t) => <TodoLine key={t.id} todo={t} />)
+          ) : (
+            <Text size="xs" c="dimmed">
+              Nothing ticked off yet.
+            </Text>
+          ))}
       </Stack>
     </Card>
   );
 }
 
+/** Home: what to chase, what's coming up and what needs an outcome (PRD FR18, US5). */
 export function NextActionsPage() {
   const { data, isLoading } = useNextActions();
   const [openId, setOpenId] = useState<string | null>(null);

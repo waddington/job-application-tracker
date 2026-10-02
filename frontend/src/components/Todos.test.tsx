@@ -1,4 +1,5 @@
 import { MantineProvider } from "@mantine/core";
+import { Notifications } from "@mantine/notifications";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createMemoryHistory, createRootRoute, createRouter, RouterProvider } from "@tanstack/react-router";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
@@ -16,6 +17,7 @@ function renderCard() {
   });
   render(
     <MantineProvider>
+      <Notifications />
       <QueryClientProvider client={qc}>
         <RouterProvider router={router} />
       </QueryClientProvider>
@@ -30,16 +32,19 @@ describe("to-dos", () => {
     const calls = mockApi({
       "GET /api/v1/todos": [todo(), todo({ id: "t0", text: "Send my CV", done_at: "2026-10-01T09:00:00Z" })],
       "PATCH /api/v1/todos/t1": todo({ done_at: "2026-10-02T09:00:00Z" }),
+      "PATCH /api/v1/todos/t2": todo({ id: "t2", done_at: "2026-10-02T09:00:00Z" }),
       "POST /api/v1/todos": todo({ id: "t2", text: "Ask about rates" }),
       "DELETE /api/v1/todos/t0": {},
     });
     renderCard();
     expect(await screen.findByText("Reply to their message")).toBeInTheDocument();
-    expect(calls[0]!.path).toBe("/api/v1/todos?entity_type=contact&entity_id=c1&status=all");
+    expect(calls[0]!.path).toMatch(
+      /^\/api\/v1\/todos\?entity_type=contact&entity_id=c1&status=all&today=\d{4}-\d\d-\d\d$/,
+    );
     // Done ones stay in view, ticked, so you can untick one ticked by mistake.
-    expect(screen.getByRole("checkbox", { name: "Not done: Send my CV" })).toBeChecked();
+    expect(screen.getByRole("checkbox", { name: "Send my CV" })).toBeChecked();
 
-    fireEvent.click(screen.getByRole("checkbox", { name: "Done: Reply to their message" }));
+    fireEvent.click(screen.getByRole("checkbox", { name: "Reply to their message" }));
     await waitFor(() =>
       expect(calls.find((c) => c.method === "PATCH")).toMatchObject({
         path: "/api/v1/todos/t1",
@@ -58,8 +63,28 @@ describe("to-dos", () => {
       }),
     );
 
+    // Ticking off leaves the list, so it offers an Undo.
+    expect(await screen.findByText("Ticked off: Reply to their message")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Undo" }));
+    await waitFor(() =>
+      expect(calls.filter((c) => c.method === "PATCH").map((c) => c.body)).toEqual([
+        { done: true },
+        { done: false },
+      ]),
+    );
+
     fireEvent.click(screen.getByRole("button", { name: "Delete to-do: Send my CV" }));
     await waitFor(() => expect(calls.some((c) => c.method === "DELETE")).toBe(true));
+    // Undo adds it back as it was: same words, same subject, still done.
+    fireEvent.click(await screen.findByRole("button", { name: "Undo" }));
+    await waitFor(() =>
+      expect(calls.filter((c) => c.method === "POST").at(-1)?.body).toEqual({
+        text: "Send my CV",
+        due_on: null,
+        entity_type: "contact",
+        entity_id: "c1",
+      }),
+    );
   });
 
   it("edits a to-do's words and date", async () => {

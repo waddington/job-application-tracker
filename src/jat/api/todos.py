@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from datetime import date, timedelta
+from datetime import UTC, date, datetime, timedelta
 from typing import Literal
 
 from fastapi import APIRouter, HTTPException, Response
@@ -39,18 +39,28 @@ def out(session: Session, todo: Todo) -> S.TodoOut:
     return result
 
 
-def open_todos(session: Session, today: date, soon_days: int) -> list[Todo]:
-    """Open to-dos in the order to do them: due within `soon_days` (overdue first), then the
-    undated ones oldest first, then the ones dated further ahead."""
-    stmt = select(Todo).where(Todo.done_at.is_(None)).order_by(Todo.created_at, Todo.id)
-    soon = today + timedelta(days=soon_days)
+SOON_DAYS = 14  # Next actions' "next two weeks"
+
+
+def in_order(todos, today: date) -> list[Todo]:
+    """Open to-dos in the order to do them: due in the next two weeks (overdue first), then the
+    undated ones oldest first, then the ones dated further ahead. Ticked-off ones follow, most
+    recently done first. Expects `todos` oldest first."""
+    soon = today + timedelta(days=SOON_DAYS)
 
     def order(todo: Todo):
+        if todo.done_at is not None:
+            return (3, -todo.done_at.timestamp())
         if todo.due_on is None:
-            return (1, date.min)
-        return (0 if todo.due_on <= soon else 2, todo.due_on)
+            return (1, 0.0)
+        return (0 if todo.due_on <= soon else 2, float(todo.due_on.toordinal()))
 
-    return sorted(session.scalars(stmt), key=order)
+    return sorted(todos, key=order)
+
+
+def open_todos(session: Session, today: date) -> list[Todo]:
+    stmt = select(Todo).where(Todo.done_at.is_(None)).order_by(Todo.created_at, Todo.id)
+    return in_order(session.scalars(stmt), today)
 
 
 @router.get("", response_model=list[S.TodoOut])
@@ -59,9 +69,14 @@ def list_todos(
     entity_type: S.TodoAbout | None = None,
     entity_id: str | None = None,
     status: Literal["open", "done", "all"] = "open",
+    today: date | None = None,
 ):
-    """Open to-dos by default (dated first, soonest first); `status=done` lists ticked-off ones,
-    most recent first. Filter to one thing with `entity_type` and `entity_id`."""
+    """Open to-dos by default, in the order Next actions shows them (pass your local `today`;
+    it defaults to UTC's): due in the next two weeks, then undated, then later. `status=done`
+    lists ticked-off ones, most recently done first; `all` lists open ones, then done ones.
+    Filter to one thing with `entity_type` and `entity_id` (both, or neither)."""
+    if (entity_type is None) != (entity_id is None):
+        raise HTTPException(422, "give both entity_type and entity_id, or neither")
     stmt = select(Todo)
     if entity_type is not None:
         stmt = stmt.where(Todo.entity_type == entity_type)
@@ -71,10 +86,8 @@ def list_todos(
         stmt = stmt.where(Todo.done_at.is_(None))
     elif status == "done":
         stmt = stmt.where(Todo.done_at.is_not(None))
-    stmt = stmt.order_by(
-        Todo.done_at.is_not(None), Todo.done_at.desc(), Todo.due_on.is_(None), Todo.due_on, Todo.created_at, Todo.id
-    )
-    return [out(session, todo) for todo in session.scalars(stmt)]
+    todos = session.scalars(stmt.order_by(Todo.created_at, Todo.id))
+    return [out(session, todo) for todo in in_order(todos, today or datetime.now(UTC).date())]
 
 
 @router.post("", response_model=S.TodoOut, status_code=201)

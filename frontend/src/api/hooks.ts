@@ -63,6 +63,7 @@ export function invalidateApplicationViews(qc: QueryClient) {
     ["timeline"],
     ["meetings"],
     ["role-summaries"],
+    ["todos"], // what each one is about, by name
   ]) {
     void qc.invalidateQueries({ queryKey: key });
   }

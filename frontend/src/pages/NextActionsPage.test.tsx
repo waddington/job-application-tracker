@@ -219,6 +219,7 @@ describe("next actions", () => {
       "GET /api/v1/role-summaries": [],
       "GET /api/v1/applications": [],
       "POST /api/v1/todos": todo({ id: "t3" }),
+      "GET /api/v1/todos": [todo({ id: "t9", text: "Update my portfolio", done_at: "2026-09-29T10:00:00Z" })],
       "/api/v1/health": {},
     });
     renderHome();
@@ -228,6 +229,9 @@ describe("next actions", () => {
     expect(screen.getByText("Update my CV")).toBeInTheDocument();
     // Only to-dos: you're not "all caught up".
     expect(screen.queryByText("All caught up")).not.toBeInTheDocument();
+    // Ticked-off ones can be found again.
+    fireEvent.click(screen.getByRole("button", { name: "Done recently" }));
+    expect(await screen.findByRole("checkbox", { name: "Update my portfolio" })).toBeChecked();
 
     fireEvent.change(screen.getByLabelText("New to-do"), { target: { value: "They messaged me: reply" } });
     fireEvent.click(screen.getAllByLabelText("About")[0]!);

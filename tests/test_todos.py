@@ -60,6 +60,10 @@ def test_next_actions_lists_todos_in_the_order_to_do_them(client):
     overdue = post(client, "/api/v1/todos", {"text": "Chase Contoso", "due_on": "2026-09-30"})
     todos = client.get("/api/v1/next-actions", params={"today": "2026-10-02"}).json()["todos"]
     assert [t["id"] for t in todos] == [overdue["id"], soon["id"], undated["id"], later["id"]]
+    # The same order everywhere, with ticked-off ones last.
+    client.patch(f"/api/v1/todos/{soon['id']}", json={"done": True})
+    listed = client.get("/api/v1/todos", params={"status": "all", "today": "2026-10-02"}).json()
+    assert [t["id"] for t in listed] == [overdue["id"], undated["id"], later["id"], soon["id"]]
 
 
 def test_deleting_the_thing_keeps_the_todo(client, seeded):
@@ -74,6 +78,21 @@ def test_deleting_the_thing_keeps_the_todo(client, seeded):
     assert [(t["id"], t["entity_type"], t["entity_id"], t["about"]) for t in kept] == [(todo["id"], None, None, None)]
 
 
+def test_deleting_a_company_keeps_its_roles_todos(client):
+    company = post(client, "/api/v1/companies", {"name": "Fabrikam"})
+    role = post(client, "/api/v1/roles", {"company_id": company["id"], "title": "Platform Engineer"})
+    on_role = post(
+        client, "/api/v1/todos", {"text": "Ask about the team", "entity_type": "role", "entity_id": role["id"]}
+    )
+    on_company = post(
+        client, "/api/v1/todos", {"text": "Read their blog", "entity_type": "company", "entity_id": company["id"]}
+    )
+    # The company's unused role goes with it; both to-dos stay, about nothing now.
+    assert client.delete(f"/api/v1/companies/{company['id']}").status_code == 204
+    kept = {t["id"]: t["entity_type"] for t in client.get("/api/v1/todos").json()}
+    assert kept == {on_role["id"]: None, on_company["id"]: None}
+
+
 def test_todo_validation(client, seeded):
     assert client.post("/api/v1/todos", json={"text": "   "}).status_code == 422
     assert client.post("/api/v1/todos", json={"text": "x", "entity_type": "contact"}).status_code == 422
@@ -83,6 +102,7 @@ def test_todo_validation(client, seeded):
     assert client.patch(f"/api/v1/todos/{todo['id']}", json={"text": None}).status_code == 422
     assert client.patch(f"/api/v1/todos/{todo['id']}", json={"text": " "}).status_code == 422
     assert client.patch("/api/v1/todos/nope", json={"done": True}).status_code == 404
+    assert client.get("/api/v1/todos", params={"entity_id": todo["id"]}).status_code == 422
 
 
 def test_search_finds_todos(client, seeded):

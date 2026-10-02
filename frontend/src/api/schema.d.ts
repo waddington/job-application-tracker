@@ -1066,8 +1066,10 @@ export interface paths {
         };
         /**
          * List Todos
-         * @description Open to-dos by default (dated first, soonest first); `status=done` lists ticked-off ones,
-         *     most recent first. Filter to one thing with `entity_type` and `entity_id`.
+         * @description Open to-dos by default, in the order Next actions shows them (pass your local `today`;
+         *     it defaults to UTC's): due in the next two weeks, then undated, then later. `status=done`
+         *     lists ticked-off ones, most recently done first; `all` lists open ones, then done ones.
+         *     Filter to one thing with `entity_type` and `entity_id` (both, or neither).
          */
         get: operations["list_todos_api_v1_todos_get"];
         put?: never;
@@ -5893,6 +5895,7 @@ export interface operations {
                 entity_type?: ("application" | "company" | "role" | "agency" | "contact") | null;
                 entity_id?: string | null;
                 status?: "open" | "done" | "all";
+                today?: string | null;
             };
             header?: never;
             path?: never;

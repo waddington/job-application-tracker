@@ -25,12 +25,14 @@ import {
   todoPath,
   useAddTodo,
   useDeleteTodo,
+  useTickTodo,
   useTodos,
   useUpdateTodo,
   type Todo,
   type TodoAbout,
 } from "../api/todoHooks";
 import { formatDate } from "../utils/time";
+import { useToday } from "../utils/useToday";
 
 /** "Overdue", "Today", "Tomorrow" or "By 5 Oct 2026", and how loudly to say it. */
 export function dueLabel(due: string, today: string): { label: string; color: string } {
@@ -43,11 +45,12 @@ export function dueLabel(due: string, today: string): { label: string; color: st
 
 /** One to-do: tick it off, see what it's about and when it's due, edit or delete it. */
 export function TodoLine({ todo, showAbout = true }: { todo: Todo; showAbout?: boolean }) {
-  const [today] = useState(() => dayjs().format("YYYY-MM-DD"));
+  const today = useToday();
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(todo.text);
   const [due, setDue] = useState<string | null>(todo.due_on);
   const update = useUpdateTodo();
+  const tick = useTickTodo();
   const remove = useDeleteTodo();
   const done = todo.done_at != null;
   const path = todoPath(todo);
@@ -107,9 +110,9 @@ export function TodoLine({ todo, showAbout = true }: { todo: Todo; showAbout?: b
         <Checkbox
           mt={2}
           checked={done}
-          disabled={update.isPending}
-          onChange={(e) => update.mutate({ id: todo.id, body: { done: e.currentTarget.checked } })}
-          aria-label={`${done ? "Not done" : "Done"}: ${todo.text}`}
+          disabled={tick.isPending}
+          onChange={(e) => tick.mutate({ todo, done: e.currentTarget.checked })}
+          aria-label={todo.text}
         />
         <div style={{ minWidth: 0 }}>
           <Text size="sm" td={done ? "line-through" : undefined} c={done ? "dimmed" : undefined}>
@@ -155,7 +158,7 @@ export function TodoLine({ todo, showAbout = true }: { todo: Todo; showAbout?: b
             color="gray"
             size="sm"
             loading={remove.isPending}
-            onClick={() => remove.mutate(todo.id)}
+            onClick={() => remove.mutate(todo)}
             aria-label={`Delete to-do: ${todo.text}`}
           >
             <IconTrash size={14} />
@@ -186,7 +189,7 @@ function useAboutOptions() {
       group: "Roles to decide",
       items: (roles ?? [])
         .filter((r) => r.status === "to_decide")
-        .map((r) => ({ value: `role:${r.id}`, label: `${r.title} at ${r.company_name}` }))
+        .map((r) => ({ value: `role:${r.id}`, label: `${r.company_name} · ${r.title}` }))
         .sort(byName),
     },
     {
