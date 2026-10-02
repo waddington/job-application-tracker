@@ -57,6 +57,8 @@ is built and merged, but not yet tested in real use. Numbers in brackets are pul
   their buttons visible with long emails (#51).
 - **Overview before the first application** shows your roles to decide, calls and people
   instead of only the getting-started steps (#52).
+- **Favicon**: the header's target mark shows in the browser tab, and as the icon when the
+  tracker is added to a phone's home screen (#54).
 
 ### Under the hood
 - Python 3.12, FastAPI, SQLAlchemy, Alembic and SQLite; React 19, TypeScript, Mantine and

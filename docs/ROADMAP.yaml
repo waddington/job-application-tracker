@@ -103,3 +103,4 @@ phases:
       - {id: docs-refresh, name: "Docs refresh: new screenshots and demo GIF, README, llms.txt and guide checked against the code", owner: lead, status: done, estimate_h: 2, depends: [role-decisions]}
       - {id: overview-early, name: "Overview before the first application: show roles to decide, calls and people, not just getting started", owner: lead, status: done, estimate_h: 1, depends: [home-timeline, role-decisions]}
       - {id: compaction-refresh, name: "Refresh the compaction prompt: product map, current state, candidates, new gotchas", owner: lead, status: done, estimate_h: 0.5, depends: [compaction-doc]}
+      - {id: favicon, name: "Favicon: the header's target mark in the browser tab and as a home-screen icon", owner: lead, status: building, estimate_h: 0.5, depends: [home-timeline]}
