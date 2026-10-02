@@ -98,6 +98,16 @@ class Role(IdMixin, TimestampMixin, Base):
     day_rate: Mapped[int | None] = mapped_column(Integer)
     ir35: Mapped[str | None] = mapped_column(String(20))  # inside | outside | unknown
     description: Mapped[str | None] = mapped_column(Text)
+    # Where it came from: who told you about it, and the call it came up in (if any).
+    contact_id: Mapped[str | None] = mapped_column(ForeignKey("contacts.id", ondelete="SET NULL"), index=True)
+    # No foreign key: meetings point at applications, which point at roles, so one here would
+    # make a cycle (no safe order to export or restore tables in). Cleared in
+    # clear_role_meetings below when the meeting goes.
+    meeting_id: Mapped[str | None] = mapped_column(String(36), index=True)
+    # Your decision before applying. A role with an application is "applied" whatever this says.
+    decision: Mapped[str | None] = mapped_column(String(20))  # None (still to decide) | passed
+    decision_reason: Mapped[str | None] = mapped_column(Text)
+    decided_on: Mapped[date | None]
 
 
 class Application(IdMixin, TimestampMixin, Base):
@@ -341,6 +351,22 @@ def remove_orphan_links(session: Session, flush_context, instances) -> None:
             attached = select(Attachment).where(Attachment.entity_type == kind, Attachment.entity_id == entity_id)
             for attachment in session.scalars(attached):
                 attachment.entity_type = attachment.entity_id = None
+
+
+@event.listens_for(Session, "before_flush")
+def clear_role_meetings(session: Session, flush_context, instances) -> None:
+    """A role remembers the call it came up in by id (no foreign key; see Role.meeting_id).
+    When that call is deleted, or the person it was with (their calls go too), forget it."""
+    gone: list[str] = []
+    with session.no_autoflush:
+        for obj in list(session.deleted):
+            if isinstance(obj, Meeting):
+                gone.append(obj.id)
+            elif isinstance(obj, Contact):
+                gone.extend(session.scalars(select(Meeting.id).where(Meeting.contact_id == obj.id)))
+        if gone:
+            for role in session.scalars(select(Role).where(Role.meeting_id.in_(gone))):
+                role.meeting_id = None
 
 
 # Tables whose rows are exported to export/*.jsonl, in foreign-key-safe order.

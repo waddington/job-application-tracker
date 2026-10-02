@@ -24,8 +24,9 @@ function notifyError(error: Error) {
 }
 
 /** Calls and meetings, soonest first. */
-export function useMeetings(filters: MeetingFilters) {
+export function useMeetings(filters: MeetingFilters, enabled = true) {
   return useQuery({
+    enabled,
     queryKey: ["meetings", filters],
     queryFn: async () => unwrap(await api.GET("/api/v1/meetings", { params: { query: filters } })),
   });
@@ -34,7 +35,7 @@ export function useMeetings(filters: MeetingFilters) {
 function useRefreshMeetings() {
   const qc = useQueryClient();
   return () => {
-    for (const key of [["meetings"], ["next-actions"], ["timeline"], ["search"]])
+    for (const key of [["meetings"], ["next-actions"], ["timeline"], ["search"], ["role-summaries"]])
       void qc.invalidateQueries({ queryKey: key });
   };
 }

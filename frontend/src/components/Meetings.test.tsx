@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { App } from "../App";
 import { makeRouter } from "../router";
-import { mockApi, WORKFLOW } from "../test/mockApi";
+import { meeting, mockApi, WORKFLOW } from "../test/mockApi";
 
 function renderAt(path: string) {
   render(<App router={makeRouter(createMemoryHistory({ initialEntries: [path] }))} />);
@@ -21,32 +21,6 @@ const alex = {
   created_at: "2026-09-01T00:00:00Z",
   updated_at: "2026-09-01T00:00:00Z",
 };
-
-export const meeting = (overrides: Record<string, unknown> = {}) => ({
-  id: "m1",
-  contact_id: "c1",
-  application_id: null,
-  kind: "call",
-  title: "Market catch-up",
-  status: "scheduled",
-  starts_at: new Date(Date.now() + 2 * 86_400_000).toISOString(),
-  ends_at: null,
-  location: null,
-  meeting_url: null,
-  agenda: null,
-  notes: null,
-  created_at: "2026-10-01T00:00:00Z",
-  updated_at: "2026-10-01T00:00:00Z",
-  label: "Call with Alex Morgan: Market catch-up",
-  contact_name: "Alex Morgan",
-  agency_id: "ag1",
-  agency_name: "Northwind Talent",
-  company_id: null,
-  company_name: null,
-  role_title: null,
-  application_company_name: null,
-  ...overrides,
-});
 
 const PERSON = {
   "/api/v1/workflow": WORKFLOW,

@@ -114,6 +114,7 @@ recruiters send roles that go somewhere.
 | 🏠 | **Overview** (the home page): counts, the pipeline by stage, what needs attention, what's coming up and recent activity; a numbered *How it works* and **New application** on every page | ✅ Available |
 | 🕰️ | **Timeline** across everything: every application, company, agency and person, by day or as lanes against time, filtered by period, category or who it's about | ✅ Available |
 | ⏰ | **Next actions**: follow-ups due, applications gone quiet, interviews and deadlines coming up, and rounds waiting for an outcome | ✅ Available |
+| 🤔 | **Roles to decide**: add the roles a recruiter mentions on a call, then apply (it makes the application, through them) or pass with a reason | ✅ Available |
 | 📞 | **Calls and meetings** with people, outside any one application: book a recruiter catch-up with an agenda, then note how it went; shows on Next actions, the Overview and the Timeline | ✅ Available |
 | 📨 | **Waiting to hear back**: mark that you've replied, on an application or a person, and see who to chase | ✅ Available |
 | 😴 | **One-click chasing**: set a follow-up reminder, snooze, or mark Ghosted straight from Next actions | ✅ Available |
@@ -206,7 +207,7 @@ progress and live PR status of the build itself. It needs nothing but Python; th
 | **P4** Next actions | Stale applications, follow-ups, snooze, upcoming items |
 | **P5** Insights | Sankey, funnel stats, recruiter scorecard |
 | **P6** Extras | Offers, backup archive, full-text search |
-| **P7** Feedback from real use | Deleting, people pages, waiting to hear back, Overview, Timeline, help, calls and meetings |
+| **P7** Feedback from real use | Deleting, people pages, waiting to hear back, Overview, Timeline, help, calls and meetings, roles to decide |
 
 ## ❓ FAQ
 

@@ -22,6 +22,7 @@ function useRefreshPeople() {
       ["contact-summary"],
       ["timeline"],
       ["meetings"],
+      ["role-summaries"],
     ]) {
       void qc.invalidateQueries({ queryKey: key });
     }

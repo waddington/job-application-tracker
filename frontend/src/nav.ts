@@ -7,6 +7,7 @@ import {
   IconChecklist,
   IconFileText,
   IconHome,
+  IconListDetails,
   IconNotes,
   IconTimeline,
   IconUsers,
@@ -60,6 +61,14 @@ export const NAV: NavItem[] = [
     icon: IconTimeline,
     task: "timeline",
     description: "Everything that happened, across every application, company, agency and person.",
+  },
+  {
+    path: "/roles",
+    group: "Your applications",
+    label: "Roles",
+    icon: IconListDetails,
+    task: "role-decisions",
+    description: "Roles you might go for: pitched by a recruiter or spotted, then applied for or passed on.",
   },
   {
     path: "/applications",

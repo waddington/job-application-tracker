@@ -1,7 +1,8 @@
 # Using the app
 
 A tour of every page. The sidebar has them all, in groups: *Today* (Overview, Next actions,
-Timeline), *Your applications*, *People and companies*, *Files and notes* and *Review*. Along
+Timeline), *Your applications* (Roles, Applications, Interviews, Offers), *People and
+companies*, *Files and notes* and *Review*. Along
 the top, on every page:
 
 - the name, which takes you back to the [Overview](#overview-home);
@@ -14,7 +15,7 @@ the top, on every page:
 
 - A **company** is somewhere you might work.
 - A **role** is a job at a company (title, location, work mode, salary range or day rate
-  and IR35).
+  and IR35). It can exist before you apply: see [Roles to decide](#roles-to-decide).
 - An **application** is you going for a role, by one **route**: directly, through an
   agency or recruiter, or by referral. Most of the app is about applications.
 - An **agency** is a recruitment agency. A **person** is anyone you deal with: an agency
@@ -32,6 +33,29 @@ recruiter first:
 - **Referral**: link the person who referred you from the application's People card.
 
 Companies, roles, agencies and people typed in for the first time are created for you.
+
+## Roles to decide
+
+After a call with a recruiter you often have a few roles to think about before applying for
+any. Add them as **roles** first, then decide on each:
+
+- **Add role**: on the **Roles** page, on a company's or person's page, or (best) **Add roles
+  from this call** under a call that happened on the recruiter's page. A role has a company
+  (type a new one to add it), a title, who told you about it and on which call, a job ad
+  link, location, work mode, pay (salary range, or day rate and IR35 for contracts) and notes.
+  **Add and add another** keeps the person and call for the next one.
+- **Apply** makes the application and opens it: through the recruiter's agency if they're at
+  one, otherwise directly with them as your contact. Pick the stage (Applied by default) and
+  the date.
+- **Pass** keeps the role with your reason ("rate too low"), under *Passed*. **Reconsider**
+  puts it back. The pencil edits a role; the bin deletes it (not once you've applied).
+- Deleting a call keeps the roles from it; they just aren't linked to a call any more.
+
+The **Roles** page shows roles *To decide* (the default), *Applied*, *Passed* or *All*. Roles
+to decide also show on Next actions and count towards *Needs attention* on the Overview. On
+the Timeline you'll see who mentioned which role, and the ones you passed on. A role you
+applied for through **New application** with the same title at the same company counts as
+applied too.
 
 ## Overview (home)
 
@@ -54,6 +78,8 @@ application** button.
 What needs doing, newest problems first:
 
 - **Offers to answer**: pending offers with a reply due in the next two weeks, or overdue.
+- **Roles to decide**: roles you've added but haven't applied for or passed on (see
+  [Roles to decide](#roles-to-decide)), oldest first, with **Apply** and **Pass**.
 - **Waiting to hear back**: applications and people you've replied to (see
   [Waiting to hear back](#waiting-to-hear-back)), longest first. It turns red once you've
   waited as long as the stage allows; **Heard back** clears it.
@@ -162,7 +188,7 @@ Companies, agencies, roles and people have **Delete** too:
 | A company | its roles and their links | its people (no longer at a company), notes and files |
 | A role | nothing else | — |
 | An agency | nothing else | its recruiters and applications (no longer with an agency) |
-| A person | them from applications and interviews, and their calls and meetings | the applications |
+| A person | them from applications and interviews, and their calls and meetings | the applications, and the roles they mentioned (no longer linked to them) |
 
 A company or role that still has applications can't be deleted: delete or archive those
 first. Your data repo's history still has everything until you rewrite it.
@@ -175,7 +201,7 @@ and independents, with every email, phone number and link (click to email, call 
 a new agency or company name and pick **+ Add "…"** to create it there and then.
 
 Each **person** has a page, a dossier: their job title and where they work, how to reach
-them, your calls and meetings with them, every application they're part of (and as what),
+them, your calls and meetings with them, the roles they've mentioned, every application they're part of (and as what),
 the interviews they were in, and your notes, links and files about them. Click a name anywhere to open it; **Edit** and **Delete**
 are at the top.
 
@@ -192,6 +218,8 @@ meetings** on their page:
   asks for notes; **Didn't happen** closes it.
 - If it's about one application, pick it under **About an application**; the call then shows
   with that application on the Timeline.
+- Under a call that happened, **Add roles from this call** adds the roles they mentioned, to
+  [decide on](#roles-to-decide) later. The call lists them with their status.
 
 Calls show under *Coming up* on Next actions and the Overview, on the Timeline, and in
 search. Interview rounds for an application stay on the application's page.
@@ -203,7 +231,8 @@ warning**.
 ## Companies
 
 A list of companies with how many applications and how many need chasing. A **company
-page** has its applications, roles, people (**Add person** for the people you talk to there),
+page** has its applications, roles (with whether you've applied, passed or still have to
+decide, and **Add role**), people (**Add person** for the people you talk to there),
 an *About* box, notes, links and files. **Edit** at the top renames it or sets its website;
 agencies have the same.
 

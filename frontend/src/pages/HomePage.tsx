@@ -108,6 +108,7 @@ export function HomePage() {
   // Next actions lists rounds with no date yet after the booked ones; they aren't "coming up".
   const booked = (next?.upcoming ?? []).filter((i) => i.starts_at || i.deadline_at);
   const calls = next?.meetings ?? [];
+  const toDecide = next?.roles_to_decide ?? [];
   const waiting = (next?.waiting.length ?? 0) + (next?.waiting_people.length ?? 0);
   const pipeline = (workflow?.stages ?? [])
     .filter((s) => s.kind === "active")
@@ -154,9 +155,9 @@ export function HomePage() {
             <Stat label="Active" value={active.length} to="/applications" hint="applications in play" />
             <Stat
               label="Needs attention"
-              value={next && attention.length}
+              value={next && attention.length + toDecide.length}
               to="/next-actions"
-              hint="follow-ups and gone quiet"
+              hint="follow-ups, gone quiet, roles to decide"
             />
             <Stat
               label="Interviews"
@@ -194,7 +195,7 @@ export function HomePage() {
 
           <SimpleGrid cols={{ base: 1, md: 2 }}>
             <Panel title="Needs attention" link={{ to: "/next-actions", label: "All next actions" }}>
-              {attention.length === 0 ? (
+              {attention.length + toDecide.length === 0 ? (
                 <Empty>Nothing to chase. Nice.</Empty>
               ) : (
                 <Stack gap={6}>
@@ -209,6 +210,21 @@ export function HomePage() {
                     </div>
                   ))}
                   {attention.length > 6 && <Empty>and {attention.length - 6} more</Empty>}
+                  {toDecide.length > 0 && (
+                    <div>
+                      <Anchor component={Link} to="/roles" size="sm" fw={500}>
+                        {toDecide.length === 1 ? "1 role" : `${toDecide.length} roles`} to decide on
+                      </Anchor>
+                      <Text size="xs" c="dimmed">
+                        Apply or pass:{" "}
+                        {toDecide
+                          .slice(0, 3)
+                          .map((r) => `${r.title} at ${r.company_name}`)
+                          .join(", ")}
+                        {toDecide.length > 3 ? "…" : ""}
+                      </Text>
+                    </div>
+                  )}
                 </Stack>
               )}
             </Panel>

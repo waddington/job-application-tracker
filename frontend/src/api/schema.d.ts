@@ -952,6 +952,29 @@ export interface paths {
         patch: operations["update_offer_api_v1_offers__offer_id__patch"];
         trace?: never;
     };
+    "/api/v1/role-summaries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Role Summaries
+         * @description Roles with where they came from and where they stand, oldest first.
+         *
+         *     `status`: `to_decide` (no application and not passed), `applied` (has an application) or
+         *     `passed`. Filter by company, by who told you about it, or by the call it came up in.
+         */
+        get: operations["role_summaries_api_v1_role_summaries_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/roles": {
         parameters: {
             query?: never;
@@ -2119,6 +2142,11 @@ export interface components {
              * @default []
              */
             offer_deadlines: components["schemas"]["OfferOut"][];
+            /**
+             * Roles To Decide
+             * @default []
+             */
+            roles_to_decide: components["schemas"]["RoleSummary"][];
             /** Stale */
             stale: components["schemas"]["ApplicationRow"][];
             /**
@@ -2475,10 +2503,16 @@ export interface components {
         RoleIn: {
             /** Company Id */
             company_id: string;
+            /** Contact Id */
+            contact_id?: string | null;
             /** Currency */
             currency?: string | null;
             /** Day Rate */
             day_rate?: number | null;
+            /** Decision */
+            decision?: "passed" | null;
+            /** Decision Reason */
+            decision_reason?: string | null;
             /** Description */
             description?: string | null;
             /** Employment Type */
@@ -2487,6 +2521,8 @@ export interface components {
             ir35?: ("inside" | "outside" | "unknown") | null;
             /** Location */
             location?: string | null;
+            /** Meeting Id */
+            meeting_id?: string | null;
             /** Salary Max */
             salary_max?: number | null;
             /** Salary Min */
@@ -2502,6 +2538,8 @@ export interface components {
         RoleOut: {
             /** Company Id */
             company_id: string;
+            /** Contact Id */
+            contact_id?: string | null;
             /**
              * Created At
              * Format: date-time
@@ -2511,6 +2549,12 @@ export interface components {
             currency: string | null;
             /** Day Rate */
             day_rate: number | null;
+            /** Decided On */
+            decided_on?: string | null;
+            /** Decision */
+            decision?: string | null;
+            /** Decision Reason */
+            decision_reason?: string | null;
             /** Description */
             description: string | null;
             /** Employment Type */
@@ -2521,6 +2565,8 @@ export interface components {
             ir35: string | null;
             /** Location */
             location: string | null;
+            /** Meeting Id */
+            meeting_id?: string | null;
             /** Salary Max */
             salary_max: number | null;
             /** Salary Min */
@@ -2541,10 +2587,16 @@ export interface components {
         RolePatch: {
             /** Company Id */
             company_id?: string | null;
+            /** Contact Id */
+            contact_id?: string | null;
             /** Currency */
             currency?: string | null;
             /** Day Rate */
             day_rate?: number | null;
+            /** Decision */
+            decision?: "passed" | null;
+            /** Decision Reason */
+            decision_reason?: string | null;
             /** Description */
             description?: string | null;
             /** Employment Type */
@@ -2553,6 +2605,8 @@ export interface components {
             ir35?: ("inside" | "outside" | "unknown") | null;
             /** Location */
             location?: string | null;
+            /** Meeting Id */
+            meeting_id?: string | null;
             /** Salary Max */
             salary_max?: number | null;
             /** Salary Min */
@@ -2563,6 +2617,75 @@ export interface components {
             url?: string | null;
             /** Work Mode */
             work_mode?: ("remote" | "hybrid" | "office") | null;
+        };
+        /**
+         * RoleSummary
+         * @description A role with where it came from and where it stands: still to decide, applied, or passed.
+         */
+        RoleSummary: {
+            /** Agency Id */
+            agency_id?: string | null;
+            /** Agency Name */
+            agency_name?: string | null;
+            /** Application Ids */
+            application_ids: string[];
+            /** Company Id */
+            company_id: string;
+            /** Company Name */
+            company_name: string;
+            /** Contact Id */
+            contact_id?: string | null;
+            /** Contact Name */
+            contact_name?: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Currency */
+            currency: string | null;
+            /** Day Rate */
+            day_rate: number | null;
+            /** Decided On */
+            decided_on?: string | null;
+            /** Decision */
+            decision?: string | null;
+            /** Decision Reason */
+            decision_reason?: string | null;
+            /** Description */
+            description: string | null;
+            /** Employment Type */
+            employment_type: string | null;
+            /** Id */
+            id: string;
+            /** Ir35 */
+            ir35: string | null;
+            /** Location */
+            location: string | null;
+            /** Meeting Id */
+            meeting_id?: string | null;
+            /** Meeting Label */
+            meeting_label?: string | null;
+            /** Salary Max */
+            salary_max: number | null;
+            /** Salary Min */
+            salary_min: number | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "to_decide" | "applied" | "passed";
+            /** Title */
+            title: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Url */
+            url: string | null;
+            /** Work Mode */
+            work_mode: string | null;
         };
         /**
          * RoundSummary
@@ -5386,6 +5509,40 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OfferOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    role_summaries_api_v1_role_summaries_get: {
+        parameters: {
+            query?: {
+                status?: ("to_decide" | "applied" | "passed") | null;
+                company_id?: string | null;
+                contact_id?: string | null;
+                meeting_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoleSummary"][];
                 };
             };
             /** @description Validation Error */

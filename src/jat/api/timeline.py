@@ -266,6 +266,46 @@ def timeline(
         else:
             items.append(about_contact(c, **fields))
 
+    # Roles before applying: who pitched them, and the ones you passed on.
+    for r in session.scalars(select(Role).where((Role.contact_id.is_not(None)) | (Role.decision.is_not(None)))):
+        co = companies.get(r.company_id)
+        who = contacts.get(r.contact_id or "")
+        base = dict(
+            company_id=co.id if co else None,
+            company_name=co.name if co else None,
+            role_title=r.title,
+        )
+        if who is not None:
+            ag = agencies.get(who.agency_id or "")
+            base |= dict(
+                people=[TimelinePerson(id=who.id, name=who.name)],
+                agency_id=ag.id if ag else None,
+                agency_name=ag.name if ag else None,
+            )
+            items.append(
+                TimelineItem(
+                    id=f"role:{r.id}",
+                    at=r.created_at,
+                    all_day=False,
+                    category="added",
+                    title=f"{who.name} mentioned {r.title} at {co.name if co else '?'}",
+                    detail=r.description,
+                    **base,
+                )
+            )
+        if r.decision == "passed" and r.decided_on:
+            items.append(
+                TimelineItem(
+                    id=f"role-passed:{r.id}",
+                    at=_day(r.decided_on),
+                    all_day=True,
+                    category="other",
+                    title=f"Passed on {r.title} at {co.name if co else '?'}",
+                    detail=r.decision_reason,
+                    **base,
+                )
+            )
+
     for c in companies.values():
         items.append(
             TimelineItem(

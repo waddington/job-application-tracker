@@ -25,6 +25,7 @@ import { DeleteButton } from "../components/DeleteButton";
 import { roundStatus } from "../components/Interviews";
 import { LinksCard } from "../components/Links";
 import { MeetingsCard } from "../components/Meetings";
+import { RolesCard } from "../components/Roles";
 import { NotesCard } from "../components/Notes";
 import { StageBadge } from "../components/StageBadge";
 import { PersonWaiting } from "../components/Waiting";
@@ -94,6 +95,13 @@ export function PersonPage() {
         <Grid.Col span={{ base: 12, md: 8 }}>
           <Stack>
             <MeetingsCard contactId={contact.id} name={contact.name} />
+            <RolesCard
+              title="Roles they've mentioned"
+              filters={{ contact_id: contact.id }}
+              start={{ contactId: contact.id }}
+              empty={`No roles from ${contact.name} yet. Add the ones they mention, then apply or pass on each.`}
+              showSource={false}
+            />
             <Card withBorder>
               <Title order={4} mb="sm">
                 Applications

@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { App } from "../App";
 import { makeRouter } from "../router";
-import { mockApi, row, WORKFLOW } from "../test/mockApi";
+import { mockApi, roleSummary, row, WORKFLOW } from "../test/mockApi";
 
 function renderAt(path: string) {
   const router = makeRouter(createMemoryHistory({ initialEntries: [path] }));
@@ -95,6 +95,7 @@ describe("deleting", () => {
     const calls = mockApi({
       "/api/v1/workflow": WORKFLOW,
       "GET /api/v1/companies/co1/summary": summary([]),
+      "/api/v1/role-summaries": [roleSummary()],
       "DELETE /api/v1/roles/r1": {},
       "DELETE /api/v1/companies/co1": {},
       "/api/v1/companies": [],

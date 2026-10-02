@@ -262,16 +262,59 @@ def seed(path: Path) -> None:
         )
         # Calls with a recruiter that aren't about one application: one had, one booked.
         first_recruiter = next(iter(recruiters.values()))
+        catch_up = Meeting(
+            contact_id=first_recruiter.id,
+            kind="call",
+            title="Market catch-up",
+            status="done",
+            starts_at=days_ago(6),
+            notes="Contract market is picking up. Three roles to look at: **Fabrikam**, "
+            "**Proseware** and a fintech startup.",
+        )
+        s.add(catch_up)
+        s.flush()
+        # The roles from that call: two still to decide, one passed on.
+        startup = Company(name="Northwind Pay", website="https://pay.northwind.example.com")
+        s.add(startup)
+        s.flush()
+        pitched = dict(contact_id=first_recruiter.id, meeting_id=catch_up.id, created_at=days_ago(6))
+        s.add_all(
+            [
+                Role(
+                    company_id=companies["Fabrikam"].id,
+                    title="Platform Engineer (contract)",
+                    employment_type="contract",
+                    day_rate=625,
+                    ir35="outside",
+                    work_mode="remote",
+                    **pitched,
+                ),
+                Role(
+                    company_id=startup.id,
+                    title="Founding Backend Engineer",
+                    salary_min=90_000,
+                    salary_max=110_000,
+                    **pitched,
+                ),
+                Role(
+                    company_id=companies["Proseware"].id,
+                    title="Data Engineer",
+                    decision="passed",
+                    decision_reason="Mostly BI work, not what I'm after",
+                    decided_on=date.today() - timedelta(days=5),
+                    **pitched,
+                ),
+            ]
+        )
         s.add_all(
             [
                 Meeting(
                     contact_id=first_recruiter.id,
                     kind="call",
-                    title="Market catch-up",
+                    title="Earlier catch-up",
                     status="done",
-                    starts_at=days_ago(6),
-                    notes="Contract market is picking up. Three roles to look at: **Fabrikam**, "
-                    "**Proseware** and a stealth fintech.",
+                    starts_at=days_ago(30),
+                    notes="Introductions; sent over my CV.",
                 ),
                 Meeting(
                     contact_id=first_recruiter.id,

@@ -26,6 +26,7 @@ import { ContactFormModal } from "../components/ContactFormModal";
 import { DeleteButton } from "../components/DeleteButton";
 import { EditNameModal } from "../components/EditNameModal";
 import { LinksCard } from "../components/Links";
+import { RolesCard } from "../components/Roles";
 import { NotesCard } from "../components/Notes";
 import { StageBadge } from "../components/StageBadge";
 import { ago } from "../utils/time";
@@ -70,7 +71,7 @@ export function CompanyPage() {
 
   if (isError) return <Alert color="red">Couldn't load this company.</Alert>;
   if (isLoading || !data) return <Loader />;
-  const { company, roles, applications, contacts } = data;
+  const { company, applications, contacts } = data;
 
   return (
     <Stack maw={1200}>
@@ -190,46 +191,12 @@ export function CompanyPage() {
         </Grid.Col>
         <Grid.Col span={{ base: 12, md: 4 }}>
           <Stack>
-            <Card withBorder>
-              <Title order={4} mb="sm">
-                Roles
-              </Title>
-              <Stack gap={6}>
-                {roles.map((r) => (
-                  <div key={r.id}>
-                    <Group justify="space-between" wrap="nowrap" gap={4}>
-                      <Text size="sm" fw={600}>
-                        {r.title}
-                      </Text>
-                      <DeleteButton
-                        compact
-                        kind="role"
-                        id={r.id}
-                        name={r.title}
-                        confirm={`Delete the role ${r.title}? A role with applications can't be deleted.`}
-                      />
-                    </Group>
-                    <Group gap={6}>
-                      {r.work_mode && (
-                        <Badge size="xs" variant="light" color="gray">
-                          {r.work_mode}
-                        </Badge>
-                      )}
-                      {r.url && (
-                        <Anchor href={r.url} target="_blank" rel="noreferrer" size="xs">
-                          Job ad
-                        </Anchor>
-                      )}
-                    </Group>
-                  </div>
-                ))}
-                {!roles.length && (
-                  <Text size="sm" c="dimmed">
-                    No roles yet.
-                  </Text>
-                )}
-              </Stack>
-            </Card>
+            <RolesCard
+              title="Roles"
+              filters={{ company_id: company.id }}
+              start={{ companyId: company.id }}
+              empty="No roles yet. Add one you might go for, then apply or pass."
+            />
             <Card withBorder>
               <Group justify="space-between" mb="sm">
                 <Title order={4}>People</Title>
