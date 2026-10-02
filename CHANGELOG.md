@@ -52,7 +52,8 @@ is built and merged, but not yet tested in real use. Numbers in brackets are pul
   person pages, Next actions, the Overview, the Timeline and search (#49).
 - **Roles to decide**: add roles a recruiter mentioned (from the call), then apply or pass on
   each; a Roles page, and roles on Next actions, the Overview and the Timeline (#50).
-- **Docs refresh**: new screenshots and demo GIF of the current app; contact cards keep
+- **Docs refresh**: new screenshots and demo GIF of the current app; the Recruiters page's
+  button now says *New person*; contact cards keep
   their buttons visible with long emails (#51).
 
 ### Under the hood

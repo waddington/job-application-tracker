@@ -67,7 +67,8 @@ Where things stand, at a glance:
   answer soon. Each one opens the page with the details.
 - **Pipeline**: active applications by stage.
 - **Needs attention** and **Coming up**: the top of [Next actions](#next-actions). Coming
-  up lists interviews and calls in time order, then offer reply deadlines.
+  up lists up to six interviews, task deadlines and calls in time order, then offer reply
+  deadlines.
 - **Recent activity**: the last two weeks of the [Timeline](#timeline), leaving out
   companies, agencies and people being added.
 - **How it works**: the same numbered steps as the **?** button.

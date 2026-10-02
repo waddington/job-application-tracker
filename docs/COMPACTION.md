@@ -190,7 +190,8 @@ None. The next work is whatever Kai asks for next.
   the DOM (CSS `order` to reorder) so Enter does the obvious thing.
 - **Test fixtures:** shared ones live in `frontend/src/test/mockApi.ts` (`row`, `item`,
   `meeting`, `roleSummary`). Never import from another `*.test.tsx`: its tests run twice.
-- **Screenshots:** scripts in the tmp dir (`shots5.py`, `crops5.py`, `gif5.py`): seed demo
+- **Screenshots:** throwaway scripts, not in the repo (they were in the job tmp dir as
+  `shots5.py`, `crops5.py`, `gif5.py`; rewrite them if it's gone): seed demo
   data, run `enrich_demo.py`, serve on a spare port, capture with headless Chrome
   (`?view=board`, `?view=lanes` pick views), crop with ImageMagick `convert -crop`.
 - **SQLAlchemy:** there's no relationship between companies and roles, so flush role deletes

@@ -110,7 +110,7 @@ recruiters send roles that go somewhere.
 <td width="50%"><b>Offers side by side</b>: a salary package against a contract day rate, worth-a-year first<br><img src="docs/screenshots/offers.png" width="100%" alt="Two offers compared: a permanent salary package and a contract day rate"></td>
 </tr>
 <tr>
-<td width="50%"><b>Search everything</b> (press <kbd>/</kbd>): applications, people, notes, debriefs, calls, emails<br><img src="docs/screenshots/search.png" width="100%" alt="Search results for system design across interview rounds, notes and links"></td>
+<td width="50%"><b>Search everything</b> (press <kbd>/</kbd>): applications, people, notes, debriefs, calls, emails<br><img src="docs/screenshots/search.png" width="100%" alt="Search results for system design: an interview round, a timeline entry and a link"></td>
 <td width="50%"></td>
 </tr>
 </table>
@@ -271,7 +271,8 @@ application** (top right, on every page) and type the company, role, agency and 
 anything new is created for you. The **?** button walks through the everyday loop.
 
 **A recruiter called about the market, not a specific role. Where does that go?** On their
-page: **Book a call** (or log one that happened), then **Add roles from this call** for each
+page: **Book a call** (or log one that happened). Once it's marked *Happened*, **Add roles
+from this call** for each
 role they mentioned. Each waits under *Roles* until you apply or pass.
 
 **Can I track which interview round I'm at?** Yes. Each application has numbered rounds

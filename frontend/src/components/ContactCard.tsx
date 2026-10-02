@@ -26,7 +26,7 @@ export function ContactCard({ contact, onEdit }: { contact: Contact; onEdit?: ()
   return (
     <Card withBorder padding="sm">
       <Group justify="space-between" align="flex-start" wrap="nowrap">
-        {/* minWidth 0 lets long emails wrap instead of pushing the buttons out of the card */}
+        {/* minWidth 0 lets long details shrink (ending in …) instead of pushing the buttons out */}
         <Stack gap={4} style={{ minWidth: 0, flex: 1 }}>
           <Anchor component={Link} to={`/people/${contact.id}`} fw={600} c="inherit">
             {contact.name}
@@ -50,12 +50,14 @@ export function ContactCard({ contact, onEdit }: { contact: Contact; onEdit?: ()
                       size="sm"
                       target={d.kind === "email" || d.kind === "phone" ? undefined : "_blank"}
                       truncate="end"
-                    title={d.value}
+                      title={d.value}
                     >
                       {d.value}
                     </Anchor>
                   ) : (
-                    <Text size="sm">{d.value}</Text>
+                    <Text size="sm" truncate="end" title={d.value}>
+                      {d.value}
+                    </Text>
                   )}
                 </Group>
                 {d.label && (
