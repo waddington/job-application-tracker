@@ -153,7 +153,7 @@ time it was sent. The file itself is kept too.
   *Archived* filter on the Applications page, or with search. Switch it off to bring it back.
 - **Delete** (top right of the page) removes it for good, with its interviews, offer,
   timeline, record of documents sent and links. Its notes and files stay (files become
-  unattached).
+  unattached), and so do calls about it (they're just no longer about an application).
 
 Companies, agencies, roles and people have **Delete** too:
 
@@ -162,7 +162,7 @@ Companies, agencies, roles and people have **Delete** too:
 | A company | its roles and their links | its people (no longer at a company), notes and files |
 | A role | nothing else | — |
 | An agency | nothing else | its recruiters and applications (no longer with an agency) |
-| A person | them from applications and interviews | the applications |
+| A person | them from applications and interviews, and their calls and meetings | the applications |
 
 A company or role that still has applications can't be deleted: delete or archive those
 first. Your data repo's history still has everything until you rewrite it.
@@ -252,7 +252,8 @@ How the search is going, for all time or the last 30 or 90 days:
 
 Type in the box at the top (or press <kbd>/</kbd>) and press Enter. It finds applications,
 companies, agencies, people (including their emails and phone numbers), interview prep and
-debriefs, offers, timeline entries, notes, documents, files, emails and links. Every word
+debriefs, calls and meetings (their agenda and notes), offers, timeline entries, notes,
+documents, files, emails and links. Every word
 must match; case and accents don't matter.
 
 ## Dark mode

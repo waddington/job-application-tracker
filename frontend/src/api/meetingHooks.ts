@@ -34,7 +34,7 @@ export function useMeetings(filters: MeetingFilters) {
 function useRefreshMeetings() {
   const qc = useQueryClient();
   return () => {
-    for (const key of [["meetings"], ["next-actions"], ["timeline"]])
+    for (const key of [["meetings"], ["next-actions"], ["timeline"], ["search"]])
       void qc.invalidateQueries({ queryKey: key });
   };
 }

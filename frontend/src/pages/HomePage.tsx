@@ -217,26 +217,36 @@ export function HomePage() {
                 <Empty>No interviews, calls or offer deadlines in the next two weeks.</Empty>
               ) : (
                 <Stack gap={6}>
-                  {booked.slice(0, 6).map((i) => (
-                    <div key={i.id}>
-                      <Anchor component={Link} to={`/applications/${i.application_id}`} size="sm" fw={500}>
-                        {i.company_name} · {i.label}
-                      </Anchor>
-                      <Text size="xs" c="dimmed">
-                        {i.starts_at ? formatDateTime(i.starts_at) : `Due ${formatDateTime(i.deadline_at!)}`}
-                      </Text>
-                    </div>
-                  ))}
-                  {calls.slice(0, 6).map((m) => (
-                    <div key={m.id}>
-                      <Anchor component={Link} to={`/people/${m.contact_id}`} size="sm" fw={500}>
-                        {m.label}
-                      </Anchor>
-                      <Text size="xs" c="dimmed">
-                        {formatDateTime(m.starts_at)}
-                      </Text>
-                    </div>
-                  ))}
+                  {[
+                    ...booked.map((i) => ({
+                      key: i.id,
+                      at: (i.starts_at ?? i.deadline_at)!,
+                      to: `/applications/${i.application_id}`,
+                      label: `${i.company_name} · ${i.label}`,
+                      when: i.starts_at
+                        ? formatDateTime(i.starts_at)
+                        : `Due ${formatDateTime(i.deadline_at!)}`,
+                    })),
+                    ...calls.map((m) => ({
+                      key: m.id,
+                      at: m.starts_at,
+                      to: `/people/${m.contact_id}`,
+                      label: m.label,
+                      when: formatDateTime(m.starts_at),
+                    })),
+                  ]
+                    .sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime())
+                    .slice(0, 6)
+                    .map((c) => (
+                      <div key={c.key}>
+                        <Anchor component={Link} to={c.to} size="sm" fw={500}>
+                          {c.label}
+                        </Anchor>
+                        <Text size="xs" c="dimmed">
+                          {c.when}
+                        </Text>
+                      </div>
+                    ))}
                   {next!.offer_deadlines.map((o) => (
                     <div key={o.id}>
                       <Anchor component={Link} to={`/applications/${o.application_id}`} size="sm" fw={500}>
