@@ -67,7 +67,7 @@ what section 8 says. End with section 9's resume steps and one line: the next ac
 - **Docs.** `docs/guide/` (user guide: install, your-data, using-the-app, customising, commands,
   troubleshooting), `docs/prd/tracker.md`, `docs/rfc/stack.md`, `docs/ROADMAP.yaml`,
   `CHANGELOG.md`, `docs/IDEAS.md`.
-- **Stack.** Python 3.12, uv, FastAPI, SQLAlchemy 2.1, Alembic (migrations 0001–0005) and SQLite
+- **Stack.** Python 3.12, uv, FastAPI, SQLAlchemy 2.1, Alembic (migrations 0001–0007) and SQLite
   in `src/jat`. Frontend `frontend/`: Vite 8, React 19, TypeScript 5.9, Mantine 9, TanStack
   Router/Query, dnd-kit, d3-sankey, react-markdown, openapi-fetch.
 - **Data folder.** Found by `--data-dir` or `JAT_DATA_DIR` (env var or `.env` in the repo root,
@@ -93,13 +93,21 @@ what section 8 says. End with section 9's resume steps and one line: the next ac
 
 ### 3. Current state (snapshot 2026-10-02)
 
-- **main at `5d52a40`.** No open PRs. Only the main worktree (plus this doc's, until merged).
-- **Roadmap P0–P6 all `done`** (35 tasks). Merged PRs #1–#46. Since the roadmap:
+- **main after #51** (this docs refresh). No other open PRs; only the main worktree.
+- **Roadmap P0–P7 all `done`** (45 tasks; P7 "Feedback from real use" is where new work
+  goes). Merged PRs #1–#51. Since P6:
   - #42 status back to early development (0.1.0); #43 delete companies, roles, agencies, people,
-    applications; #44 user guide; #45 person pages, add people from companies and
-    applications, in-house recruiters, `internal_recruiter` relation, rename companies and
-    agencies, type-to-add agency/company; #46 waiting to hear back (applications and people).
-- **Tests on main:** 247 backend, 60 frontend.
+    applications; #44 user guide; #45 person pages, in-house recruiters, rename, type-to-add;
+    #46 waiting to hear back; #47 this doc; #48 Overview home (`/`), Next actions moved to
+    `/next-actions`, Timeline (`/timeline`, list + lanes, `?view=lanes`), grouped menu,
+    header New application + **?** How it works; #49 calls and meetings with people
+    (`/api/v1/meetings`, migration 0006); #50 roles to decide (Roles page, Apply/Pass,
+    `/api/v1/role-summaries`, migration 0007); #51 docs refresh: every screenshot and the
+    demo GIF retaken, README/llms.txt/guide checked against the code.
+- **Tests on main:** 258 backend, 72 frontend.
+- **Remote branches:** Kai asked to delete ones no longer needed; only `main` should remain
+  after each merge (`--delete-branch`, plus `git push origin --delete` when a local worktree
+  blocks gh's cleanup).
 - **Kai is testing it now on real data** and sending feedback, often mid-turn with screenshots.
 - **Still waiting on Kai:** create `.env` in the main checkout
   (`JAT_DATA_DIR=$HOME/Documents/Projects/job-application-tracker-data`).
@@ -132,6 +140,16 @@ None. The next work is whatever Kai asks for next.
   rules (Jira-style). Custom stages without `transitions` stay strict.
 - **Staleness:** not stale if snoozed, a follow-up is planned later, a round is booked ahead, or
   you're waiting to hear back.
+- **Calls and meetings:** a `Meeting` is with one person (cascade on delete), optionally about
+  an application (set null). Status scheduled/done/cancelled, shown in the UI as
+  Booked/Happened/Didn't happen. They don't write application events; the Timeline adds them.
+- **Roles to decide:** status is derived: *applied* if any application uses the role, else
+  *passed* if `decision == "passed"`, else *to decide*. `roles.meeting_id` has **no FK** on
+  purpose (applications → roles → meetings → applications would be a cycle that breaks
+  export/restore order); `clear_role_meetings` (before_flush) nulls it when the call or its
+  person goes. The server checks a role's call is with its person. Apply goes through the
+  person's agency if any, else direct with them as recruiter; stage Applied if the workflow
+  has it, else the initial stage.
 - **Waiting to hear back:** `awaiting_reply_since` (a local date) on applications and contacts.
   It's set and cleared by buttons, logged on the application timeline, cleared by a stage move
   (an undo restores it). It's not inferred from logged messages, which have no direction.
@@ -164,6 +182,18 @@ None. The next work is whatever Kai asks for next.
   you changed on purpose.
 - **Rules that run on every PATCH** (`_check_route` merges current values) must not reject
   states old data may already be in, or unrelated edits start failing.
+- **FK cycles:** a new FK that closes a loop between tables makes `sorted_tables` warn and
+  breaks export/restore ordering. Check `uv run pytest tests/test_db.py` for an SAWarning.
+- **React lint (react-compiler rules):** no `Date.now()` in render (use
+  `useState(() => Date.now())`), no reading refs in handlers built during render (for "which
+  submit button", read `event.nativeEvent.submitter`). Put the default submit button first in
+  the DOM (CSS `order` to reorder) so Enter does the obvious thing.
+- **Test fixtures:** shared ones live in `frontend/src/test/mockApi.ts` (`row`, `item`,
+  `meeting`, `roleSummary`). Never import from another `*.test.tsx`: its tests run twice.
+- **Screenshots:** throwaway scripts, not in the repo (they were in the job tmp dir as
+  `shots5.py`, `crops5.py`, `gif5.py`; rewrite them if it's gone): seed demo
+  data, run `enrich_demo.py`, serve on a spare port, capture with headless Chrome
+  (`?view=board`, `?view=lanes` pick views), crop with ImageMagick `convert -crop`.
 - **SQLAlchemy:** there's no relationship between companies and roles, so flush role deletes
   before deleting the company. Contact PATCH dumps JSON, so set dates explicitly.
 - **Frontend:**

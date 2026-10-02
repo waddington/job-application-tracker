@@ -33,7 +33,7 @@ job-search-data/
 ├── tracker.sqlite3   the database the app uses (not committed: rebuilt from export/)
 ├── export/           every table as JSON Lines, one record per line (committed)
 │   ├── _meta.json    export format and database version
-│   ├── applications.jsonl, companies.jsonl, events.jsonl, offers.jsonl, …
+│   ├── applications.jsonl, companies.jsonl, contacts.jsonl, meetings.jsonl, roles.jsonl, …
 ├── notes/            your Markdown notes, one .md file each (committed)
 ├── files/            attachments: CVs, briefs, exported emails, as uploaded (committed)
 ├── config.toml       settings for this data folder: stages, snapshot timing (committed)
