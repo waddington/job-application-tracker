@@ -14,7 +14,7 @@ uv run jat --data-dir ~/job-search-data <command> [options]
 | `serve` | Runs the app (http://127.0.0.1:8770). Upgrades the database first if needed. `--port N`, `--host ADDR`, `--dev` (reload on code changes, for development). |
 | `info` | Shows the data folder, whether it's a git repo, the database version, and the address. |
 | `snapshot` | Writes `export/` and commits to the data repo now, instead of waiting for the automatic snapshot. |
-| `push` | Snapshots, then `git push`es the data repo (never forced). |
+| `push` | Snapshots, then `git push`es the data repo (never forced; the first push also sets the branch to track the remote). |
 | `archive` | Writes the whole data folder to one zip (`./jat-backup-YYYY-MM-DD.zip`). `-o PATH` to choose where. Never overwrites. |
 | `restore` | Rebuilds the database from `export/`. Refuses if there's already a database; `--force` moves the old one aside (`tracker.sqlite3.bak-<time>`) first. Stop `serve` before restoring. |
 | `export` | Writes `export/*.jsonl` from the database without committing. |
@@ -29,7 +29,7 @@ Other scripts:
 ## Settings
 
 Set these in `.env` in the repo root (copy `.env.example`), or as environment variables.
-Command-line options win over both.
+Command-line options win over both, and an environment variable wins over `.env`.
 
 | Setting | Default | Meaning |
 |---|---|---|

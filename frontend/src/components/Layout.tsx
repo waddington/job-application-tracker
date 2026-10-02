@@ -87,7 +87,7 @@ export function Layout() {
           <Text size="xs" c="dimmed">
             Local-first · your data stays on this machine
           </Text>
-          <Tooltip label="Everything in one zip: your data, notes and files. Unzip it and run `jat restore`.">
+          <Tooltip label="Everything in one zip: your data, notes and files. Unzip it and run `jat init` on the folder (it rebuilds everything).">
             <Anchor href="/api/v1/backup/archive" download size="xs">
               <Group gap={4} wrap="nowrap">
                 <IconDownload size={12} /> Download a backup

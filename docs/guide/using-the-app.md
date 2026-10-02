@@ -28,8 +28,8 @@ What needs doing, newest problems first:
 - **Follow up**: applications whose follow-up date is today or earlier.
 - **Coming up**: interviews and task deadlines in the next two weeks, then rounds not
   booked yet.
-- **Gone quiet**: active applications with no activity for longer than their stage allows
-  (7 days in Applied, 5 in Screen and Interviewing, and so on; see
+- **Gone quiet**: active applications with no activity for as long as their stage allows
+  or more (7 days in Applied, 5 in Screen and Interviewing, and so on; see
   [Customising](customising.md)).
 
 On each one: set a follow-up date (tomorrow, in 3 days, next week), **snooze** it (3 days,
@@ -45,7 +45,7 @@ view; open the full page from there.
 
 The **board** shows a column per stage. Drag a card to move it; the usual next stages are
 highlighted while you drag. Closed stages (Rejected, Withdrawn…) are hidden unless you
-switch on *Show closed stages*. Cards show the current interview round.
+switch on *Show closed stages*, but appear while you drag so you can drop a card on them. Cards show the current interview round.
 
 Every stage change is timestamped on the application's timeline, and **Undo last move**
 reverts a mistake. By default you can move between any stages; you can make them strict
@@ -81,13 +81,14 @@ time it was sent. The file itself is kept too.
   search. Find archived applications with the
   *Archived* filter on the Applications page, or with search. Switch it off to bring it back.
 - **Delete** (top right of the page) removes it for good, with its interviews, offer,
-  timeline and record of documents sent. Its notes and files stay.
+  timeline, record of documents sent and links. Its notes and files stay (files become
+  unattached).
 
 Companies, agencies, roles and people have **Delete** too:
 
 | Deleting | Also removes | Keeps |
 |---|---|---|
-| A company | its roles | its people (no longer at a company) |
+| A company | its roles and their links | its people (no longer at a company), notes and files |
 | A role | nothing else | — |
 | An agency | nothing else | its recruiters and applications (no longer with an agency) |
 | A person | them from applications and interviews | the applications |

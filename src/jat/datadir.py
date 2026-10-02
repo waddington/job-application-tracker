@@ -30,7 +30,8 @@ GITIGNORE_ENTRIES = (
 
 DEFAULT_CONFIG = """\
 # Job Application Tracker settings for this data directory.
-# Edited by the app; safe to edit by hand while the app is stopped.
+# Edit by hand any time: workflow changes apply straight away, snapshot timing when you
+# restart `jat serve`. See docs/guide/customising.md.
 
 [snapshot]
 # Seconds without writes before the app commits a snapshot to this git repo.

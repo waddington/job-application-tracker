@@ -94,9 +94,13 @@ kind = "closed"
 color = "dark"
 ```
 
-Stages appear on the board and in the Sankey diagram in the order you list them (active
-ones, then outcomes). Removing a stage that applications are still in doesn't lose them:
-they keep their stage, and you can move them on.
+The board shows stages in the order you list them; the Sankey diagram puts active stages
+first, then outcomes.
+
+**Removing a stage** that applications are still in doesn't lose them: they keep their old
+stage. With `transitions = "any"` you can move them on as usual. With strict transitions
+they'd be stuck there, so move them to a stage you're keeping *before* you remove it. (A
+config that lists its own stages and doesn't set `transitions` is strict.)
 
 ## Strict, Jira-style transitions
 

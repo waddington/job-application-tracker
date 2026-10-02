@@ -74,7 +74,7 @@ uv run jat push
 ```
 
 This snapshots any pending changes, then runs a plain `git push` to the data repo's
-remote. It's never forced and never asks for a password interactively (set up an SSH key
+remote (the first time, it also sets the branch to track that remote). It's never forced and never asks for a password interactively (set up an SSH key
 or a credential helper for the remote). Your remote must be **private**: it holds your
 whole job search.
 
@@ -87,7 +87,7 @@ For a copy to keep anywhere (a USB stick, cloud storage, an email to yourself):
   `-o PATH` to choose where; it never overwrites an existing file).
 
 The zip holds one folder, `jat-backup-YYYY-MM-DD/`, with a fresh `export/`, `notes/`,
-`files/`, `config.toml` and a `RESTORE.md`. It doesn't include the database (it's rebuilt
+`files/`, `config.toml`, `.gitignore` and a `RESTORE.md`. It doesn't include the database (it's rebuilt
 from `export/`) or git history (that's what pushing is for).
 
 ## Restoring
@@ -118,6 +118,10 @@ run `uv run jat snapshot` for a first commit; after that they happen by themselv
 ## Using it on a second computer
 
 The data repo is how your tracker travels.
+
+Both computers need the same version of the app (or the one restoring needs a newer one):
+an export from a newer version is refused with "update the app first". Update the code on
+both ([Updating](install.md#updating-to-a-newer-version)) when you update one.
 
 **Set up the second computer once:**
 

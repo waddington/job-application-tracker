@@ -27,6 +27,10 @@ and any error are at http://127.0.0.1:8770/api/v1/backup.
 
 The app never pushes by itself. Run `uv run jat push`.
 
+## "The data repo has no remote to push to"
+
+Add one: `git -C <folder> remote add origin <your-private-repo-url>`, then `uv run jat push`.
+
 ## `jat push` fails
 
 It runs a plain `git push` that never prompts. Check the data repo has a remote
@@ -59,14 +63,23 @@ message says what. Fix it and reload. See [Customising](customising.md).
 Companies and roles with applications can't be deleted. Delete or archive the applications
 first. See [Archiving and deleting](using-the-app.md#archiving-and-deleting).
 
+## A CV or cover-letter version can't be deleted
+
+A version that was sent with applications is part of their record. Remove it from those
+applications' *Documents sent* first.
+
 ## An upload is refused as too large
 
 Files are limited to 50 MB each.
 
-## The page is blank or says the API is offline
+## "The frontend isn't built yet"
 
-`jat serve` isn't running, or the web interface wasn't built. Start `uv run jat serve`; if
-it's running but the page is blank, run `pnpm --dir frontend build` and reload.
+The app is running but the web interface hasn't been built. Run
+`pnpm --dir frontend install` and `pnpm --dir frontend build`, then reload.
+
+## The page won't load, or the sidebar says "API offline"
+
+`jat serve` isn't running (or stopped). Start it again with `uv run jat serve`.
 
 ## I edited a note in my editor and the app doesn't show it
 
