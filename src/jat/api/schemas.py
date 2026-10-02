@@ -12,7 +12,7 @@ EmploymentType = Literal["permanent", "contract", "fixed_term"]
 IR35 = Literal["inside", "outside", "unknown"]
 Route = Literal["direct", "agency", "referral"]
 DetailKind = Literal["email", "phone", "linkedin", "url", "other"]
-Relation = Literal["recruiter", "hiring_manager", "interviewer", "referrer", "other"]
+Relation = Literal["recruiter", "internal_recruiter", "hiring_manager", "interviewer", "referrer", "other"]
 ActivityKind = Literal["call", "email", "message", "note", "file", "interview", "manual"]
 
 
@@ -563,6 +563,20 @@ class AgencySummary(BaseModel):
     agency: AgencyOut
     recruiters: list[ContactOut]
     applications: list[ApplicationRow]
+
+
+class PersonApplication(ApplicationRow):
+    relations: list[str]  # how they're involved: "recruiter" (brought it), or linked as hiring_manager…
+
+
+class ContactSummary(BaseModel):
+    """Everything about one person: who they are and what they've been part of."""
+
+    contact: ContactOut
+    agency_name: str | None
+    company_name: str | None
+    applications: list[PersonApplication]
+    interviews: list[InterviewOut]
 
 
 class DuplicateOut(ApplicationRow):

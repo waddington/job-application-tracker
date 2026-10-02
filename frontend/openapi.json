@@ -197,6 +197,7 @@
           "relation": {
             "enum": [
               "recruiter",
+              "internal_recruiter",
               "hiring_manager",
               "interviewer",
               "referrer",
@@ -1644,6 +1645,59 @@
           }
         },
         "title": "ContactPatch",
+        "type": "object"
+      },
+      "ContactSummary": {
+        "description": "Everything about one person: who they are and what they've been part of.",
+        "properties": {
+          "agency_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agency Name"
+          },
+          "applications": {
+            "items": {
+              "$ref": "#/components/schemas/PersonApplication"
+            },
+            "title": "Applications",
+            "type": "array"
+          },
+          "company_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company Name"
+          },
+          "contact": {
+            "$ref": "#/components/schemas/ContactOut"
+          },
+          "interviews": {
+            "items": {
+              "$ref": "#/components/schemas/InterviewOut"
+            },
+            "title": "Interviews",
+            "type": "array"
+          }
+        },
+        "required": [
+          "contact",
+          "agency_name",
+          "company_name",
+          "applications",
+          "interviews"
+        ],
+        "title": "ContactSummary",
         "type": "object"
       },
       "DocumentDetail": {
@@ -4033,6 +4087,205 @@
           }
         },
         "title": "OfferPatch",
+        "type": "object"
+      },
+      "PersonApplication": {
+        "properties": {
+          "agency_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agency Id"
+          },
+          "agency_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agency Name"
+          },
+          "applied_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Applied On"
+          },
+          "archived": {
+            "title": "Archived",
+            "type": "boolean"
+          },
+          "company_id": {
+            "title": "Company Id",
+            "type": "string"
+          },
+          "company_name": {
+            "title": "Company Name",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "current_round": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RoundSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "days_since_activity": {
+            "title": "Days Since Activity",
+            "type": "integer"
+          },
+          "follow_up_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Follow Up On"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "last_activity_at": {
+            "format": "date-time",
+            "title": "Last Activity At",
+            "type": "string"
+          },
+          "recruiter_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recruiter Id"
+          },
+          "recruiter_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recruiter Name"
+          },
+          "relations": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Relations",
+            "type": "array"
+          },
+          "role_id": {
+            "title": "Role Id",
+            "type": "string"
+          },
+          "role_title": {
+            "title": "Role Title",
+            "type": "string"
+          },
+          "route": {
+            "title": "Route",
+            "type": "string"
+          },
+          "snoozed_until": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Snoozed Until"
+          },
+          "stage": {
+            "title": "Stage",
+            "type": "string"
+          },
+          "stage_kind": {
+            "title": "Stage Kind",
+            "type": "string"
+          },
+          "stage_name": {
+            "title": "Stage Name",
+            "type": "string"
+          },
+          "stale": {
+            "title": "Stale",
+            "type": "boolean"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "role_id",
+          "route",
+          "agency_id",
+          "recruiter_id",
+          "stage",
+          "applied_on",
+          "follow_up_on",
+          "snoozed_until",
+          "last_activity_at",
+          "tags",
+          "archived",
+          "created_at",
+          "updated_at",
+          "role_title",
+          "company_id",
+          "company_name",
+          "agency_name",
+          "recruiter_name",
+          "stage_name",
+          "stage_kind",
+          "days_since_activity",
+          "stale",
+          "relations"
+        ],
+        "title": "PersonApplication",
         "type": "object"
       },
       "PushResult": {
@@ -7488,6 +7741,49 @@
         "summary": "Update Contact",
         "tags": [
           "contacts"
+        ]
+      }
+    },
+    "/api/v1/contacts/{contact_id}/summary": {
+      "get": {
+        "description": "A person's page: their details, the applications they're part of and their interviews.",
+        "operationId": "contact_summary_api_v1_contacts__contact_id__summary_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "contact_id",
+            "required": true,
+            "schema": {
+              "title": "Contact Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactSummary"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Contact Summary",
+        "tags": [
+          "summaries"
         ]
       }
     },
