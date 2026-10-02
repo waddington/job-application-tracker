@@ -22,7 +22,8 @@ def _data_dir(args) -> Path:
 
 def _require_db(path: Path) -> None:
     if not db_path(path).exists():
-        raise DataDirError(f"No database at {db_path(path)}. Run `jat init` first.")
+        hint = " (it rebuilds the database from export/)" if (path / "export" / META_FILE).exists() else ""
+        raise DataDirError(f"No database at {db_path(path)}. Run `jat init` first{hint}.")
 
 
 def cmd_init(args) -> int:
@@ -56,6 +57,8 @@ def cmd_info(args) -> int:
         engine = make_engine(db_path(path))
         print(f"database: schema {current_revision(engine)} (head {head_revision()})")
         engine.dispose()
+    elif (path / "export" / META_FILE).exists():
+        print("database: missing; `jat init` rebuilds it from export/")
     else:
         print("database: missing (run `jat init`)")
     print(f"serve:    http://{settings.host}:{settings.port}")
