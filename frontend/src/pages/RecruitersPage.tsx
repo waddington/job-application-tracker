@@ -111,7 +111,7 @@ export function RecruitersPage() {
             New agency
           </Button>
           <Button leftSection={<IconPlus size={16} />} onClick={() => setEditing(null)}>
-            New contact
+            New person
           </Button>
         </Group>
       </Group>

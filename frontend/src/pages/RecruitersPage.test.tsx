@@ -111,7 +111,7 @@ describe("recruiters", () => {
       "/api/v1/health": {},
     });
     renderAt("/recruiters");
-    fireEvent.click(await screen.findByRole("button", { name: "New contact" }));
+    fireEvent.click(await screen.findByRole("button", { name: "New person" }));
     const dialog = await screen.findByRole("dialog");
     fireEvent.change(within(dialog).getByLabelText("Name"), { target: { value: "New Person" } });
     fireEvent.change(within(dialog).getAllByLabelText("Value")[0]!, { target: { value: "new@example.com" } });
@@ -140,7 +140,7 @@ describe("recruiters", () => {
       "/api/v1/health": {},
     });
     renderAt("/recruiters");
-    fireEvent.click(await screen.findByRole("button", { name: "New contact" }));
+    fireEvent.click(await screen.findByRole("button", { name: "New person" }));
     const dialog = await screen.findByRole("dialog");
     fireEvent.change(within(dialog).getByLabelText("Name"), { target: { value: "X" } });
     fireEvent.change(within(dialog).getAllByLabelText("Value")[0]!, { target: { value: "not-an-email" } });
