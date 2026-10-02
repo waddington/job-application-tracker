@@ -13,6 +13,7 @@ import {
   Textarea,
   TextInput,
   Title,
+  Tooltip,
 } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import { useForm } from "@mantine/form";
@@ -509,15 +510,17 @@ export function RoleLine({ role, showSource = true }: { role: RoleSummary; showS
           >
             <IconPencil size={14} />
           </ActionIcon>
-          <ActionIcon
-            variant="subtle"
-            color="gray"
-            size="sm"
-            aria-label={`Add a to-do about ${role.title}`}
-            onClick={() => setAddingTodo((v) => !v)}
-          >
-            <IconListCheck size={14} />
-          </ActionIcon>
+          <Tooltip label="Add a to-do">
+            <ActionIcon
+              variant="subtle"
+              color="gray"
+              size="sm"
+              aria-label={`Add a to-do about ${role.title}`}
+              onClick={() => setAddingTodo((v) => !v)}
+            >
+              <IconListCheck size={14} />
+            </ActionIcon>
+          </Tooltip>
           {editing && <RoleFormModal opened onClose={() => setEditing(false)} role={role} />}
           {role.status !== "applied" && (
             <DeleteButton
@@ -530,11 +533,15 @@ export function RoleLine({ role, showSource = true }: { role: RoleSummary; showS
           )}
         </Group>
       </Group>
-      {todos.map((t) => (
-        <TodoLine key={t.id} todo={t} showAbout={false} />
-      ))}
-      {addingTodo && (
-        <AddTodo about={{ type: "role", id: role.id }} autoFocus onAdded={() => setAddingTodo(false)} />
+      {(todos.length > 0 || addingTodo) && (
+        <Stack gap={6} pl="md">
+          {todos.map((t) => (
+            <TodoLine key={t.id} todo={t} showAbout={false} />
+          ))}
+          {addingTodo && (
+            <AddTodo about={{ type: "role", id: role.id }} autoFocus onAdded={() => setAddingTodo(false)} />
+          )}
+        </Stack>
       )}
     </Stack>
   );

@@ -53,6 +53,15 @@ def test_todos_about_roles_and_applications_are_named(client, seeded):
     assert company["about"] == "Contoso"
 
 
+def test_next_actions_lists_todos_in_the_order_to_do_them(client):
+    later = post(client, "/api/v1/todos", {"text": "Renew my domain", "due_on": "2026-12-01"})
+    undated = post(client, "/api/v1/todos", {"text": "Reply to Alex"})
+    soon = post(client, "/api/v1/todos", {"text": "Send CV", "due_on": "2026-10-05"})
+    overdue = post(client, "/api/v1/todos", {"text": "Chase Contoso", "due_on": "2026-09-30"})
+    todos = client.get("/api/v1/next-actions", params={"today": "2026-10-02"}).json()["todos"]
+    assert [t["id"] for t in todos] == [overdue["id"], soon["id"], undated["id"], later["id"]]
+
+
 def test_deleting_the_thing_keeps_the_todo(client, seeded):
     person = post(client, "/api/v1/contacts", {"name": "Riley Chen"})
     todo = post(

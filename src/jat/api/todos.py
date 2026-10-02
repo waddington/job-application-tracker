@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+from datetime import date, timedelta
 from typing import Literal
 
 from fastapi import APIRouter, HTTPException, Response
@@ -38,10 +39,18 @@ def out(session: Session, todo: Todo) -> S.TodoOut:
     return result
 
 
-def open_todos(session: Session) -> list[Todo]:
-    """Open to-dos: dated ones by date, then the rest oldest first."""
-    stmt = select(Todo).where(Todo.done_at.is_(None))
-    return list(session.scalars(stmt.order_by(Todo.due_on.is_(None), Todo.due_on, Todo.created_at, Todo.id)))
+def open_todos(session: Session, today: date, soon_days: int) -> list[Todo]:
+    """Open to-dos in the order to do them: due within `soon_days` (overdue first), then the
+    undated ones oldest first, then the ones dated further ahead."""
+    stmt = select(Todo).where(Todo.done_at.is_(None)).order_by(Todo.created_at, Todo.id)
+    soon = today + timedelta(days=soon_days)
+
+    def order(todo: Todo):
+        if todo.due_on is None:
+            return (1, date.min)
+        return (0 if todo.due_on <= soon else 2, todo.due_on)
+
+    return sorted(session.scalars(stmt), key=order)
 
 
 @router.get("", response_model=list[S.TodoOut])
