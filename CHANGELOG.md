@@ -2,7 +2,7 @@
 
 ## Unreleased (0.1.0)
 
-Everything in the [roadmap](docs/ROADMAP.yaml) (phases P0–P6)
+Everything in the [roadmap](docs/ROADMAP.yaml) (phases P0–P7)
 is built and merged, but not yet tested in real use. Numbers in brackets are pull requests.
 
 ### Tracking
@@ -23,7 +23,7 @@ is built and merged, but not yet tested in real use. Numbers in brackets are pul
 - **CV and cover-letter versions**, and which one each application got (#28).
 
 ### Staying on top of it
-- **Next actions** home page: follow-ups due, applications gone quiet, interviews coming up,
+- **Next actions** (the home page until #48): follow-ups due, applications gone quiet, interviews coming up,
   rounds waiting for an outcome (#29) and offers to answer (#38).
 - **One-click follow-up, snooze and Ghosted** (#30).
 
@@ -52,6 +52,8 @@ is built and merged, but not yet tested in real use. Numbers in brackets are pul
   person pages, Next actions, the Overview, the Timeline and search (#49).
 - **Roles to decide**: add roles a recruiter mentioned (from the call), then apply or pass on
   each; a Roles page, and roles on Next actions, the Overview and the Timeline (#50).
+- **Docs refresh**: new screenshots and demo GIF of the current app; contact cards keep
+  their buttons visible with long emails (#51).
 
 ### Under the hood
 - Python 3.12, FastAPI, SQLAlchemy, Alembic and SQLite; React 19, TypeScript, Mantine and

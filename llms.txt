@@ -5,8 +5,9 @@
 > recruiter can have many roles), configurable interview stages with timestamped history,
 > numbered interview rounds described in the user's own words ("Round 2 · System design
 > test"), duplicate-submission warnings, Markdown notes, attachments and exported emails,
-> CV and cover-letter versions, a "Next actions" page for stalled applications, and
-> insights: a Sankey diagram of the funnel, conversion and time per stage, direct vs
+> CV and cover-letter versions, calls with recruiters and the roles they pitch (to apply
+> for or pass on), an Overview home page, a "Next actions" page for stalled applications and
+> who to chase, a timeline across everything, and insights: a Sankey diagram of the funnel, conversion and time per stage, direct vs
 > recruiter outcomes and a recruiter scorecard. It never scrapes job boards or contacts
 > anyone, and all data stays in one local directory outside the code.
 
@@ -14,10 +15,10 @@ Status: early development (0.1.0); every planned feature is built but not yet te
 use (see CHANGELOG.md). Available now: an Overview home page (counts, pipeline, what needs
 attention, what's coming up, recent activity, a numbered "How it works"), a Timeline across
 every application, company, agency and person (by day or as lanes; `GET /api/v1/timeline`),
-a Next actions page (follow-ups due, applications gone quiet, interviews coming up, one-click
+a Next actions page at `/next-actions` (follow-ups due, applications gone quiet, interviews coming up, one-click
 follow-up, snooze and Ghosted, waiting to hear back), person pages with booked and logged
-calls and meetings (`/api/v1/meetings`), roles to decide before applying (pitched by
-whom, on which call; apply or pass; `/api/v1/role-summaries`), renaming and deleting, applications list and Kanban board (move between any stages), application,
+calls and meetings (`/api/v1/meetings`), roles to decide before applying (a Roles page;
+pitched by whom, on which call; apply or pass; `/api/v1/role-summaries`), renaming and deleting, applications list and Kanban board (move between any stages), application,
 company, recruiter and agency pages, recruiter CRM, numbered interview rounds, duplicate
 warnings, Markdown notes as real files, links, file attachments and `.eml` import onto the
 timeline, versioned CVs and cover letters, an Insights page (Sankey diagram of stage flows
@@ -42,7 +43,7 @@ The JSON API is documented at http://127.0.0.1:8770/api/docs; insights live unde
   backups, restore, second computer, every page, customising stages, commands, troubleshooting
 - [Product requirements](docs/prd/tracker.md): goals, user stories, functional requirements
 - [Stack RFC](docs/rfc/stack.md): architecture and data format
-- [Roadmap](docs/ROADMAP.yaml): phases P0–P6 with task status
+- [Roadmap](docs/ROADMAP.yaml): phases P0–P7 with task status
 - [Changelog](CHANGELOG.md): what's built so far, with pull request numbers
 - [Planning process](docs/planning/README.md)
 

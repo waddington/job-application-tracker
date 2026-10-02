@@ -61,11 +61,13 @@ applied too.
 
 Where things stand, at a glance:
 
-- **Counts**: active applications, how many need attention (follow-ups due and gone quiet),
+- **Counts**: active applications, how many need attention (follow-ups due, gone quiet and
+  roles to decide),
   interviews in the next two weeks, how many you're waiting to hear back from, and offers to
   answer soon. Each one opens the page with the details.
 - **Pipeline**: active applications by stage.
-- **Needs attention** and **Coming up**: the top of [Next actions](#next-actions).
+- **Needs attention** and **Coming up**: the top of [Next actions](#next-actions). Coming
+  up lists interviews and calls in time order, then offer reply deadlines.
 - **Recent activity**: the last two weeks of the [Timeline](#timeline), leaving out
   companies, agencies and people being added.
 - **How it works**: the same numbered steps as the **?** button.
@@ -75,17 +77,17 @@ application** button.
 
 ## Next actions
 
-What needs doing, newest problems first:
+What needs doing, in this order:
 
 - **Offers to answer**: pending offers with a reply due in the next two weeks, or overdue.
-- **Roles to decide**: roles you've added but haven't applied for or passed on (see
-  [Roles to decide](#roles-to-decide)), oldest first, with **Apply** and **Pass**.
 - **Waiting to hear back**: applications and people you've replied to (see
   [Waiting to hear back](#waiting-to-hear-back)), longest first. It turns red once you've
   waited as long as the stage allows; **Heard back** clears it.
 - **How did it go?**: interview rounds and calls whose time has passed; mark them *Done* (a
   call: *Happened*, which asks how it went) or *Didn't happen*.
 - **Follow up**: applications whose follow-up date is today or earlier.
+- **Roles to decide**: roles you've added but haven't applied for or passed on (see
+  [Roles to decide](#roles-to-decide)), oldest first, with **Apply** and **Pass**.
 - **Coming up**: interviews, task deadlines and [calls](#calls-and-meetings) in the next two
   weeks, soonest first, then rounds not booked yet.
 - **Gone quiet**: active applications with no activity for as long as their stage allows
