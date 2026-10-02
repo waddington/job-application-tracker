@@ -23,6 +23,7 @@ import { headline, type Offer } from "../api/offerHooks";
 import { ApplicationWaiting, daysWaiting, PersonWaiting, waitingLabel } from "../components/Waiting";
 import { ApplicationDrawer } from "../components/ApplicationDrawer";
 import { MeetingLine, MeetingOutcome } from "../components/Meetings";
+import { RoleLine } from "../components/Roles";
 import { ChaseActions } from "../components/ChaseActions";
 import { StageBadge } from "../components/StageBadge";
 import { ago, formatDate, formatDateTime } from "../utils/time";
@@ -257,6 +258,7 @@ export function NextActionsPage() {
   };
   const meetings = data?.meetings ?? [];
   const meetingsToClose = data?.meetings_to_close ?? [];
+  const rolesToDecide = data?.roles_to_decide ?? [];
   // Calls and interviews in one list by time; rounds not booked yet go last.
   const comingUp = [
     ...meetings.map((m) => ({ key: m.id, at: m.starts_at, node: <MeetingLine key={m.id} meeting={m} /> })),
@@ -270,6 +272,7 @@ export function NextActionsPage() {
     ? offers.length +
       meetings.length +
       meetingsToClose.length +
+      rolesToDecide.length +
       waiting.length +
       waitingPeople.length +
       data.follow_ups.length +
@@ -363,6 +366,11 @@ export function NextActionsPage() {
                   </Group>
                 }
               />
+            ))}
+          </Section>
+          <Section title="Roles to decide" count={rolesToDecide.length} hint="Apply or pass on each">
+            {rolesToDecide.map((r) => (
+              <RoleLine key={r.id} role={r} />
             ))}
           </Section>
           <Section

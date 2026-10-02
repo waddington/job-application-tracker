@@ -19,6 +19,7 @@ import { NotFound } from "./pages/NotFound";
 import { PersonPage } from "./pages/PersonPage";
 import { Placeholder } from "./pages/Placeholder";
 import { RecruitersPage } from "./pages/RecruitersPage";
+import { RolesPage } from "./pages/RolesPage";
 import { SearchPage } from "./pages/SearchPage";
 import { TimelinePage } from "./pages/TimelinePage";
 
@@ -37,6 +38,7 @@ const PAGES: Record<string, () => JSX.Element> = {
   "/offers": OffersPage,
   "/notes": NotesPage,
   "/recruiters": RecruitersPage,
+  "/roles": RolesPage,
 };
 
 const pageRoutes = NAV.map((item) =>

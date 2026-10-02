@@ -17,7 +17,7 @@ import {
 } from "@mantine/core";
 import { DateTimePicker } from "@mantine/dates";
 import { useForm } from "@mantine/form";
-import { IconDots, IconPhone } from "@tabler/icons-react";
+import { IconDots, IconPhone, IconPlus } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { useState, type ReactNode } from "react";
@@ -32,6 +32,8 @@ import {
   type MeetingKind,
 } from "../api/meetingHooks";
 import { Markdown } from "./Markdown";
+import { RoleFormModal, RoleLine } from "./Roles";
+import { useRoleSummaries } from "../api/roleHooks";
 import { formatDateTime } from "../utils/time";
 
 type Status = "scheduled" | "done" | "cancelled";
@@ -203,7 +205,7 @@ export function MeetingFormModal({
           {done && (
             <Textarea
               label="How did it go?"
-              description="What you talked about, roles they mentioned, next steps. Markdown works."
+              description="What you talked about and next steps. Add the roles they mentioned from the call on their page, to apply or pass on each. Markdown works."
               autosize
               minRows={3}
               data-autofocus
@@ -337,6 +339,8 @@ function MeetingMenu({ meeting, onEdit }: { meeting: Meeting; onEdit: () => void
 export function MeetingsCard({ contactId, name }: { contactId: string; name: string }) {
   const { data: meetings } = useMeetings({ contact_id: contactId });
   const [editing, setEditing] = useState<Meeting | "new" | null>(null);
+  const [addingRoles, setAddingRoles] = useState<string | null>(null); // the call they came up in
+  const { data: roles } = useRoleSummaries({ contact_id: contactId });
   const [now] = useState(() => Date.now()); // when the page opened: good enough to split ahead from past
   const all = meetings ?? [];
   const ahead = all.filter((m) => m.status === "scheduled" && new Date(m.starts_at).getTime() >= now);
@@ -400,9 +404,39 @@ export function MeetingsCard({ contactId, name }: { contactId: string; name: str
                   <Markdown>{m.notes}</Markdown>
                 </Text>
               )}
+              {m.status === "done" && (
+                <Stack
+                  gap={4}
+                  pl="sm"
+                  style={{ borderLeft: "2px solid var(--mantine-color-default-border)" }}
+                >
+                  {(roles ?? [])
+                    .filter((r) => r.meeting_id === m.id)
+                    .map((r) => (
+                      <RoleLine key={r.id} role={r} showSource={false} />
+                    ))}
+                  <Button
+                    size="compact-xs"
+                    variant="subtle"
+                    leftSection={<IconPlus size={12} />}
+                    onClick={() => setAddingRoles(m.id)}
+                    style={{ alignSelf: "flex-start" }}
+                  >
+                    Add roles from this call
+                  </Button>
+                </Stack>
+              )}
             </Stack>
           ))}
         </Stack>
+      )}
+      {addingRoles && (
+        <RoleFormModal
+          opened
+          onClose={() => setAddingRoles(null)}
+          contactId={contactId}
+          meetingId={addingRoles}
+        />
       )}
       {editing && (
         <MeetingFormModal
