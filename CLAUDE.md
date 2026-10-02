@@ -133,7 +133,9 @@ the call, note the assumption in the PR, and keep going.
 - The lead session merges (subagents can't). Then fast-forward main, restart anything running
   so it loads the new code, try the change for real, and fix anything that shows up.
 - Keep `docs/ROADMAP.yaml` honest: set a task to `done` when it merges, and add any follow-ups
-  as new tasks. Update `var/RESUME.md` at every milestone.
+  as new tasks. Work that comes from Kai's feedback goes on it too: the PR that builds it adds
+  a task (in the latest feedback phase) whose id is the branch name minus `worktree-`, so the
+  PM dashboard shows it while it's being built. Anything that slipped through gets backfilled. Update `var/RESUME.md` at every milestone.
 
 ### When the roadmap runs out
 The roadmap has run out when every task is `done` or `blocked` on Kai. Then, without waiting
