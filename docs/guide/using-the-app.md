@@ -30,6 +30,9 @@ Companies, roles, agencies and people typed in for the first time are created fo
 What needs doing, newest problems first:
 
 - **Offers to answer**: pending offers with a reply due in the next two weeks, or overdue.
+- **Waiting to hear back**: applications and people you've replied to (see
+  [Waiting to hear back](#waiting-to-hear-back)), longest first. It turns red once you've
+  waited as long as the stage allows; **Heard back** clears it.
 - **How did it go?**: interview rounds whose time has passed; mark them *Done* or *Didn't
   happen*.
 - **Follow up**: applications whose follow-up date is today or earlier.
@@ -39,7 +42,7 @@ What needs doing, newest problems first:
   or more (7 days in Applied, 5 in Screen and Interviewing, and so on; see
   [Customising](customising.md)).
 
-On each one: set a follow-up date (tomorrow, in 3 days, next week), **snooze** it (3 days,
+On the others: set a follow-up date (tomorrow, in 3 days, next week), **snooze** it (3 days,
 1 week, 2 weeks) so it stops nagging, or mark it **Ghosted**. A snoozed application, one with
 a follow-up date in the future, or one with an interview booked ahead never counts as gone
 quiet.
@@ -77,6 +80,14 @@ Everything about one application:
   application's company).
 - **Log activity**: record a call, email, message or anything else on the timeline.
 - **Timeline**: every stage move, activity, interview change and offer, in order.
+
+### Waiting to hear back
+
+When you've replied to someone and the ball is in their court, press **I've replied,
+waiting** (on the application page, or on a person's page for conversations that aren't about
+one application). It goes on the timeline, the application shows how long you've been
+waiting, and it appears under *Waiting to hear back* on Next actions instead of *Gone quiet*.
+Press **Heard back** when they reply; moving the application to another stage clears it too.
 
 ### Emails
 

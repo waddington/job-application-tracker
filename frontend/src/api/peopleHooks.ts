@@ -50,6 +50,26 @@ export function useUpdateAgency() {
   });
 }
 
+/** Mark that you replied to someone and are waiting (a date), or that you heard back (null). */
+export function useSetPersonWaiting() {
+  const qc = useQueryClient();
+  const refresh = useRefreshPeople();
+  return useMutation({
+    mutationFn: async (args: { id: string; since: string | null }) =>
+      unwrap(
+        await api.PATCH("/api/v1/contacts/{contact_id}", {
+          params: { path: { contact_id: args.id } },
+          body: { awaiting_reply_since: args.since },
+        }),
+      ),
+    onSuccess: () => {
+      refresh();
+      void qc.invalidateQueries({ queryKey: ["next-actions"] });
+    },
+    onError: notifyError,
+  });
+}
+
 export function useSaveContact() {
   const refresh = useRefreshPeople();
   return useMutation({
