@@ -271,6 +271,11 @@ export function ApplicationsPage() {
                         needs chasing
                       </Text>
                     )}
+                    {row.reply_to_read_since && (
+                      <Text size="xs" c="orange" fw={600}>
+                        reply to read
+                      </Text>
+                    )}
                   </Table.Td>
                   <Table.Td>
                     <Group gap={4}>

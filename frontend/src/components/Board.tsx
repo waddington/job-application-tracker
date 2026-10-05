@@ -59,6 +59,11 @@ function CardBody({ row }: { row: ApplicationRow }) {
           <RoundBadge round={row.current_round} stageKind={row.stage_kind} size="xs" />
         </Group>
       )}
+      {row.reply_to_read_since && (
+        <Badge mt={6} size="xs" variant="light" color="orange">
+          Reply to read
+        </Badge>
+      )}
       <Group gap={6} mt={6} justify="space-between" wrap="nowrap">
         <Text size="xs" c={row.stale ? "red" : "dimmed"} fw={row.stale ? 600 : undefined}>
           {ago(row.days_since_activity)}

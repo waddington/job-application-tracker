@@ -139,7 +139,7 @@ offer reply deadlines still ahead under *Coming up*. It includes:
 - each interview at its own time;
 - calls and meetings with people (not ones that didn't happen);
 - notes on people, companies and agencies;
-- people you're waiting to hear back from;
+- people you're waiting to hear back from, and people whose reply you still need to read;
 - companies, agencies and people being added.
 
 Archived applications are included.
@@ -200,7 +200,8 @@ Press **Heard back** when they reply; moving the application to another stage cl
 When they've replied but you haven't read it properly yet (it came in on your phone, or it's
 long), press **They've replied** instead, whether or not you were waiting. It goes to the top
 of Next actions under *Replies to read*, and at the top of *Needs attention* on the Overview,
-until you press **Read it**. A reply to read is never *gone quiet*; moving the application to
+until you press **Read it**; the applications list and board mark it *reply to read*. Saying
+**I've replied, waiting** clears it too. A reply to read is never *gone quiet* or a follow-up to chase; moving the application to
 another stage clears it, and undoing the move puts it back.
 
 ### Emails

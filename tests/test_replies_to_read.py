@@ -51,3 +51,26 @@ def test_a_reply_to_read_from_a_person(client, seeded):
 
     client.patch(f"/api/v1/contacts/{recruiter}", json={"reply_to_read_since": None})
     assert client.get("/api/v1/next-actions").json()["to_read_people"] == []
+
+
+def test_one_reply_state_at_a_time(client, seeded):
+    app = post(client, "/api/v1/applications", {"role_id": seeded["role"]["id"], "stage": "applied"})
+    url = f"/api/v1/applications/{app['id']}"
+    client.patch(url, json={"reply_to_read_since": "2026-09-25", "follow_up_on": "2026-09-30"})
+    # A reply to read isn't also a follow-up to chase.
+    out = client.get("/api/v1/next-actions", params={"today": "2026-10-02"}).json()
+    assert [a["id"] for a in out["to_read"]] == [app["id"]] and out["follow_ups"] == []
+
+    # You read it and replied: waiting again, and each change is on the timeline.
+    r = client.patch(url, json={"reply_to_read_since": None, "awaiting_reply_since": "2026-09-26"}).json()
+    assert r["reply_to_read_since"] is None and r["awaiting_reply_since"] == "2026-09-26"
+    assert [e["summary"] for e in r["events"][-2:]] == ["Read their reply", "Replied; waiting to hear back"]
+    # Saying you've replied clears a reply to read on its own too.
+    client.patch(url, json={"reply_to_read_since": "2026-09-27"})
+    r = client.patch(url, json={"awaiting_reply_since": "2026-09-28"}).json()
+    assert r["reply_to_read_since"] is None
+
+    recruiter = seeded["recruiter"]["id"]
+    client.patch(f"/api/v1/contacts/{recruiter}", json={"reply_to_read_since": "2026-09-27"})
+    r = client.patch(f"/api/v1/contacts/{recruiter}", json={"awaiting_reply_since": "2026-09-28"}).json()
+    assert r["reply_to_read_since"] is None and r["awaiting_reply_since"] == "2026-09-28"

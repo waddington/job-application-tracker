@@ -60,7 +60,6 @@ export function useUpdateAgency() {
  * or they replied and you need to read it (`reply_to_read_since`); null clears either.
  */
 export function useSetPersonReply() {
-  const qc = useQueryClient();
   const refresh = useRefreshPeople();
   return useMutation({
     mutationFn: async (args: {
@@ -73,10 +72,7 @@ export function useSetPersonReply() {
           body: args.body,
         }),
       ),
-    onSuccess: () => {
-      refresh();
-      void qc.invalidateQueries({ queryKey: ["next-actions"] });
-    },
+    onSuccess: refresh, // people, next actions, the timeline…
     onError: notifyError,
   });
 }

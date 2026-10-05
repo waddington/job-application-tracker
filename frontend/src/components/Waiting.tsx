@@ -1,6 +1,7 @@
 import { Badge, Button, Group } from "@mantine/core";
 import { IconHourglass, IconMailExclamation, IconMailOpened, IconMessageCheck } from "@tabler/icons-react";
 import dayjs from "dayjs";
+import { useState } from "react";
 
 import { useUpdateApplication } from "../api/hooks";
 import { useSetPersonReply } from "../api/peopleHooks";
@@ -51,15 +52,21 @@ function ReplyButtons({
   who?: string;
 }) {
   const size = compact ? "compact-xs" : "xs";
+  const [pressed, setPressed] = useState<"waiting" | "read" | null>(null);
+  const change = (which: "waiting" | "read", body: ReplyChange) => {
+    setPressed(which);
+    onChange(body);
+  };
+  const spinning = (which: "waiting" | "read") => pending && pressed === which;
   const theyReplied = (
     <Button
       size={size}
       variant="light"
       color="orange"
       leftSection={<IconMailExclamation size={14} />}
-      loading={pending}
-      onClick={() => onChange({ reply_to_read_since: today() })}
-      aria-label={who ? `${who} replied: to read` : undefined}
+      loading={spinning("read")}
+      onClick={() => change("read", { reply_to_read_since: today() })}
+      aria-label={who ? `They've replied: ${who}` : undefined}
       title="Their reply needs reading: it goes to the top of Next actions"
     >
       They've replied
@@ -78,9 +85,9 @@ function ReplyButtons({
           variant="light"
           color="teal"
           leftSection={<IconMailOpened size={14} />}
-          loading={pending}
-          onClick={() => onChange({ reply_to_read_since: null })}
-          aria-label={who ? `Read ${who}'s reply` : undefined}
+          loading={spinning("read")}
+          onClick={() => change("read", { reply_to_read_since: null })}
+          aria-label={who ? `Read it: ${who}` : undefined}
         >
           Read it
         </Button>
@@ -95,8 +102,8 @@ function ReplyButtons({
           variant="light"
           color="grape"
           leftSection={<IconHourglass size={14} />}
-          loading={pending}
-          onClick={() => onChange({ awaiting_reply_since: today() })}
+          loading={spinning("waiting")}
+          onClick={() => change("waiting", { awaiting_reply_since: today() })}
         >
           I've replied, waiting
         </Button>
@@ -116,8 +123,8 @@ function ReplyButtons({
         variant="light"
         color="teal"
         leftSection={<IconMessageCheck size={14} />}
-        loading={pending}
-        onClick={() => onChange({ awaiting_reply_since: null })}
+        loading={spinning("waiting")}
+        onClick={() => change("waiting", { awaiting_reply_since: null })}
         aria-label={who ? `Heard back from ${who}` : undefined}
       >
         Heard back

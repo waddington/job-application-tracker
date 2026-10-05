@@ -140,8 +140,8 @@ describe("waiting to hear back", () => {
     expect(within(section).getByText("Replied today")).toBeInTheDocument();
     expect(within(section).getByText("Replied 2 days ago")).toBeInTheDocument();
 
-    fireEvent.click(within(section).getByRole("button", { name: "Read Contoso's reply" }));
-    fireEvent.click(within(section).getByRole("button", { name: "Read Alex Recruiter's reply" }));
+    fireEvent.click(within(section).getByRole("button", { name: "Read it: Contoso" }));
+    fireEvent.click(within(section).getByRole("button", { name: "Read it: Alex Recruiter" }));
     await waitFor(() => {
       expect(calls.find((c) => c.path === "/api/v1/applications/a1")?.body).toEqual({
         reply_to_read_since: null,
@@ -155,7 +155,7 @@ describe("waiting to hear back", () => {
     const waiting = screen
       .getByRole("heading", { name: "Waiting to hear back" })
       .closest(".mantine-Card-root") as HTMLElement;
-    fireEvent.click(within(waiting).getByRole("button", { name: "Fabrikam replied: to read" }));
+    fireEvent.click(within(waiting).getByRole("button", { name: "They've replied: Fabrikam" }));
     await waitFor(() =>
       expect(calls.find((c) => c.path === "/api/v1/applications/a2")?.body).toEqual({
         reply_to_read_since: dayjs().format("YYYY-MM-DD"),

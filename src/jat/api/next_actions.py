@@ -66,6 +66,7 @@ def next_actions(
         r
         for r in rows
         if r.follow_up_on is not None
+        and r.reply_to_read_since is None  # they've replied: read that first, no need to chase
         and r.follow_up_on <= today
         and not (r.snoozed_until is not None and r.snoozed_until > today)
     ]
