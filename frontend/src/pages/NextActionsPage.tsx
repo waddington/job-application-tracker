@@ -21,7 +21,13 @@ import { stageLookup, useLogActivity, useUpdateApplication, useWorkflow } from "
 import { useSaveInterview, type Interview } from "../api/interviewHooks";
 import { headline, type Offer } from "../api/offerHooks";
 import { useTodos, type Todo } from "../api/todoHooks";
-import { ApplicationWaiting, daysWaiting, PersonWaiting, waitingLabel } from "../components/Waiting";
+import {
+  ApplicationWaiting,
+  daysWaiting,
+  PersonWaiting,
+  repliedLabel,
+  waitingLabel,
+} from "../components/Waiting";
 import { ApplicationDrawer } from "../components/ApplicationDrawer";
 import { MeetingLine, MeetingOutcome } from "../components/Meetings";
 import { RoleLine } from "../components/Roles";
@@ -193,10 +199,18 @@ function PersonWaitingLine({ person }: { person: Contact }) {
         )}
       </div>
       <Group gap="xs" wrap="nowrap">
-        <Text size="xs" c="dimmed">
-          {waitingLabel(person.awaiting_reply_since!)}
+        <Text size="xs" c={person.reply_to_read_since ? "orange" : "dimmed"}>
+          {person.reply_to_read_since
+            ? repliedLabel(person.reply_to_read_since)
+            : waitingLabel(person.awaiting_reply_since!)}
         </Text>
-        <PersonWaiting id={person.id} since={person.awaiting_reply_since} compact who={person.name} />
+        <PersonWaiting
+          id={person.id}
+          since={person.awaiting_reply_since}
+          toRead={person.reply_to_read_since}
+          compact
+          who={person.name}
+        />
       </Group>
     </Group>
   );
@@ -284,6 +298,8 @@ export function NextActionsPage() {
   const offers = data?.offer_deadlines ?? [];
   const waiting = data?.waiting ?? [];
   const waitingPeople = data?.waiting_people ?? [];
+  const toRead = data?.to_read ?? [];
+  const toReadPeople = data?.to_read_people ?? [];
   const { data: workflow } = useWorkflow();
   const staleAfter = new Map((workflow?.stages ?? []).map((s) => [s.id, s.stale_after_days]));
   // Waited as long as the stage allows: time to chase.
@@ -310,6 +326,8 @@ export function NextActionsPage() {
       rolesToDecide.length +
       waiting.length +
       waitingPeople.length +
+      toRead.length +
+      toReadPeople.length +
       data.follow_ups.length +
       data.stale.length +
       data.upcoming.length +
@@ -322,6 +340,38 @@ export function NextActionsPage() {
         <IconChecklist size={26} stroke={1.6} />
         <Title order={2}>Next actions</Title>
       </Group>
+      {data && (
+        <Section
+          title="Replies to read"
+          count={toRead.length + toReadPeople.length}
+          hint="They've replied; oldest first"
+        >
+          {toRead.map((r) => (
+            <AppLine
+              key={r.id}
+              row={r}
+              onOpen={setOpenId}
+              detail={
+                <Text span size="xs" c="orange">
+                  {repliedLabel(r.reply_to_read_since!)}
+                </Text>
+              }
+              action={
+                <ApplicationWaiting
+                  id={r.id}
+                  since={r.awaiting_reply_since}
+                  toRead={r.reply_to_read_since}
+                  compact
+                  who={r.company_name}
+                />
+              }
+            />
+          ))}
+          {toReadPeople.map((p) => (
+            <PersonWaitingLine key={p.id} person={p} />
+          ))}
+        </Section>
+      )}
       {data && <TodosSection todos={data.todos ?? []} />}
       {isLoading || !data ? (
         <Loader />

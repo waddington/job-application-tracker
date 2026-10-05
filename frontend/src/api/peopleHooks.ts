@@ -55,16 +55,22 @@ export function useUpdateAgency() {
   });
 }
 
-/** Mark that you replied to someone and are waiting (a date), or that you heard back (null). */
-export function useSetPersonWaiting() {
+/**
+ * Where a conversation with someone stands: you replied and are waiting (`awaiting_reply_since`),
+ * or they replied and you need to read it (`reply_to_read_since`); null clears either.
+ */
+export function useSetPersonReply() {
   const qc = useQueryClient();
   const refresh = useRefreshPeople();
   return useMutation({
-    mutationFn: async (args: { id: string; since: string | null }) =>
+    mutationFn: async (args: {
+      id: string;
+      body: { awaiting_reply_since?: string | null; reply_to_read_since?: string | null };
+    }) =>
       unwrap(
         await api.PATCH("/api/v1/contacts/{contact_id}", {
           params: { path: { contact_id: args.id } },
-          body: { awaiting_reply_since: args.since },
+          body: args.body,
         }),
       ),
     onSuccess: () => {

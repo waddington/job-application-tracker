@@ -74,7 +74,11 @@ export function PersonPage() {
           </div>
         </Group>
         <Group gap="xs">
-          <PersonWaiting id={contact.id} since={contact.awaiting_reply_since} />
+          <PersonWaiting
+            id={contact.id}
+            since={contact.awaiting_reply_since}
+            toRead={contact.reply_to_read_since}
+          />
           <Button
             variant="default"
             size="xs"
