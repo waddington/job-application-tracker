@@ -327,6 +327,10 @@ def seed(path: Path) -> None:
                 ),
             ]
         )
+        # They've replied and it's waiting to be read: on an application, and from a recruiter.
+        first_app["Fabrikam"].reply_to_read_since = date.today()
+        other_recruiter = [r for r in recruiters.values() if r.id != first_recruiter.id][0]
+        other_recruiter.reply_to_read_since = date.today() - timedelta(days=1)
         # To-dos in your own words: about a person, a company, a role, and one about nothing.
         fabrikam_role = s.query(Role).filter_by(title="Platform Engineer (contract)").one()
         s.add_all(
