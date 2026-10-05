@@ -18,7 +18,7 @@ attention, what's coming up, recent activity, a numbered "How it works"), a Time
 every application, company, agency and person (by day or as lanes; `GET /api/v1/timeline`),
 a Next actions page at `/next-actions` (your own to-dos, on their own or about a person,
 company, agency, role or application, `/api/v1/todos`; follow-ups due, applications gone quiet,
-interviews coming up, one-click follow-up, snooze and Ghosted, waiting to hear back), person pages with booked and logged
+interviews coming up, one-click follow-up, snooze and Ghosted, waiting to hear back, replies to read), person pages with booked and logged
 calls and meetings (`/api/v1/meetings`), roles to decide before applying (a Roles page;
 pitched by whom, on which call; apply or pass; `/api/v1/role-summaries`), renaming and
 deleting, applications list and Kanban board (move between any stages), application,

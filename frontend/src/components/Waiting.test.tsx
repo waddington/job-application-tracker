@@ -97,4 +97,69 @@ describe("waiting to hear back", () => {
       expect(patch?.body).toEqual({ awaiting_reply_since: null });
     });
   });
+
+  it("marks a reply to read from a waiting list, and lists replies to read first", async () => {
+    const person = {
+      id: "c1",
+      name: "Alex Recruiter",
+      title: "Senior Consultant",
+      agency_id: "ag1",
+      company_id: null,
+      details: [],
+      awaiting_reply_since: null,
+      reply_to_read_since: daysAgo(2),
+      created_at: "",
+      updated_at: "",
+    };
+    const calls = mockApi({
+      "/api/v1/next-actions": {
+        follow_ups: [],
+        stale: [],
+        upcoming: [],
+        awaiting_outcome: [],
+        offer_deadlines: [],
+        waiting: [
+          row({ id: "a2", company_name: "Fabrikam", awaiting_reply_since: daysAgo(2), stale: false }),
+        ],
+        to_read: [row({ id: "a1", reply_to_read_since: daysAgo(0) })],
+        to_read_people: [person],
+        today: dayjs().format("YYYY-MM-DD"),
+      },
+      "PATCH /api/v1/applications/a1": detail(),
+      "PATCH /api/v1/applications/a2": detail({ id: "a2" }),
+      "PATCH /api/v1/contacts/c1": {},
+      "/api/v1/workflow": WORKFLOW,
+      "/api/v1/health": {},
+    });
+    renderAt("/next-actions");
+    const heading = await screen.findByRole("heading", { name: "Replies to read" });
+    const section = heading.closest(".mantine-Card-root") as HTMLElement;
+    // It comes first: before your to-dos and everything else.
+    const headings = screen.getAllByRole("heading", { level: 4 }).map((h) => h.textContent);
+    expect(headings[0]).toBe("Replies to read");
+    expect(within(section).getByText("Replied today")).toBeInTheDocument();
+    expect(within(section).getByText("Replied 2 days ago")).toBeInTheDocument();
+
+    fireEvent.click(within(section).getByRole("button", { name: "Read it: Contoso" }));
+    fireEvent.click(within(section).getByRole("button", { name: "Read it: Alex Recruiter" }));
+    await waitFor(() => {
+      expect(calls.find((c) => c.path === "/api/v1/applications/a1")?.body).toEqual({
+        reply_to_read_since: null,
+      });
+      expect(calls.find((c) => c.path === "/api/v1/contacts/c1")?.body).toEqual({
+        reply_to_read_since: null,
+      });
+    });
+
+    // Waiting on Fabrikam, and they've replied: read it later.
+    const waiting = screen
+      .getByRole("heading", { name: "Waiting to hear back" })
+      .closest(".mantine-Card-root") as HTMLElement;
+    fireEvent.click(within(waiting).getByRole("button", { name: "They've replied: Fabrikam" }));
+    await waitFor(() =>
+      expect(calls.find((c) => c.path === "/api/v1/applications/a2")?.body).toEqual({
+        reply_to_read_since: dayjs().format("YYYY-MM-DD"),
+      }),
+    );
+  });
 });

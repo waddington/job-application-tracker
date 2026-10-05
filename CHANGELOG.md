@@ -62,6 +62,8 @@ is built and merged, but not yet tested in real use. Numbers in brackets are pul
 - **To-dos**: short reminders in your own words, on their own or about a person, company,
   agency, role or application, with an optional date. Add and tick them off on Next actions,
   the Overview and the page they're about; search finds them (#55).
+- **Replies to read**: **They've replied** on an application or a person puts their reply at
+  the top of Next actions and the Overview until you press **Read it** (#56).
 
 ### Under the hood
 - Python 3.12, FastAPI, SQLAlchemy, Alembic and SQLite; React 19, TypeScript, Mantine and

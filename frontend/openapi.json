@@ -403,6 +403,18 @@
             ],
             "title": "Recruiter Name"
           },
+          "reply_to_read_since": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reply To Read Since"
+          },
           "role_id": {
             "title": "Role Id",
             "type": "string"
@@ -660,6 +672,18 @@
             ],
             "title": "Recruiter Id"
           },
+          "reply_to_read_since": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reply To Read Since"
+          },
           "role_id": {
             "anyOf": [
               {
@@ -839,6 +863,18 @@
               }
             ],
             "title": "Recruiter Name"
+          },
+          "reply_to_read_since": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reply To Read Since"
           },
           "role_id": {
             "title": "Role Id",
@@ -1599,6 +1635,18 @@
             "title": "Name",
             "type": "string"
           },
+          "reply_to_read_since": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reply To Read Since"
+          },
           "title": {
             "anyOf": [
               {
@@ -1691,6 +1739,18 @@
               }
             ],
             "title": "Name"
+          },
+          "reply_to_read_since": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reply To Read Since"
           },
           "title": {
             "anyOf": [
@@ -2105,6 +2165,18 @@
               }
             ],
             "title": "Recruiter Name"
+          },
+          "reply_to_read_since": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reply To Read Since"
           },
           "role_id": {
             "title": "Role Id",
@@ -3720,6 +3792,22 @@
             "title": "Stale",
             "type": "array"
           },
+          "to_read": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/ApplicationRow"
+            },
+            "title": "To Read",
+            "type": "array"
+          },
+          "to_read_people": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/ContactOut"
+            },
+            "title": "To Read People",
+            "type": "array"
+          },
           "today": {
             "format": "date",
             "title": "Today",
@@ -4813,6 +4901,18 @@
             },
             "title": "Relations",
             "type": "array"
+          },
+          "reply_to_read_since": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reply To Read Since"
           },
           "role_id": {
             "title": "Role Id",

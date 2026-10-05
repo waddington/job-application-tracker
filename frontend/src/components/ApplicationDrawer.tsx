@@ -185,7 +185,9 @@ export function ApplicationSummary({ app }: { app: ApplicationDetail }) {
         >
           Undo last move
         </Button>
-        {app.stage_kind === "active" && <ApplicationWaiting id={app.id} since={app.awaiting_reply_since} />}
+        {app.stage_kind === "active" && (
+          <ApplicationWaiting id={app.id} since={app.awaiting_reply_since} toRead={app.reply_to_read_since} />
+        )}
       </Group>
       <Stack gap={4}>
         <Text size="sm">

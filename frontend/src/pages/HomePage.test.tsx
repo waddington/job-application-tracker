@@ -112,6 +112,7 @@ describe("overview", () => {
         ...NOTHING,
         stale: [row({ id: "a2", company_name: "Fabrikam", days_since_activity: 12 })],
         waiting: [row({ id: "a3", awaiting_reply_since: "2026-09-30" })],
+        to_read: [row({ id: "a1", reply_to_read_since: "2026-10-01" })],
         // Due today, and one for next month: only the first needs attention now.
         todos: [
           todo({ due_on: "2026-10-02" }),
@@ -134,13 +135,14 @@ describe("overview", () => {
     });
     renderAt("/");
     expect(await screen.findByRole("link", { name: "Active: 3" })).toHaveAttribute("href", "/applications");
-    expect(screen.getByRole("link", { name: "Needs attention: 2" })).toHaveAttribute("href", "/next-actions");
+    expect(screen.getByRole("link", { name: "Needs attention: 3" })).toHaveAttribute("href", "/next-actions");
     expect(screen.getByRole("link", { name: "Reply to their message" })).toHaveAttribute(
       "href",
       "/people/c1",
     );
     expect(screen.getByText("To-do · Alex Morgan · Today")).toBeInTheDocument();
     expect(screen.queryByText("Renew my portfolio")).not.toBeInTheDocument();
+    expect(screen.getByText(/^Reply to read · Replied/)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Waiting: 1" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Interviews: 0" })).toBeInTheDocument();
     expect(screen.queryByText(/1970/)).not.toBeInTheDocument();

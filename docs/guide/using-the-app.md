@@ -61,13 +61,14 @@ applied too.
 
 Where things stand, at a glance:
 
-- **Counts**: active applications, how many need attention (to-dos due, follow-ups due,
-  gone quiet and roles to decide),
+- **Counts**: active applications, how many need attention (replies to read, to-dos due,
+  follow-ups due, gone quiet and roles to decide),
   interviews in the next two weeks, how many you're waiting to hear back from, and offers to
   answer soon. Each one opens the page with the details.
 - **Pipeline**: active applications by stage.
 - **Needs attention** and **Coming up**: the top of [Next actions](#next-actions). Needs
-  attention starts with your [to-dos](#to-dos) due today or earlier, or with no date. Coming
+  attention starts with [replies to read](#waiting-to-hear-back), then your
+  [to-dos](#to-dos) due today or earlier, or with no date. Coming
   up lists up to six interviews, task deadlines and calls in time order, then offer reply
   deadlines.
 - **Recent activity**: the last two weeks of the [Timeline](#timeline), leaving out
@@ -84,13 +85,16 @@ or roles) but no applications, the Overview shows it as usual (recent activity t
 
 What needs doing, in this order:
 
+- **Replies to read**: applications and people who've replied that you still need to read
+  (see [Waiting to hear back](#waiting-to-hear-back)), oldest first; **Read it** clears it.
 - **To-dos**: your own reminders (see [To-dos](#to-dos)): the ones due in the next two weeks
   (overdue first), then the ones with no date, then later ones. Add one here, about anything
   or nothing in particular.
 - **Offers to answer**: pending offers with a reply due in the next two weeks, or overdue.
 - **Waiting to hear back**: applications and people you've replied to (see
   [Waiting to hear back](#waiting-to-hear-back)), longest first. It turns red once you've
-  waited as long as the stage allows; **Heard back** clears it.
+  waited as long as the stage allows; **Heard back** clears it, and **They've replied** moves
+  it to *Replies to read*.
 - **How did it go?**: interview rounds and calls whose time has passed; mark them *Done* (a
   call: *Happened*, which asks how it went) or *Didn't happen*.
 - **Follow up**: applications whose follow-up date is today or earlier.
@@ -135,7 +139,7 @@ offer reply deadlines still ahead under *Coming up*. It includes:
 - each interview at its own time;
 - calls and meetings with people (not ones that didn't happen);
 - notes on people, companies and agencies;
-- people you're waiting to hear back from;
+- people you're waiting to hear back from, and people whose reply you still need to read;
 - companies, agencies and people being added.
 
 Archived applications are included.
@@ -192,6 +196,13 @@ waiting** (on the application page, or on a person's page for conversations that
 one application). It goes on the timeline, the application shows how long you've been
 waiting, and it appears under *Waiting to hear back* on Next actions instead of *Gone quiet*.
 Press **Heard back** when they reply; moving the application to another stage clears it too.
+
+When they've replied but you haven't read it properly yet (it came in on your phone, or it's
+long), press **They've replied** instead, whether or not you were waiting. It goes to the top
+of Next actions under *Replies to read*, and at the top of *Needs attention* on the Overview,
+until you press **Read it**; the applications list and board mark it *reply to read*. Saying
+**I've replied, waiting** clears it too. A reply to read is never *gone quiet* or a follow-up to chase; moving the application to
+another stage clears it, and undoing the move puts it back.
 
 ### Emails
 

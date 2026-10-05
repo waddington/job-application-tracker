@@ -22,6 +22,7 @@ import { useTimeline } from "../api/timelineHooks";
 import { todoPath } from "../api/todoHooks";
 import { HowItWorks, NewApplicationButton } from "../components/HowItWorks";
 import { dueLabel } from "../components/Todos";
+import { repliedLabel } from "../components/Waiting";
 import { ago, formatDate, formatDateTime } from "../utils/time";
 import { useNextActions } from "./NextActionsPage";
 import { TimelineRow } from "./TimelinePage";
@@ -117,6 +118,21 @@ export function HomePage() {
   const toDecide = next?.roles_to_decide ?? [];
   // Your to-dos that want doing now: due today or before, or with no date.
   const todos = (next?.todos ?? []).filter((t) => !t.due_on || t.due_on <= next!.today);
+  // They've replied and it's waiting for you to read: first in line.
+  const replies = [
+    ...(next?.to_read ?? []).map((r) => ({
+      key: r.id,
+      to: `/applications/${r.id}`,
+      label: `${r.company_name} · ${r.role_title}`,
+      since: r.reply_to_read_since!,
+    })),
+    ...(next?.to_read_people ?? []).map((p) => ({
+      key: p.id,
+      to: `/people/${p.id}`,
+      label: p.name,
+      since: p.reply_to_read_since!,
+    })),
+  ];
   const waiting = (next?.waiting.length ?? 0) + (next?.waiting_people.length ?? 0);
   const pipeline = (workflow?.stages ?? [])
     .filter((s) => s.kind === "active")
@@ -208,9 +224,9 @@ export function HomePage() {
             <Stat label="Active" value={active.length} to="/applications" hint="applications in play" />
             <Stat
               label="Needs attention"
-              value={next && attention.length + toDecide.length + todos.length}
+              value={next && replies.length + attention.length + toDecide.length + todos.length}
               to="/next-actions"
-              hint="to-dos, follow-ups, gone quiet, roles to decide"
+              hint="replies to read, to-dos, follow-ups, gone quiet, roles to decide"
             />
             <Stat
               label="Interviews"
@@ -248,10 +264,25 @@ export function HomePage() {
 
           <SimpleGrid cols={{ base: 1, md: 2 }}>
             <Panel title="Needs attention" link={{ to: "/next-actions", label: "All next actions" }}>
-              {attention.length + toDecide.length + todos.length === 0 ? (
+              {replies.length + attention.length + toDecide.length + todos.length === 0 ? (
                 <Empty>Nothing to chase. Nice.</Empty>
               ) : (
                 <Stack gap={6}>
+                  {replies.slice(0, 4).map((r) => (
+                    <div key={r.key}>
+                      <Anchor component={Link} to={r.to} size="sm" fw={500}>
+                        {r.label}
+                      </Anchor>
+                      <Text size="xs" c="orange">
+                        Reply to read · {repliedLabel(r.since)}
+                      </Text>
+                    </div>
+                  ))}
+                  {replies.length > 4 && (
+                    <Anchor component={Link} to="/next-actions" size="xs" c="dimmed">
+                      and {replies.length - 4} more replies to read
+                    </Anchor>
+                  )}
                   {todos.slice(0, 4).map((t) => (
                     <div key={t.id}>
                       <Anchor component={Link} to={todoPath(t) ?? "/next-actions"} size="sm" fw={500}>

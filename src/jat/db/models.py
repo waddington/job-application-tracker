@@ -69,6 +69,8 @@ class Contact(IdMixin, TimestampMixin, Base):
     company_id: Mapped[str | None] = mapped_column(ForeignKey("companies.id", ondelete="SET NULL"), index=True)
     # You replied to them and are waiting to hear back, since this day.
     awaiting_reply_since: Mapped[date | None]
+    # They've replied and you haven't read it properly yet, since this day.
+    reply_to_read_since: Mapped[date | None]
 
 
 class ContactDetail(IdMixin, Base):
@@ -124,6 +126,9 @@ class Application(IdMixin, TimestampMixin, Base):
     snoozed_until: Mapped[date | None]
     # You replied and are waiting to hear back, since this day; cleared when you hear back or it moves on.
     awaiting_reply_since: Mapped[date | None]
+    # They've replied and it's waiting for you to read it, since this day; cleared when you've
+    # read it or it moves on.
+    reply_to_read_since: Mapped[date | None]
     last_activity_at: Mapped[datetime] = mapped_column(default=utcnow, index=True)
     tags: Mapped[list[str]] = mapped_column(default=list)
     archived: Mapped[bool] = mapped_column(Boolean, default=False)

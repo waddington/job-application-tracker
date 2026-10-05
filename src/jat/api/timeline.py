@@ -347,6 +347,17 @@ def timeline(
                     title=f"Replied to {c.name}; waiting to hear back",
                 )
             )
+        if c.reply_to_read_since:
+            items.append(
+                about_contact(
+                    c,
+                    id=f"contact-to-read:{c.id}",
+                    at=_day(c.reply_to_read_since),
+                    all_day=True,
+                    category="message",
+                    title=f"{c.name} replied; to read",
+                )
+            )
 
     # Notes on an application are already on its timeline; these are notes on anything else.
     for n in session.scalars(select(NoteIndex)):
