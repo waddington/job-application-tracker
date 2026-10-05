@@ -122,6 +122,7 @@ class ContactPatch(Patch):
     company_id: str | None = None
     details: list[ContactDetailIn] | None = None  # replaces all details when sent
     awaiting_reply_since: date | None = None  # you replied and are waiting; null: you heard back
+    reply_to_read_since: date | None = None  # they've replied and you need to read it (clears waiting)
 
 
 class ContactOut(Out):
@@ -132,6 +133,7 @@ class ContactOut(Out):
     company_id: str | None
     details: list[ContactDetailOut] = []
     awaiting_reply_since: date | None = None
+    reply_to_read_since: date | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -238,6 +240,7 @@ class ApplicationPatch(Patch):
     follow_up_on: date | None = None
     snoozed_until: date | None = None
     awaiting_reply_since: date | None = None  # you replied and are waiting; null: you heard back
+    reply_to_read_since: date | None = None  # they've replied and you need to read it (clears waiting)
     tags: list[str] | None = None
     archived: bool | None = None
 
@@ -253,6 +256,7 @@ class ApplicationOut(Out):
     follow_up_on: date | None
     snoozed_until: date | None
     awaiting_reply_since: date | None = None
+    reply_to_read_since: date | None = None
     last_activity_at: datetime
     tags: list[str]
     archived: bool

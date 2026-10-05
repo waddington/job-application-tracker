@@ -1250,6 +1250,8 @@ export interface components {
             recruiter_id: string | null;
             /** Recruiter Name */
             recruiter_name: string | null;
+            /** Reply To Read Since */
+            reply_to_read_since?: string | null;
             /** Role Id */
             role_id: string;
             /** Role Title */
@@ -1319,6 +1321,8 @@ export interface components {
             follow_up_on?: string | null;
             /** Recruiter Id */
             recruiter_id?: string | null;
+            /** Reply To Read Since */
+            reply_to_read_since?: string | null;
             /** Role Id */
             role_id?: string | null;
             /** Route */
@@ -1368,6 +1372,8 @@ export interface components {
             recruiter_id: string | null;
             /** Recruiter Name */
             recruiter_name: string | null;
+            /** Reply To Read Since */
+            reply_to_read_since?: string | null;
             /** Role Id */
             role_id: string;
             /** Role Title */
@@ -1590,6 +1596,8 @@ export interface components {
             id: string;
             /** Name */
             name: string;
+            /** Reply To Read Since */
+            reply_to_read_since?: string | null;
             /** Title */
             title: string | null;
             /**
@@ -1610,6 +1618,8 @@ export interface components {
             details?: components["schemas"]["ContactDetailIn"][] | null;
             /** Name */
             name?: string | null;
+            /** Reply To Read Since */
+            reply_to_read_since?: string | null;
             /** Title */
             title?: string | null;
         };
@@ -1757,6 +1767,8 @@ export interface components {
             recruiter_id: string | null;
             /** Recruiter Name */
             recruiter_name: string | null;
+            /** Reply To Read Since */
+            reply_to_read_since?: string | null;
             /** Role Id */
             role_id: string;
             /** Role Title */
@@ -2192,6 +2204,16 @@ export interface components {
             /** Stale */
             stale: components["schemas"]["ApplicationRow"][];
             /**
+             * To Read
+             * @default []
+             */
+            to_read: components["schemas"]["ApplicationRow"][];
+            /**
+             * To Read People
+             * @default []
+             */
+            to_read_people: components["schemas"]["ContactOut"][];
+            /**
              * Today
              * Format: date
              */
@@ -2475,6 +2497,8 @@ export interface components {
             recruiter_name: string | null;
             /** Relations */
             relations: string[];
+            /** Reply To Read Since */
+            reply_to_read_since?: string | null;
             /** Role Id */
             role_id: string;
             /** Role Title */

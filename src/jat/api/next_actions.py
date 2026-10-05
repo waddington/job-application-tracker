@@ -33,6 +33,8 @@ class NextActions(BaseModel):
     offer_deadlines: list[S.OfferOut] = []  # pending offers to answer in the next two weeks (or overdue)
     waiting: list[S.ApplicationRow] = []  # you replied and are waiting to hear back, longest first
     waiting_people: list[S.ContactOut] = []  # people you replied to outside an application, longest first
+    to_read: list[S.ApplicationRow] = []  # they've replied and you need to read it, oldest first
+    to_read_people: list[S.ContactOut] = []  # the same for people, outside an application
     meetings: list[S.MeetingOut] = []  # calls and meetings booked in the next two weeks, soonest first
     meetings_to_close: list[S.MeetingOut] = []  # their time has passed but they're still "scheduled"
     roles_to_decide: list[S.RoleSummary] = []  # no application and not passed on yet, oldest first
@@ -115,6 +117,17 @@ def next_actions(
         .order_by(Contact.awaiting_reply_since, Contact.name)
     )
     waiting_people = [_contact_out(session, c) for c in people]
+    # Replies to read: on any application still open (archived ones are done), and people.
+    to_read = sorted(
+        (r for r in rows if r.reply_to_read_since is not None),
+        key=lambda r: (r.reply_to_read_since, r.company_name.lower()),
+    )
+    replied = session.scalars(
+        select(Contact)
+        .where(Contact.reply_to_read_since.is_not(None))
+        .order_by(Contact.reply_to_read_since, Contact.name)
+    )
+    to_read_people = [_contact_out(session, c) for c in replied]
     booked_meetings = _meeting_query().where(Meeting.status == "scheduled")
     meetings = _meeting_outs(
         session.execute(
@@ -129,6 +142,8 @@ def next_actions(
     return NextActions(
         waiting=waiting,
         waiting_people=waiting_people,
+        to_read=to_read,
+        to_read_people=to_read_people,
         follow_ups=follow_ups,
         stale=stale,
         upcoming=upcoming + unbooked,

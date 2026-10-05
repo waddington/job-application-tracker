@@ -175,8 +175,11 @@ def update_contact(contact_id: str, body: S.ContactPatch, session: SessionDep):
     contact = get_or_404(session, Contact, contact_id)
     data = body.model_dump(mode="json", exclude_unset=True, exclude={"details"})
     _validate_contact(session, data)
-    if "awaiting_reply_since" in data:
-        data["awaiting_reply_since"] = body.awaiting_reply_since  # a date, not its JSON string
+    for key in ("awaiting_reply_since", "reply_to_read_since"):
+        if key in data:
+            data[key] = getattr(body, key)  # a date, not its JSON string
+    if data.get("reply_to_read_since"):
+        data["awaiting_reply_since"] = None  # they've replied: you're not waiting any more
     for key, value in data.items():
         setattr(contact, key, value)
     if body.details is not None:
@@ -237,6 +240,7 @@ def _row(
         and not snoozed
         and not app.archived
         and app.awaiting_reply_since is None
+        and app.reply_to_read_since is None
     )
     base = S.ApplicationOut.model_validate(app).model_dump()
     return S.ApplicationRow(
@@ -584,10 +588,16 @@ def update_app(app_id: str, body: S.ApplicationPatch, session: SessionDep, workf
     current = {"route": app.route, "agency_id": app.agency_id, "recruiter_id": app.recruiter_id}
     data.update(_check_route(session, {**current, **data}))
     was_waiting = app.awaiting_reply_since
+    was_to_read = app.reply_to_read_since
+    if data.get("reply_to_read_since"):
+        data["awaiting_reply_since"] = None  # they've replied: you're not waiting any more
     for key, value in data.items():
         setattr(app, key, value)
     session.flush()
-    if "awaiting_reply_since" in data and (was_waiting is None) != (app.awaiting_reply_since is None):
+    if "reply_to_read_since" in data and (was_to_read is None) != (app.reply_to_read_since is None):
+        summary = "They replied; to read" if app.reply_to_read_since else "Read their reply"
+        svc.log_activity(session, app, "manual", summary=summary, data={"reply_to_read": bool(app.reply_to_read_since)})
+    elif "awaiting_reply_since" in data and (was_waiting is None) != (app.awaiting_reply_since is None):
         summary = "Replied; waiting to hear back" if app.awaiting_reply_since else "Heard back"
         svc.log_activity(
             session, app, "manual", summary=summary, data={"awaiting_reply": bool(app.awaiting_reply_since)}

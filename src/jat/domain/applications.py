@@ -91,12 +91,16 @@ def move(
         to_stage=to_stage,
         occurred_at=when,
         summary=note,
-        # It moved on, so you heard back. Remember any waiting date so an undo can put it back.
-        data={"was_waiting_since": app.awaiting_reply_since.isoformat()} if app.awaiting_reply_since else {},
+        # It moved on, so you heard back (and read it). Remember the dates so an undo can put them back.
+        data={
+            **({"was_waiting_since": app.awaiting_reply_since.isoformat()} if app.awaiting_reply_since else {}),
+            **({"was_to_read_since": app.reply_to_read_since.isoformat()} if app.reply_to_read_since else {}),
+        },
     )
     session.add(event)
     app.stage = to_stage
     app.awaiting_reply_since = None
+    app.reply_to_read_since = None
     _touch(app, when)
     session.flush()
     return event
@@ -145,6 +149,8 @@ def undo_last_move(session: Session, app: Application, *, note: str | None = Non
     app.stage = last.from_stage
     if was := (last.data or {}).get("was_waiting_since"):
         app.awaiting_reply_since = date.fromisoformat(was)
+    if was := (last.data or {}).get("was_to_read_since"):
+        app.reply_to_read_since = date.fromisoformat(was)
     session.flush()
     # An undone move isn't real activity: recompute so a stale application stays flagged.
     app.last_activity_at = _activity_time(_recorded(session, app.id), app.last_activity_at)
