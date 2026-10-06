@@ -510,18 +510,17 @@ export function RoleLine({ role, showSource = true }: { role: RoleSummary; showS
             </Anchor>
             {files.length > 0 && (
               <Tooltip label={files.map((f) => f.original_name).join(", ")}>
-                <Anchor
-                  component={Link}
-                  to={`/roles/${role.id}`}
-                  size="xs"
+                <Group
+                  gap={2}
+                  wrap="nowrap"
                   c="dimmed"
+                  fz="xs"
+                  role="img"
                   aria-label={`${files.length} file${files.length === 1 ? "" : "s"} on ${role.title}`}
                 >
-                  <Group gap={2} wrap="nowrap">
-                    <IconPaperclip size={12} />
-                    {files.length}
-                  </Group>
-                </Anchor>
+                  <IconPaperclip size={12} />
+                  {files.length}
+                </Group>
               </Tooltip>
             )}
             <Anchor component={Link} to={`/companies/${role.company_id}`} size="sm">

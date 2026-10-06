@@ -173,7 +173,9 @@ def _applications(session: Session, places: Places) -> Iterator[Candidate]:
 
 
 def _companies(session: Session, places: Places) -> Iterator[Candidate]:
+    names: dict[str, str] = {}
     for c in session.scalars(select(Company)):
+        names[c.id] = c.name
         yield Candidate(
             "company",
             c.id,
@@ -186,7 +188,6 @@ def _companies(session: Session, places: Places) -> Iterator[Candidate]:
         yield Candidate("agency", a.id, a.name, f"/agencies/{a.id}", fields=[a.website or ""], updated=a.updated_at)
     # Roles, by title and what you noted about them. Their company's name isn't searched here,
     # or "contoso" would list every Contoso role as well as every application.
-    names = {c.id: c.name for c in session.scalars(select(Company))}
     for r in places.roles.values():
         yield Candidate(
             "role",

@@ -58,6 +58,7 @@ class TimelineItem(BaseModel):
     detail: str | None = None
     application_id: str | None = None
     role_title: str | None = None
+    role_id: str | None = None  # a role before applying (its page), on role items
     company_id: str | None = None
     company_name: str | None = None
     agency_id: str | None = None
@@ -274,6 +275,7 @@ def timeline(
             company_id=co.id if co else None,
             company_name=co.name if co else None,
             role_title=r.title,
+            role_id=r.id,
         )
         if who is not None:
             ag = agencies.get(who.agency_id or "")

@@ -130,7 +130,7 @@ def test_files_on_roles(client, seeded):
     assert [a["id"] for a in mine] == [jd["id"]]
     every_role = client.get("/api/v1/attachments", params={"entity_type": "role"}).json()
     assert sorted(a["original_name"] for a in every_role) == ["JD.pdf", "brief.pdf"]
-    # Search opens a role's file on its company's page.
+    # Search opens a role's file on the role's page.
     hits = client.get("/api/v1/search", params={"q": "JD"}).json()
     assert [h["link"] for h in hits if h["title"] == "JD.pdf"] == [f"/roles/{role['id']}"]
 

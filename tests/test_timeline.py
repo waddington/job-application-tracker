@@ -109,3 +109,11 @@ def test_revised_offer_and_panel(client, seeded):
     by_recruiter = _timeline(client, contact_id=seeded["recruiter"]["id"], category=["interview"])
     final = next(i for i in by_recruiter if i["id"].startswith("interview:"))
     assert {p["name"] for p in final["people"]} == {"Riley Chen", "Alex Recruiter"}
+
+
+def test_role_items_point_at_the_role(client, seeded):
+    role = seeded["role"]
+    client.patch(f"/api/v1/roles/{role['id']}", json={"decision": "passed", "decision_reason": "Too far"})
+    items = client.get("/api/v1/timeline").json()["items"]
+    passed = [i for i in items if i["id"] == f"role-passed:{role['id']}"]
+    assert [(i["role_id"], i["role_title"]) for i in passed] == [(role["id"], "Senior Backend Engineer")]

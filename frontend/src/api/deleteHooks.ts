@@ -34,6 +34,7 @@ export function useDeleteEntity(kind: Deletable, onDeleted?: () => void) {
         application: ["application", id],
         company: ["company-summary", id],
         agency: ["agency-summary", id],
+        role: ["role-summaries", "one", id],
       };
       if (kind in own) qc.removeQueries({ queryKey: own[kind as keyof typeof own] });
       for (const key of [

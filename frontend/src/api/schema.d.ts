@@ -2981,6 +2981,8 @@ export interface components {
              * @default []
              */
             people: components["schemas"]["TimelinePerson"][];
+            /** Role Id */
+            role_id?: string | null;
             /** Role Title */
             role_title?: string | null;
             /**

@@ -102,10 +102,7 @@ describe("a role's page", () => {
       "href",
       "/roles/r2",
     );
-    expect(await screen.findByRole("link", { name: "1 file on Platform Engineer" })).toHaveAttribute(
-      "href",
-      "/roles/r2",
-    );
+    expect(await screen.findByRole("img", { name: "1 file on Platform Engineer" })).toBeInTheDocument();
   });
 
   it("shows the role's files on its application", async () => {
@@ -159,6 +156,13 @@ describe("a role's page", () => {
     await waitFor(() =>
       expect(calls.some((c) => c.method === "POST" && c.path === "/api/v1/attachments")).toBe(true),
     );
+    const sent = calls.find((c) => c.method === "POST" && c.path === "/api/v1/attachments")!.body as FormData;
+    // On the new role, after it's made.
+    expect([sent.get("entity_type"), sent.get("entity_id"), (sent.get("file") as File).name]).toEqual([
+      "role",
+      "r5",
+      "SRE JD.pdf",
+    ]);
     expect(calls.findIndex((c) => c.path === "/api/v1/roles")).toBeLessThan(
       calls.findIndex((c) => c.path === "/api/v1/attachments" && c.method === "POST"),
     );
