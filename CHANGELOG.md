@@ -67,6 +67,9 @@ is built and merged, but not yet tested in real use. Numbers in brackets are pul
 - **Role pages and files on roles**: a page per role (details, where it came from, its
   application, to-dos, notes, links and files). Attach the job description to a role, even as
   you add it, and it shows on the application once you apply (#57).
+- **Recruiters page as tiles**: everyone A to Z in small tiles with their agency or company
+  as a chip and their contact details, a filter (at agencies, at companies, independent) and
+  every agency as a chip (#58).
 
 ### Under the hood
 - Python 3.12, FastAPI, SQLAlchemy, Alembic and SQLite; React 19, TypeScript, Mantine and

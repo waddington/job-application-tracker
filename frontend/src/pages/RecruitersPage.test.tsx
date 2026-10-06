@@ -37,37 +37,46 @@ beforeEach(() => localStorage.clear());
 afterEach(() => vi.unstubAllGlobals());
 
 describe("recruiters", () => {
-  it("groups people by agency with clickable contact details", async () => {
+  it("shows everyone A to Z, with their agency as a chip and clickable details", async () => {
     mockApi({
       "/api/v1/workflow": WORKFLOW,
       "/api/v1/agencies": agencies,
       "/api/v1/contacts": contacts,
+      "/api/v1/companies": [],
       "/api/v1/applications": [row({ agency_id: "ag1" })],
       "/api/v1/health": {},
     });
     renderAt("/recruiters");
-    expect(await screen.findByRole("link", { name: "Northwind Talent" })).toHaveAttribute(
+    const tiles = await screen.findAllByRole("link", { name: /^(Alex Morgan|Jo Freelance|Sam Patel)$/ });
+    expect(tiles.map((t) => t.textContent)).toEqual(["Alex Morgan", "Jo Freelance", "Sam Patel"]);
+    expect(tiles[0]).toHaveAttribute("href", "/people/c1");
+    // Alex's tile: the agency chip, and every way to reach them.
+    const alex = tiles[0]!.closest(".mantine-Card-root") as HTMLElement;
+    expect(within(alex).getByRole("link", { name: "Northwind Talent" })).toHaveAttribute(
       "href",
       "/agencies/ag1",
     );
-    expect(screen.getByText("1 in progress")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "alex@northwind.example.com" })).toHaveAttribute(
+    expect(within(alex).getByRole("link", { name: "alex@northwind.example.com" })).toHaveAttribute(
       "href",
       "mailto:alex@northwind.example.com",
     );
-    expect(screen.getByRole("link", { name: "+44 7700 900001" })).toHaveAttribute(
+    expect(within(alex).getByRole("link", { name: "+44 7700 900001" })).toHaveAttribute(
       "href",
       "tel:+447700900001",
     );
-    expect(screen.getByText("Independent")).toBeInTheDocument();
-    expect(screen.getByText("Jo Freelance")).toBeInTheDocument();
+    // Every agency, with how many people and applications in progress.
+    expect(screen.getByRole("link", { name: "Northwind Talent: 1 person, 1 in progress" })).toHaveAttribute(
+      "href",
+      "/agencies/ag1",
+    );
+    expect(screen.getByRole("link", { name: "Blue Yonder Recruitment: 1 person" })).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText("Search recruiters"), { target: { value: "sam" } });
     expect(screen.queryByText("Alex Morgan")).not.toBeInTheDocument();
     expect(screen.getByText("Sam Patel")).toBeInTheDocument();
   });
 
-  it("shows company contacts, searches by agency name and says when nothing matches", async () => {
+  it("filters to company contacts, searches by agency name and says when nothing matches", async () => {
     mockApi({
       "/api/v1/workflow": WORKFLOW,
       "/api/v1/agencies": agencies,
@@ -90,6 +99,11 @@ describe("recruiters", () => {
       "href",
       "tel:+442079460000",
     );
+
+    fireEvent.click(screen.getByRole("radio", { name: "At companies" }));
+    expect(screen.getByText("Riley Chen")).toBeInTheDocument();
+    expect(screen.queryByText("Alex Morgan")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("radio", { name: "Everyone" }));
 
     const search = screen.getByLabelText("Search recruiters");
     fireEvent.change(search, { target: { value: "northwind" } });

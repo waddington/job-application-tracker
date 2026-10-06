@@ -13,7 +13,8 @@ const ICONS = {
   other: IconPoint,
 };
 
-function href(kind: string, value: string): string | undefined {
+/** Where a detail goes when clicked: your mail client, dialler or browser. */
+export function contactHref(kind: string, value: string): string | undefined {
   if (kind === "email") return `mailto:${value}`;
   // Drop any extension ("ext. 12", "x12") so the dialler gets just the number.
   if (kind === "phone") return `tel:${value.replace(/\s*(ext\.?|x)\s*\d+\s*$/i, "").replace(/[^\d+]/g, "")}`;
@@ -38,7 +39,7 @@ export function ContactCard({ contact, onEdit }: { contact: Contact; onEdit?: ()
           )}
           {contact.details.map((d) => {
             const Icon = ICONS[d.kind as keyof typeof ICONS] ?? IconPoint;
-            const link = href(d.kind, d.value);
+            const link = contactHref(d.kind, d.value);
             return (
               <Group key={d.id} gap={6} wrap="wrap" style={{ rowGap: 0 }}>
                 {/* The icon stays with the value; only the label moves down when it's tight. */}

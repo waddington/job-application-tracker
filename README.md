@@ -106,7 +106,7 @@ recruiters send roles that go somewhere.
 <table>
 <tr>
 <td width="50%"><b>Applications list</b> with filters, route, stage, round and staleness<br><img src="docs/screenshots/list.png" width="100%" alt="Applications list with filters"></td>
-<td width="50%"><b>Recruiter CRM</b>: agencies, recruiters and every way to reach them<br><img src="docs/screenshots/recruiters.png" width="100%" alt="Recruiters grouped by agency"></td>
+<td width="50%"><b>Recruiter CRM</b>: agencies, recruiters and every way to reach them<br><img src="docs/screenshots/recruiters.png" width="100%" alt="Recruiters as tiles, A to Z, with agency chips and contact details"></td>
 </tr>
 <tr>
 <td width="50%"><b>CV and cover-letter versions</b>, and where each one was sent<br><img src="docs/screenshots/documents.png" width="100%" alt="A CV with two versions, one sent"></td>
