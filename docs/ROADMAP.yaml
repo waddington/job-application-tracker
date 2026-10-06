@@ -108,4 +108,4 @@ phases:
       - {id: replies, name: "Replies to read: they've replied, read it; on applications and people, at the top of Next actions", owner: lead, status: done, estimate_h: 2, depends: [waiting], prd: docs/prd/tracker.md}
       - {id: role-files, name: "Files on roles (a job description PDF), shown on the application once you apply", owner: lead, status: done, estimate_h: 2, depends: [role-decisions, attachments], prd: docs/prd/tracker.md}
       - {id: role-page, name: "A page per role: details, where it came from, applications, to-dos, notes, links and files", owner: lead, status: done, estimate_h: 3, depends: [role-decisions], prd: docs/prd/tracker.md}
-      - {id: recruiters-grid, name: "Recruiters page as small tiles, A to Z, with agency or company chips and contact details", owner: lead, status: building, estimate_h: 1, depends: [people], prd: docs/prd/tracker.md}
+      - {id: recruiters-grid, name: "Recruiters page as small tiles, A to Z, with agency or company chips and contact details", owner: lead, status: done, estimate_h: 1, depends: [people], prd: docs/prd/tracker.md}

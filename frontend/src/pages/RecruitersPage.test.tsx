@@ -100,10 +100,10 @@ describe("recruiters", () => {
       "tel:+442079460000",
     );
 
-    fireEvent.click(screen.getByRole("radio", { name: "At companies" }));
+    fireEvent.click(screen.getByRole("radio", { name: "Companies" }));
     expect(screen.getByText("Riley Chen")).toBeInTheDocument();
     expect(screen.queryByText("Alex Morgan")).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole("radio", { name: "Everyone" }));
+    fireEvent.click(screen.getByRole("radio", { name: "All" }));
 
     const search = screen.getByLabelText("Search recruiters");
     fireEvent.change(search, { target: { value: "northwind" } });

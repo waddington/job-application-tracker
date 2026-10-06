@@ -256,7 +256,8 @@ stand, and every email, phone number and link (click to email, call or open; lon
 them.
 
 - **Search** matches names, job titles, agencies, companies, emails and numbers.
-- **Everyone / At agencies / At companies / Independent** narrows the list.
+- **All / Agencies / Companies / Independent** narrows it to agency recruiters, people at
+  companies or independents.
 - **Agencies**: every agency as a chip with how many people and applications in progress it
   has, including ones with nobody in them yet.
 

@@ -101,6 +101,7 @@ function PersonTile({ contact, where, onEdit }: { contact: Contact; where: Where
               c="inherit"
               truncate="end"
               display="block"
+              title={contact.name}
             >
               {contact.name}
             </Anchor>
@@ -135,6 +136,7 @@ function PersonTile({ contact, where, onEdit }: { contact: Contact; where: Where
                   where.kind === "agency" ? <IconBuildingSkyscraper size={11} /> : <IconBuilding size={11} />
                 }
                 style={{ cursor: "pointer", textTransform: "none", maxWidth: "100%" }}
+                title={where.name}
               >
                 {where.name}
               </Badge>
@@ -162,7 +164,7 @@ function PersonTile({ contact, where, onEdit }: { contact: Contact; where: Where
                   href={link}
                   size="xs"
                   target={d.kind === "email" || d.kind === "phone" ? undefined : "_blank"}
-                  rel="noreferrer noopener"
+                  rel={d.kind === "email" || d.kind === "phone" ? undefined : "noreferrer noopener"}
                   truncate="end"
                   title={d.label ? `${d.value} (${d.label})` : d.value}
                 >
@@ -186,10 +188,12 @@ function PersonTile({ contact, where, onEdit }: { contact: Contact; where: Where
 type Show = "all" | "agency" | "company" | "independent";
 
 export function RecruitersPage() {
-  const { data: agencies, isLoading } = useAgencies();
+  const { data: agencies, isLoading: agenciesLoading } = useAgencies();
   const { data: contacts } = useContacts();
   const { data: apps } = useApplications({});
   const { data: companies } = useCompanies();
+  // Wait for everyone and where they work, so no one shows as Independent for a moment.
+  const isLoading = agenciesLoading || !contacts || !companies;
   const [q, setQ] = useState("");
   const [show, setShow] = useState<Show>("all");
   const [newAgency, setNewAgency] = useState(false);
@@ -258,14 +262,14 @@ export function RecruitersPage() {
           aria-label="Search recruiters"
         />
         <SegmentedControl
-          size="sm"
+          size="xs"
           value={show}
           onChange={(v) => setShow(v as Show)}
           aria-label="Show"
           data={[
-            { value: "all", label: "Everyone" },
-            { value: "agency", label: "At agencies" },
-            { value: "company", label: "At companies" },
+            { value: "all", label: "All" },
+            { value: "agency", label: "Agencies" },
+            { value: "company", label: "Companies" },
             { value: "independent", label: "Independent" },
           ]}
         />
