@@ -1,4 +1,5 @@
 import {
+  ActionIcon,
   Anchor,
   Badge,
   Button,
@@ -6,21 +7,35 @@ import {
   Group,
   Loader,
   Modal,
+  SegmentedControl,
   SimpleGrid,
   Stack,
   Text,
   TextInput,
   Title,
+  Tooltip,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { IconPlus, IconSearch, IconUsers } from "@tabler/icons-react";
+import {
+  IconBrandLinkedin,
+  IconBuilding,
+  IconBuildingSkyscraper,
+  IconLink,
+  IconMail,
+  IconPencil,
+  IconPhone,
+  IconPlus,
+  IconPoint,
+  IconSearch,
+  IconUsers,
+} from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 
 import type { Contact } from "../api/client";
 import { useAgencies, useApplications, useCompanies, useContacts } from "../api/hooks";
 import { useCreateAgency } from "../api/peopleHooks";
-import { ContactCard } from "../components/ContactCard";
+import { contactHref } from "../components/ContactCard";
 import { ContactFormModal } from "../components/ContactFormModal";
 
 function NewAgencyModal({ opened, onClose }: { opened: boolean; onClose: () => void }) {
@@ -61,43 +76,164 @@ function NewAgencyModal({ opened, onClose }: { opened: boolean; onClose: () => v
   );
 }
 
+const DETAIL_ICONS = {
+  email: IconMail,
+  phone: IconPhone,
+  linkedin: IconBrandLinkedin,
+  url: IconLink,
+  other: IconPoint,
+};
+
+type Where = { kind: "agency" | "company"; id: string; name: string } | null;
+
+/** One person, small: name, title, their agency or company as a chip, every way to reach them. */
+function PersonTile({ contact, where, onEdit }: { contact: Contact; where: Where; onEdit: () => void }) {
+  return (
+    <Card withBorder padding="xs">
+      <Stack gap={4}>
+        <Group justify="space-between" wrap="nowrap" gap={4} align="flex-start">
+          <div style={{ minWidth: 0 }}>
+            <Anchor
+              component={Link}
+              to={`/people/${contact.id}`}
+              fw={600}
+              size="sm"
+              c="inherit"
+              truncate="end"
+              display="block"
+              title={contact.name}
+            >
+              {contact.name}
+            </Anchor>
+            {contact.title && (
+              <Text size="xs" c="dimmed" truncate="end" title={contact.title}>
+                {contact.title}
+              </Text>
+            )}
+          </div>
+          <Tooltip label="Edit">
+            <ActionIcon
+              variant="subtle"
+              color="gray"
+              size="sm"
+              onClick={onEdit}
+              aria-label={`Edit ${contact.name}`}
+            >
+              <IconPencil size={14} />
+            </ActionIcon>
+          </Tooltip>
+        </Group>
+        {(where || contact.awaiting_reply_since || contact.reply_to_read_since) && (
+          <Group gap={4}>
+            {where && (
+              <Badge
+                component={Link}
+                to={where.kind === "agency" ? `/agencies/${where.id}` : `/companies/${where.id}`}
+                size="sm"
+                variant="light"
+                color={where.kind === "agency" ? "blue" : "teal"}
+                leftSection={
+                  where.kind === "agency" ? <IconBuildingSkyscraper size={11} /> : <IconBuilding size={11} />
+                }
+                style={{ cursor: "pointer", textTransform: "none", maxWidth: "100%" }}
+                title={where.name}
+              >
+                {where.name}
+              </Badge>
+            )}
+            {contact.reply_to_read_since && (
+              <Badge size="sm" variant="light" color="orange" style={{ textTransform: "none" }}>
+                Reply to read
+              </Badge>
+            )}
+            {contact.awaiting_reply_since && (
+              <Badge size="sm" variant="light" color="grape" style={{ textTransform: "none" }}>
+                Waiting
+              </Badge>
+            )}
+          </Group>
+        )}
+        {contact.details.map((d) => {
+          const Icon = DETAIL_ICONS[d.kind as keyof typeof DETAIL_ICONS] ?? IconPoint;
+          const link = contactHref(d.kind, d.value);
+          return (
+            <Group key={d.id} gap={6} wrap="nowrap" style={{ minWidth: 0 }}>
+              <Icon size={13} stroke={1.6} style={{ flexShrink: 0 }} />
+              {link ? (
+                <Anchor
+                  href={link}
+                  size="xs"
+                  target={d.kind === "email" || d.kind === "phone" ? undefined : "_blank"}
+                  rel={d.kind === "email" || d.kind === "phone" ? undefined : "noreferrer noopener"}
+                  truncate="end"
+                  title={d.label ? `${d.value} (${d.label})` : d.value}
+                >
+                  {d.kind === "linkedin" || d.kind === "url"
+                    ? d.value.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")
+                    : d.value}
+                </Anchor>
+              ) : (
+                <Text size="xs" truncate="end" title={d.value}>
+                  {d.value}
+                </Text>
+              )}
+            </Group>
+          );
+        })}
+      </Stack>
+    </Card>
+  );
+}
+
+type Show = "all" | "agency" | "company" | "independent";
+
 export function RecruitersPage() {
-  const { data: agencies, isLoading } = useAgencies();
+  const { data: agencies, isLoading: agenciesLoading } = useAgencies();
   const { data: contacts } = useContacts();
   const { data: apps } = useApplications({});
   const { data: companies } = useCompanies();
+  // Wait for everyone and where they work, so no one shows as Independent for a moment.
+  const isLoading = agenciesLoading || !contacts || !companies;
   const [q, setQ] = useState("");
+  const [show, setShow] = useState<Show>("all");
   const [newAgency, setNewAgency] = useState(false);
   const [editing, setEditing] = useState<Contact | null | undefined>(undefined); // undefined = closed, null = new
 
+  const agencyById = new Map((agencies ?? []).map((a) => [a.id, a]));
+  const companyById = new Map((companies ?? []).map((c) => [c.id, c]));
+  const whereOf = (c: Contact): Where => {
+    const agency = c.agency_id ? agencyById.get(c.agency_id) : undefined;
+    if (agency) return { kind: "agency", id: agency.id, name: agency.name };
+    const company = c.company_id ? companyById.get(c.company_id) : undefined;
+    if (company) return { kind: "company", id: company.id, name: company.name };
+    return null;
+  };
   const needle = q.trim().toLowerCase();
+  // Name, title, agency or company, or any detail (an email, a phone number).
   const matches = (c: Contact) =>
     !needle ||
-    c.name.toLowerCase().includes(needle) ||
-    c.details.some((d) => d.value.toLowerCase().includes(needle));
+    [c.name, c.title ?? "", whereOf(c)?.name ?? "", ...c.details.map((d) => d.value)].some((v) =>
+      v.toLowerCase().includes(needle),
+    );
+  const shown = (contacts ?? [])
+    .filter((c) => {
+      const kind = whereOf(c)?.kind ?? "independent";
+      return show === "all" || show === kind;
+    })
+    .filter(matches)
+    .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
+
+  const peopleByAgency = new Map<string, number>();
+  for (const c of contacts ?? [])
+    if (c.agency_id) peopleByAgency.set(c.agency_id, (peopleByAgency.get(c.agency_id) ?? 0) + 1);
   const activeByAgency = new Map<string, number>();
   for (const a of apps ?? []) {
     if (a.agency_id && a.stage_kind === "active")
       activeByAgency.set(a.agency_id, (activeByAgency.get(a.agency_id) ?? 0) + 1);
   }
-  const independent = (contacts ?? []).filter((c) => !c.agency_id && !c.company_id && matches(c));
-  // Hiring managers and interviewers: saved against a company but no agency.
-  const companyName = new Map((companies ?? []).map((c) => [c.id, c.name]));
-  const atCompanies = new Map<string, Contact[]>();
-  for (const c of contacts ?? []) {
-    if (c.agency_id || !c.company_id) continue;
-    const name = companyName.get(c.company_id) ?? "";
-    if (!matches(c) && !(needle && name.toLowerCase().includes(needle))) continue;
-    atCompanies.set(c.company_id, [...(atCompanies.get(c.company_id) ?? []), c]);
-  }
-  const agencyGroups = (agencies ?? []).flatMap((agency) => {
-    const all = (contacts ?? []).filter((c) => c.agency_id === agency.id);
-    // Searching an agency's name shows everyone there.
-    const people = needle && agency.name.toLowerCase().includes(needle) ? all : all.filter(matches);
-    if (needle && !people.length) return [];
-    return [{ agency, people }];
-  });
-  const nothingShown = !agencyGroups.length && !independent.length && !atCompanies.size;
+  const agencyList = [...(agencies ?? [])].sort((a, b) =>
+    a.name.localeCompare(b.name, undefined, { sensitivity: "base" }),
+  );
 
   return (
     <Stack>
@@ -115,76 +251,75 @@ export function RecruitersPage() {
           </Button>
         </Group>
       </Group>
-      <TextInput
-        placeholder="Search people, emails, phone numbers"
-        leftSection={<IconSearch size={16} />}
-        value={q}
-        onChange={(e) => setQ(e.currentTarget.value)}
-        w={320}
-        aria-label="Search recruiters"
-      />
+      <Group gap="sm" wrap="wrap">
+        <TextInput
+          placeholder="Search names, agencies, companies, emails, numbers"
+          leftSection={<IconSearch size={16} />}
+          value={q}
+          onChange={(e) => setQ(e.currentTarget.value)}
+          w={360}
+          maw="100%"
+          aria-label="Search recruiters"
+        />
+        <SegmentedControl
+          size="xs"
+          value={show}
+          onChange={(v) => setShow(v as Show)}
+          aria-label="Show"
+          data={[
+            { value: "all", label: "All" },
+            { value: "agency", label: "Agencies" },
+            { value: "company", label: "Companies" },
+            { value: "independent", label: "Independent" },
+          ]}
+        />
+      </Group>
+      {agencyList.length > 0 && (
+        <Group gap={6} align="center">
+          <Text size="xs" c="dimmed" fw={600} tt="uppercase">
+            Agencies
+          </Text>
+          {agencyList.map((a) => {
+            const people = peopleByAgency.get(a.id) ?? 0;
+            const active = activeByAgency.get(a.id) ?? 0;
+            return (
+              <Badge
+                key={a.id}
+                component={Link}
+                to={`/agencies/${a.id}`}
+                variant="outline"
+                color="blue"
+                size="md"
+                style={{ cursor: "pointer", textTransform: "none" }}
+                aria-label={`${a.name}: ${people} ${people === 1 ? "person" : "people"}${active ? `, ${active} in progress` : ""}`}
+              >
+                {a.name} · {people}
+                {active ? ` · ${active} in progress` : ""}
+              </Badge>
+            );
+          })}
+        </Group>
+      )}
       {isLoading ? (
         <Loader />
+      ) : !shown.length ? (
+        <Card withBorder p="xl">
+          <Text ta="center" c="dimmed">
+            {needle || show !== "all"
+              ? "No matches."
+              : "No one yet. Add a person, or an agency, or add them when you create an application."}
+          </Text>
+        </Card>
       ) : (
         <>
-          {nothingShown && (
-            <Card withBorder p="xl">
-              <Text ta="center" c="dimmed">
-                {needle
-                  ? "No matches."
-                  : "No recruiters yet. Add an agency, or add one when you create an application."}
-              </Text>
-            </Card>
-          )}
-          {agencyGroups.map(({ agency, people }) => (
-            <Stack key={agency.id} gap="xs">
-              <Group gap="sm">
-                <Anchor component={Link} to={`/agencies/${agency.id}`} fw={700} size="lg">
-                  {agency.name}
-                </Anchor>
-                <Badge variant="light" color="gray">
-                  {people.length} {people.length === 1 ? "person" : "people"}
-                </Badge>
-                {!!activeByAgency.get(agency.id) && (
-                  <Badge variant="light">{activeByAgency.get(agency.id)} in progress</Badge>
-                )}
-              </Group>
-              <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }}>
-                {people.map((c) => (
-                  <ContactCard key={c.id} contact={c} onEdit={() => setEditing(c)} />
-                ))}
-              </SimpleGrid>
-            </Stack>
-          ))}
-          {!!independent.length && (
-            <Stack gap="xs">
-              <Text fw={700} size="lg">
-                Independent
-              </Text>
-              <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }}>
-                {independent.map((c) => (
-                  <ContactCard key={c.id} contact={c} onEdit={() => setEditing(c)} />
-                ))}
-              </SimpleGrid>
-            </Stack>
-          )}
-          {[...atCompanies].map(([companyId, people]) => (
-            <Stack key={companyId} gap="xs">
-              <Group gap="sm">
-                <Anchor component={Link} to={`/companies/${companyId}`} fw={700} size="lg">
-                  {companyName.get(companyId) ?? "Company"}
-                </Anchor>
-                <Badge variant="light" color="gray">
-                  at the company
-                </Badge>
-              </Group>
-              <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }}>
-                {people.map((c) => (
-                  <ContactCard key={c.id} contact={c} onEdit={() => setEditing(c)} />
-                ))}
-              </SimpleGrid>
-            </Stack>
-          ))}
+          <Text size="xs" c="dimmed">
+            {shown.length} {shown.length === 1 ? "person" : "people"}, A to Z
+          </Text>
+          <SimpleGrid cols={{ base: 1, xs: 2, md: 3, xl: 4 }} spacing="sm" verticalSpacing="sm">
+            {shown.map((c) => (
+              <PersonTile key={c.id} contact={c} where={whereOf(c)} onEdit={() => setEditing(c)} />
+            ))}
+          </SimpleGrid>
         </>
       )}
       <NewAgencyModal opened={newAgency} onClose={() => setNewAgency(false)} />

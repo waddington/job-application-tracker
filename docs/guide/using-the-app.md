@@ -248,8 +248,19 @@ first. Your data repo's history still has everything until you rewrite it.
 
 ## People, recruiters and agencies
 
-The **Recruiters** page lists everyone: agencies and their recruiters, people at companies,
-and independents, with every email, phone number and link (click to email, call or open).
+The **Recruiters** page lists everyone as small tiles, A to Z by name: agency recruiters,
+people at companies and independents. Each tile has their job title, a chip for their agency
+or company (click it to open that page), *Waiting* or *Reply to read* if that's where things
+stand, and every email, phone number and link (click to email, call or open; long ones end in
+"…", and hovering shows them in full). The pencil edits a person; open their page to delete
+them.
+
+- **Search** matches names, job titles, agencies, companies, emails and numbers.
+- **All / Agencies / Companies / Independent** narrows it to agency recruiters, people at
+  companies or independents.
+- **Agencies**: every agency as a chip with how many people and applications in progress it
+  has, including ones with nobody in them yet.
+
 **New agency** and **New person** are at the top right. In a person's form you can also type
 a new agency or company name and pick **+ Add "…"** to create it there and then.
 
