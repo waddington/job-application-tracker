@@ -34,11 +34,6 @@ const EMPLOYMENT: Record<string, string> = {
   contract: "Contract",
   fixed_term: "Fixed term",
 };
-const IR35: Record<string, string> = {
-  inside: "Inside IR35",
-  outside: "Outside IR35",
-  unknown: "IR35 not known",
-};
 
 function Fact({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -71,7 +66,6 @@ export function RolePage() {
   const terms = [
     role.employment_type ? EMPLOYMENT[role.employment_type] : null,
     role.work_mode ? WORK_MODE[role.work_mode] : null,
-    role.ir35 && role.employment_type === "contract" ? IR35[role.ir35] : null,
   ].filter(Boolean);
 
   return (
@@ -162,13 +156,13 @@ export function RolePage() {
                 {role.description ? (
                   <div>
                     <Text size="sm" fw={600} mb={4}>
-                      Notes
+                      What they said
                     </Text>
                     <Markdown>{role.description}</Markdown>
                   </div>
                 ) : (
                   <Text size="sm" c="dimmed">
-                    No notes on it yet. Edit adds what they said: team, stack, why it's open.
+                    Edit adds what they said about it: team, stack, why it's open.
                   </Text>
                 )}
               </Stack>
