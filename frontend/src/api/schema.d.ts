@@ -318,7 +318,8 @@ export interface paths {
         };
         /**
          * List Attachments
-         * @description Files on one thing (`entity_type` + `entity_id`), `unattached` ones, or all of them, newest first.
+         * @description Files on one thing (`entity_type` + `entity_id`), on every thing of one kind (`entity_type`
+         *     alone, e.g. all roles' files in one request), `unattached` ones, or all of them, newest first.
          */
         get: operations["list_attachments_api_v1_attachments_get"];
         put?: never;
@@ -967,6 +968,26 @@ export interface paths {
          *     `passed`. Filter by company, by who told you about it, or by the call it came up in.
          */
         get: operations["role_summaries_api_v1_role_summaries_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/role-summaries/{role_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Role Summary
+         * @description One role with where it came from and where it stands, for its page.
+         */
+        get: operations["role_summary_api_v1_role_summaries__role_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2960,6 +2981,8 @@ export interface components {
              * @default []
              */
             people: components["schemas"]["TimelinePerson"][];
+            /** Role Id */
+            role_id?: string | null;
             /** Role Title */
             role_title?: string | null;
             /**
@@ -5670,6 +5693,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RoleSummary"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    role_summary_api_v1_role_summaries__role_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                role_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoleSummary"];
                 };
             };
             /** @description Validation Error */

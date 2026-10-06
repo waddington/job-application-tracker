@@ -4,6 +4,7 @@ import {
   Badge,
   Button,
   Card,
+  FileInput,
   Group,
   Modal,
   NumberInput,
@@ -17,13 +18,14 @@ import {
 } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import { useForm } from "@mantine/form";
-import { IconListCheck, IconPencil, IconPlus } from "@tabler/icons-react";
+import { IconListCheck, IconPaperclip, IconPencil, IconPlus } from "@tabler/icons-react";
 import { Link, useRouter } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { useState } from "react";
 
 import { useContacts, useCompanies, useWorkflow } from "../api/hooks";
 import { useTodos } from "../api/todoHooks";
+import { useRoleFiles, useUploadFilesTo } from "../api/attachmentHooks";
 import { useCreateCompany } from "../api/detailHooks";
 import { useMeetings } from "../api/meetingHooks";
 import {
@@ -97,6 +99,8 @@ export function RoleFormModal({
   const { data: contacts } = useContacts();
   const createCompany = useCreateCompany();
   const save = useSaveRole();
+  const uploadTo = useUploadFilesTo();
+  const [files, setFiles] = useState<File[]>([]);
   const form = useForm<Values>({
     initialValues: {
       companyId: role?.company_id ?? companyId ?? null,
@@ -147,7 +151,11 @@ export function RoleFormModal({
       description: blank(v.description),
     };
     save.mutate(role ? { id: role.id, body } : { body }, {
-      onSuccess: () => {
+      onSuccess: (saved) => {
+        if (!role && files.length) {
+          uploadTo.mutate({ files, entityType: "role", entityId: saved.id });
+          setFiles([]);
+        }
         if (!another || role) return onClose();
         // Keep who and which call, clear the rest: the next role from the same call.
         form.setValues({
@@ -280,6 +288,18 @@ export function RoleFormModal({
             minRows={2}
             {...form.getInputProps("description")}
           />
+          {!role && (
+            <FileInput
+              label="Job description or other files"
+              description="Optional: PDFs, documents. Kept with the role, and on the application once you apply."
+              placeholder="Choose files"
+              multiple
+              clearable
+              value={files}
+              onChange={setFiles}
+              leftSection={<IconPaperclip size={14} />}
+            />
+          )}
           <Group justify="flex-end">
             <Button variant="default" onClick={onClose} style={{ order: 0 }}>
               Cancel
@@ -470,14 +490,39 @@ export function RoleLine({ role, showSource = true }: { role: RoleSummary; showS
   // All open to-dos, one shared request, picked out per role.
   const { data: openTodos } = useTodos();
   const todos = (openTodos ?? []).filter((t) => t.entity_type === "role" && t.entity_id === role.id);
+  // Every role's files, one shared request, picked out per role.
+  const { data: roleFiles } = useRoleFiles();
+  const files = (roleFiles ?? []).filter((f) => f.entity_id === role.id);
   return (
     <Stack gap={6}>
       <Group justify="space-between" wrap="nowrap" align="flex-start">
         <div style={{ minWidth: 0 }}>
           <Group gap={6} wrap="nowrap">
-            <Text fw={600} size="sm" truncate="end">
+            <Anchor
+              component={Link}
+              to={`/roles/${role.id}`}
+              fw={600}
+              size="sm"
+              c="var(--mantine-color-text)"
+              truncate="end"
+            >
               {role.title}
-            </Text>
+            </Anchor>
+            {files.length > 0 && (
+              <Tooltip label={files.map((f) => f.original_name).join(", ")}>
+                <Group
+                  gap={2}
+                  wrap="nowrap"
+                  c="dimmed"
+                  fz="xs"
+                  role="img"
+                  aria-label={`${files.length} file${files.length === 1 ? "" : "s"} on ${role.title}`}
+                >
+                  <IconPaperclip size={12} />
+                  {files.length}
+                </Group>
+              </Tooltip>
+            )}
             <Anchor component={Link} to={`/companies/${role.company_id}`} size="sm">
               {role.company_name}
             </Anchor>

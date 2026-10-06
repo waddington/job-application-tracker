@@ -69,9 +69,12 @@ like this.
 ![A recruiter's page: a booked video call with an agenda, a past call with the three roles it brought up, and the roles they've mentioned](docs/screenshots/person.png)
 
 **Roles to decide.** Everything you might go for, before you apply. **Apply** makes the
-application through whoever pitched it; **Pass** keeps your reason.
+application through whoever pitched it; **Pass** keeps your reason. Each role has its own page:
+drop the job description on it and it follows the role onto your application.
 
 ![Roles to decide: two pitched roles with pay, source and Apply or Pass](docs/screenshots/roles.png)
+
+![A role's page: pay and terms, the recruiter and call it came from, notes, to-dos and the job description PDF](docs/screenshots/role.png)
 
 **Timeline of everything.** Every stage move, message, call, interview, offer and note across
 every application, company, agency and person, as a list by day or as lanes against time.
@@ -136,14 +139,14 @@ recruiters send roles that go somewhere.
 | ⚠️ | **Duplicate-submission warning**: know before two agencies put you forward for the same job | ✅ Available |
 | 📝 | **Markdown notes** on applications, companies, agencies and people, plus general notes: real `.md` files you can edit anywhere | ✅ Available |
 | 🔗 | **Links** on applications, companies and agencies: job ads, Google Docs, take-home repos, with icons and default titles | ✅ Available |
-| 📎 | **Files and emails**: drop PDFs, images or exported emails (`.eml`) on an application, company or agency; emails land on the timeline at the time they were sent | ✅ Available |
+| 📎 | **Files and emails**: drop PDFs, images or exported emails (`.eml`) on an application, role, company, agency or person; emails land on the timeline at the time they were sent | ✅ Available |
 | 📄 | **CV and cover-letter versions**: every tailored version with its file, which one each application got, and where each was used | ✅ Available |
 | 💻 | **Interview rounds and coding tasks**: numbered rounds in your own words ("Round 2 · System design test") shown on the board, plus times, interviewers, prep, debrief, questions asked and take-home briefs | ✅ Available |
 | 🏠 | **Overview** (the home page): counts, the pipeline by stage, what needs attention, what's coming up and recent activity; a numbered *How it works* and **New application** on every page | ✅ Available |
 | 🕰️ | **Timeline** across everything: every application, company, agency and person, by day or as lanes against time, filtered by period, category or who it's about | ✅ Available |
 | ⏰ | **Next actions**: offers to answer, who you're waiting on, follow-ups due, roles to decide, interviews, calls and deadlines coming up, rounds and calls waiting for an outcome, and applications gone quiet | ✅ Available |
 | ✅ | **To-dos** in your own words ("they messaged me, reply"), on their own or about a person, company, agency, role or application, with an optional date; see them on Next actions, the Overview and the page they're about, and tick them off (with undo) | ✅ Available |
-| 🤔 | **Roles to decide**: add the roles a recruiter mentions on a call, then apply (it makes the application, through them) or pass with a reason | ✅ Available |
+| 🤔 | **Roles to decide**: add the roles a recruiter mentions on a call, then apply (it makes the application, through them) or pass with a reason; each role has its own page with to-dos, notes, links and files (the job description, which carries over to the application) | ✅ Available |
 | 📞 | **Calls and meetings** with people, outside any one application: book a recruiter catch-up with an agenda, then note how it went; shows on Next actions, the Overview and the Timeline | ✅ Available |
 | 📨 | **Waiting to hear back**: mark that you've replied, on an application or a person, and see who to chase; when they reply, **They've replied** puts it at the top of Next actions until you've read it | ✅ Available |
 | 😴 | **One-click chasing**: set a follow-up reminder, snooze, or mark Ghosted straight from Next actions | ✅ Available |

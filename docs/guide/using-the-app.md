@@ -43,6 +43,7 @@ any. Add them as **roles** first, then decide on each:
   from this call** under a call that happened on the recruiter's page. A role has a company
   (type a new one to add it), a title, who told you about it and on which call, a job ad
   link, location, work mode, pay (salary range, or day rate and IR35 for contracts) and notes.
+  **Job description or other files** attaches files as you add it (a PDF of the job spec).
   **Add and add another** keeps the person and call for the next one.
 - **Apply** makes the application and opens it: through the recruiter's agency if they're at
   one, otherwise directly with them as your contact. Pick the stage (Applied by default) and
@@ -50,6 +51,18 @@ any. Add them as **roles** first, then decide on each:
 - **Pass** keeps the role with your reason ("rate too low"), under *Passed*. **Reconsider**
   puts it back. The pencil edits a role; the bin deletes it (not once you've applied).
 - Deleting a call keeps the roles from it; they just aren't linked to a call any more.
+
+**A role's page.** Click a role's name anywhere (the Roles page, a company, a person, a call,
+Next actions, an application's *Role* card, search, the Timeline) to open its page:
+
+- what it is (pay, terms, location, the job ad), who told you about it and on which call,
+  when you added it, and why you passed if you did; your notes on it;
+- **Apply**, **Pass** or **Reconsider**, **Edit** and **Delete**;
+- the application you made from it, with its stage;
+- **To-dos**, **Notes**, **Links** and **Files** about the role. Drop the job description on
+  **Files**: once you apply, it shows on the application's **Files** card too, under *From
+  the role* (it's the same file, not a copy). A paperclip and count next to a role's name
+  means it has files.
 
 The **Roles** page shows roles *To decide* (the default), *Applied*, *Passed* or *All*. Roles
 to decide also show on Next actions and count towards *Needs attention* on the Overview. On
@@ -181,7 +194,8 @@ Everything about one application:
 - **Documents sent**: which version of your CV and cover letter went with it.
 - **Offer**: pay and terms, and revised offers (see [Offers](#offers)).
 - **Notes**, **Links** (job ads, Google Docs, repos) and **Files** (PDFs, images, exported
-  emails).
+  emails). **Files** also lists the role's files (the job description) under *From the role*;
+  the *Role* card's title opens the [role's page](#roles-to-decide).
 - **People**: who's involved, and as what (agency recruiter, internal recruiter / talent,
   hiring manager, interviewer, referrer, other). Pick someone you already have and **Link
   person**, or **New person** to add someone and link them in one go (they start at the

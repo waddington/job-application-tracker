@@ -64,6 +64,9 @@ is built and merged, but not yet tested in real use. Numbers in brackets are pul
   the Overview and the page they're about; search finds them (#55).
 - **Replies to read**: **They've replied** on an application or a person puts their reply at
   the top of Next actions and the Overview until you press **Read it** (#56).
+- **Role pages and files on roles**: a page per role (details, where it came from, its
+  application, to-dos, notes, links and files). Attach the job description to a role, even as
+  you add it, and it shows on the application once you apply (#57).
 
 ### Under the hood
 - Python 3.12, FastAPI, SQLAlchemy, Alembic and SQLite; React 19, TypeScript, Mantine and

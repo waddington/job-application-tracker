@@ -117,3 +117,15 @@ def test_deleting_the_call_or_person_keeps_the_role(client, seeded):
     assert client.delete(f"/api/v1/contacts/{alex}").status_code == 204
     after = client.get(f"/api/v1/roles/{role['id']}").json()
     assert after["contact_id"] is None and after["meeting_id"] is None
+
+
+def test_a_roles_page(client, seeded):
+    role = seeded["role"]
+    one = client.get(f"/api/v1/role-summaries/{role['id']}")
+    assert one.status_code == 200
+    assert one.json()["company_name"] == "Contoso" and one.json()["status"] == "to_decide"
+    assert client.get("/api/v1/role-summaries/missing").status_code == 404
+    # Search finds roles by title (not by company name) and opens their page.
+    hits = [h for h in client.get("/api/v1/search", params={"q": "senior backend"}).json() if h["kind"] == "role"]
+    assert [(h["link"], h["subtitle"]) for h in hits] == [(f"/roles/{role['id']}", "Contoso")]
+    assert not [h for h in client.get("/api/v1/search", params={"q": "contoso"}).json() if h["kind"] == "role"]

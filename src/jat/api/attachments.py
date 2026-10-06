@@ -68,14 +68,17 @@ def list_attachments(
     entity_id: str | None = None,
     unattached: bool = False,
 ):
-    """Files on one thing (`entity_type` + `entity_id`), `unattached` ones, or all of them, newest first."""
+    """Files on one thing (`entity_type` + `entity_id`), on every thing of one kind (`entity_type`
+    alone, e.g. all roles' files in one request), `unattached` ones, or all of them, newest first."""
     stmt = select(Attachment)
     if unattached:
         stmt = stmt.where(Attachment.entity_type.is_(None))
-    elif (entity_type is None) != (entity_id is None):
-        raise HTTPException(422, "Give both entity_type and entity_id, or neither")
+    elif entity_id is not None and entity_type is None:
+        raise HTTPException(422, "Give entity_type with entity_id")
     elif entity_type:
-        stmt = stmt.where(Attachment.entity_type == entity_type, Attachment.entity_id == entity_id)
+        stmt = stmt.where(Attachment.entity_type == entity_type)
+        if entity_id is not None:
+            stmt = stmt.where(Attachment.entity_id == entity_id)
     return [_out(a) for a in session.scalars(stmt.order_by(Attachment.created_at.desc(), Attachment.id))]
 
 

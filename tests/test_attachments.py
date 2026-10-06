@@ -115,7 +115,24 @@ def test_attachment_validation(client, seeded):
     bad = client.patch(f"/api/v1/attachments/{att['id']}", json={"entity_type": "company", "entity_id": "nope"})
     assert bad.status_code == 422
     assert client.patch(f"/api/v1/attachments/{att['id']}", json={"original_name": "  "}).status_code == 422
-    assert client.get("/api/v1/attachments", params={"entity_type": "company"}).status_code == 422
+    assert client.get("/api/v1/attachments", params={"entity_id": "x"}).status_code == 422
+
+
+def test_files_on_roles(client, seeded):
+    """A job description on a role: listed with the role's files, or every role's in one go."""
+    role = seeded["role"]
+    jd = upload(client, "JD.pdf", PDF, "application/pdf", entity_type="role", entity_id=role["id"]).json()
+    other = post(client, "/api/v1/roles", {"company_id": seeded["company"]["id"], "title": "Platform Engineer"})
+    upload(client, "brief.pdf", PDF, "application/pdf", entity_type="role", entity_id=other["id"])
+    upload(client, "about.pdf", PDF, "application/pdf", entity_type="company", entity_id=seeded["company"]["id"])
+
+    mine = client.get("/api/v1/attachments", params={"entity_type": "role", "entity_id": role["id"]}).json()
+    assert [a["id"] for a in mine] == [jd["id"]]
+    every_role = client.get("/api/v1/attachments", params={"entity_type": "role"}).json()
+    assert sorted(a["original_name"] for a in every_role) == ["JD.pdf", "brief.pdf"]
+    # Search opens a role's file on the role's page.
+    hits = client.get("/api/v1/search", params={"q": "JD"}).json()
+    assert [h["link"] for h in hits if h["title"] == "JD.pdf"] == [f"/roles/{role['id']}"]
 
 
 def test_the_browsers_claimed_type_is_not_trusted(client):

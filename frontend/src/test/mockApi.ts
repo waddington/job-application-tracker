@@ -9,8 +9,10 @@ export function mockApi(routes: Record<string, unknown | Handler>) {
     const request = input instanceof Request ? input : null;
     const url = new URL(request ? request.url : String(input), "http://localhost");
     const method = (request?.method ?? init?.method ?? "GET").toUpperCase();
-    const rawBody = request ? await request.clone().text() : (init?.body as string | undefined);
-    const body = rawBody ? JSON.parse(rawBody) : undefined;
+    const sent = request ? await request.clone().text() : init?.body;
+    // JSON is parsed; anything else (an upload's FormData) is recorded as it was sent.
+    const rawBody = typeof sent === "string" ? sent : undefined;
+    const body = rawBody ? JSON.parse(rawBody) : (sent ?? undefined);
     calls.push({ method, path: url.pathname + url.search, body });
     const key = `${method} ${url.pathname}`;
     const route = routes[key] ?? routes[url.pathname];
