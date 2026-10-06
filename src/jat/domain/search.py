@@ -137,8 +137,8 @@ class Places:
             return f"/companies/{entity_id}"
         if entity_type == "agency":
             return f"/agencies/{entity_id}"
-        if entity_type == "role" and (role := self.roles.get(entity_id)):
-            return f"/companies/{role.company_id}"
+        if entity_type == "role" and entity_id in self.roles:
+            return f"/roles/{entity_id}"
         if entity_type == "interview" and (app_id := self.interviews.get(entity_id)):
             return f"/applications/{app_id}"
         if entity_type == "contact" and entity_id in self.contacts:
@@ -184,6 +184,20 @@ def _companies(session: Session, places: Places) -> Iterator[Candidate]:
         )
     for a in session.scalars(select(Agency)):
         yield Candidate("agency", a.id, a.name, f"/agencies/{a.id}", fields=[a.website or ""], updated=a.updated_at)
+    # Roles, by title and what you noted about them. Their company's name isn't searched here,
+    # or "contoso" would list every Contoso role as well as every application.
+    names = {c.id: c.name for c in session.scalars(select(Company))}
+    for r in places.roles.values():
+        yield Candidate(
+            "role",
+            r.id,
+            r.title,
+            f"/roles/{r.id}",
+            subtitle=names.get(r.company_id),
+            subtitle_searchable=False,
+            fields=[r.location or "", r.description or "", r.decision_reason or ""],
+            updated=r.updated_at,
+        )
 
 
 def _contacts(session: Session, places: Places) -> Iterator[Candidate]:

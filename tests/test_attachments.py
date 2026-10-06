@@ -132,7 +132,7 @@ def test_files_on_roles(client, seeded):
     assert sorted(a["original_name"] for a in every_role) == ["JD.pdf", "brief.pdf"]
     # Search opens a role's file on its company's page.
     hits = client.get("/api/v1/search", params={"q": "JD"}).json()
-    assert [h["link"] for h in hits if h["title"] == "JD.pdf"] == [f"/companies/{seeded['company']['id']}"]
+    assert [h["link"] for h in hits if h["title"] == "JD.pdf"] == [f"/roles/{role['id']}"]
 
 
 def test_the_browsers_claimed_type_is_not_trusted(client):

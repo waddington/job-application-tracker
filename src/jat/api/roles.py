@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -84,6 +84,15 @@ def role_summaries(
     found = summaries(session, *where)
     found.sort(key=lambda r: (r.created_at, r.id))  # ids are time-ordered (UUIDv7): creation order
     return [r for r in found if status is None or r.status == status]
+
+
+@router.get("/role-summaries/{role_id}", response_model=S.RoleSummary)
+def role_summary(role_id: str, session: SessionDep):
+    """One role with where it came from and where it stands, for its page."""
+    found = summaries(session, Role.id == role_id)
+    if not found:
+        raise HTTPException(404, f"Role {role_id} not found")
+    return found[0]
 
 
 def to_decide(session: Session) -> list[S.RoleSummary]:
