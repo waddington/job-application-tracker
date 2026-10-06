@@ -318,7 +318,8 @@ export interface paths {
         };
         /**
          * List Attachments
-         * @description Files on one thing (`entity_type` + `entity_id`), `unattached` ones, or all of them, newest first.
+         * @description Files on one thing (`entity_type` + `entity_id`), on every thing of one kind (`entity_type`
+         *     alone, e.g. all roles' files in one request), `unattached` ones, or all of them, newest first.
          */
         get: operations["list_attachments_api_v1_attachments_get"];
         put?: never;

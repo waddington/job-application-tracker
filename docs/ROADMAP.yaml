@@ -106,3 +106,4 @@ phases:
       - {id: favicon, name: "Favicon: the header's target mark in the browser tab and as a home-screen icon", owner: lead, status: done, estimate_h: 0.5, depends: [home-timeline]}
       - {id: todos, name: "To-dos: your own short reminders, on their own or about a person, company, role or application, in Next actions", owner: lead, status: done, estimate_h: 3, depends: [next-actions, role-decisions], prd: docs/prd/tracker.md}
       - {id: replies, name: "Replies to read: they've replied, read it; on applications and people, at the top of Next actions", owner: lead, status: done, estimate_h: 2, depends: [waiting], prd: docs/prd/tracker.md}
+      - {id: role-files, name: "Files on roles (a job description PDF), shown on the application once you apply", owner: lead, status: building, estimate_h: 2, depends: [role-decisions, attachments], prd: docs/prd/tracker.md}
