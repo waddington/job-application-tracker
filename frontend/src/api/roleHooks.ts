@@ -32,6 +32,16 @@ export function useRoleSummaries(filters: RoleFilters) {
   });
 }
 
+/** One role, for its page. */
+export function useRoleSummary(id: string) {
+  return useQuery({
+    queryKey: ["role-summaries", "one", id],
+    queryFn: async () =>
+      unwrap(await api.GET("/api/v1/role-summaries/{role_id}", { params: { path: { role_id: id } } })),
+    retry: false,
+  });
+}
+
 function useRefreshRoles() {
   const qc = useQueryClient();
   return () => {

@@ -31,7 +31,7 @@ export function useTodos(filters: TodoFilters = {}, enabled = true) {
   });
 }
 
-/** Where a to-do's subject lives in the app (a role opens its company's page). */
+/** Where a to-do's subject lives in the app. */
 export function todoPath(todo: Todo): string | null {
   switch (todo.entity_type) {
     case "application":
@@ -43,7 +43,7 @@ export function todoPath(todo: Todo): string | null {
     case "contact":
       return `/people/${todo.entity_id}`;
     case "role":
-      return todo.company_id ? `/companies/${todo.company_id}` : "/roles";
+      return `/roles/${todo.entity_id}`;
     default:
       return null;
   }

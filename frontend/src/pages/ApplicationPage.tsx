@@ -217,9 +217,9 @@ function RoleCard({ app }: { app: ApplicationDetail }) {
     <Card withBorder>
       <Stack gap={6}>
         <Title order={4}>Role</Title>
-        <Text size="sm" fw={600}>
+        <Anchor component={Link} to={`/roles/${app.role_id}`} size="sm" fw={600}>
           {app.role_title}
-        </Text>
+        </Anchor>
         <Anchor component={Link} to={`/companies/${app.company_id}`} size="sm">
           {app.company_name}
         </Anchor>
@@ -282,7 +282,11 @@ export function ApplicationPage() {
               <OffersCard applicationId={app.id} roleId={app.role_id} />
               <NotesCard entity={`application:${app.id}`} />
               <LinksCard entityType="application" entityId={app.id} />
-              <AttachmentsCard entityType="application" entityId={app.id} />
+              <AttachmentsCard
+                entityType="application"
+                entityId={app.id}
+                inherited={{ entityType: "role", entityId: app.role_id, label: "From the role" }}
+              />
               <Card withBorder>
                 <Stack gap="sm">
                   <Title order={4}>Log activity</Title>

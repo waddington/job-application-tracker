@@ -112,60 +112,105 @@ function AttachmentRow({ att }: { att: AttachmentItem }) {
   );
 }
 
-/** Files on one thing: CVs sent, briefs, screenshots, exported emails. Drop files on the card to add them. */
-export function AttachmentsCard({ entityType, entityId }: { entityType: string; entityId: string }) {
-  const { data: files } = useAttachments(entityType, entityId);
-  const upload = useUploadAttachments(entityType, entityId);
+/** Dropping files on an element uploads them; `dragging` is for an outline while they hover. */
+function useFileDrop(onFiles: (files: File[]) => void) {
   const [dragging, setDragging] = useState(false);
-  const onDrop = (e: DragEvent) => {
-    e.preventDefault();
-    setDragging(false);
-    const dropped = Array.from(e.dataTransfer.files);
-    if (dropped.length) upload.mutate(dropped);
+  const handlers = {
+    onDragOver: (e: DragEvent) => {
+      e.preventDefault();
+      setDragging(true);
+    },
+    onDragLeave: (e: DragEvent<HTMLElement>) => {
+      // Moving over a child fires dragleave too: only stop when the pointer leaves the element.
+      if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setDragging(false);
+    },
+    onDrop: (e: DragEvent) => {
+      e.preventDefault();
+      setDragging(false);
+      const dropped = Array.from(e.dataTransfer.files);
+      if (dropped.length) onFiles(dropped);
+    },
   };
+  const style = dragging
+    ? { outline: "2px dashed var(--mantine-color-blue-5)", outlineOffset: -4 }
+    : undefined;
+  return { handlers, style };
+}
+
+function UploadButton({
+  onFiles,
+  loading,
+  label = "Upload",
+}: {
+  onFiles: (f: File[]) => void;
+  loading: boolean;
+  label?: string;
+}) {
+  return (
+    <FileButton onChange={(picked) => picked.length && onFiles(picked)} multiple>
+      {(props) => (
+        <Button {...props} size="xs" variant="light" leftSection={<IconUpload size={14} />} loading={loading}>
+          {label}
+        </Button>
+      )}
+    </FileButton>
+  );
+}
+
+/**
+ * Files on one thing: CVs sent, briefs, screenshots, exported emails. Drop files on the card to
+ * add them. `inherited` lists another thing's files too (an application shows its role's job
+ * description), under their own heading.
+ */
+export function AttachmentsCard({
+  entityType,
+  entityId,
+  inherited,
+  empty = "Drop files here: the CV you sent, a brief, an exported email. Up to 50 MB each, kept in your data folder.",
+}: {
+  entityType: string;
+  entityId: string;
+  inherited?: { entityType: string; entityId: string; label: string };
+  /** What to say when there are none. */
+  empty?: string;
+}) {
+  const { data: files } = useAttachments(entityType, entityId);
+  const { data: theirs } = useAttachments(
+    inherited?.entityType ?? "",
+    inherited?.entityId ?? "",
+    !!inherited,
+  );
+  const upload = useUploadAttachments(entityType, entityId);
+  const drop = useFileDrop((dropped) => upload.mutate(dropped));
+  const fromThem = inherited ? (theirs ?? []) : [];
 
   return (
-    <Card
-      withBorder
-      onDragOver={(e) => {
-        e.preventDefault();
-        setDragging(true);
-      }}
-      onDragLeave={(e) => {
-        // Moving over a child fires dragleave too: only stop when the pointer leaves the card.
-        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setDragging(false);
-      }}
-      onDrop={onDrop}
-      style={dragging ? { outline: "2px dashed var(--mantine-color-blue-5)", outlineOffset: -4 } : undefined}
-    >
+    <Card withBorder {...drop.handlers} style={drop.style}>
       <Stack gap="sm">
         <Group justify="space-between">
           <Group gap={6}>
             <IconPaperclip size={18} />
             <Title order={4}>Files</Title>
           </Group>
-          <FileButton onChange={(picked) => picked.length && upload.mutate(picked)} multiple>
-            {(props) => (
-              <Button
-                {...props}
-                size="xs"
-                variant="light"
-                leftSection={<IconUpload size={14} />}
-                loading={upload.isPending}
-              >
-                Upload
-              </Button>
-            )}
-          </FileButton>
+          <UploadButton onFiles={(picked) => upload.mutate(picked)} loading={upload.isPending} />
         </Group>
         {(files ?? []).map((att) => (
           <AttachmentRow key={att.id} att={att} />
         ))}
-        {files && !files.length && (
+        {files && !files.length && !fromThem.length && (
           <Text size="sm" c="dimmed">
-            Drop files here: the CV you sent, a brief, an exported email. Up to 50 MB each, kept in your data
-            folder.
+            {empty}
           </Text>
+        )}
+        {fromThem.length > 0 && (
+          <>
+            <Text size="xs" c="dimmed" fw={600} tt="uppercase">
+              {inherited!.label}
+            </Text>
+            {fromThem.map((att) => (
+              <AttachmentRow key={att.id} att={att} />
+            ))}
+          </>
         )}
       </Stack>
     </Card>

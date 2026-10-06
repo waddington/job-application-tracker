@@ -177,9 +177,11 @@ function ListView({ items, now }: { items: TimelineItem[]; now: string }) {
   );
 }
 
-/** Where a dot goes: its application, else the person, company or agency it's about. */
+/** Where a dot goes: its application or role, else the person, company or agency it's about. */
 function hrefOf(item: TimelineItem): string {
   if (item.application_id) return `/applications/${item.application_id}`;
+  const role = /^role(?:-passed)?:(.+)$/.exec(item.id);
+  if (role) return `/roles/${role[1]}`;
   if (item.people[0]) return `/people/${item.people[0].id}`;
   if (item.company_id) return `/companies/${item.company_id}`;
   if (item.agency_id) return `/agencies/${item.agency_id}`;

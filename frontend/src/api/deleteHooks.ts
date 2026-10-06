@@ -47,6 +47,7 @@ export function useDeleteEntity(kind: Deletable, onDeleted?: () => void) {
         ["timeline"],
         ["role-summaries"],
         ["todos"], // its to-dos stay, about nothing now
+        ["attachments"], // and its files, unattached
       ]) {
         void qc.invalidateQueries({ queryKey: key });
       }

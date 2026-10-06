@@ -13,6 +13,7 @@ import {
   IconNotes,
   IconPhone,
   IconSearch,
+  IconTargetArrow,
   IconUser,
   type Icon,
 } from "@tabler/icons-react";
@@ -22,6 +23,7 @@ import { useSearchResults, type SearchHit } from "../api/searchHooks";
 
 const KINDS: Record<string, { label: string; icon: Icon }> = {
   application: { label: "Application", icon: IconBriefcase },
+  role: { label: "Role", icon: IconTargetArrow },
   company: { label: "Company", icon: IconBuilding },
   agency: { label: "Agency", icon: IconBuildingSkyscraper },
   contact: { label: "Person", icon: IconUser },
