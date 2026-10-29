@@ -39,21 +39,36 @@ function byBase(flat: Record<string, string>): Map<string, string[]> {
 const namesIn = (texts: string[]) => new Set(texts.flatMap((t) => [...placeholders(t)]));
 
 export interface Comparison {
-  /** English keys the other language doesn't have (they'll show in English). */
+  /** English keys the other language doesn't have. A test failure: they'd show in English. */
   missing: string[];
   /** Keys English doesn't have: left over from a rename, or a typo. */
   extra: string[];
   /** Translations that drop a value English shows, or use one it doesn't pass. */
   placeholders: { key: string; dropped: string[]; unknown: string[] }[];
+  /** Plural keys missing a form the language needs (Polish needs one, few, many and other). */
+  pluralForms: { key: string; missing: string[] }[];
 }
 
-/** One namespace of another language against English. Plural forms may differ (Polish has
- *  few/many, Chinese only other); a dropped {{count}} is fine where the language says it in
- *  words. */
-export function compare(en: Tree, other: Tree): Comparison {
+const PLURAL_FORM = /_(zero|one|two|few|many|other)$/;
+
+/** The plural forms a language uses: ["one", "few", "many", "other"] for Polish. */
+export const pluralCategories = (lang: string): string[] =>
+  new Intl.PluralRules(lang).resolvedOptions().pluralCategories as string[];
+
+/** One namespace of another language (`lang`) against English. Plural forms may differ, but
+ *  each plural key needs every form `lang` uses (Polish one/few/many/other, Chinese only
+ *  other). A dropped {{count}} is fine where the language says it in words. */
+export function compare(en: Tree, other: Tree, lang: string): Comparison {
   const ours = byBase(flatten(en));
   const theirs = byBase(flatten(other));
-  const result: Comparison = { missing: [], extra: [], placeholders: [] };
+  const result: Comparison = { missing: [], extra: [], placeholders: [], pluralForms: [] };
+  const theirKeys = new Set(Object.keys(flatten(other)));
+  const plurals = new Set(
+    Object.keys(flatten(en))
+      .filter((k) => PLURAL_FORM.test(k))
+      .map(baseKey),
+  );
+  const forms = pluralCategories(lang);
   for (const key of ours.keys()) if (!theirs.has(key)) result.missing.push(key);
   for (const [key, texts] of theirs) {
     const english = ours.get(key);
@@ -66,6 +81,10 @@ export function compare(en: Tree, other: Tree): Comparison {
     const dropped = [...want].filter((n) => n !== "count" && !have.has(n));
     const unknown = [...have].filter((n) => !want.has(n));
     if (dropped.length || unknown.length) result.placeholders.push({ key, dropped, unknown });
+    if (plurals.has(key)) {
+      const missing = forms.filter((f) => !theirKeys.has(`${key}_${f}`));
+      if (missing.length) result.pluralForms.push({ key, missing });
+    }
   }
   return result;
 }

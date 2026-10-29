@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import en from "../locales/en";
-import { baseKey, compare, flatten, placeholders, unusedKeys, usedKeys } from "./catalog";
+import { baseKey, compare, flatten, placeholders, pluralCategories, unusedKeys, usedKeys } from "./catalog";
 import { DEFAULT_NS } from ".";
 
 describe("helpers", () => {
@@ -41,24 +41,67 @@ describe("compare another language with English", () => {
       days_one: "{{count}} dzień",
       days_few: "{{count}} dni",
       days_many: "{{count}} dni",
+      days_other: "{{count}} dnia", // fractions: 1,5 dnia
       nested: { a: "A" },
     };
-    expect(compare(english, polish)).toEqual({ missing: [], extra: [], placeholders: [] });
+    expect(compare(english, polish, "pl")).toEqual({
+      missing: [],
+      extra: [],
+      placeholders: [],
+      pluralForms: [],
+    });
   });
 
   it("lists missing and extra keys", () => {
-    const result = compare(english, { title: "x", greeting: "{{name}}", days_other: "{{count}}", typo: "y" });
+    const result = compare(
+      english,
+      { title: "x", greeting: "{{name}}", days_other: "{{count}}", typo: "y" },
+      "zh",
+    );
     expect(result.missing).toEqual(["nested.a"]);
     expect(result.extra).toEqual(["typo"]);
   });
 
-  it("flags a dropped or invented placeholder, but allows dropping count", () => {
-    const result = compare(english, {
+  it("needs every plural form the language uses", () => {
+    const missingFew = {
       title: "x",
-      greeting: "Cześć", // dropped {{name}}
-      days_other: "一天", // no {{count}}: fine
-      nested: { a: "{{who}}" }, // invented
-    });
+      greeting: "{{name}}",
+      days_one: "1",
+      days_many: "n",
+      nested: { a: "A" },
+    };
+    expect(compare(english, missingFew, "pl").pluralForms).toEqual([
+      { key: "days", missing: ["few", "other"] },
+    ]);
+    // Chinese has one form, so days_other alone is complete.
+    expect(
+      compare(english, { title: "x", greeting: "{{name}}", days_other: "n", nested: { a: "A" } }, "zh")
+        .pluralForms,
+    ).toEqual([]);
+    // English needs one and other.
+    expect(
+      compare(english, { title: "x", greeting: "{{name}}", days_other: "n", nested: { a: "A" } }, "en")
+        .pluralForms,
+    ).toEqual([{ key: "days", missing: ["one"] }]);
+  });
+
+  it("knows each language's plural forms", () => {
+    expect(pluralCategories("en")).toEqual(["one", "other"]);
+    expect(pluralCategories("zh")).toEqual(["other"]);
+    expect(pluralCategories("pl")).toEqual(expect.arrayContaining(["one", "few", "many", "other"]));
+  });
+
+  it("flags a dropped or invented placeholder, but allows dropping count", () => {
+    const result = compare(
+      english,
+      {
+        title: "x",
+        greeting: "Cześć", // dropped {{name}}
+        days_other: "一天", // no {{count}}: fine
+        nested: { a: "{{who}}" }, // invented
+      },
+      "zh",
+    );
     expect(result.placeholders).toEqual([
       { key: "greeting", dropped: ["name"], unknown: [] },
       { key: "nested.a", dropped: [], unknown: ["who"] },
@@ -145,19 +188,32 @@ const sources = import.meta.glob<string>(["../**/*.{ts,tsx}", "!../**/*.test.{ts
 });
 
 describe("the app's text", () => {
-  // Passes trivially until a second language ships JSON files (multi-language).
-  it("has the same keys and placeholders in every language as in English", () => {
+  // Passes trivially until a second language ships JSON files (multi-language). Then a missing
+  // key, namespace or plural form fails the build, rather than quietly showing English.
+  it("has every key, namespace and plural form in every language, and nothing English lacks", () => {
+    const byLanguage = new Map<string, Map<string, Record<string, string>>>();
     for (const [path, tree] of Object.entries(others)) {
-      const ns = path.split("/").pop()!.replace(".json", "") as keyof typeof en;
-      expect(en[ns], `${path}: no English namespace "${ns}"`).toBeDefined();
-      const result = compare(en[ns], tree);
-      if (result.missing.length) console.warn(`${path}: in English only:`, result.missing.join(", "));
-      // Missing keys fall back to English, so only extra keys and broken placeholders fail.
-      expect({ path, extra: result.extra, placeholders: result.placeholders }).toEqual({
-        path,
-        extra: [],
-        placeholders: [],
+      const [lang, file] = path.split("/").slice(-2) as [string, string];
+      byLanguage.set(lang, (byLanguage.get(lang) ?? new Map()).set(file.replace(".json", ""), tree));
+    }
+    for (const [lang, files] of byLanguage) {
+      expect({ lang, namespaces: [...files.keys()].sort() }).toEqual({
+        lang,
+        namespaces: Object.keys(en)
+          .filter((n) => n !== "selftest")
+          .sort(),
       });
+      for (const [ns, tree] of files) {
+        expect(en[ns as keyof typeof en], `${lang}/${ns}.json: no English namespace "${ns}"`).toBeDefined();
+        const result = compare(en[ns as keyof typeof en], tree, lang);
+        expect({ file: `${lang}/${ns}.json`, ...result }).toEqual({
+          file: `${lang}/${ns}.json`,
+          missing: [],
+          extra: [],
+          placeholders: [],
+          pluralForms: [],
+        });
+      }
     }
   });
 

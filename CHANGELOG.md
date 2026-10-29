@@ -14,10 +14,11 @@ Numbers in brackets are pull requests.
     glance card, and How it works.
   - **How it was checked:** every page's text was compared before and after, with no
     differences.
+  - **Developers:** `scripts/i18n/` has that check, for the areas still to come. A language
+    that's missing any key, or a plural form it needs, now fails the tests (#113).
 - **Dates are day, month, year everywhere** ("31 Oct 2026", "30 Oct 2026, 19:25"), whatever
   your browser's language. An American browser used to show "Oct 31, 2026" and a 12-hour clock
-  in some places. Date inputs show "31 Oct 2026" too.
-  - **Developers:** `scripts/i18n/` has that check, for the areas still to come (#113).
+  in some places. Date inputs show "31 Oct 2026" too (#113).
 
 ## 1.1.3 (2026-10-29)
 

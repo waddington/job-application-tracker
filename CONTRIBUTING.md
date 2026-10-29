@@ -139,7 +139,8 @@ keep writing its text as before. Once it has:
 `pnpm --dir frontend test` also:
 - fails on English keys nothing uses;
 - fails on a placeholder with no value, or a key with no text, in any call the tests run;
-- fails if another language has keys English doesn't, or drops a placeholder.
+- fails if another language is missing a key, a namespace or a plural form it needs (Polish
+  needs one, few, many and other), has keys English doesn't, or drops a placeholder.
 
 `src/i18n/types.check.tsx` proves the type checking still works. In `pnpm dev`, `?lang=pseudo`
 shows every string accented and longer, so any text that skipped the layer stands out.
