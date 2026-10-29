@@ -4,7 +4,7 @@ import { IconHelp, IconPlus } from "@tabler/icons-react";
 import { useRouter } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
-import { shadowTrans } from "../i18n/shadow";
+import { shadow, shadowTrans } from "../i18n/shadow";
 import { NewApplicationModal } from "./NewApplicationModal";
 
 /** The text of the sentence below, without its tags. HowItWorks.test.tsx checks it still
@@ -109,12 +109,17 @@ export function HelpButton() {
   const [opened, { open, close }] = useDisclosure();
   return (
     <>
-      <Tooltip label="How it works">
-        <ActionIcon variant="subtle" size="lg" aria-label="How it works" onClick={open}>
+      <Tooltip label={shadow("common:header.help", "How it works")}>
+        <ActionIcon
+          variant="subtle"
+          size="lg"
+          aria-label={shadow("common:header.help", "How it works")}
+          onClick={open}
+        >
           <IconHelp size={18} />
         </ActionIcon>
       </Tooltip>
-      <Modal opened={opened} onClose={close} title="How it works" size="lg">
+      <Modal opened={opened} onClose={close} title={shadow("common:header.help", "How it works")} size="lg">
         <HowItWorks />
       </Modal>
     </>
@@ -137,18 +142,23 @@ export function NewApplicationButton({
         <>
           <Box visibleFrom="sm">
             <Button size={size} leftSection={<IconPlus size={16} />} onClick={open}>
-              New application
+              {shadow("common:header.newApplication", "New application")}
             </Button>
           </Box>
-          <Tooltip label="New application">
-            <ActionIcon hiddenFrom="sm" size="lg" aria-label="New application" onClick={open}>
+          <Tooltip label={shadow("common:header.newApplication", "New application")}>
+            <ActionIcon
+              hiddenFrom="sm"
+              size="lg"
+              aria-label={shadow("common:header.newApplication", "New application")}
+              onClick={open}
+            >
               <IconPlus size={18} />
             </ActionIcon>
           </Tooltip>
         </>
       ) : (
         <Button size={size} leftSection={<IconPlus size={16} />} onClick={open}>
-          New application
+          {shadow("common:header.newApplication", "New application")}
         </Button>
       )}
       <NewApplicationModal

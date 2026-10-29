@@ -4,6 +4,8 @@ import { IconSearch } from "@tabler/icons-react";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 
+import { shadow } from "../i18n/shadow";
+
 /** The search box in the header. Enter opens the results; "/" jumps to it from anywhere. */
 export function HeaderSearch() {
   const navigate = useNavigate();
@@ -31,8 +33,8 @@ export function HeaderSearch() {
     >
       <TextInput
         ref={input}
-        aria-label="Search everything"
-        placeholder="Search everything"
+        aria-label={shadow("common:header.search", "Search everything")}
+        placeholder={shadow("common:header.search", "Search everything")}
         leftSection={<IconSearch size={16} />}
         rightSection={<Kbd size="xs">/</Kbd>}
         value={value}

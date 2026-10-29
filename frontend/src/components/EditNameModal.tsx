@@ -1,6 +1,8 @@
 import { Button, Group, Modal, Stack, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 
+import { shadow } from "../i18n/shadow";
+
 /** Rename a company or agency and set its website. Mount it with a `key` so it starts fresh. */
 export function EditNameModal({
   opened,
@@ -22,11 +24,11 @@ export function EditNameModal({
   const form = useForm({
     initialValues: { name, website: website ?? "" },
     validate: {
-      name: (v) => (v.trim() ? null : "It needs a name"),
+      name: (v) => (v.trim() ? null : shadow("common:editName.needsName", "It needs a name")),
       website: (v) =>
         !v.trim() || /^https?:\/\/[^\s/]+\.[^\s]+$/.test(v.trim())
           ? null
-          : "Like https://contoso.example.com",
+          : shadow("common:editName.websiteExample", "Like https://contoso.example.com"),
     },
   });
   return (
@@ -35,14 +37,22 @@ export function EditNameModal({
         onSubmit={form.onSubmit((v) => onSave({ name: v.name.trim(), website: v.website.trim() || null }))}
       >
         <Stack>
-          <TextInput label="Name" data-autofocus {...form.getInputProps("name")} />
-          <TextInput label="Website" placeholder="https://…" {...form.getInputProps("website")} />
+          <TextInput
+            label={shadow("common:editName.name", "Name")}
+            data-autofocus
+            {...form.getInputProps("name")}
+          />
+          <TextInput
+            label={shadow("common:editName.website", "Website")}
+            placeholder={shadow("common:editName.websitePlaceholder", "https://…")}
+            {...form.getInputProps("website")}
+          />
           <Group justify="flex-end">
             <Button variant="default" onClick={onClose}>
-              Cancel
+              {shadow("common:actions.cancel", "Cancel")}
             </Button>
             <Button type="submit" loading={saving}>
-              Save
+              {shadow("common:actions.save", "Save")}
             </Button>
           </Group>
         </Stack>

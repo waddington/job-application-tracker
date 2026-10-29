@@ -1,6 +1,8 @@
 import { Group, Text, Tooltip } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
 
+import { shadow } from "../i18n/shadow";
+
 interface Health {
   status: string;
   version: string;
@@ -25,13 +27,25 @@ export function ApiStatus() {
   });
 
   const [color, label, detail] = isPending
-    ? ["gray", "Connecting…", "Checking the local API"]
+    ? [
+        "gray",
+        shadow("common:api.connecting", "Connecting…"),
+        shadow("common:api.connectingHint", "Checking the local API"),
+      ]
     : isError || !data
-      ? ["red", "API offline", "Start it with `uv run jat serve`"]
+      ? [
+          "red",
+          shadow("common:api.offline", "API offline"),
+          shadow("common:api.offlineHint", "Start it with `uv run jat serve`"),
+        ]
       : [
           data.git_repo ? "teal" : "yellow",
-          "Connected",
-          `v${data.version} · schema ${data.schema ?? "?"}${data.git_repo ? " · backups on" : " · data dir isn't a git repo"}`,
+          shadow("common:api.connected", "Connected"),
+          shadow(
+            data.git_repo ? "common:api.detailsBackups" : "common:api.detailsNoGit",
+            `v${data.version} · schema ${data.schema ?? "?"}${data.git_repo ? " · backups on" : " · data dir isn't a git repo"}`,
+            { version: String(data.version), schema: data.schema ?? "?" },
+          ),
         ];
 
   return (

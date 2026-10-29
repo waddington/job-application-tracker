@@ -2,6 +2,7 @@ import { ActionIcon, Button, Tooltip } from "@mantine/core";
 import { IconTrash } from "@tabler/icons-react";
 
 import { useDeleteEntity, type Deletable } from "../api/deleteHooks";
+import { shadow } from "../i18n/shadow";
 
 /**
  * Delete an application, company, agency, person or role after a confirmation that says what
@@ -27,7 +28,7 @@ export function DeleteButton({
   compact?: boolean;
 }) {
   const remove = useDeleteEntity(kind, onDeleted);
-  const label = `Delete ${name}`;
+  const label = shadow("common:actions.deleteNamed", `Delete ${name}`, { name });
   const run = () => {
     if (blocked) window.alert(blocked);
     else if (window.confirm(confirm)) remove.mutate(id);
@@ -47,7 +48,7 @@ export function DeleteButton({
       loading={remove.isPending}
       onClick={run}
     >
-      Delete
+      {shadow("common:actions.delete", "Delete")}
     </Button>
   );
 }

@@ -1,7 +1,19 @@
 // Text used across the app (header, menu, footer, shared buttons). Filled in as each area is
 // converted (docs/rfc/i18n.md §15). Keys say what the text is for, not what it says.
 export default {
+  app: {
+    name: "Job Application Tracker",
+    // The wordmark links home; screen readers hear where it goes.
+    homeLabel: "Job Application Tracker: today",
+  },
+  header: {
+    toggleNav: "Toggle navigation",
+    search: "Search everything",
+    help: "How it works",
+    newApplication: "New application",
+  },
   nav: {
+    label: "Main navigation",
     // Menu headings, in menu order (nav.ts NAV_GROUPS).
     groups: {
       today: "Today",
@@ -25,11 +37,61 @@ export default {
       timeline: "Timeline",
     },
   },
+  // One key per state: "dark" and "light" need translating too.
   theme: {
     toDark: "Switch to dark mode",
     toLight: "Switch to light mode",
   },
   footer: {
+    localFirst: "Local-first · your data stays on this machine",
     backup: "Download a backup",
+    backupHint:
+      "Everything in one zip: your data, notes and files. Unzip it and run `jat init` on the folder (it rebuilds everything).",
+  },
+  // The connection dot in the footer (ApiStatus). Commands stay in English.
+  api: {
+    connecting: "Connecting…",
+    connectingHint: "Checking the local API",
+    offline: "API offline",
+    offlineHint: "Start it with `uv run jat serve`",
+    connected: "Connected",
+    detailsBackups: "v{{version}} · schema {{schema}} · backups on",
+    detailsNoGit: "v{{version}} · schema {{schema}} · data dir isn't a git repo",
+  },
+  notFound: {
+    title: "Page not found",
+    body: "There's nothing at this address.",
+    back: "Back to Today",
+  },
+  actions: {
+    cancel: "Cancel",
+    save: "Save",
+    delete: "Delete",
+    deleteNamed: "Delete {{name}}",
+  },
+  // Rename a company or agency (EditNameModal).
+  editName: {
+    name: "Name",
+    website: "Website",
+    websitePlaceholder: "https://…",
+    needsName: "It needs a name",
+    websiteExample: "Like https://contoso.example.com",
+  },
+  // A dropdown that can add what you typed (CreatableSelect).
+  select: {
+    add: '+ Add "{{name}}"',
+  },
+  // Applications that look like the same job (DuplicateWarning).
+  duplicates: {
+    roleAt: "{{role}} at {{company}}",
+    via: "via {{name}}",
+    viaRecruiter: "via a recruiter",
+    byReferral: "by referral",
+    directly: "directly",
+    // {{how}} is one of the via / byReferral / directly texts above.
+    howOn: "{{how}} on {{date}}",
+    now: "now {{stage}}",
+    archived: "archived",
+    similarTitle: "similar title",
   },
 } as const;

@@ -58,19 +58,19 @@ export function Layout() {
               onClick={toggle}
               hiddenFrom="sm"
               size="sm"
-              aria-label="Toggle navigation"
+              aria-label={shadow("common:header.toggleNav", "Toggle navigation")}
             />
             <Anchor
               component={Link}
               to="/"
               underline="never"
               c="inherit"
-              aria-label="Job Application Tracker: today"
+              aria-label={shadow("common:app.homeLabel", "Job Application Tracker: today")}
             >
               <Group gap="xs" wrap="nowrap">
                 <IconTarget size={22} />
                 <Title order={1} size="h4" visibleFrom="xs">
-                  Job Application Tracker
+                  {shadow("common:app.name", "Job Application Tracker")}
                 </Title>
               </Group>
             </Anchor>
@@ -84,7 +84,7 @@ export function Layout() {
         </Group>
       </AppShell.Header>
 
-      <AppShell.Navbar p="xs" aria-label="Main navigation">
+      <AppShell.Navbar p="xs" aria-label={shadow("common:nav.label", "Main navigation")}>
         {NAV_GROUPS.map((group, n) => {
           const items = NAV.filter((item) => item.group === group);
           // A heading that only repeats its one item's name ("Today") says nothing.
@@ -114,9 +114,14 @@ export function Layout() {
         <Stack gap={4} mt="auto" p="xs">
           <ApiStatus />
           <Text size="xs" c="dimmed">
-            Local-first · your data stays on this machine
+            {shadow("common:footer.localFirst", "Local-first · your data stays on this machine")}
           </Text>
-          <Tooltip label="Everything in one zip: your data, notes and files. Unzip it and run `jat init` on the folder (it rebuilds everything).">
+          <Tooltip
+            label={shadow(
+              "common:footer.backupHint",
+              "Everything in one zip: your data, notes and files. Unzip it and run `jat init` on the folder (it rebuilds everything).",
+            )}
+          >
             <Anchor href="/api/v1/backup/archive" download size="xs">
               <Group gap={4} wrap="nowrap">
                 <IconDownload size={12} /> {shadow("common:footer.backup", "Download a backup")}

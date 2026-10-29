@@ -2,18 +2,29 @@ import { Alert, Anchor, List, Text } from "@mantine/core";
 import { IconCopy } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import type { Duplicate } from "../api/client";
+import { shadow } from "../i18n/shadow";
 import { formatDate } from "../utils/time";
 
 function via(d: Duplicate): string {
-  if (d.route === "agency") return `via ${d.agency_name ?? d.recruiter_name ?? "a recruiter"}`;
-  if (d.route === "referral") return "by referral";
-  return "directly";
+  if (d.route === "agency") {
+    const name = d.agency_name ?? d.recruiter_name;
+    return name
+      ? shadow("common:duplicates.via", `via ${name}`, { name })
+      : shadow("common:duplicates.viaRecruiter", "via a recruiter");
+  }
+  if (d.route === "referral") return shadow("common:duplicates.byReferral", "by referral");
+  return shadow("common:duplicates.directly", "directly");
 }
 
 function describe(d: Duplicate): string {
-  const how = d.applied_on ? `${via(d)} on ${formatDate(d.applied_on)}` : via(d);
-  const bits = [how, `now ${d.stage_name}`];
-  if (d.archived) bits.push("archived");
+  const how = d.applied_on
+    ? shadow("common:duplicates.howOn", `${via(d)} on ${formatDate(d.applied_on)}`, {
+        how: via(d),
+        date: formatDate(d.applied_on),
+      })
+    : via(d);
+  const bits = [how, shadow("common:duplicates.now", `now ${d.stage_name}`, { stage: d.stage_name })];
+  if (d.archived) bits.push(shadow("common:duplicates.archived", "archived"));
   return bits.join(" · ");
 }
 
@@ -37,11 +48,16 @@ export function DuplicateWarning({
         {duplicates.map((d) => (
           <List.Item key={d.id}>
             <Anchor component={Link} to={`/applications/${d.id}`} size="sm" onClick={onNavigate}>
-              {d.role_title} at {d.company_name}
+              {shadow("common:duplicates.roleAt", `${d.role_title} at ${d.company_name}`, {
+                role: d.role_title,
+                company: d.company_name,
+              })}
             </Anchor>{" "}
             <Text span size="sm" c="dimmed">
               {describe(d)}
-              {d.match === "similar_title" ? " · similar title" : ""}
+              {d.match === "similar_title"
+                ? ` · ${shadow("common:duplicates.similarTitle", "similar title")}`
+                : ""}
             </Text>
           </List.Item>
         ))}
