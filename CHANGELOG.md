@@ -5,6 +5,16 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.1.3 (2026-10-29)
+
+- Translations, step three: the app's frame now reads its text from the translation files.
+  It's still English and nothing looks different.
+  - **What moved over:** the header, the menu, the footer, the Not found page, and the shared
+    delete button, rename dialog, "+ Add" option and duplicate warning.
+  - **Lint:** hard-coded text in those files is now an error.
+  - **Developers:** `pnpm dev` with `?lang=pseudo` shows them accented, while pages not yet
+    moved stay plain English (#112).
+
 ## 1.1.2 (2026-10-29)
 
 - Translations, step two: a few real strings now go through the translation layer in **shadow
