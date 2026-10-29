@@ -1,6 +1,9 @@
 import "@testing-library/jest-dom/vitest";
 
 import { cleanup } from "@testing-library/react";
+
+// Every component under test reads its text through the app's i18n instance (English).
+import "../i18n";
 import { afterEach } from "vitest";
 
 afterEach(() => cleanup());

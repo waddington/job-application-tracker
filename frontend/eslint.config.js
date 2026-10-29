@@ -17,6 +17,17 @@ const TRANSLATED = [
   "src/components/CreatableSelect.tsx",
   "src/components/DuplicateWarning.tsx",
   "src/pages/NotFound.tsx",
+  // i18n-today
+  "src/pages/TodayPage.tsx",
+  "src/components/Todos.tsx",
+  "src/components/Waiting.tsx",
+  "src/components/ChaseActions.tsx",
+  "src/components/PersonChase.tsx",
+  "src/components/ReplyHabit.tsx",
+  "src/components/GhostMark.tsx",
+  "src/components/OutcomeNotes.tsx",
+  "src/components/HowItWorks.tsx",
+  "src/components/AtAGlance.tsx",
 ];
 
 export default tseslint.config(
@@ -57,6 +68,8 @@ export default tseslint.config(
               "nothingFoundMessage",
             ],
           },
+          // Text with no letters in it (● · —) isn't language; the rest are the plugin's defaults.
+          words: { exclude: ["[^A-Za-z]*", "[0-9!-/:-@[-`{-~]+", "[A-Z_-]+"] },
           // Template strings in JSX too: `Delete ${name}` is text.
           "should-validate-template": true,
           // Strings these take are names, not text: the plugin's defaults, form fields and
@@ -78,6 +91,8 @@ export default tseslint.config(
               "startsWith",
               "getInputProps",
               "useTranslation",
+              // utils/format.ts: their strings are pattern names ("dayMonth").
+              "formatDay",
             ],
           },
         },

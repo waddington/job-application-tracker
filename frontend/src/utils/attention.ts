@@ -5,6 +5,8 @@ import type { WorkflowStage } from "../api/hooks";
 import type { Interview } from "../api/interviewHooks";
 import type { Offer } from "../api/offerHooks";
 import type { Todo } from "../api/todoHooks";
+import { i18n } from "../i18n";
+import { formatDay as format } from "./format";
 
 /**
  * What an application needs, and how long ago things happened, for its "At a glance" card.
@@ -54,45 +56,47 @@ export function daysBetween(from: string, to: string): number {
   return dayjs(to).diff(dayjs(from), "day");
 }
 
-function plural(n: number, unit: string) {
-  return `${n} ${unit}${n === 1 ? "" : "s"}`;
-}
+const t = i18n.t;
 
 /** "today", "yesterday", "5 days ago", "3 weeks ago", "2 months ago". */
 export function since(days: number): string {
-  if (days <= 0) return "today";
-  if (days === 1) return "yesterday";
-  if (days < 14) return `${days} days ago`;
-  if (days < 60) return `${Math.floor(days / 7)} weeks ago`;
-  return `${plural(Math.floor(days / 30), "month")} ago`;
+  if (days <= 0) return t("common:time.today");
+  if (days === 1) return t("common:time.yesterday");
+  if (days < 14) return t("common:time.daysAgo", { count: days });
+  if (days < 60) return t("common:time.weeksAgo", { count: Math.floor(days / 7) });
+  return t("common:time.monthsAgo", { count: Math.floor(days / 30) });
 }
 
 /** "today", "tomorrow", "in 5 days", "in 3 weeks". */
 export function until(days: number): string {
-  if (days <= 0) return "today";
-  if (days === 1) return "tomorrow";
-  if (days < 14) return `in ${days} days`;
-  if (days < 60) return `in ${Math.floor(days / 7)} weeks`;
-  return `in ${plural(Math.floor(days / 30), "month")}`;
+  if (days <= 0) return t("common:time.today");
+  if (days === 1) return t("common:time.tomorrow");
+  if (days < 14) return t("common:time.inDays", { count: days });
+  if (days < 60) return t("common:time.inWeeks", { count: Math.floor(days / 7) });
+  return t("common:time.inMonths", { count: Math.floor(days / 30) });
 }
 
 /** A due date against today: "due today", "overdue by 3 days", "in 2 days". */
 function due(on: string, today: string): { when: string; overdue: boolean } {
   const days = daysBetween(today, on);
-  if (days < 0) return { when: `overdue by ${plural(-days, "day")}`, overdue: true };
-  if (days === 0) return { when: "due today", overdue: false };
+  if (days < 0) return { when: t("common:time.overdueBy", { count: -days }), overdue: true };
+  if (days === 0) return { when: t("common:time.dueToday"), overdue: false };
   return { when: until(days), overdue: false };
 }
 
 /** "for 12 days" (or "since today"). */
 function lasting(fromDay: string, today: string): string {
   const days = daysBetween(fromDay, today);
-  return days <= 0 ? "since today" : `for ${plural(days, "day")}`;
+  return days <= 0 ? t("common:time.sinceToday") : t("common:time.forDays", { count: days });
 }
 
-function formatDay(day: string) {
-  return dayjs(day).format("D MMM YYYY");
-}
+const formatDay = (day: string) => format(day, "dayMonthYear", i18n.language);
+
+const LAST_CONTACT = {
+  call: "today:glance.lastCall",
+  email: "today:glance.lastEmail",
+  message: "today:glance.lastMessage",
+} as const;
 
 export function glance({ app, stage, interviews, offers, todos, today, now }: GlanceInput): Glance {
   const open = app.stage_kind === "active" && !app.archived;
@@ -102,7 +106,7 @@ export function glance({ app, stage, interviews, offers, todos, today, now }: Gl
   if (open && app.reply_to_read_since) {
     attention.push({
       key: "to-read",
-      label: "They've replied: read it",
+      label: t("today:glance.toRead"),
       when: lasting(app.reply_to_read_since, today),
       tone: "red",
     });
@@ -114,12 +118,17 @@ export function glance({ app, stage, interviews, offers, todos, today, now }: Gl
   for (const todo of openTodos.filter((t) => t.due_on)) {
     const dueOn = todo.due_on as string;
     const d = due(dueOn, today);
-    const item = { key: `todo-${todo.id}`, label: `To-do: ${todo.text}`, when: d.when };
+    const item = { key: `todo-${todo.id}`, label: t("today:glance.todo", { text: todo.text }), when: d.when };
     if (dueOn <= today) attention.push({ ...item, tone: d.overdue ? "red" : "orange" });
     else comingUp.push({ ...item, tone: "gray" });
   }
   for (const todo of openTodos.filter((t) => !t.due_on)) {
-    attention.push({ key: `todo-${todo.id}`, label: `To-do: ${todo.text}`, when: "no date", tone: "blue" });
+    attention.push({
+      key: `todo-${todo.id}`,
+      label: t("today:glance.todo", { text: todo.text }),
+      when: t("today:glance.noDate"),
+      tone: "blue",
+    });
   }
 
   if (open) {
@@ -131,7 +140,7 @@ export function glance({ app, stage, interviews, offers, todos, today, now }: Gl
       const d = due(offer.respond_by, today);
       const item = {
         key: "offer",
-        label: `Reply to the offer by ${formatDay(offer.respond_by)}`,
+        label: t("today:glance.replyToOffer", { date: formatDay(offer.respond_by) }),
         when: d.when,
       };
       if (daysBetween(today, offer.respond_by) <= 14)
@@ -145,14 +154,14 @@ export function glance({ app, stage, interviews, offers, todos, today, now }: Gl
       if (!at) {
         comingUp.push({
           key: `round-${round.id}`,
-          label: `${round.label}: not booked yet`,
-          when: "no date",
+          label: t("today:glance.notBooked", { label: round.label }),
+          when: t("today:glance.noDate"),
           tone: "gray",
         });
       } else if (Date.parse(at) < now) {
         attention.push({
           key: `round-${round.id}`,
-          label: `How did ${round.label} go?`,
+          label: t("today:glance.howDidItGo", { label: round.label }),
           when: since(daysBetween(dayOf(at), today)),
           tone: "orange",
         });
@@ -160,7 +169,10 @@ export function glance({ app, stage, interviews, offers, todos, today, now }: Gl
         comingUp.push({
           key: `round-${round.id}`,
           label: round.label,
-          when: `${until(daysBetween(today, dayOf(at)))} · ${dayjs(at).format("D MMM, HH:mm")}`,
+          when: t("today:glance.roundWhen", {
+            until: until(daysBetween(today, dayOf(at))),
+            at: format(at, "dayMonthTime", i18n.language),
+          }),
           tone: "blue",
         });
       }
@@ -173,14 +185,14 @@ export function glance({ app, stage, interviews, offers, todos, today, now }: Gl
       const d = due(app.follow_up_on, today);
       attention.push({
         key: "follow-up",
-        label: "Follow up",
+        label: t("today:glance.followUp"),
         when: d.when,
         tone: d.overdue ? "red" : "orange",
       });
     } else if (app.follow_up_on && app.follow_up_on > today) {
       comingUp.push({
         key: "follow-up",
-        label: `Follow up on ${formatDay(app.follow_up_on)}`,
+        label: t("today:glance.followUpOn", { date: formatDay(app.follow_up_on) }),
         when: until(daysBetween(today, app.follow_up_on)),
         tone: "gray",
       });
@@ -191,9 +203,9 @@ export function glance({ app, stage, interviews, offers, todos, today, now }: Gl
       attention.push({
         key: "stale",
         label: limit
-          ? `Gone quiet (${stage?.name ?? app.stage_name} goes quiet after ${plural(limit, "day")})`
-          : "Gone quiet",
-        when: `no activity for ${plural(app.days_since_activity, "day")}`,
+          ? t("today:glance.goneQuietAfter", { stage: stage?.name ?? app.stage_name, count: limit })
+          : t("today:glance.goneQuiet"),
+        when: t("today:glance.noActivity", { count: app.days_since_activity }),
         tone: "red",
       });
     }
@@ -201,7 +213,7 @@ export function glance({ app, stage, interviews, offers, todos, today, now }: Gl
     if (app.awaiting_reply_since && !followUpDue) {
       attention.push({
         key: "waiting",
-        label: "Waiting to hear back",
+        label: t("today:glance.waiting"),
         when: lasting(app.awaiting_reply_since, today),
         tone: "gray",
       });
@@ -210,7 +222,7 @@ export function glance({ app, stage, interviews, offers, todos, today, now }: Gl
     if (snoozed && app.snoozed_until) {
       comingUp.push({
         key: "snoozed",
-        label: `Snoozed until ${formatDay(app.snoozed_until)}`,
+        label: t("today:glance.snoozedUntil", { date: formatDay(app.snoozed_until) }),
         when: until(daysBetween(today, app.snoozed_until)),
         tone: "gray",
       });
@@ -222,26 +234,26 @@ export function glance({ app, stage, interviews, offers, todos, today, now }: Gl
   const at = (label: string, day: string) =>
     dates.push({ label, day, value: formatDay(day), ago: since(daysBetween(day, today)) });
   const added = app.events.find((e) => e.kind === "stage_change" && e.from_stage === null);
-  at("Added", dayOf(added?.occurred_at ?? app.created_at));
-  if (app.applied_on) at("Applied", app.applied_on);
+  at(t("today:glance.added"), dayOf(added?.occurred_at ?? app.created_at));
+  if (app.applied_on) at(t("today:glance.applied"), app.applied_on);
   // Only what has happened: a call logged ahead of time doesn't count until then.
   const past = app.events
     .filter((e) => Date.parse(e.occurred_at) <= now)
     .sort((a, b) => Date.parse(b.occurred_at) - Date.parse(a.occurred_at));
   const enteredStage = past.find((e) => e.kind === "stage_change" && e.to_stage === app.stage);
-  if (enteredStage) at(`Moved to ${app.stage_name}`, dayOf(enteredStage.occurred_at));
+  if (enteredStage) at(t("today:glance.movedTo", { stage: app.stage_name }), dayOf(enteredStage.occurred_at));
   const contact = past.find((e) => CONTACT_KINDS.has(e.kind));
-  if (contact) at(`Last ${contact.kind}`, dayOf(contact.occurred_at));
+  if (contact) at(t(LAST_CONTACT[contact.kind as keyof typeof LAST_CONTACT]), dayOf(contact.occurred_at));
   const lastRound = interviews
     .filter((r) => r.status === "done" && (r.starts_at ?? r.deadline_at))
     .map((r) => (r.starts_at ?? r.deadline_at) as string)
     .sort()
     .pop();
-  if (lastRound) at("Last interview", dayOf(lastRound));
+  if (lastRound) at(t("today:glance.lastInterview"), dayOf(lastRound));
   // last_activity_at takes the latest of everything, so something logged for later moves it
   // ahead; then the latest event that has happened stands in.
   const lastActivity = Date.parse(app.last_activity_at) <= now ? app.last_activity_at : past[0]?.occurred_at;
-  if (lastActivity) at("Last activity", dayOf(lastActivity));
+  if (lastActivity) at(t("today:glance.lastActivity"), dayOf(lastActivity));
   dates.sort((a, b) => a.day.localeCompare(b.day)); // stable: same-day dates keep this order
 
   return { open, attention, comingUp, dates };
