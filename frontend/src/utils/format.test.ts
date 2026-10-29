@@ -57,24 +57,26 @@ describe("formatDay", () => {
   });
 });
 
-describe("Intl dates keep the browser's own locale in English", () => {
-  it("formatDateTimeLocal = utils/time formatDateTime", () => {
-    expect(formatDateTimeLocal(AT, "en")).toBe(formatDateTime(AT));
+describe("English dates are day, month, year, whatever the browser's locale", () => {
+  // jsdom's own locale is American English, so these would read "Mar 5, 2026" without en-GB.
+  it("a date and time", () => {
+    expect(formatDateTimeLocal(AT, "en")).toBe("5 Mar 2026, 09:07");
+    expect(formatDateTime(AT)).toBe("5 Mar 2026, 09:07");
   });
 
-  it("formatDateLocal = utils/time formatDate, including the dash for no date", () => {
-    expect(formatDateLocal("2026-03-05", "en")).toBe(formatDate("2026-03-05"));
+  it("a day, and the dash for no date", () => {
+    expect(formatDateLocal("2026-10-31", "en")).toBe("31 Oct 2026");
+    expect(formatDate("2026-10-31")).toBe("31 Oct 2026");
     expect(formatDateLocal(null, "en")).toBe("—");
     expect(formatDateLocal(undefined, "en")).toBe("—");
   });
 
-  it("formatShortWeekday = the Interviews list's date", () => {
-    const old = new Date(AT).toLocaleDateString(undefined, {
-      weekday: "short",
-      day: "numeric",
-      month: "short",
-    });
-    expect(formatShortWeekday(AT, "en")).toBe(old);
+  it("the Interviews list's short date", () => {
+    expect(formatShortWeekday(AT, "en")).toBe("Thu 5 Mar");
+  });
+
+  it("an evening time on a 24-hour clock", () => {
+    expect(formatDateTimeLocal("2026-10-30T19:25:00", "en")).toBe("30 Oct 2026, 19:25");
   });
 });
 

@@ -5,6 +5,8 @@ import { useState } from "react";
 import type { ApplicationRow } from "../api/client";
 import { useContacts } from "../api/hooks";
 import { useDeleteInterview, useInterviews, type Interview } from "../api/interviewHooks";
+import { i18n } from "../i18n";
+import { formatShortWeekday } from "../utils/format";
 import { formatDateTime } from "../utils/time";
 import { InterviewFormModal } from "./InterviewFormModal";
 import { RescheduledBadge } from "./Reschedule";
@@ -27,8 +29,7 @@ export function roundStatus(round: RoundLike): { label: string; color: string } 
   );
 }
 
-const shortDate = (iso: string) =>
-  new Date(iso).toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" });
+const shortDate = (iso: string) => formatShortWeekday(iso, i18n.language);
 
 /**
  * The round an application is at ("Round 2 · System design test · Thu 2 Oct"), for cards, rows

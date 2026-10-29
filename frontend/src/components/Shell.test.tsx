@@ -218,13 +218,8 @@ describe("shared pieces", () => {
     const items = await screen.findAllByRole("link", { name: "Backend Engineer at Contoso" });
     expect(items).toHaveLength(6);
     const text = (i: number) => items[i]!.closest("li")!.textContent;
-    // Dates are in the reader's locale, as before (utils/time formatDate).
-    const day = (iso: string) =>
-      new Date(`${iso}T00:00:00`).toLocaleDateString(undefined, {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      });
+    // English dates are day, month, year (utils/time formatDate).
+    const day = (iso: string) => ({ "2026-03-05": "5 Mar 2026", "2026-12-25": "25 Dec 2026" })[iso];
     expect(text(0)).toContain(`via Northwind Talent on ${day("2026-03-05")} · now Applied`);
     expect(text(1)).toContain("via a recruiter · now Screen");
     expect(text(2)).toContain("by referral · now Offer · archived");

@@ -1,4 +1,5 @@
 import { i18n } from "../i18n";
+import { formatDateLocal, formatDateTimeLocal } from "./format";
 
 /** "today", "yesterday", "5 days ago", "3 weeks ago" … */
 export function ago(days: number): string {
@@ -9,21 +10,8 @@ export function ago(days: number): string {
   return i18n.t("common:time.monthsAgo", { count: Math.floor(days / 30) });
 }
 
-export function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString(undefined, {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
+/** "5 Mar 2026, 09:07" in the reader's language. */
+export const formatDateTime = (iso: string): string => formatDateTimeLocal(iso, i18n.language);
 
-export function formatDate(iso: string | null | undefined): string {
-  if (!iso) return "—";
-  return new Date(`${iso}T00:00:00`).toLocaleDateString(undefined, {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
+/** "5 Mar 2026" for a YYYY-MM-DD day, or "—", in the reader's language. */
+export const formatDate = (iso: string | null | undefined): string => formatDateLocal(iso, i18n.language);
