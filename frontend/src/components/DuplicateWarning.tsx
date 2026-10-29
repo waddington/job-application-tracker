@@ -1,30 +1,30 @@
 import { Alert, Anchor, List, Text } from "@mantine/core";
 import { IconCopy } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
 import type { Duplicate } from "../api/client";
-import { shadow } from "../i18n/shadow";
 import { formatDate } from "../utils/time";
 
-function via(d: Duplicate): string {
+type T = ReturnType<typeof useTranslation>["t"];
+
+function via(d: Duplicate, t: T): string {
   if (d.route === "agency") {
     const name = d.agency_name ?? d.recruiter_name;
-    return name
-      ? shadow("common:duplicates.via", `via ${name}`, { name })
-      : shadow("common:duplicates.viaRecruiter", "via a recruiter");
+    return name ? t("duplicates.via", { name }) : t("duplicates.viaRecruiter");
   }
-  if (d.route === "referral") return shadow("common:duplicates.byReferral", "by referral");
-  return shadow("common:duplicates.directly", "directly");
+  if (d.route === "referral") return t("duplicates.byReferral");
+  return t("duplicates.directly");
 }
 
-function describe(d: Duplicate): string {
+function describe(d: Duplicate, t: T): string {
   const how = d.applied_on
-    ? shadow("common:duplicates.howOn", `${via(d)} on ${formatDate(d.applied_on)}`, {
-        how: via(d),
+    ? t("duplicates.howOn", {
+        how: via(d, t),
         date: formatDate(d.applied_on),
       })
-    : via(d);
-  const bits = [how, shadow("common:duplicates.now", `now ${d.stage_name}`, { stage: d.stage_name })];
-  if (d.archived) bits.push(shadow("common:duplicates.archived", "archived"));
+    : via(d, t);
+  const bits = [how, t("duplicates.now", { stage: d.stage_name })];
+  if (d.archived) bits.push(t("duplicates.archived"));
   return bits.join(" · ");
 }
 
@@ -41,6 +41,7 @@ export function DuplicateWarning({
   title: string;
   onNavigate?: () => void;
 }) {
+  const { t } = useTranslation();
   if (!duplicates.length) return null;
   return (
     <Alert color="yellow" variant="light" icon={<IconCopy size={18} />} title={title}>
@@ -48,16 +49,14 @@ export function DuplicateWarning({
         {duplicates.map((d) => (
           <List.Item key={d.id}>
             <Anchor component={Link} to={`/applications/${d.id}`} size="sm" onClick={onNavigate}>
-              {shadow("common:duplicates.roleAt", `${d.role_title} at ${d.company_name}`, {
+              {t("duplicates.roleAt", {
                 role: d.role_title,
                 company: d.company_name,
               })}
             </Anchor>{" "}
             <Text span size="sm" c="dimmed">
-              {describe(d)}
-              {d.match === "similar_title"
-                ? ` · ${shadow("common:duplicates.similarTitle", "similar title")}`
-                : ""}
+              {describe(d, t)}
+              {d.match === "similar_title" ? ` · ${t("duplicates.similarTitle")}` : ""}
             </Text>
           </List.Item>
         ))}

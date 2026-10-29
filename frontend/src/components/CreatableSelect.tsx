@@ -1,7 +1,6 @@
 import { Select, type SelectProps } from "@mantine/core";
 import { useState } from "react";
-
-import { shadow } from "../i18n/shadow";
+import { useTranslation } from "react-i18next";
 
 const NEW = "__new__";
 
@@ -24,13 +23,11 @@ export function CreatableSelect({
   onCreate: (name: string) => Promise<string>;
   creating?: boolean;
 }) {
+  const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const typed = search.trim();
   const exists = items.some((i) => i.label.toLowerCase() === typed.toLowerCase());
-  const data =
-    typed && !exists
-      ? [...items, { value: NEW, label: shadow("common:select.add", `+ Add "${typed}"`, { name: typed }) }]
-      : items;
+  const data = typed && !exists ? [...items, { value: NEW, label: t("select.add", { name: typed }) }] : items;
   return (
     <Select
       {...props}

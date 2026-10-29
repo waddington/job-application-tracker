@@ -76,8 +76,10 @@ export function compare(en: Tree, other: Tree): Comparison {
  * - t("key") / t(`key`) and i18nKey="key" are credited to every namespace the file names in
  *   useTranslation("ns") or useTranslation(["a", "b"]), or the default namespace if none;
  * - <Trans ns="x" i18nKey="key"> is credited to x;
- * - any "ns:key" string with a known namespace counts wherever it is. Typed maps of ids to
- *   keys and calls outside components must be written that way ("today:sources.recruiter").
+ * - any "ns:key" string with a known namespace counts wherever it is (calls outside
+ *   components: i18n.t("today:waiting.title"), shadow keys);
+ * - any other dotted string ("nav.items.today") is credited to the file's namespaces, as for
+ *   t(). That's how typed maps of ids to keys are written: bare, the way t() takes them.
  * Not understood: keyPrefix, and keys built at run time (`stage.${id}`), which the app avoids.
  */
 export function usedKeys(source: string, namespaces: readonly string[], defaultNs: string): Set<string> {
@@ -104,6 +106,7 @@ export function usedKeys(source: string, namespaces: readonly string[], defaultN
   }
   const qualified = new RegExp(`["'\`](${namespaces.join("|")}):([\\w.-]+)["'\`]`, "g");
   for (const m of source.matchAll(qualified)) used.add(`${m[1]}:${baseKey(m[2]!)}`);
+  for (const m of source.matchAll(/["'`]([\w-]+(?:\.[\w-]+)+)["'`]/g)) add(m[1]!, fileNamespaces);
   return used;
 }
 

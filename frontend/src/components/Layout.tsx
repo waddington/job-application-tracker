@@ -17,20 +17,19 @@ import { useDisclosure } from "@mantine/hooks";
 import { IconDownload, IconMoon, IconSun, IconTarget } from "@tabler/icons-react";
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 
-import { shadow } from "../i18n/shadow";
+import { useTranslation } from "react-i18next";
+
 import { NAV, NAV_GROUP_KEYS, NAV_GROUPS } from "../nav";
 import { ApiStatus } from "./ApiStatus";
 import { HeaderSearch } from "./HeaderSearch";
 import { HelpButton, NewApplicationButton } from "./HowItWorks";
 
 function ColorSchemeToggle() {
+  const { t } = useTranslation();
   const { setColorScheme } = useMantineColorScheme();
   const computed = useComputedColorScheme("light", { getInitialValueInEffect: true });
   const next = computed === "dark" ? "light" : "dark";
-  const label = shadow(
-    next === "dark" ? "common:theme.toDark" : "common:theme.toLight",
-    `Switch to ${next} mode`,
-  );
+  const label = next === "dark" ? t("theme.toDark") : t("theme.toLight");
   return (
     <Tooltip label={label}>
       <ActionIcon variant="subtle" size="lg" aria-label={label} onClick={() => setColorScheme(next)}>
@@ -41,6 +40,7 @@ function ColorSchemeToggle() {
 }
 
 export function Layout() {
+  const { t } = useTranslation();
   const [opened, { toggle, close }] = useDisclosure();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
@@ -58,19 +58,13 @@ export function Layout() {
               onClick={toggle}
               hiddenFrom="sm"
               size="sm"
-              aria-label={shadow("common:header.toggleNav", "Toggle navigation")}
+              aria-label={t("header.toggleNav")}
             />
-            <Anchor
-              component={Link}
-              to="/"
-              underline="never"
-              c="inherit"
-              aria-label={shadow("common:app.homeLabel", "Job Application Tracker: today")}
-            >
+            <Anchor component={Link} to="/" underline="never" c="inherit" aria-label={t("app.homeLabel")}>
               <Group gap="xs" wrap="nowrap">
                 <IconTarget size={22} />
                 <Title order={1} size="h4" visibleFrom="xs">
-                  {shadow("common:app.name", "Job Application Tracker")}
+                  {t("app.name")}
                 </Title>
               </Group>
             </Anchor>
@@ -84,7 +78,7 @@ export function Layout() {
         </Group>
       </AppShell.Header>
 
-      <AppShell.Navbar p="xs" aria-label={shadow("common:nav.label", "Main navigation")}>
+      <AppShell.Navbar p="xs" aria-label={t("nav.label")}>
         {NAV_GROUPS.map((group, n) => {
           const items = NAV.filter((item) => item.group === group);
           // A heading that only repeats its one item's name ("Today") says nothing.
@@ -94,7 +88,7 @@ export function Layout() {
               {n > 0 && <Divider my={4} />}
               {heading && (
                 <Text size="xs" fw={600} c="dimmed" tt="uppercase" px="sm" pt={6} pb={2}>
-                  {shadow(NAV_GROUP_KEYS[group], group)}
+                  {t(NAV_GROUP_KEYS[group])}
                 </Text>
               )}
               {items.map((item) => (
@@ -102,7 +96,7 @@ export function Layout() {
                   key={item.path}
                   component={Link}
                   to={item.path}
-                  label={shadow(item.labelKey, item.label)}
+                  label={t(item.labelKey)}
                   leftSection={<item.icon size={18} stroke={1.6} />}
                   active={item.path === "/" ? pathname === "/" : pathname.startsWith(item.path)}
                   onClick={close}
@@ -114,17 +108,12 @@ export function Layout() {
         <Stack gap={4} mt="auto" p="xs">
           <ApiStatus />
           <Text size="xs" c="dimmed">
-            {shadow("common:footer.localFirst", "Local-first · your data stays on this machine")}
+            {t("footer.localFirst")}
           </Text>
-          <Tooltip
-            label={shadow(
-              "common:footer.backupHint",
-              "Everything in one zip: your data, notes and files. Unzip it and run `jat init` on the folder (it rebuilds everything).",
-            )}
-          >
+          <Tooltip label={t("footer.backupHint")}>
             <Anchor href="/api/v1/backup/archive" download size="xs">
               <Group gap={4} wrap="nowrap">
-                <IconDownload size={12} /> {shadow("common:footer.backup", "Download a backup")}
+                <IconDownload size={12} /> {t("footer.backup")}
               </Group>
             </Anchor>
           </Tooltip>

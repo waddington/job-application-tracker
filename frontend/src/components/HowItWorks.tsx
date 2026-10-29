@@ -3,8 +3,9 @@ import { useDisclosure } from "@mantine/hooks";
 import { IconHelp, IconPlus } from "@tabler/icons-react";
 import { useRouter } from "@tanstack/react-router";
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 
-import { shadow, shadowTrans } from "../i18n/shadow";
+import { shadowTrans } from "../i18n/shadow";
 import { NewApplicationModal } from "./NewApplicationModal";
 
 /** The text of the sentence below, without its tags. HowItWorks.test.tsx checks it still
@@ -106,20 +107,16 @@ export function HowItWorks() {
 }
 
 export function HelpButton() {
+  const { t } = useTranslation();
   const [opened, { open, close }] = useDisclosure();
   return (
     <>
-      <Tooltip label={shadow("common:header.help", "How it works")}>
-        <ActionIcon
-          variant="subtle"
-          size="lg"
-          aria-label={shadow("common:header.help", "How it works")}
-          onClick={open}
-        >
+      <Tooltip label={t("header.help")}>
+        <ActionIcon variant="subtle" size="lg" aria-label={t("header.help")} onClick={open}>
           <IconHelp size={18} />
         </ActionIcon>
       </Tooltip>
-      <Modal opened={opened} onClose={close} title={shadow("common:header.help", "How it works")} size="lg">
+      <Modal opened={opened} onClose={close} title={t("header.help")} size="lg">
         <HowItWorks />
       </Modal>
     </>
@@ -134,6 +131,7 @@ export function NewApplicationButton({
   size?: "xs" | "sm" | "md";
   compact?: boolean;
 }) {
+  const { t } = useTranslation();
   const [opened, { open, close }] = useDisclosure();
   const router = useRouter();
   return (
@@ -142,23 +140,18 @@ export function NewApplicationButton({
         <>
           <Box visibleFrom="sm">
             <Button size={size} leftSection={<IconPlus size={16} />} onClick={open}>
-              {shadow("common:header.newApplication", "New application")}
+              {t("header.newApplication")}
             </Button>
           </Box>
-          <Tooltip label={shadow("common:header.newApplication", "New application")}>
-            <ActionIcon
-              hiddenFrom="sm"
-              size="lg"
-              aria-label={shadow("common:header.newApplication", "New application")}
-              onClick={open}
-            >
+          <Tooltip label={t("header.newApplication")}>
+            <ActionIcon hiddenFrom="sm" size="lg" aria-label={t("header.newApplication")} onClick={open}>
               <IconPlus size={18} />
             </ActionIcon>
           </Tooltip>
         </>
       ) : (
         <Button size={size} leftSection={<IconPlus size={16} />} onClick={open}>
-          {shadow("common:header.newApplication", "New application")}
+          {t("header.newApplication")}
         </Button>
       )}
       <NewApplicationModal

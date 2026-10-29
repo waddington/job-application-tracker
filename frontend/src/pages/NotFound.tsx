@@ -1,15 +1,15 @@
 import { Button, Stack, Text, Title } from "@mantine/core";
 import { Link } from "@tanstack/react-router";
-
-import { shadow } from "../i18n/shadow";
+import { useTranslation } from "react-i18next";
 
 export function NotFound() {
+  const { t } = useTranslation();
   return (
     <Stack align="flex-start">
-      <Title order={2}>{shadow("common:notFound.title", "Page not found")}</Title>
-      <Text c="dimmed">{shadow("common:notFound.body", "There's nothing at this address.")}</Text>
+      <Title order={2}>{t("notFound.title")}</Title>
+      <Text c="dimmed">{t("notFound.body")}</Text>
       <Button component={Link} to="/" variant="light">
-        {shadow("common:notFound.back", "Back to Today")}
+        {t("notFound.back")}
       </Button>
     </Stack>
   );

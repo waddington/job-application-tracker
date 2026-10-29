@@ -1,7 +1,6 @@
 import { Button, Group, Modal, Stack, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
-
-import { shadow } from "../i18n/shadow";
+import { useTranslation } from "react-i18next";
 
 /** Rename a company or agency and set its website. Mount it with a `key` so it starts fresh. */
 export function EditNameModal({
@@ -21,14 +20,13 @@ export function EditNameModal({
   saving: boolean;
   onSave: (values: { name: string; website: string | null }) => void;
 }) {
+  const { t } = useTranslation();
   const form = useForm({
     initialValues: { name, website: website ?? "" },
     validate: {
-      name: (v) => (v.trim() ? null : shadow("common:editName.needsName", "It needs a name")),
+      name: (v) => (v.trim() ? null : t("editName.needsName")),
       website: (v) =>
-        !v.trim() || /^https?:\/\/[^\s/]+\.[^\s]+$/.test(v.trim())
-          ? null
-          : shadow("common:editName.websiteExample", "Like https://contoso.example.com"),
+        !v.trim() || /^https?:\/\/[^\s/]+\.[^\s]+$/.test(v.trim()) ? null : t("editName.websiteExample"),
     },
   });
   return (
@@ -37,22 +35,18 @@ export function EditNameModal({
         onSubmit={form.onSubmit((v) => onSave({ name: v.name.trim(), website: v.website.trim() || null }))}
       >
         <Stack>
+          <TextInput label={t("editName.name")} data-autofocus {...form.getInputProps("name")} />
           <TextInput
-            label={shadow("common:editName.name", "Name")}
-            data-autofocus
-            {...form.getInputProps("name")}
-          />
-          <TextInput
-            label={shadow("common:editName.website", "Website")}
-            placeholder={shadow("common:editName.websitePlaceholder", "https://…")}
+            label={t("editName.website")}
+            placeholder={t("editName.websitePlaceholder")}
             {...form.getInputProps("website")}
           />
           <Group justify="flex-end">
             <Button variant="default" onClick={onClose}>
-              {shadow("common:actions.cancel", "Cancel")}
+              {t("actions.cancel")}
             </Button>
             <Button type="submit" loading={saving}>
-              {shadow("common:actions.save", "Save")}
+              {t("actions.save")}
             </Button>
           </Group>
         </Stack>

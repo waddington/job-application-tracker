@@ -85,9 +85,18 @@ describe("usedKeys", () => {
     );
   });
 
-  it("counts namespaced strings anywhere (typed id-to-key maps, i18n.t outside components)", () => {
-    const source = `const LABEL = { a: "today:sources.recruiter" }; i18n.t("common:appName"); "other:x"`;
+  it("counts namespaced strings anywhere (i18n.t outside components, shadow keys)", () => {
+    const source = `i18n.t("today:sources.recruiter"); i18n.t("common:appName"); "other:x"`;
     expect(usedKeys(source, ns, "common")).toEqual(new Set(["today:sources.recruiter", "common:appName"]));
+  });
+
+  it("credits bare dotted strings (typed id-to-key maps) to the file's namespaces", () => {
+    expect(usedKeys(`const KEYS = { Today: "nav.items.today", x: "no-dots" }`, ns, "common")).toEqual(
+      new Set(["common:nav.items.today"]),
+    );
+    expect(usedKeys(`useTranslation("today"); const M = { a: "sources.recruiter" }`, ns, "common")).toEqual(
+      new Set(["today:sources.recruiter"]),
+    );
   });
 
   it("credits unqualified keys to every namespace the file declares", () => {
