@@ -8,7 +8,7 @@ and how to carry on afterwards, so the work continues as if nothing happened.
 After compaction, the session follows [Resuming](#resuming-after-compaction), and
 [Re-expanding](#re-expanding-what-the-summary-dropped) when it needs a detail back.
 
-Sections 3, 4 and 5 are a snapshot (2026-10-25, after PR #92); refresh them before each
+Sections 3, 4 and 5 are a snapshot (2026-10-29, after PR #101); refresh them before each
 compaction in a small docs PR. This repo is public: nothing here may contain Kai's job-search
 data (no real companies, people, salaries or notes).
 
@@ -32,12 +32,20 @@ next action.
   retry. The roadmap is finished; new work comes from Kai's feedback.
 - **Commits.** "commit small and frequently and often". Conventional Commits, one logical unit
   each, push after committing. End every commit message with
-  `Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>` and every PR body with
+  `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>` (the harness's current trailer;
+  older commits say "(1M context)") and every PR body with
   `🤖 Generated with [Claude Code](https://claude.com/claude-code)`.
 - **PRs.** One worktree and PR per task, branch `worktree-<name>`. Claude merges its own PRs
   with `gh pr merge N --merge --delete-branch` after a reviewer pass, fixing every `must_fix`,
   the reasonable `should_fix` and the cheap nits. Docs-only PRs may skip review; a large docs
   change gets a fact-check reviewer. Kai: "merge once ready and update local main".
+- **Approval to merge and release (since #99).** Kai: "dont merge until ive approved" (for the
+  Today page), then "i approve, ship/merge, update local main" and "i approve the release, do
+  it". The auto-mode permission check blocks `gh pr merge` and tag/`gh release create` unless
+  Kai's latest message clearly approves *that* action ("ship that" about a look wasn't
+  enough). For a feature PR Kai is previewing, finish it, then ask for an explicit "merge N";
+  ask separately for the release if it isn't covered. Roadmap-only PRs (#100, #101) merged
+  without asking. Never work around a refusal; ask, and give the `!` command as a fallback.
 - **Branches.** "also delete branches on remote that are no longer needed". After each merge
   only `main` should remain, locally and on GitHub.
 - **PM dashboard.** "keep the PM dashboard up to date, or even backfill items if they were not
@@ -63,6 +71,8 @@ next action.
   every PR: "most are patch unless its new feature then it would be minor. it should be very
   explicit asking me for permission to merge a major bump". The rules are in `CLAUDE.md`
   (*Versions and releases*): bump in each PR, release each version, ask before any major.
+  Released: v1.0.0 (#97) and v1.1.0 (#99, the Today page). Only internal planning files
+  (`docs/ROADMAP.yaml`, `docs/COMPACTION.md`, `docs/IDEAS.md`) skip the bump.
 - **Privacy.** Kai's data never enters this repo. Tests, fixtures, seed data and screenshots use
   fictional names (Contoso, Fabrikam, Litware, Northwind Talent, Northwind Pay, Blue Yonder
   Recruitment, Alex Morgan, Riley Chen, Sam Patel, Jordan Lee…) and example.com. Never act on
@@ -70,12 +80,17 @@ next action.
   check a migration or endpoint is live, e.g. `/api/openapi.json`); never POST, PATCH or
   DELETE against Kai's tracker. Kai's screenshots show real names: never copy them
   into the repo, commits or PRs.
-- **Scope cuts.** No job searching or scraping, no quick-add from URLs, no MCP server, no
-  `.ics` export.
+- **Scope cuts.** No job searching or scraping, no quick-add from URLs, no `.ics` export.
+  The MCP cut is reversed: Kai asked for "mcp or smt so local agents can query the status and
+  perhaps make changes" (roadmap `mcp-server`, #101). Dropped on request: Search Console and
+  Google Analytics ("lets forget search console and GA"), a test CI workflow ("skip the CI
+  tests workflow"), a coined phrase ("forget it"), and a Chinese README for now ("leave it for
+  now", it comes with `multi-language`).
 - **Outward-facing changes** (repo settings, Pages, description, topics, publishing) need Kai's
   yes first. Given so far: the description and topics ("Yes make the chnages"); Pages, the
   repo's Website field and the README link ("merge it, setup github pages, update the repo url
-  to point to the pages").
+  to point to the pages"). **Not given yet:** the description and topics proposed in #96 (see
+  section 5). Kai uploads the social preview by hand (Settings → General → Social preview).
 - **Documents** go in the repo, not artifacts. Deleting anything of Kai's needs confirmation.
 - **No agent-team skill in this repo.** Plain `general-purpose` subagents for reviews and
   fact-checks.
@@ -94,17 +109,23 @@ next action.
   job-search-tracker, job-search-tool, application-tracker, job-applications, job-tracking,
   job-seekers, job-seeker, interview-tracker, offer-comparison, job-offers, recruiter-crm,
   recruiters, self-hosted, local-first). Website field:
-  https://waddington.github.io/job-application-tracker/. Social preview: Kai uploaded
-  `docs/social-preview.png` (indigo; Kai: "its nice to have some variety" vs the paper site).
-  Traffic as of 2026-10-13: 1 star; clone counts are bots and fetches, views ~7 unique.
+  https://waddington.github.io/job-application-tracker/. Social preview:
+  `docs/social-preview.png`, indigo, layout B since #96: "No account. No cloud. / No AI. No
+  tracking." beside the whole-picture Sankey (Kai: the board is what every competitor shows).
+  Rebuilt by `python3 scripts/social_preview/make_card.py [--layout a|b]` from `card.html`
+  (layout A is a checklist). 4 stars as of 2026-10-25. Releases: v1.0.0, v1.1.0.
 - **Website** (`website/`, Astro 7, one landing page, PR #64): published by
   `.github/workflows/website.yml` to GitHub Pages (Source: GitHub Actions) on pushes to main
   touching `website/**`, `docs/screenshots/**`, `docs/social-preview.png`,
   `frontend/public/**` or `llms.txt`. `scripts/sync.mjs` copies the screenshots, social card,
   favicon and `llms.txt` in (git-ignored). Palette **paper** (warm off-white, ink, burnt
   orange); `forest`, `ember`, `indigo` exist, and a switcher plus `?palette=` work in
-  `pnpm --dir website dev` only. Docs links go to the guide on GitHub (no docs section). The
-  footer says "No cookies, no analytics". `pnpm --dir website dev` (localhost:4321, Astro 7
+  `pnpm --dir website dev` only. Docs links go to the guide on GitHub (no docs section). Since
+  #96 the copy speaks to job seekers who aren't developers (no `git clone` in the hero, a "What
+  you'll need" setup, FAQ on being technical, Huntr/Teal, AI, Windows, phone, import), with SEO
+  title "Free Job Application Tracker: private, no sign-up, open source". The footer says
+  "Hosted on GitHub Pages; this site adds no cookies, analytics or trackers".
+  `waddington.github.io/robots.txt` 404s, so the site's own robots.txt has no effect. `pnpm --dir website dev` (localhost:4321, Astro 7
   runs it as a background daemon: `npx astro dev stop` / `status`), `build`, `preview`,
   `format`; `build` runs `astro check`.
 - **Docs.** `docs/guide/` (README, install, your-data, using-the-app, customising, commands,
@@ -115,6 +136,9 @@ next action.
 - **Demo GIF.** `python3 scripts/demo_gif/make_demo_gif.py [--out x.gif] [--hold 150]` renders
   `scripts/demo_gif/scene.html` frames with headless Chrome and builds the GIF with
   ImageMagick (1.5 s per scene, 45 frames, ~2.7 MB). Show Kai a preview before replacing it.
+- **API docs page** `/api/docs` serves Swagger UI from the app (`_api_docs` in `app.py`; the
+  build copies `swagger-ui-dist` into `dist/api-docs/`, and Vite serves them in dev), not a CDN
+  (#96), so nothing is fetched from the web.
 - **Stack.** Python 3.12, uv, FastAPI, SQLAlchemy 2.1, Alembic (migrations 0001–0014) and
   SQLite in `src/jat`. Frontend `frontend/`: Vite 8, React 19, TypeScript 5.9, Mantine 9,
   TanStack Router/Query, dnd-kit, d3-sankey, react-markdown, openapi-fetch.
@@ -133,18 +157,21 @@ next action.
     a frontend-only change needs only `pnpm build` on main and a page refresh. Check it with
     `curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8770/api/v1/health`; if it's down,
     say so and offer to start it as a background job from the main checkout.
-  - PM dashboard: `python3 -m tools.pm` → http://127.0.0.1:8767 (not running; start it if Kai
-    asks).
+  - PM dashboard: `python3 -m tools.pm` → http://127.0.0.1:8767 (`/board`, `/roadmap`; the home
+    page lists only tasks ready to start). Kai asked for it on 2026-10-25 and it runs as a
+    background job of this session from the main checkout; restart it if it's gone.
 - **Commands.**
-  - Backend: `uv run pytest -q`, `uv run ruff check src tests`, `uv run ruff format -q src tests`.
+  - Backend: `uv run pytest -q`, `uv run ruff check src tests scripts`, `uv run ruff format -q src tests`.
   - Frontend: prefix pnpm with `PATH=/home/kai/.nvm/versions/node/v22.23.3/bin:/usr/local/bin:/usr/bin:/bin`;
     `pnpm --dir frontend install --frozen-lockfile --silent` (new worktrees), then
     `typecheck | lint | test | build | format | gen:api`. Run `format` before committing.
   - After API changes: `uv run python -m jat.openapi` then `pnpm --dir frontend gen:api`
     (`tests/test_openapi.py` fails on drift, including docstring changes).
   - Demo: `uv run python scripts/seed_demo.py <new empty dir>` then
-    `uv run jat --data-dir <dir> serve --port 88xx` as a background job (8884 was the last
-    port). Rebuild `frontend/dist` in the worktree first so it serves the branch. TaskStop it
+    `uv run jat --data-dir <dir> serve --port 88xx` as a background job (8886 was the last
+    port). Since #99 the seed fills every section of Today (waiting, overdue in red, a
+    recruiter slower than usual, a favourite, a follow-up due, a call to mark, an unbooked
+    round). Rebuild `frontend/dist` in the worktree first so it serves the branch. TaskStop it
     after merging, and tell Kai the URL if they want to look.
   - Screenshots: Playwright with the system Chrome, from a throwaway env:
     `uv run --with playwright python <script>` with `p.chromium.launch(channel="chrome")`.
@@ -160,8 +187,8 @@ next action.
 
 ### 3. Product map (what exists, so you can find things)
 
-- **Menu** (`frontend/src/nav.ts`, `NAV_GROUPS`): *Today*: Overview `/`, Next actions
-  `/next-actions`. *Your applications*: Roles `/roles`, Applications `/applications`
+- **Menu** (`frontend/src/nav.ts`, `NAV_GROUPS`): *Today* `/` (one item, so its group heading
+  is hidden; `/next-actions` redirects to `/` in `router.tsx`). *Your applications*: Roles `/roles`, Applications `/applications`
   (list/board, `?view=board`), Interviews, Offers. *People and companies*: Recruiters,
   Companies. *Files and notes*: Documents, Notes. *Review*: Insights, Timeline. Detail pages:
   `/applications/$id`, `/roles/$id`, `/companies/$id`, `/agencies/$id`, `/people/$id`,
@@ -169,15 +196,24 @@ next action.
 - **Header** (`components/Layout.tsx`): wordmark → `/`; **New application**; search (`/`);
   **?** How it works (`components/HowItWorks.tsx`); theme toggle. Every date picker rings today
   (#82, theme `classNames` in `theme.ts` + `theme.module.css`).
-- **Overview** (`pages/HomePage.tsx`): stats; pipeline; *Needs attention*; *Coming up*;
-  *Recent activity* (timeline items except `added`, so pitches show).
-- **Next actions** (`pages/NextActionsPage.tsx`, `api/next_actions.py`): replies to read,
-  to-dos, offers to answer, waiting to hear back (people rows: Chased / Ghosted / Not
-  interested; *Usually replies within N working days* and *longer than usual*, also on
-  application rows via their recruiter), how did it go?, follow up, roles to decide, coming
-  up, gone quiet. *How did it go?* (#87/#88, `components/OutcomeNotes.tsx`): a round's **Done**
-  asks for the debrief and questions asked, **Didn't happen** (round or call) for what
-  happened; nothing saves until you confirm; dialogs can't close mid-save.
+- **Today** (`pages/TodayPage.tsx`, `TodayPage.module.css`, `api/next_actions.py`; #99
+  replaced `HomePage.tsx` and `NextActionsPage.tsx`): one line of numbers (active, interviews
+  in two weeks, offers to answer) over a thin pipeline; then three groups (`Bucket`, h3, a
+  count badge labelled "N in <group>"), two columns from `lg` (Your move left):
+  - **Your move**: replies to read, offers to answer, how did it go?, to-dos due today or
+    undated (`TodosSection`, with Add and Done recently), follow up, roles to decide.
+  - **Coming up**: calls, interviews and to-dos dated later, by time, then rounds not booked.
+  - **Waiting on them**: waiting to hear back (people rows: Chased / Ghosted / Not interested;
+    *Usually replies within N working days*, *longer than usual*), gone quiet.
+  Sections are small grey labels (`SectionLabel`, h4, `role="group"` with the title; the hint
+  shows on hover/focus and is read by screen readers). Rows share `Row` (who on the left,
+  stage and status on one line on the right, buttons underneath); each row is a soft tile that
+  darkens under the pointer, with `.actions` at opacity 0.55 until hover/focus-within (always
+  full on `hover: none`). To-dos and roles keep full-strength buttons. Recent activity and How
+  it works fold away at the bottom. Getting started / *No applications yet* as before; it waits
+  for applications only when nothing else shows. *How did it go?* (#87/#88,
+  `components/OutcomeNotes.tsx`): a round's **Done** asks for the debrief and questions asked,
+  **Didn't happen** (round or call) for what happened; nothing saves until you confirm.
 - **Application page and quick view** (`pages/ApplicationPage.tsx`,
   `components/ApplicationDrawer.tsx`): summary, then **At a glance**
   (`components/AtAGlance.tsx`, rules in `utils/attention.ts`, #65). Then details, interviews,
@@ -214,7 +250,7 @@ next action.
     `domain/people.py`, #68).
   - **Ghosts** (#72): `components/GhostMark.tsx` (`GhostMark`, `useGhosted`, `PersonName`) puts
     a ghost before a ghosted person's name across the app (tiles, page icon, application
-    list/board/quick view/People card, company/agency/role pages, calls, Next actions,
+    list/board/quick view/People card, company/agency/role pages, calls, Today,
     Timeline entries and person lanes, search, Insights). Role lines say "(ghosted)". **Not a
     ghost** / **Remove Not interested** on the page, or the × on the tile chip, with Undo
     (`components/PersonChase.tsx`, `useAct`).
@@ -275,75 +311,96 @@ next action.
   `insights/{whole-flow,flow,stats,activity,scorecard,conversations,documents}`, `search`, `backup`
   (+ `/archive`, `/snapshot`, `/push`).
 
-### 4. Current state (snapshot 2026-10-25, after #92)
+### 4. Current state (snapshot 2026-10-29, after #101)
 
-- **main at `2863e6a`** (merge of #92), plus this doc's PR until it merges. No other open PRs,
-  worktrees or remote branches.
-- **Merged since the last snapshot:** #81 compaction doc; #82 today ringed in date pickers;
-  #83 every application starts at Interested (migration 0013); #84 the whole picture + waiting
-  spurs; #85 spurs beside their stage; #86 untangled Sankeys, *Decided not to apply*,
-  outcomes on the right; #87 How did it go? asks for notes; #88 fix: Enter crashed that dialog;
-  #89 Route links; #90 edit and reschedule rounds (migration 0014); #91 a board column per
-  interview round; #92 a role's recruiter carries over to its applications. Roadmap tasks are
-  `done`.
-- **Tests on main:** 350 backend, 146 frontend. The machine is sometimes loaded: frontend
+- **main at `db6bdb8`** (merge of #101), plus this doc's PR until it merges. No other open PRs,
+  worktrees or remote branches. Version **1.1.0**, released as v1.1.0 (tag on `071f7e6`).
+- **Merged since the last snapshot:**
+  - #93 compaction doc; #94 roadmap: Windows support, one-command install, Docker; #95 roadmap:
+    a double-click desktop app and a hosted version with accounts;
+  - #96 marketing refresh: README first screen ("No account. No cloud. No AI. No tracking."),
+    social card B + its script, website copy and SEO for non-developers, `llms.txt`, local
+    Swagger UI, `.env.example` path, board.png retaken wider;
+  - #97 1.0.0 and semver rules in `CLAUDE.md`, released v1.0.0; #98 roadmap: multi-language,
+    Chinese first;
+  - #99 the Today page (1.1.0), released v1.1.0; #100 roadmap: a live demo site with no server;
+    #101 roadmap: `jat mcp`.
+- **Tests on main:** 351 backend, 149 frontend. The machine is sometimes loaded: frontend
   tests that time out in a full run pass when run on their own; rerun those files first.
-- **Kai's tracker** runs in Kai's terminal (answered `200` on 2026-10-25). #90 and #92 changed
-  the backend (#90 adds migration 0014); Kai was told to restart after each. Read-only check:
-  `GET /api/openapi.json` shows `rescheduled_count` on `InterviewOut` once restarted.
-- **Kai's messages since #80, in order:** "Update …/docs/COMPACTION.md to help with claude code
-  compact command" (#81); "how do i start tghis sthing again" (answered: `uv run jat serve` in
-  the main checkout, then http://127.0.0.1:8770); "this calendar view should highlight the
-  current day" (#82); "if i mark a role as applied without marking as interested first, it
-  should automatically have interested label/time just before applied. also backfill" (#83);
-  "first image says ive applied to 10 … second image says ive applied for 13. perhaps we can
-  also create a super-graph … split that up" (#84); "if an item is currently in interested, it
-  should have a spur … deciding whether to apply … waiting to hear back … for all statuses"
-  (#84); "merge and update local main when done"; "nice!"; "the right hand edge … dont all have
-  to align at the very right hand edge … deciding to apply … directly above applied" (#85);
-  "same for the recruiter conversations page, and also … rename passed … it sounds like I
-  passed an interview" (#86); "try and make it so it automatically sorts the spacing out so
-  theres as little overlap as possible / applied --> rejected crosses through interviewing"
-  (#86); "withdrawn could happen after any stage … so perhaps that should be further out to the
-  right" (#86: outcomes back on the right); "when i click … done or didnt happen i should get a
-  modal to add notes" (#87); "merge it once ready and update local main"; "i clicked done … pressed
-  enter and got this" + "i was trying to create a new line not save, it happens with both enter
-  and also shift+enter" (#88); "recruiter name here should be clickable in the application
-  route" (#89); "i should be able to edit an interview from this view so i can reschedule it,
-  also good to mark it as rescheduled" (#90); "merge it once ready and update local main"; "it
-  would be nice to have a column per interview round, but with a toggle" (#91); "i shouldnt be
-  able to skip from applied straight to interviewing round 2 … sequential" (#91); "if i change
-  the recruiter associated with a role, it doesnt update the corresponding application. it
-  should, and it should be recorded that it changed" (#92); then this compaction refresh.
+- **Kai's tracker** runs in Kai's terminal (answered `200` on 2026-10-27). Kai was told to
+  restart after #96 (local API docs) and #99 (Today, version 1.1.0); unconfirmed.
+- **Kai's messages since #92, in order:** compaction refresh (#93); "use agents, I want to
+  review the user-facing marketing side … dont make any changes, just give me an analysis …
+  I want to climb to the top of all GH tags search pages … setup google analytics or search
+  console" (three reviewers, a report); "no tracking" (another selling point); "why would
+  windows not be supported? … update the roadmap, dockerise this … Or does that make it harder
+  for the lay-person?" (#94); "add the double click desktop item for lay-people … also an item
+  for a cloud version that i host with user accounts" (#95); "item 3 loading swagger docs from
+  cdn … work through all the SEO type items … except item 5 … add an item to the roadmap to cut
+  a release after bumping to 1.0.0 … forget search console and GA … skip the CI tests workflow
+  … Dont work on the roadmap stuff yet … preview it before its merged" (#96);
+  '"with automatic git backups." to "with optional automatic git backups."'; "for the new
+  social card, change the screenshot part … all of these competitor tools have a kanban"
+  (Sankey); "lets go with b, then merge it" (#96); "start the dashboard"; "bump to version
+  1.0.0, add claude instructions that each PR should follow semver … very explicit asking me for
+  permission to merge a major bump … then create a release" (#97, v1.0.0); "is it worth having
+  a different language version? e.g. chinese?" then "yes add multi-lang support to the
+  roadmap, near the top" (#98) and "leave it for now" (Chinese README); "should we try and coin
+  a new phrase?" then "forget it"; "a slightly better name … than job application tracker?"
+  (ideas given, no decision); "The overview and next actions page are a bit confused … perhaps
+  rethink these pages" (picked one Today page) then, while building: "dont merge until ive
+  approved", "lots of empty space on the right", "what happened to gone quiet and needs
+  attention", "add data so that all sections appear", "now it looks very busy" (picked a slimmer
+  strip and flat groups), "rows/overflow doesnt look right", "small horizontal lines", "now it
+  looks like a spreadsheet … our most difficult task yet" (three looks, then a fourth), "I like
+  the new one, ship that", "i approve, ship/merge, update local main" (#99), "i approve the
+  release, do it" (v1.1.0); "a demo site deployed somewhere. no backend just the ui … what are
+  your ideas" (#100); "mcp or smt so local agents can query the status and perhaps make
+  changes" (#101); "whats the roadmap URL"; then this compaction refresh.
 
 ### 5. Work in flight and candidates
 
 - **In flight:** none (after this doc's PR merges).
+- **Planned on the roadmap (P7), not started** ("Dont work on the roadmap stuff yet"; build one
+  only when Kai asks): `windows-support`, `multi-language` (Chinese first, with a Chinese
+  README), `packaged-install` (PyPI, `uvx`), `docker-image`, `desktop-app`, `hosted-version`
+  (Kai hosts, with accounts), `demo-site` (GitHub Pages, the real backend in the browser via
+  Pyodide behind a service worker, per-browser changes that reset daily, a Demo banner),
+  `mcp-server` (`jat mcp`, stdio, read-only unless writes are switched on, undoable, no
+  deleting).
 - **Offered, waiting on Kai:**
+  - The GitHub description and topics proposed in #96: description "Self-hosted job
+    application tracker for software engineers. No account, no cloud, no AI, no tracking.
+    Kanban board, recruiter CRM, interview rounds, follow-ups, offer comparison and Sankey
+    insights; your data in readable files on your machine, with optional git backups. A free,
+    open-source Huntr / Teal alternative."; topics: drop `jobhunt`, `job-seekers`, `recruiters`,
+    add `huntr-alternative`, `kanban`, `privacy`.
+  - A short brand name ahead of "a self-hosted job application tracker" (ideas: Pursuit,
+    Offerboard, Shortlist, Followup, Dossier, Waypoint, Jobfolio; availability checks
+    offered). Keep the repo name either way (search, and the Pages URL has no redirect).
+  - The same tile rows on other pages' long lists (Interviews, Offers, Roles, a person's
+    calls), as a separate small PR.
   - Drop *Screen* from the default workflow for everyone (Kai can already remove it from their
     own `config.toml` with the block we gave).
   - Drafts for other places to post (r/Python showcase format, a Show HN); Kai has the
-    r/selfhosted megathread comment. Kai posts; never post on Kai's behalf.
-  - Rebuild `docs/screenshots/demo.gif` from the new screenshots (the whole picture,
+    r/selfhosted megathread comment. Kai posts; never post on Kai's behalf. Growth plan from
+    the #96 analysis: awesome-selfhosted from ~late Feb 2027 (needs a first release 4 months
+    old, and a human-written PR), alternativeto.net, dev.to, Show HN once install is smooth.
+  - Rebuild `docs/screenshots/demo.gif` from the new screenshots (Today, the whole picture,
     Insights tabs incl. CVs, Timeline by role, ghosts, board rounds); show a preview first. Its
     `scripts/demo_gif/scene.html` caption "A Sankey diagram from applied to offer" is stale.
-  - Visitor stats for the website: Google Search Console and/or GoatCounter (footer wording
-    would change). Needs Kai to create the account.
 - **Noticed, not promised:**
-  - No Docker image or compose file (r/selfhosted asks for one); a candidate if Kai wants
-    more self-hosters.
-  - README screenshots don't show ghosts, favourites, reply times or *Interested* yet
-    (`recruiters.png`, `person.png`, `next-actions.png`, `roles.png`); the demo seed has
-    replies but nobody ghosted or starred and no interested roles.
   - Ghost and star still missing in: the Timeline *About* select's people, to-do "about" text
-    on Next actions and the Overview.
+    on Today.
   - Reply times: only weekdays, no bank holidays; waits on people before #73 weren't recorded.
   - CV files: an unticked application stays on offer until it has a CV recorded; files
     attached to applications don't use the "no CV yet" rule.
-  - On phones: Next actions application rows overflow; the header search overlaps the title.
+  - On phones: the header search overlaps the page title (Today's rows wrap properly since
+    #99).
   - The application page's People card ignores a recruiter set through the route.
-  - Overview stats show zeros before the first application; its "roles to decide" line isn't
-    linked.
+  - Today: a to-do on a role shows both on its role line and in Coming up; to-dos dated months
+    ahead still count in Coming up; the numbers line hides when applications fail to load,
+    offers count included.
   - Sankeys: the whole picture can still have a flow brushing a holding node's label (e.g.
     Screen → Withdrawn under *Still interviewing*); `untangle` only reorders columns.
   - Recruiter conversations' stat tiles and table still say *Passed* (only the Sankey says
@@ -351,7 +408,8 @@ next action.
   - Board round columns split only stages named "interview"; a Screen stage with rounds doesn't.
   - Reschedules before #90 have a count but no earlier time; a status change plus a new time
     in one save isn't counted as a reschedule.
-  - `insights.png` was retaken in #86; `insights-stats.png` and `demo.gif` still show older UI.
+  - `insights-stats.png` and `demo.gif` show older UI; `recruiters.png`, `person.png` and
+    `roles.png` don't show ghosts, favourites, reply times or *Interested* yet.
   - Small nits left on purpose: re-passing a role re-stamps `decided_on`; all-day timeline
     items at UTC midnight; `GET /meetings?upcoming` defaults to UTC; timeline "pitched"
     wording even for a referrer.
@@ -366,7 +424,9 @@ next action.
 3. Frontend: hooks (invalidate every query key that shows the data), components, pages,
    tests. Commit and push.
 4. Docs: guide, README row and text, `llms.txt`, changelog with the PR number (`gh pr list
-   --state all --limit 1` + 1), screenshots if visible UI changed. Link check.
+   --state all --limit 1` + 1) under a new `## X.Y.Z (date)` section, screenshots if visible UI
+   changed. Bump the version (CLAUDE.md *Versions and releases*: five files, `uv lock`,
+   `jat.openapi`, `gen:api`). Link check.
 5. Live check: seed demo data, build the branch's frontend, serve on a spare port, drive it
    with Playwright, Read the screenshots (also at 375 px when rows gain buttons).
 6. PR with `--body-file` (what Kai asked, quoted; what changed; checks). Start a background
@@ -378,6 +438,10 @@ next action.
 8. ExitWorktree keep; on main: `git pull -q --ff-only`, `git worktree remove --force …`,
    `git branch -D …`, `git fetch -q --prune`; rebuild the frontend; TaskStop demo servers;
    check the tracker answers; report what's live and whether Kai must restart.
+9. Release: `git tag -a vX.Y.Z <merge sha> -m vX.Y.Z`, `git push origin vX.Y.Z`,
+   `gh release create vX.Y.Z --title vX.Y.Z --notes-file <that changelog section>
+   --verify-tag` (notes extracted with a script into the tmp dir; make relative links
+   absolute). Needs Kai's approval in the current message (section 1).
 
 Several features can be in flight at once (one worktree each): ExitWorktree keep, then
 EnterWorktree the other. Merge main into a branch before its PR when main moved; the usual
@@ -391,7 +455,7 @@ conflict is the last lines of `docs/ROADMAP.yaml` (keep both, in merge order).
 - **Reply states:** `awaiting_reply_since` and `reply_to_read_since` never coexist; a stage
   move clears both. People also have `chased_on`, `closed_as` (`ghosted` |
   `not_interested`) + `closed_on`.
-- **At a glance** follows Next actions' rules for one application; to-dos show even on closed
+- **At a glance** follows Today's rules for one application; to-dos show even on closed
   or archived applications; key dates count only what has happened (`last_activity_at` in the
   future falls back to the latest past event).
 - **Recruiter conversations:** a pitched role is a role with a person; calls held = marked
@@ -413,7 +477,7 @@ conflict is the last lines of `docs/ROADMAP.yaml` (keep both, in merge order).
   employer pension, or day rate × 220.
 - **Interested roles:** a role is *Interested* while every application is in an open stage
   before Applied; Insights' recruiter conversations count those as *still deciding*, and
-  Next actions' *roles to decide* only lists roles with no application.
+  Today's *roles to decide* only lists roles with no application.
 - **Closed roles:** closed before any application got to Applied → *Closed* (badge = how it
   ended), counted as *passed* in Insights (not in time to decide); applied and then
   withdrawn stays *Applied*; logged straight at a closed stage with an applied date counts as
@@ -454,7 +518,18 @@ conflict is the last lines of `docs/ROADMAP.yaml` (keep both, in merge order).
   test with "too few" under 5 each; a CV can't be compared with its own versions.
 - **CV files:** grouped by content (`sha256`); the version gets its own copy; originals never
   touched; role/person files only claim applications without a CV; you tick the applications.
-- **Website:** one landing page, paper palette, docs on GitHub, no analytics.
+- **Website:** one landing page, paper palette, docs on GitHub, no analytics; it speaks to
+  non-developers, the README to developers.
+- **Positioning:** "No account. No cloud. No AI. No tracking." (no "no external dependencies",
+  which isn't true; "plain files" only with the SQLite caveat; git backups are *optional*).
+  The app never calls out to the web (a linked image in a note loads from where it's linked).
+  No new coined phrase. Keep the repo name `job-application-tracker`.
+- **Today:** one home page in place of the Overview and Next actions; three groups (Your move /
+  Coming up / Waiting on them), gone quiet under Waiting on them; the look is "Tiles + faint
+  buttons" (Kai: "Lines is least fav"; "I like the new one, ship that"); no per-row ⋯ menu and
+  no folding long lists (not picked).
+- **Docker vs non-technical users:** Docker is for self-hosters; the lay-person path is the
+  one-command install, Windows support, then a double-click desktop app.
 - **Promotion:** Claude drafts posts; Kai posts them. Posts say it's built with Claude Code.
 - **Search:** every word must match, accent- and case-insensitive.
 
@@ -514,6 +589,19 @@ conflict is the last lines of `docs/ROADMAP.yaml` (keep both, in merge order).
 - **d3-sankey:** a custom `nodeSort` is applied once and kept through relaxation; `undefined`
   lets d3 reorder by position. `nodeAlign` decides columns. Search for orderings outside the
   render path (memo on the flow), not on every resize.
+- **CSS modules: no `light-dark()`.** The build rewrites it to variables the app never sets, so
+  the colour silently vanishes. Use a custom property, overridden under
+  `:where([data-mantine-color-scheme="dark"])` (`theme.module.css`, `TodayPage.module.css`).
+- **Mantine 9 `Grid`** takes `gap`, not `gutter`.
+- **Astro drops the space** between text and an element on the next line; add `{" "}`.
+- **React Query retries a failed request 3 times (~7 s).** A page that waits on a query nobody
+  mocked waits that long in tests (they time out); mock it, or don't block on it.
+- **pnpm 10** ignores `pnpm.ignoredBuiltDependencies` in `package.json`, and already blocks build
+  scripts (e.g. `@scarf/scarf` from `swagger-ui-dist`) by default.
+- **`ruff check src tests` misses `scripts/`**: include `scripts` (a long line in
+  `make_card.py` sat on main from #96 to #99).
+- **The auto-mode permission check** blocks merges and releases without Kai's explicit
+  approval in the current message (section 1). A blocked command ran nothing.
 - **Migrations that read config:** `migrate()` passes `cfg.attributes["data_dir"]`; a
   `config.toml` that doesn't load must stop the migration, never fall back silently (#83).
 - **Data-touching features** (rewriting applications from another edit) get a reviewer told
