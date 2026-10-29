@@ -84,6 +84,46 @@ uv run python -m jat.openapi
 pnpm --dir frontend gen:api
 ```
 
+## Text in the UI (translations)
+
+The app is being made translatable, English only for now; the plan and its order are in
+[`docs/rfc/i18n.md`](docs/rfc/i18n.md). The translation layer is in place but the pages don't
+use it yet: they move over area by area. Until an area has moved, keep writing its text as
+before. Once it has:
+
+- **English lives in `frontend/src/locales/en/<namespace>.ts`**, one file per area, as a
+  nested object with `as const`. Name keys for what the text is for (`waiting.title`), not
+  what it says. Put a comment beside any wording that was chosen on purpose.
+- **In a component:**
+  ```tsx
+  const { t } = useTranslation("today");
+  t("waiting.title");
+  t("waiting.usuallyReplies", { count: days }); // with usuallyReplies_one / _other keys
+  ```
+  **Outside a component:** `i18n.t("today:waiting.title")` from `src/i18n`.
+- **Values** go in `{{placeholders}}`, never glued on with `+` or a template string, so a
+  translation can put them anywhere in the sentence.
+- **Plurals** are `_one` / `_other` keys used with `count`, never `n === 1 ? … : …`.
+- **Markup inside a sentence** uses `<Trans>` with named tags: `"Read <guide>the guide</guide>"`
+  plus `components={{ guide: <a href="…" /> }}`. Don't name a tag after an HTML element that
+  can't hold text (`link`, `img`, `br`, `input`, `meta`): it renders empty.
+- **Dates and numbers** go through `src/utils/format.ts` (`formatDay(at, "dayMonth", lang)`,
+  `formatNumber`), not a fixed `dayjs().format()` or `toLocaleString("en-GB")`. Dates sent to
+  the API stay `YYYY-MM-DD`.
+- **Ids instead of keys built at run time.** Map an id to a key with a typed object rather
+  than `` t(`stages.${id}`) ``, which the type check can't follow.
+- **Your data is never translated:** stage names, companies, notes and the like show as they
+  were typed.
+
+`pnpm --dir frontend typecheck` checks every key, its namespace and its placeholder names.
+`pnpm --dir frontend test` also:
+- fails on English keys nothing uses;
+- fails on a placeholder with no value;
+- fails if another language has keys English doesn't, or drops a placeholder.
+
+`src/i18n/types.check.tsx` proves the type checking still works. In `pnpm dev`, `?lang=pseudo`
+shows every string accented and longer, so any text that skipped the layer stands out.
+
 ## The website
 
 The site at <https://waddington.github.io/job-application-tracker/> lives in `website/`: one
