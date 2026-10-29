@@ -5,6 +5,17 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.1.2 (2026-10-29)
+
+- Translations, step two: a few real strings now go through the translation layer in **shadow
+  mode**. The app still shows its own English, nothing on screen changes, and the results go
+  to the browser console only.
+  - **What's shadowed:** the menu, the theme button, the backup link, Today's group counts and
+    date, reply habits, and one How it works sentence.
+  - **Switching it on in your own tracker:** open it once with `?i18n=shadow`, then use
+    `window.jatI18n.report()` in the console. `?i18n=off` switches it off.
+  - **In tests,** a mismatch fails the test (#111).
+
 ## 1.1.1 (2026-10-29)
 
 - Groundwork for other languages: the app can now be translated, though it's still English

@@ -2,8 +2,9 @@
 // key another language lacks; the frontend does all translating, and the backend only sends
 // codes and ids next to its English (§4).
 //
-// Not used by the app yet: the setup PR (i18n-setup) only builds and tests it. Components will
-// call `useTranslation("<namespace>")` and `t("key", values)`; code outside components uses
+// Loaded at start-up, but pages don't show its text yet: shadow mode (./shadow.ts) only
+// compares it with their own English. As each area is cut over, components call
+// `useTranslation("<namespace>")` and `t("key", values)`; code outside components uses
 // `i18n.t("<namespace>:key")`.
 
 import { createInstance, type i18n as I18n, type Resource } from "i18next";

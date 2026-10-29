@@ -4,7 +4,24 @@ import { IconHelp, IconPlus } from "@tabler/icons-react";
 import { useRouter } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
+import { shadowTrans } from "../i18n/shadow";
 import { NewApplicationModal } from "./NewApplicationModal";
+
+/** The text of the sentence below, without its tags. HowItWorks.test.tsx checks it still
+ *  matches what's rendered, so the two can't drift apart. */
+export const START_FROM_TODAY =
+  "Your move is what to do now (replies to read, follow-ups due, your to-dos), Coming up is what's booked, and Waiting on them is who to chase.";
+
+/** A sentence with bold words in it: shadowed as one <Trans> string (docs/rfc/i18n.md §8). */
+function StartFromToday() {
+  shadowTrans("today:howItWorks.startFromToday", START_FROM_TODAY);
+  return (
+    <>
+      <b>Your move</b> is what to do now (replies to read, follow-ups due, your to-dos), <b>Coming up</b> is
+      what's booked, and <b>Waiting on them</b> is who to chase.
+    </>
+  );
+}
 
 const STEPS: { title: string; body: ReactNode }[] = [
   {
@@ -37,12 +54,7 @@ const STEPS: { title: string; body: ReactNode }[] = [
   },
   {
     title: "Start from Today",
-    body: (
-      <>
-        <b>Your move</b> is what to do now (replies to read, follow-ups due, your to-dos), <b>Coming up</b> is
-        what's booked, and <b>Waiting on them</b> is who to chase.
-      </>
-    ),
+    body: <StartFromToday />,
   },
   {
     title: "Look back",

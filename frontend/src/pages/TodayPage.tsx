@@ -52,6 +52,8 @@ import { ChaseActions } from "../components/ChaseActions";
 import { HowItWorks, NewApplicationButton } from "../components/HowItWorks";
 import { PersonChase, waitingOrChased } from "../components/PersonChase";
 import { StageBadge } from "../components/StageBadge";
+import { shadow, shadowValue } from "../i18n/shadow";
+import { formatDay } from "../utils/format";
 import { ago, formatDate, formatDateTime } from "../utils/time";
 import { useToday } from "../utils/useToday";
 import { TimelineRow } from "./TimelinePage";
@@ -370,7 +372,12 @@ function Bucket({
         <Group gap="xs">
           <Title order={3}>{title}</Title>
           {count > 0 && (
-            <Badge variant="filled" size="lg" circle={count < 10} aria-label={`${count} in ${title}`}>
+            <Badge
+              variant="filled"
+              size="lg"
+              circle={count < 10}
+              aria-label={shadow("today:groupBadge", `${count} in ${title}`, { count, group: title })}
+            >
               {count}
             </Badge>
           )}
@@ -493,7 +500,9 @@ export function TodayPage() {
         <div>
           <Title order={2}>Today</Title>
           <Text c="dimmed" size="sm">
-            {dayjs(today).format("dddd D MMMM")}
+            {shadowValue("format:weekdayDayMonth", dayjs(today).format("dddd D MMMM"), (lng) =>
+              formatDay(today, "weekdayDayMonth", lng),
+            )}
           </Text>
         </div>
       </Group>

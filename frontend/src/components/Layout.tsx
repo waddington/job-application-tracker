@@ -17,7 +17,8 @@ import { useDisclosure } from "@mantine/hooks";
 import { IconDownload, IconMoon, IconSun, IconTarget } from "@tabler/icons-react";
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 
-import { NAV, NAV_GROUPS } from "../nav";
+import { shadow } from "../i18n/shadow";
+import { NAV, NAV_GROUP_KEYS, NAV_GROUPS } from "../nav";
 import { ApiStatus } from "./ApiStatus";
 import { HeaderSearch } from "./HeaderSearch";
 import { HelpButton, NewApplicationButton } from "./HowItWorks";
@@ -26,14 +27,13 @@ function ColorSchemeToggle() {
   const { setColorScheme } = useMantineColorScheme();
   const computed = useComputedColorScheme("light", { getInitialValueInEffect: true });
   const next = computed === "dark" ? "light" : "dark";
+  const label = shadow(
+    next === "dark" ? "common:theme.toDark" : "common:theme.toLight",
+    `Switch to ${next} mode`,
+  );
   return (
-    <Tooltip label={`Switch to ${next} mode`}>
-      <ActionIcon
-        variant="subtle"
-        size="lg"
-        aria-label={`Switch to ${next} mode`}
-        onClick={() => setColorScheme(next)}
-      >
+    <Tooltip label={label}>
+      <ActionIcon variant="subtle" size="lg" aria-label={label} onClick={() => setColorScheme(next)}>
         {computed === "dark" ? <IconSun size={18} /> : <IconMoon size={18} />}
       </ActionIcon>
     </Tooltip>
@@ -94,7 +94,7 @@ export function Layout() {
               {n > 0 && <Divider my={4} />}
               {heading && (
                 <Text size="xs" fw={600} c="dimmed" tt="uppercase" px="sm" pt={6} pb={2}>
-                  {group}
+                  {shadow(NAV_GROUP_KEYS[group], group)}
                 </Text>
               )}
               {items.map((item) => (
@@ -102,7 +102,7 @@ export function Layout() {
                   key={item.path}
                   component={Link}
                   to={item.path}
-                  label={item.label}
+                  label={shadow(item.labelKey, item.label)}
                   leftSection={<item.icon size={18} stroke={1.6} />}
                   active={item.path === "/" ? pathname === "/" : pathname.startsWith(item.path)}
                   onClick={close}
@@ -119,7 +119,7 @@ export function Layout() {
           <Tooltip label="Everything in one zip: your data, notes and files. Unzip it and run `jat init` on the folder (it rebuilds everything).">
             <Anchor href="/api/v1/backup/archive" download size="xs">
               <Group gap={4} wrap="nowrap">
-                <IconDownload size={12} /> Download a backup
+                <IconDownload size={12} /> {shadow("common:footer.backup", "Download a backup")}
               </Group>
             </Anchor>
           </Tooltip>

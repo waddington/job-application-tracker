@@ -5,7 +5,7 @@
 // - numbers stay en-GB ("85,000"), and money keeps its symbol or code ("£85,000", "85,000 CHF").
 // A new language adds its row to PATTERNS and NUMBER_LOCALE (and its dayjs locale import).
 //
-// Not used by the app yet (i18n-setup); pages switch to these as they're converted.
+// Pages switch to these as they're converted; until then only shadow mode calls them.
 // Dates sent to the API stay `YYYY-MM-DD` and don't go through here.
 
 import dayjs, { type ConfigType } from "dayjs";

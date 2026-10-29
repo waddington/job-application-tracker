@@ -1,5 +1,7 @@
 import dayjs from "dayjs";
 
+import { shadow } from "../i18n/shadow";
+
 /** Weekdays after `start`, up to and including `end` (as the server counts them). */
 export function workingDays(start: string, end: string): number {
   let day = dayjs(start);
@@ -28,8 +30,10 @@ export function replyHabit(c: ReplyHabit): string | null {
       ? "Replied once, the same day"
       : `Replied once, in ${wd(c.usual_reply_days)}`;
   return c.usual_reply_days === 0
-    ? "Usually replies the same day"
-    : `Usually replies within ${wd(c.usual_reply_days)}`;
+    ? shadow("people:replies.sameDay", "Usually replies the same day")
+    : shadow("people:replies.within", `Usually replies within ${wd(c.usual_reply_days)}`, {
+        count: c.usual_reply_days,
+      });
 }
 
 /** Working days you've been waiting beyond their usual, or 0 (not waiting, or not late yet). */
