@@ -1,6 +1,7 @@
 import { ActionIcon, Tooltip } from "@mantine/core";
 import { IconGhost2, IconStar, IconStarFilled } from "@tabler/icons-react";
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 
 import type { Contact } from "../api/client";
 import { useContacts } from "../api/hooks";
@@ -8,9 +9,15 @@ import { useSetPersonReply } from "../api/peopleHooks";
 
 /** A ghost just before the name of someone you've marked Ghosted. */
 export function GhostMark({ closedAs, size = 14 }: { closedAs?: string | null; size?: number }) {
+  const { t } = useTranslation("people");
   if (closedAs !== "ghosted") return null;
   return (
-    <span title="Ghosted: no reply" role="img" aria-label="Ghosted" style={{ marginRight: "0.3em" }}>
+    <span
+      title={t("marks.ghostedHint")}
+      role="img"
+      aria-label={t("marks.ghosted")}
+      style={{ marginRight: "0.3em" }}
+    >
       <IconGhost2 size={size} stroke={1.8} style={{ verticalAlign: "-0.12em" }} aria-hidden />
     </span>
   );
@@ -18,9 +25,15 @@ export function GhostMark({ closedAs, size = 14 }: { closedAs?: string | null; s
 
 /** A gold star just before the name of one of your favourites. */
 export function FavouriteMark({ on, size = 14 }: { on?: boolean | null; size?: number }) {
+  const { t } = useTranslation("people");
   if (!on) return null;
   return (
-    <span title="Favourite" role="img" aria-label="Favourite" style={{ marginRight: "0.3em" }}>
+    <span
+      title={t("marks.favourite")}
+      role="img"
+      aria-label={t("marks.favourite")}
+      style={{ marginRight: "0.3em" }}
+    >
       <IconStarFilled
         size={size}
         style={{ verticalAlign: "-0.12em", color: "var(--mantine-color-yellow-7)" }}
@@ -32,15 +45,16 @@ export function FavouriteMark({ on, size = 14 }: { on?: boolean | null; size?: n
 
 /** Star or unstar someone as a favourite. */
 export function FavouriteToggle({ contact, size = "sm" }: { contact: Contact; size?: "sm" | "md" }) {
+  const { t } = useTranslation("people");
   const update = useSetPersonReply();
   const on = Boolean(contact.favourite);
   return (
-    <Tooltip label={on ? "A favourite: click to unstar" : "Mark as a favourite"}>
+    <Tooltip label={on ? t("marks.unstar") : t("marks.star")}>
       <ActionIcon
         variant="subtle"
         color={on ? "yellow" : "gray"}
         size={size}
-        aria-label={`Favourite: ${contact.name}`}
+        aria-label={t("marks.favouriteWho", { name: contact.name })}
         aria-pressed={on}
         loading={update.isPending}
         onClick={() => update.mutate({ id: contact.id, body: { favourite: !on } })}

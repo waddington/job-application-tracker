@@ -68,6 +68,7 @@ export default {
     save: "Save",
     delete: "Delete",
     deleteNamed: "Delete {{name}}",
+    undo: "Undo",
   },
   // Rename a company or agency (EditNameModal).
   editName: {
