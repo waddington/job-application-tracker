@@ -3,7 +3,7 @@
 // if checking ever stops working (a version bump, a broken i18next.d.ts), the expectation
 // itself becomes the error.
 
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 
 import { i18n } from ".";
 
@@ -32,4 +32,14 @@ export function useTypeChecks() {
   t("greting", { name: "Alex" });
   // @ts-expect-error a misspelt placeholder value
   t("greeting", { nam: "Alex" });
+}
+
+export function TransChecks() {
+  return (
+    <>
+      <Trans ns="selftest" i18nKey="linked" components={{ guide: <a href="/guide" /> }} />
+      {/* @ts-expect-error a Trans key that doesn't exist */}
+      <Trans ns="selftest" i18nKey="linkd" components={{ guide: <a href="/guide" /> }} />
+    </>
+  );
 }
