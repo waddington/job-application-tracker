@@ -146,7 +146,7 @@ export function MeetingFormModal({
             />
           </Group>
           <Group grow align="flex-start">
-            <DateTimePicker label="When" valueFormat="D MMM YYYY HH:mm" {...form.getInputProps("startsAt")} />
+            <DateTimePicker label="When" {...form.getInputProps("startsAt")} />
             <div>
               <Text size="sm" fw={500} mb={4}>
                 How

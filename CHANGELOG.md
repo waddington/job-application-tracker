@@ -18,7 +18,8 @@ Numbers in brackets are pull requests.
     that's missing any key, or a plural form it needs, now fails the tests (#113).
 - **Dates are day, month, year everywhere** ("31 Oct 2026", "30 Oct 2026, 19:25"), whatever
   your browser's language. An American browser used to show "Oct 31, 2026" and a 12-hour clock
-  in some places. Date inputs show "31 Oct 2026" too (#113).
+  in some places, and September was sometimes "Sept". Date inputs show "31 Oct 2026", and
+  date-and-time pickers "30 Oct 2026 19:25" (they showed "30/10/2026 19:25") (#113).
 
 ## 1.1.3 (2026-10-29)
 

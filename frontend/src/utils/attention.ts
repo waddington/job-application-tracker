@@ -46,8 +46,6 @@ export interface GlanceInput {
   now: number; // ms since the epoch
 }
 
-const CONTACT_KINDS = new Set(["call", "email", "message"]);
-
 /** The local calendar day of a timestamp or date. */
 const dayOf = (value: string) => dayjs(value).format("YYYY-MM-DD");
 
@@ -242,7 +240,7 @@ export function glance({ app, stage, interviews, offers, todos, today, now }: Gl
     .sort((a, b) => Date.parse(b.occurred_at) - Date.parse(a.occurred_at));
   const enteredStage = past.find((e) => e.kind === "stage_change" && e.to_stage === app.stage);
   if (enteredStage) at(t("today:glance.movedTo", { stage: app.stage_name }), dayOf(enteredStage.occurred_at));
-  const contact = past.find((e) => CONTACT_KINDS.has(e.kind));
+  const contact = past.find((e) => Object.hasOwn(LAST_CONTACT, e.kind));
   if (contact) at(t(LAST_CONTACT[contact.kind as keyof typeof LAST_CONTACT]), dayOf(contact.occurred_at));
   const lastRound = interviews
     .filter((r) => r.status === "done" && (r.starts_at ?? r.deadline_at))

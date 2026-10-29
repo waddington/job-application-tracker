@@ -16,7 +16,7 @@ import { dayjsLocale } from "./utils/format";
 
 export function App({ router = defaultRouter }: { router?: typeof defaultRouter }) {
   // Calendars' month and day names follow the chosen language (its dayjs locale); weeks start
-  // on Monday.
+  // on Monday. TODO(multi-language): the first day of the week per locale (docs/rfc/i18n.md §7).
   const { i18n } = useTranslation();
   const [queryClient] = useState(
     () => new QueryClient({ defaultOptions: { queries: { staleTime: 10_000, refetchOnWindowFocus: true } } }),

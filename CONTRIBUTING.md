@@ -119,7 +119,13 @@ keep writing its text as before. Once it has:
   can't hold text (`link`, `img`, `br`, `input`, `meta`): it renders empty.
 - **Dates, numbers and money** go through `src/utils/format.ts`
   (`formatDay(at, "dayMonth", lang)`, `formatNumber`, `formatMoney`), not a fixed
-  `dayjs().format()` or `toLocaleString("en-GB")`. Dates sent to the API stay `YYYY-MM-DD`.
+  `dayjs().format()` or `toLocale*String()`. Dates sent to the API stay `YYYY-MM-DD`.
+  - English dates are British, whatever the browser's locale: "31 Oct 2026",
+    "30 Oct 2026, 19:25" (24-hour). Every date uses one of the dayjs patterns there, so a month
+    is spelled one way everywhere ("Sep", never Intl's "Sept").
+  - `utils/time.ts` `formatDate` and `formatDateTime` go through it too.
+  - Date inputs and pickers get their `valueFormat` ("D MMM YYYY", "D MMM YYYY HH:mm") from
+    `theme.ts`, so don't pass one.
 - **Ids instead of keys built at run time.** Map an id to a key with a typed object rather
   than `` t(`stages.${id}`) ``, which the type check can't follow. Write the map's keys the
   way that file's `t()` takes them, bare for its own namespace (`"nav.items.today"`, typed

@@ -68,8 +68,10 @@ export default tseslint.config(
               "nothingFoundMessage",
             ],
           },
-          // Text with no letters in it (● · —) isn't language; the rest are the plugin's defaults.
-          words: { exclude: ["[^A-Za-z]*", "[0-9!-/:-@[-`{-~]+", "[A-Z_-]+"] },
+          // Text with no letters in it (● · — and numbers) isn't language, nor are ids in
+          // capitals (the plugin anchors each to the whole string). This replaces the plugin's
+          // own list.
+          words: { exclude: ["[^A-Za-z]*", "[A-Z_-]+"] },
           // Template strings in JSX too: `Delete ${name}` is text.
           "should-validate-template": true,
           // Strings these take are names, not text: the plugin's defaults, form fields and

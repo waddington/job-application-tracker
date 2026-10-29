@@ -1,13 +1,18 @@
 import { MantineProvider } from "@mantine/core";
+import { Notifications } from "@mantine/notifications";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import dayjs from "dayjs";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
-import type { Contact } from "../api/client";
+import type { ApplicationRow, Contact } from "../api/client";
 import type { Interview } from "../api/interviewHooks";
+import { mockApi, row, WORKFLOW } from "../test/mockApi";
+import { ChaseActions } from "./ChaseActions";
+import { HowItWorks } from "./HowItWorks";
 import { InterviewOutcome } from "./OutcomeNotes";
 import { closedLabel, waitingOrChased } from "./PersonChase";
+import { ReplyHabit } from "./ReplyHabit";
 import { dueLabel } from "./Todos";
 import { ApplicationWaiting, repliedLabel, waitingLabel } from "./Waiting";
 
@@ -19,12 +24,18 @@ function wrap(node: React.ReactNode) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <MantineProvider>
+      <Notifications />
       <QueryClientProvider client={qc}>{node}</QueryClientProvider>
     </MantineProvider>,
   );
 }
 
 const daysAgo = (n: number) => dayjs().subtract(n, "day").format("YYYY-MM-DD");
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.restoreAllMocks();
+});
 
 describe("How did it go?", () => {
   const round = {
@@ -117,9 +128,96 @@ describe("where a conversation stands", () => {
 describe("to-do dates", () => {
   const today = "2026-03-05";
   it("overdue, today, tomorrow, or by a date", () => {
-    expect(dueLabel("2026-03-04", today).label).toMatch(/^Overdue · /);
+    expect(dueLabel("2026-03-04", today).label).toBe("Overdue · 4 Mar 2026");
     expect(dueLabel("2026-03-05", today)).toEqual({ label: "Today", color: "orange" });
     expect(dueLabel("2026-03-06", today)).toEqual({ label: "Tomorrow", color: "yellow" });
-    expect(dueLabel("2026-03-20", today).label).toMatch(/^By /);
+    expect(dueLabel("2026-03-20", today).label).toBe("By 20 Mar 2026");
+  });
+});
+
+describe("chasing an application", () => {
+  // A workflow with a Ghosted stage and any-to-any moves, so Mark as Ghosted shows.
+  const workflow = {
+    ...WORKFLOW,
+    transitions: "any",
+    stages: [
+      ...WORKFLOW.stages,
+      { ...WORKFLOW.stages.at(-1)!, id: "ghosted", name: "Ghosted", allowed_next: [] },
+    ],
+  };
+  const app = row({ id: "a1", company_name: "Contoso", stage: "applied" }) as unknown as ApplicationRow;
+
+  it.each([
+    ["Follow up on Contoso", "In 3 days", "Contoso: follow up in 3 days"],
+    ["Follow up on Contoso", "Tomorrow", "Contoso: follow up tomorrow"],
+    ["Snooze Contoso", "1 week", "Contoso: snoozed for 1 week"],
+    ["Snooze Contoso", "2 weeks", "Contoso: snoozed for 2 weeks"],
+  ])("%s → %s says %s", async (button, item, toast) => {
+    mockApi({ "/api/v1/workflow": workflow, "PATCH /api/v1/applications/a1": app });
+    wrap(<ChaseActions row={app} />);
+    fireEvent.click(screen.getByRole("button", { name: button }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: item }));
+    expect(await screen.findByText(toast)).toBeInTheDocument();
+  });
+
+  it("the menus' headings", async () => {
+    mockApi({ "/api/v1/workflow": workflow });
+    wrap(<ChaseActions row={app} />);
+    fireEvent.click(screen.getByRole("button", { name: "Follow up on Contoso" }));
+    expect(await screen.findByText("Remind me to follow up")).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: "Next week", hidden: true })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Snooze Contoso" }));
+    expect(await screen.findByText("Snooze for")).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: "3 days", hidden: true })).toBeInTheDocument();
+  });
+
+  it("asks before marking it Ghosted, naming your stage", async () => {
+    mockApi({ "/api/v1/workflow": workflow });
+    const confirm = vi.spyOn(window, "confirm").mockReturnValue(false);
+    wrap(<ChaseActions row={app} />);
+    fireEvent.click(await screen.findByRole("button", { name: "Mark Contoso as Ghosted" }));
+    expect(confirm).toHaveBeenCalledWith("Mark Contoso as Ghosted? (You can undo it from the application.)");
+  });
+});
+
+describe("a reply habit, and waiting longer than usual", () => {
+  const habit = (late: number) => ({
+    replies: 3,
+    usual_reply_days: 1,
+    // Monday-to-Friday counting: start far enough back for `late` extra working days.
+    awaiting_reply_since: (() => {
+      let d = dayjs();
+      let working = 0;
+      while (working < 1 + late) {
+        d = d.subtract(1, "day");
+        if (d.day() !== 0 && d.day() !== 6) working++;
+      }
+      return d.format("YYYY-MM-DD");
+    })(),
+  });
+
+  it.each([
+    [1, "Usually replies within 1 working day · waiting 1 working day longer than usual"],
+    [3, "Usually replies within 1 working day · waiting 3 working days longer than usual"],
+  ])("%s day(s) late", (late, text) => {
+    const { container } = wrap(<ReplyHabit contact={habit(late)} />);
+    expect(container.querySelector("p")!.textContent).toBe(text);
+  });
+});
+
+describe("How it works", () => {
+  it("reads as one sentence per step, with the names in bold", () => {
+    wrap(<HowItWorks />);
+    const step = (title: string) => screen.getByText(title).nextElementSibling!;
+    expect(step("Start from Today").textContent).toBe(
+      "Your move is what to do now (replies to read, follow-ups due, your to-dos), Coming up is what's booked, and Waiting on them is who to chase.",
+    );
+    expect(within(step("Start from Today") as HTMLElement).getByText("Coming up").tagName).toBe("B");
+    expect(step("Add an application").textContent).toBe(
+      "Press New application (top right, on any page). Type the company and role. If a recruiter brought it to you, choose Through a recruiter and type the agency and their name. Anything new is created for you, so there's no need to set up companies or recruiters first.",
+    );
+    expect(within(step("Add an application") as HTMLElement).getByText("Through a recruiter").tagName).toBe(
+      "I",
+    );
   });
 });

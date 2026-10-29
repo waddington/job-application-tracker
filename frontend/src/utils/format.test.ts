@@ -23,6 +23,7 @@ const TODAY_SHOWS: Record<DatePattern, [string, string]> = {
   shortWeekdayDayMonthYear: ["ddd D MMM YYYY", "Thu 5 Mar 2026"],
   dayMonth: ["D MMM", "5 Mar"],
   dayMonthYear: ["D MMM YYYY", "5 Mar 2026"],
+  dayMonthYearTime: ["D MMM YYYY, HH:mm", "5 Mar 2026, 09:07"],
   monthYear: ["MMM YYYY", "Mar 2026"],
   dayMonthTime: ["D MMM, HH:mm", "5 Mar, 09:07"],
   time: ["HH:mm", "09:07"],
@@ -73,6 +74,13 @@ describe("English dates are day, month, year, whatever the browser's locale", ()
 
   it("the Interviews list's short date", () => {
     expect(formatShortWeekday(AT, "en")).toBe("Thu 5 Mar");
+  });
+
+  it("writes September as Sep everywhere (Intl's en-GB would say Sept)", () => {
+    expect(formatDateLocal("2026-09-05", "en")).toBe("5 Sep 2026");
+    expect(formatDateTimeLocal("2026-09-05T09:07:00", "en")).toBe("5 Sep 2026, 09:07");
+    expect(formatShortWeekday("2026-09-05T09:07:00", "en")).toBe("Sat 5 Sep");
+    expect(formatDay("2026-09-05", "dayMonthYear", "en")).toBe("5 Sep 2026");
   });
 
   it("an evening time on a 24-hour clock", () => {
