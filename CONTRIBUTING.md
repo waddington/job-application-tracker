@@ -103,22 +103,25 @@ before. Once it has:
   **Outside a component:** `i18n.t("today:waiting.title")` from `src/i18n`.
 - **Values** go in `{{placeholders}}`, never glued on with `+` or a template string, so a
   translation can put them anywhere in the sentence.
-- **Plurals** are `_one` / `_other` keys used with `count`, never `n === 1 ? … : …`.
+- **Plurals** are `_one` / `_other` keys used with `count`, never `n === 1 ? … : …`. So no
+  other key may end in `_one`, `_other`, `_few` and the like.
 - **Markup inside a sentence** uses `<Trans>` with named tags: `"Read <guide>the guide</guide>"`
   plus `components={{ guide: <a href="…" /> }}`. Don't name a tag after an HTML element that
   can't hold text (`link`, `img`, `br`, `input`, `meta`): it renders empty.
-- **Dates and numbers** go through `src/utils/format.ts` (`formatDay(at, "dayMonth", lang)`,
-  `formatNumber`), not a fixed `dayjs().format()` or `toLocaleString("en-GB")`. Dates sent to
-  the API stay `YYYY-MM-DD`.
+- **Dates, numbers and money** go through `src/utils/format.ts`
+  (`formatDay(at, "dayMonth", lang)`, `formatNumber`, `formatMoney`), not a fixed
+  `dayjs().format()` or `toLocaleString("en-GB")`. Dates sent to the API stay `YYYY-MM-DD`.
 - **Ids instead of keys built at run time.** Map an id to a key with a typed object rather
-  than `` t(`stages.${id}`) ``, which the type check can't follow.
+  than `` t(`stages.${id}`) ``, which the type check can't follow. Write the map's keys with
+  their namespace (`"insights:sources.recruiter"`), so the unused-key test sees them. Don't
+  use `keyPrefix`.
 - **Your data is never translated:** stage names, companies, notes and the like show as they
   were typed.
 
 `pnpm --dir frontend typecheck` checks every key, its namespace and its placeholder names.
 `pnpm --dir frontend test` also:
 - fails on English keys nothing uses;
-- fails on a placeholder with no value;
+- fails on a placeholder with no value, or a key with no text, in any call the tests run;
 - fails if another language has keys English doesn't, or drops a placeholder.
 
 `src/i18n/types.check.tsx` proves the type checking still works. In `pnpm dev`, `?lang=pseudo`

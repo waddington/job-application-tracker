@@ -1,9 +1,9 @@
 import { render, screen } from "@testing-library/react";
-import { I18nextProvider, Trans, useTranslation } from "react-i18next";
+import { getI18n, I18nextProvider, Trans, useTranslation } from "react-i18next";
 import { describe, expect, it } from "vitest";
 
-import { createI18n, i18n, MissingValueError } from ".";
-import { pickLanguage, PSEUDO } from "./language";
+import { createI18n, i18n, isStrict, MissingKeyError, MissingValueError } from ".";
+import { pickLanguage, PSEUDO, PSEUDO_ALIAS } from "./language";
 import { pseudo, pseudoTree } from "./pseudo";
 
 // Test-only text in three languages with different plural rules: English (one / other), Polish
@@ -18,6 +18,8 @@ const FIXTURE = {
       days_one: "{{count}} day",
       days_other: "{{count}} days",
       onlyEnglish: "Only in English",
+      weeks_one: "{{count}} week",
+      weeks_other: "{{count}} weeks",
       linked: "Read <guide>the guide</guide> first",
     },
   },
@@ -95,9 +97,17 @@ describe("fallback", () => {
     expect(make("fr").t("fx:plain")).toBe("Hello");
   });
 
-  it("uses English plural forms when the language lacks the key", () => {
+  it("fills in values in English text when the language lacks the key", () => {
     // zh has no greeting: English's text, with the value filled in.
     expect(make("zh").t("fx:greeting", { name: "Jordan" })).toBe("Hello Jordan");
+  });
+
+  it("uses English's plural forms when the language lacks a plural key", () => {
+    // pl has no weeks: English's one/other, never a missing "few".
+    const { t } = make("pl");
+    expect(t("fx:weeks", { count: 1 })).toBe("1 week");
+    expect(t("fx:weeks", { count: 2 })).toBe("2 weeks");
+    expect(t("fx:weeks", { count: 5 })).toBe("5 weeks");
   });
 });
 
@@ -105,12 +115,22 @@ describe("a placeholder with no value", () => {
   it("throws when strict (tests and dev)", () => {
     const { t } = make("en", true);
     expect(() => t("fx:greeting")).toThrow(MissingValueError);
-    expect(() => t("fx:greeting")).toThrow('No value for {{name}} in "Hello {{name}}"');
+    expect(() => t("fx:greeting")).toThrow("No value for {{name}}");
   });
 
-  it("doesn't throw in a production build", () => {
+  it("names only the placeholder, not the text (which may hold other values)", () => {
+    const instance = createI18n({
+      lng: "en",
+      strict: true,
+      resources: { en: { fx: { pair: "{{who}} and {{ other, number }}" } } },
+    });
+    const t = instance.t as unknown as LooseT;
+    expect(() => t("fx:pair", { who: "Riley Chen" })).toThrow(/^No value for \{\{other\}\}$/);
+  });
+
+  it("leaves the placeholder showing in a production build", () => {
     const { t } = make("en", false);
-    expect(() => t("fx:greeting")).not.toThrow();
+    expect(t("fx:greeting")).toBe("Hello {{name}}");
   });
 
   it("is strict in the app's own instance under test", () => {
@@ -118,7 +138,33 @@ describe("a placeholder with no value", () => {
   });
 });
 
+describe("a key with no text anywhere", () => {
+  it("throws when strict: a typo cast past the types, or a plural called without count", () => {
+    const { t } = make("en", true);
+    expect(() => t("fx:nope")).toThrow(MissingKeyError);
+    expect(() => t("fx:days")).toThrow(MissingKeyError);
+  });
+
+  it("shows the key in a production build", () => {
+    expect(make("en", false).t("fx:nope")).toBe("nope");
+  });
+});
+
+describe("strict mode", () => {
+  it("is on in dev and tests, and off in a production build", () => {
+    expect(isStrict({ DEV: true, MODE: "development" })).toBe(true);
+    expect(isStrict({ DEV: false, MODE: "test" })).toBe(true);
+    expect(isStrict({ DEV: false, MODE: "production" })).toBe(false);
+    expect(isStrict({})).toBe(false);
+  });
+});
+
 describe("in React", () => {
+  it("a test's own instance never replaces the app's as react-i18next's default", () => {
+    make("pl");
+    expect(getI18n()).toBe(i18n);
+  });
+
   function Greeting({ name }: { name: string }) {
     const { t } = useTranslation("fx" as never); // a fixture namespace, not one of the app's
     return <p>{(t as unknown as LooseT)("greeting", { name })}</p>;
@@ -176,6 +222,14 @@ describe("pseudo-language", () => {
     expect(pseudo("")).toBe("[]");
   });
 
+  it("keeps tags with - or _ in their names, self-closing tags and entities", () => {
+    const out = pseudo("A <guide-link>b</guide-link> <br_x/> c &amp; d");
+    expect(out).toContain("<guide-link>");
+    expect(out).toContain("</guide-link>");
+    expect(out).toContain("<br_x/>");
+    expect(out).toContain("&amp;");
+  });
+
   it("keeps placeholders, tags and nesting exactly", () => {
     const out = pseudo("Hi {{name}}, read <guide>the guide</guide> and $t(other.key)");
     expect(out).toContain("{{name}}");
@@ -187,6 +241,18 @@ describe("pseudo-language", () => {
 
   it("maps a whole tree", () => {
     expect(pseudoTree({ a: "Hi", b: { c: "Bye" } })).toEqual({ a: "[Ĥî ·]", b: { c: "[Ɓýé ··]" } });
+  });
+
+  it("is registered as en-XA, so plurals follow English rules on any machine", () => {
+    // An unknown tag ("pseudo") would take the machine's locale: Polish would ask for "few".
+    expect(PSEUDO).toBe("en-XA");
+    expect(new Intl.PluralRules(PSEUDO).resolvedOptions().locale).toMatch(/^en/);
+  });
+
+  it("can be switched to later when built in (dev)", () => {
+    const instance = createI18n({ lng: "en", pseudo: true });
+    instance.changeLanguage(PSEUDO);
+    expect(instance.t("selftest:plain")).toBe("[Ĥéļļö ··]");
   });
 
   it("works as a language, still filling in values and plurals", () => {
@@ -210,7 +276,8 @@ describe("pickLanguage", () => {
   });
 
   it("reads ?lang= only in dev", () => {
-    expect(pickLanguage({ search: "?lang=pseudo", dev: true })).toBe(PSEUDO);
+    expect(pickLanguage({ search: `?lang=${PSEUDO_ALIAS}`, dev: true })).toBe(PSEUDO);
+    expect(pickLanguage({ search: "?lang=en-XA", dev: true })).toBe(PSEUDO);
     expect(pickLanguage({ search: "?lang=pseudo", dev: false })).toBe("en");
     expect(pickLanguage({ search: "?lang=EN-gb", dev: true })).toBe("en");
   });

@@ -4,7 +4,9 @@
 
 type Tree = { readonly [key: string]: string | Tree };
 
-const PLURAL = /_(zero|one|two|few|many|other)$/;
+// Plural forms, including ordinals ("place_ordinal_one"). So a key's own name must never end
+// in one of these ("status_other"), and the app doesn't use i18next's context suffixes.
+const PLURAL = /(_ordinal)?_(zero|one|two|few|many|other)$/;
 
 /** { a: { b: "x" } } → { "a.b": "x" }. */
 export function flatten(tree: Tree, prefix = ""): Record<string, string> {
@@ -69,23 +71,37 @@ export function compare(en: Tree, other: Tree): Comparison {
 }
 
 /**
- * Keys a source file uses, as "namespace:key":
- * - t("key") / i18nKey="key" in a file whose useTranslation("ns") names the namespace
- *   (the first one, when it lists several), else the default namespace;
- * - any "ns:key" string with a known namespace, which is how typed maps of ids to keys and
- *   calls outside components (i18n.t("today:waiting.title")) are written.
+ * Keys a source file uses, as "namespace:key". What it understands (and so what code must do
+ * for the unused-key test to see a key):
+ * - t("key") / t(`key`) and i18nKey="key" are credited to every namespace the file names in
+ *   useTranslation("ns") or useTranslation(["a", "b"]), or the default namespace if none;
+ * - <Trans ns="x" i18nKey="key"> is credited to x;
+ * - any "ns:key" string with a known namespace counts wherever it is. Typed maps of ids to
+ *   keys and calls outside components must be written that way ("today:sources.recruiter").
+ * Not understood: keyPrefix, and keys built at run time (`stage.${id}`), which the app avoids.
  */
 export function usedKeys(source: string, namespaces: readonly string[], defaultNs: string): Set<string> {
   const used = new Set<string>();
-  const declared = source.match(/useTranslation\(\s*\[?\s*["']([\w-]+)["']/);
-  const ns = declared?.[1] ?? defaultNs;
-  const add = (key: string) => {
+  const declared = new Set<string>();
+  for (const m of source.matchAll(/useTranslation\(\s*(\[[^\]]*\]|["'][\w-]+["'])/g)) {
+    for (const n of m[1]!.matchAll(/["']([\w-]+)["']/g)) declared.add(n[1]!);
+  }
+  const fileNamespaces = declared.size ? [...declared] : [defaultNs];
+  const add = (key: string, inNamespaces: readonly string[]) => {
     const [first, rest] = key.split(/:(.*)/s, 2);
     if (rest !== undefined && namespaces.includes(first!)) used.add(`${first}:${baseKey(rest)}`);
-    else used.add(`${ns}:${baseKey(key)}`);
+    else for (const ns of inNamespaces) used.add(`${ns}:${baseKey(key)}`);
   };
-  for (const m of source.matchAll(/\bt\(\s*["'`]([^"'`$]+)["'`]/g)) add(m[1]!);
-  for (const m of source.matchAll(/\bi18nKey=\{?\s*["']([^"']+)["']/g)) add(m[1]!);
+  for (const m of source.matchAll(/\bt\(\s*(["'`])([^"'`$]+)\1/g)) add(m[2]!, fileNamespaces);
+  for (const m of source.matchAll(/\bi18nKey=\{?\s*(["'`])([^"'`$]+)\1/g)) {
+    // A ns="…" on the same <Trans> element wins over the file's namespaces. The element runs
+    // from its "<Trans" to the next one (its props can hold JSX, so ">" can't end it).
+    const start = source.lastIndexOf("<Trans", m.index);
+    const next = source.indexOf("<Trans", m.index);
+    const element = start < 0 ? "" : source.slice(start, next < 0 ? undefined : next);
+    const ns = element.match(/\bns=\{?\s*["']([\w-]+)["']/)?.[1];
+    add(m[2]!, ns ? [ns] : fileNamespaces);
+  }
   const qualified = new RegExp(`["'\`](${namespaces.join("|")}):([\\w.-]+)["'\`]`, "g");
   for (const m of source.matchAll(qualified)) used.add(`${m[1]}:${baseKey(m[2]!)}`);
   return used;

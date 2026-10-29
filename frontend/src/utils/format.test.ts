@@ -5,10 +5,12 @@ import {
   formatDateLocal,
   formatDateTimeLocal,
   formatDay,
+  formatMoney,
   formatNumber,
   formatShortWeekday,
   type DatePattern,
 } from "./format";
+import { money } from "../api/offerHooks";
 import { formatDate, formatDateTime } from "./time";
 
 // Each helper must give exactly what the app shows today in English, so cutting a page over
@@ -17,8 +19,11 @@ const AT = "2026-03-05T09:07:00";
 const TODAY_SHOWS: Record<DatePattern, [string, string]> = {
   // pattern: [the format call it replaces, its output]
   weekdayDayMonth: ["dddd D MMMM", "Thursday 5 March"],
+  shortWeekdayDayMonth: ["ddd D MMM", "Thu 5 Mar"],
+  shortWeekdayDayMonthYear: ["ddd D MMM YYYY", "Thu 5 Mar 2026"],
   dayMonth: ["D MMM", "5 Mar"],
   dayMonthYear: ["D MMM YYYY", "5 Mar 2026"],
+  monthYear: ["MMM YYYY", "Mar 2026"],
   dayMonthTime: ["D MMM, HH:mm", "5 Mar, 09:07"],
   time: ["HH:mm", "09:07"],
 };
@@ -39,8 +44,16 @@ describe("formatDay", () => {
 
   it("uses English for a regional variant or a language it doesn't know", () => {
     expect(formatDay(AT, "dayMonth", "en-GB")).toBe("5 Mar");
-    expect(formatDay(AT, "dayMonth", "pseudo")).toBe("5 Mar");
+    expect(formatDay(AT, "dayMonth", "en-XA")).toBe("5 Mar");
     expect(formatDay(AT, "dayMonth", "fr")).toBe("5 Mar");
+    expect(formatDay(AT, "dayMonth", "constructor")).toBe("5 Mar"); // not a prototype key
+  });
+
+  it("never changes dayjs's global locale", () => {
+    const before = dayjs.locale();
+    formatDay(AT, "dayMonth", "zh-TW");
+    formatDay(AT, "dayMonth", "en-GB");
+    expect(dayjs.locale()).toBe(before);
   });
 });
 
@@ -75,5 +88,29 @@ describe("formatNumber", () => {
 
   it("falls back to English for a language it doesn't know", () => {
     expect(formatNumber(85000, "xx")).toBe("85,000");
+  });
+});
+
+describe("formatMoney", () => {
+  const cases: [number | null | undefined, string | null | undefined][] = [
+    [85000, "GBP"],
+    [650, "gbp"],
+    [120000, "USD"],
+    [90000, "EUR"],
+    [150000, "CHF"],
+    [85000, null],
+    [85000, ""],
+    [null, "GBP"],
+    [undefined, "GBP"],
+  ];
+
+  it.each(cases)("%s %s matches api/offerHooks money()", (n, currency) => {
+    expect(formatMoney(n, currency, "en")).toBe(money(n, currency));
+  });
+
+  it("keeps the symbol in front, or the code after", () => {
+    expect(formatMoney(85000, "GBP", "en")).toBe("£85,000");
+    expect(formatMoney(150000, "CHF", "en")).toBe("150,000 CHF");
+    expect(formatMoney(null, "GBP", "en")).toBe("—");
   });
 });

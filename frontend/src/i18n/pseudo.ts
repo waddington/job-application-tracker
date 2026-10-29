@@ -13,8 +13,9 @@ const ACCENTED: Record<string, string> = {
   W: "Ŵ", X: "Ẋ", Y: "Ý", Z: "Ž",
 };
 
-// Things to copy through untouched: {{placeholders}}, $t(nesting), and <tags> / </tags>.
-const KEEP = /(\{\{[^}]*\}\}|\$t\([^)]*\)|<\/?[A-Za-z0-9]+\s*\/?>)/;
+// Things to copy through untouched: {{placeholders}}, $t(nesting), <tags> / </tags> / <tag />
+// (names may have - or _), and entities (&amp;).
+const KEEP = /(\{\{[^}]*\}\}|\$t\([^)]*\)|<\/?[\w-]+\s*\/?>|&#?\w+;)/;
 
 /** "Hello {{name}}" → "[Ĥéļļö {{name}} ··]". */
 export function pseudo(text: string): string {

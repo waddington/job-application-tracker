@@ -15,11 +15,20 @@ import { pseudoTree } from "./pseudo";
 
 export const DEFAULT_NS = "common";
 
-/** Thrown when text has a {{placeholder}} the call gave no value for. */
+/** Thrown in strict mode when text has a {{placeholder}} the call gave no value for. */
 export class MissingValueError extends Error {
-  constructor(placeholder: string, text: string) {
-    super(`No value for {{${placeholder}}} in "${text}"`);
+  constructor(placeholder: string) {
+    // Only the placeholder's name: the text may already hold other values (your data).
+    super(`No value for {{${placeholder}}}`);
     this.name = "MissingValueError";
+  }
+}
+
+/** Thrown in strict mode for a key no language has (a cast, or a plural called without count). */
+export class MissingKeyError extends Error {
+  constructor(key: string) {
+    super(`No text for key "${key}"`);
+    this.name = "MissingKeyError";
   }
 }
 
@@ -28,35 +37,53 @@ export interface Options {
   /** Every language's text; English is added when missing. Tests pass their own. */
   resources?: Resource;
   /**
-   * Throw on a placeholder with no value (tests and dev), instead of showing the raw
-   * "{{name}}". The types catch a misspelt value name but not a call with no values at all
-   * (docs/rfc/i18n.md §3a), so this covers the rest.
+   * Throw on a placeholder with no value or a key with no text (tests and dev), instead of
+   * showing the raw "{{name}}" or key. The types catch a misspelt value name but not a call
+   * with no values at all (docs/rfc/i18n.md §3a), so this covers the rest.
    */
   strict?: boolean;
+  /** Also build the pseudo-language, so changeLanguage(PSEUDO) works later. Always when lng is it. */
+  pseudo?: boolean;
+  /**
+   * Make this react-i18next's default instance, for useTranslation() without a provider. Only
+   * the app's own instance does: a test's fixture instance must never replace it.
+   */
+  react?: boolean;
 }
 
-export function createI18n({ lng, resources, strict = false }: Options): I18n {
+export function createI18n({ lng, resources, strict = false, pseudo = false, react = false }: Options): I18n {
   const all: Resource = { en, ...resources };
-  if (lng === PSEUDO) all[PSEUDO] = pseudoTree(all.en as Parameters<typeof pseudoTree>[0]);
+  if (pseudo || lng === PSEUDO) all[PSEUDO] = pseudoTree(all.en as Parameters<typeof pseudoTree>[0]);
   const instance = createInstance();
-  instance.use(initReactI18next).init({
+  if (react) instance.use(initReactI18next);
+  instance.init({
     lng,
     fallbackLng: FALLBACK,
     resources: all,
     ns: Object.keys(all.en ?? {}),
     defaultNS: DEFAULT_NS,
     initAsync: false, // resources are in memory, so t() works as soon as this returns
-    returnNull: false,
     returnEmptyString: false,
     interpolation: { escapeValue: false }, // React escapes text it renders
-    missingInterpolationHandler: strict
-      ? (text: string, match: RegExpExecArray | string[]) => {
-          throw new MissingValueError(String(match[1] ?? "").trim(), text);
-        }
-      : undefined,
+    ...(strict && {
+      missingInterpolationHandler: (_text: string, match: RegExpExecArray | string[]) => {
+        // match[1] is what's inside the braces, format included: " amount, number".
+        throw new MissingValueError(
+          String(match[1] ?? "")
+            .split(",")[0]!
+            .trim(),
+        );
+      },
+      parseMissingKeyHandler: (key: string) => {
+        throw new MissingKeyError(key);
+      },
+    }),
   });
   return instance;
 }
+
+/** Dev servers and tests are strict; a production build never throws over text. */
+export const isStrict = (env: { DEV?: boolean; MODE?: string }) => Boolean(env.DEV) || env.MODE === "test";
 
 const env = import.meta.env;
 
@@ -71,5 +98,7 @@ export const i18n = createI18n({
           browser: navigator.languages ?? [navigator.language],
           dev: env.DEV,
         }),
-  strict: env.DEV || env.MODE === "test",
+  strict: isStrict(env),
+  pseudo: env.DEV,
+  react: true,
 });

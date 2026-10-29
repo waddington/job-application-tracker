@@ -6,8 +6,15 @@
 export const LANGUAGES = ["en"] as const;
 export type Language = (typeof LANGUAGES)[number];
 export const FALLBACK: Language = "en";
-/** Dev-only: accented, longer text that shows any string the translation layer missed. */
-export const PSEUDO = "pseudo";
+/**
+ * Dev-only: accented, longer text that shows any string the translation layer missed.
+ * Registered as en-XA, the standard pseudo-locale, so plurals follow English rules: an
+ * unknown tag like "pseudo" makes Intl.PluralRules use the machine's own locale, and a
+ * Polish browser would then look for "few" forms pseudo doesn't have.
+ */
+export const PSEUDO = "en-XA";
+/** What you type in the URL for it: ?lang=pseudo. */
+export const PSEUDO_ALIAS = "pseudo";
 export const STORAGE_KEY = "jat.language";
 
 const shipped = (code: string | null | undefined): Language | undefined => {
@@ -33,7 +40,7 @@ export interface LanguageSources {
 export function pickLanguage({ search = "", stored, browser = [], dev = false }: LanguageSources): string {
   if (dev) {
     const asked = new URLSearchParams(search).get("lang");
-    if (asked === PSEUDO) return PSEUDO;
+    if (asked === PSEUDO_ALIAS || asked === PSEUDO) return PSEUDO;
     const fromUrl = shipped(asked);
     if (fromUrl) return fromUrl;
   }

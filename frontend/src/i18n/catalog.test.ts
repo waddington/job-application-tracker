@@ -12,6 +12,7 @@ describe("helpers", () => {
   it("strips plural suffixes, and only those", () => {
     expect(baseKey("days_one")).toBe("days");
     expect(baseKey("days_few")).toBe("days");
+    expect(baseKey("place_ordinal_two")).toBe("place");
     expect(baseKey("waiting.title")).toBe("waiting.title");
     expect(baseKey("is_done")).toBe("is_done");
   });
@@ -77,16 +78,32 @@ describe("usedKeys", () => {
     );
   });
 
-  it("uses the default namespace without useTranslation, and the first of several", () => {
+  it("uses the default namespace without useTranslation, and every one of a list", () => {
     expect(usedKeys(`t("appName")`, ns, "common")).toEqual(new Set(["common:appName"]));
     expect(usedKeys(`useTranslation(["today", "common"]); t("x")`, ns, "common")).toEqual(
-      new Set(["today:x"]),
+      new Set(["today:x", "common:x"]),
     );
   });
 
   it("counts namespaced strings anywhere (typed id-to-key maps, i18n.t outside components)", () => {
     const source = `const LABEL = { a: "today:sources.recruiter" }; i18n.t("common:appName"); "other:x"`;
     expect(usedKeys(source, ns, "common")).toEqual(new Set(["today:sources.recruiter", "common:appName"]));
+  });
+
+  it("credits unqualified keys to every namespace the file declares", () => {
+    const source = `
+      function A() { const { t } = useTranslation("today"); return t("x"); }
+      function B() { const { t } = useTranslation("common"); return t("y"); }`;
+    expect(usedKeys(source, ns, "common")).toEqual(new Set(["today:x", "common:x", "today:y", "common:y"]));
+  });
+
+  it("uses ns= on a <Trans>, before or after its other props, and backtick keys", () => {
+    const source = `
+      useTranslation("common");
+      <Trans ns="today" i18nKey="a" components={{ b: <b /> }} />
+      <Trans i18nKey={\`c\`} components={{ b: <b /> }} ns="today" />
+      <Trans i18nKey="d" />`;
+    expect(usedKeys(source, ns, "common")).toEqual(new Set(["today:a", "today:c", "common:d"]));
   });
 
   it("counts a plural form as its base key, and skips keys built at run time", () => {
@@ -114,11 +131,13 @@ const sources = import.meta.glob<string>(["../**/*.{ts,tsx}", "!../**/*.test.{ts
 });
 
 describe("the app's text", () => {
+  // Passes trivially until a second language ships JSON files (multi-language).
   it("has the same keys and placeholders in every language as in English", () => {
     for (const [path, tree] of Object.entries(others)) {
       const ns = path.split("/").pop()!.replace(".json", "") as keyof typeof en;
       expect(en[ns], `${path}: no English namespace "${ns}"`).toBeDefined();
       const result = compare(en[ns], tree);
+      if (result.missing.length) console.warn(`${path}: in English only:`, result.missing.join(", "));
       // Missing keys fall back to English, so only extra keys and broken placeholders fail.
       expect({ path, extra: result.extra, placeholders: result.placeholders }).toEqual({
         path,

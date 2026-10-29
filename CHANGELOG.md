@@ -9,7 +9,7 @@ Numbers in brackets are pull requests.
 
 - Groundwork for other languages: the app can now be translated, though it's still English
   only and nothing looks different.
-  - **Added:** i18next, with every text key and placeholder checked by the type checker; date
+  - **Added:** i18next, with every text key and placeholder name checked by the type checker; date
     and number helpers that give the same output as today; a dev-only pseudo-language
     (`?lang=pseudo`) for spotting untranslated text.
   - **Tests** for plurals in English, Polish and Chinese, falling back to English, and unused
