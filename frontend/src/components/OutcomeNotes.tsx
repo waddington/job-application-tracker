@@ -1,5 +1,6 @@
 import { Button, Group, Modal, Stack, Text, Textarea } from "@mantine/core";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { useSaveInterview, type Interview } from "../api/interviewHooks";
 import { useSaveMeeting, type Meeting } from "../api/meetingHooks";
@@ -27,6 +28,7 @@ function OutcomeNotesModal({
   onSave: (values: Record<string, string | null>) => void;
   onClose: () => void;
 }) {
+  const { t } = useTranslation("common");
   const [values, setValues] = useState(() => Object.fromEntries(fields.map((f) => [f.key, f.initial ?? ""])));
   return (
     // While saving, Esc or a click outside can't close it: if the save fails, what you typed is still here.
@@ -61,7 +63,7 @@ function OutcomeNotesModal({
         ))}
         <Group justify="flex-end">
           <Button variant="default" onClick={onClose} disabled={loading}>
-            Cancel
+            {t("actions.cancel")}
           </Button>
           <Button
             loading={loading}
@@ -82,59 +84,64 @@ function OutcomeNotesModal({
 /** An interview round's Done (asking for the debrief and questions asked) and Didn't happen
  * (asking what happened, kept in its debrief). */
 export function InterviewOutcome({ interview }: { interview: Interview }) {
+  const { t } = useTranslation("today");
   const save = useSaveInterview();
   const [marking, setMarking] = useState<"done" | "cancelled" | null>(null);
-  const where = `${interview.company_name} · ${interview.role_title}`;
+  const where = t("rows.where", { company: interview.company_name, role: interview.role_title });
   return (
     <Group gap={4} wrap="nowrap">
       <Button
         size="compact-xs"
         variant="light"
         color="teal"
-        aria-label={`Done: ${interview.label}`}
+        aria-label={t("outcome.doneWho", { label: interview.label })}
         onClick={() => setMarking("done")}
       >
-        Done
+        {t("outcome.done")}
       </Button>
       <Button
         size="compact-xs"
         variant="subtle"
         color="gray"
-        aria-label={`Didn't happen: ${interview.label}`}
+        aria-label={t("outcome.didntHappenWho", { label: interview.label })}
         onClick={() => setMarking("cancelled")}
       >
-        Didn't happen
+        {t("outcome.didntHappen")}
       </Button>
       {marking && (
         <OutcomeNotesModal
-          title={marking === "done" ? `How did ${interview.label} go?` : `${interview.label} didn't happen`}
+          title={
+            marking === "done"
+              ? t("outcome.howDidItGo", { label: interview.label })
+              : t("outcome.didntHappenTitle", { label: interview.label })
+          }
           subtitle={where}
           fields={
             marking === "done"
               ? [
                   {
                     key: "debrief",
-                    label: "Debrief",
-                    placeholder: "How it went, who you met, what's next",
+                    label: t("outcome.debrief"),
+                    placeholder: t("outcome.debriefPlaceholder"),
                     initial: interview.debrief,
                   },
                   {
                     key: "questions",
-                    label: "Questions asked",
-                    placeholder: "So you can prepare for the next one",
+                    label: t("outcome.questions"),
+                    placeholder: t("outcome.questionsPlaceholder"),
                     initial: interview.questions,
                   },
                 ]
               : [
                   {
                     key: "debrief",
-                    label: "What happened?",
-                    placeholder: "They rescheduled, you withdrew, nobody turned up…",
+                    label: t("outcome.whatHappened"),
+                    placeholder: t("outcome.roundPlaceholder"),
                     initial: interview.debrief,
                   },
                 ]
           }
-          confirm={marking === "done" ? "Mark as done" : "Mark as didn't happen"}
+          confirm={marking === "done" ? t("outcome.markDone") : t("outcome.markDidntHappen")}
           loading={save.isPending}
           onClose={() => setMarking(null)}
           onSave={(notes) =>
@@ -151,6 +158,7 @@ export function InterviewOutcome({ interview }: { interview: Interview }) {
 
 /** A call's Didn't happen, asking what happened (its notes) first. */
 export function MeetingDidntHappen({ meeting }: { meeting: Meeting }) {
+  const { t } = useTranslation("today");
   const save = useSaveMeeting();
   const [open, setOpen] = useState(false);
   return (
@@ -159,24 +167,24 @@ export function MeetingDidntHappen({ meeting }: { meeting: Meeting }) {
         size="compact-xs"
         variant="subtle"
         color="gray"
-        aria-label={`Didn't happen: ${meeting.label}`}
+        aria-label={t("outcome.didntHappenWho", { label: meeting.label })}
         onClick={() => setOpen(true)}
       >
-        Didn't happen
+        {t("outcome.didntHappen")}
       </Button>
       {open && (
         <OutcomeNotesModal
-          title={`${meeting.label} didn't happen`}
-          subtitle="It stays on the record, marked as not having happened."
+          title={t("outcome.didntHappenTitle", { label: meeting.label })}
+          subtitle={t("outcome.callSubtitle")}
           fields={[
             {
               key: "notes",
-              label: "What happened?",
-              placeholder: "They cancelled, it moved to next week…",
+              label: t("outcome.whatHappened"),
+              placeholder: t("outcome.callPlaceholder"),
               initial: meeting.notes,
             },
           ]}
-          confirm="Mark as didn't happen"
+          confirm={t("outcome.markDidntHappen")}
           loading={save.isPending}
           onClose={() => setOpen(false)}
           onSave={(notes) =>

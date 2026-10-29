@@ -1,5 +1,6 @@
 import { Box, Card, Group, SimpleGrid, Stack, Text, ThemeIcon, Title } from "@mantine/core";
 import { IconAlertCircle, IconCalendarEvent, IconCircleCheck } from "@tabler/icons-react";
+import { useTranslation } from "react-i18next";
 
 import type { ApplicationDetail } from "../api/client";
 import { stageLookup, useWorkflow } from "../api/hooks";
@@ -41,6 +42,7 @@ function Row({ item }: { item: GlanceItem }) {
  * actions, for one application, plus its key dates as "3 weeks ago".
  */
 export function AtAGlance({ app }: { app: ApplicationDetail }) {
+  const { t } = useTranslation("today");
   const { data: workflow } = useWorkflow();
   const { data: interviews, isPending: p1 } = useInterviews({ application_id: app.id });
   const { data: offers, isPending: p2 } = useOffers({ application_id: app.id }); // the newest
@@ -61,16 +63,16 @@ export function AtAGlance({ app }: { app: ApplicationDetail }) {
   return (
     <Card withBorder>
       <Stack gap="sm">
-        <Title order={4}>At a glance</Title>
+        <Title order={4}>{t("glance.title")}</Title>
         {loading ? (
           <Text size="sm" c="dimmed">
-            Loading…
+            {t("glance.loading")}
           </Text>
         ) : (
           <>
             {!g.open && (
               <Text size="sm" c="dimmed">
-                {app.archived ? "Archived" : app.stage_name}: nothing to chase.
+                {t("glance.nothingToChase", { what: app.archived ? t("glance.archived") : app.stage_name })}
               </Text>
             )}
             {g.attention.length > 0 ? (
@@ -80,7 +82,7 @@ export function AtAGlance({ app }: { app: ApplicationDetail }) {
                     <IconAlertCircle size={14} />
                   </ThemeIcon>
                   <Text size="sm" fw={600}>
-                    Needs attention
+                    {t("glance.needsAttention")}
                   </Text>
                 </Group>
                 {g.attention.map((item) => (
@@ -94,7 +96,7 @@ export function AtAGlance({ app }: { app: ApplicationDetail }) {
                     <IconCircleCheck size={14} />
                   </ThemeIcon>
                   <Text size="sm" c="dimmed">
-                    Nothing needs doing right now.
+                    {t("glance.nothingNeeded")}
                   </Text>
                 </Group>
               )
@@ -108,7 +110,7 @@ export function AtAGlance({ app }: { app: ApplicationDetail }) {
                 <IconCalendarEvent size={14} />
               </ThemeIcon>
               <Text size="sm" fw={600}>
-                Coming up
+                {t("glance.comingUp")}
               </Text>
             </Group>
             {g.comingUp.map((item) => (
@@ -121,7 +123,7 @@ export function AtAGlance({ app }: { app: ApplicationDetail }) {
           spacing="sm"
           verticalSpacing="xs"
           role="group"
-          aria-label="Key dates"
+          aria-label={t("glance.keyDates")}
         >
           {g.dates.map((d) => (
             <div key={d.label}>

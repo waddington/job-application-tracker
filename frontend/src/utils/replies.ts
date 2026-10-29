@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 
-import { shadow } from "../i18n/shadow";
+import { i18n } from "../i18n";
 
 /** Weekdays after `start`, up to and including `end` (as the server counts them). */
 export function workingDays(start: string, end: string): number {
@@ -14,8 +14,6 @@ export function workingDays(start: string, end: string): number {
   return count;
 }
 
-const wd = (n: number) => (n === 0 ? "the same day" : `${n} working day${n === 1 ? "" : "s"}`);
-
 export interface ReplyHabit {
   replies?: number;
   usual_reply_days?: number | null;
@@ -25,15 +23,10 @@ export interface ReplyHabit {
 /** "Usually replies within 2 working days", or null when they've never replied yet. */
 export function replyHabit(c: ReplyHabit): string | null {
   if (!c.replies || c.usual_reply_days == null) return null;
+  const count = c.usual_reply_days;
   if (c.replies === 1)
-    return c.usual_reply_days === 0
-      ? "Replied once, the same day"
-      : `Replied once, in ${wd(c.usual_reply_days)}`;
-  return c.usual_reply_days === 0
-    ? shadow("people:replies.sameDay", "Usually replies the same day")
-    : shadow("people:replies.within", `Usually replies within ${wd(c.usual_reply_days)}`, {
-        count: c.usual_reply_days,
-      });
+    return count === 0 ? i18n.t("people:replies.onceSameDay") : i18n.t("people:replies.onceIn", { count });
+  return count === 0 ? i18n.t("people:replies.sameDay") : i18n.t("people:replies.within", { count });
 }
 
 /** Working days you've been waiting beyond their usual, or 0 (not waiting, or not late yet). */

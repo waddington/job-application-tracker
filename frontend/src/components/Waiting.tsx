@@ -2,9 +2,11 @@ import { Badge, Button, Group } from "@mantine/core";
 import { IconHourglass, IconMailExclamation, IconMailOpened, IconMessageCheck } from "@tabler/icons-react";
 import dayjs from "dayjs";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { useUpdateApplication } from "../api/hooks";
 import { useSetPersonReply } from "../api/peopleHooks";
+import { i18n } from "../i18n";
 
 /** Whole days since `since` (a YYYY-MM-DD in your time zone). */
 export function daysWaiting(since: string): number {
@@ -13,15 +15,25 @@ export function daysWaiting(since: string): number {
 
 export function waitingLabel(since: string): string {
   const days = daysWaiting(since);
-  return days === 0 ? "Waiting since today" : `Waiting ${days} day${days === 1 ? "" : "s"}`;
+  return days === 0
+    ? i18n.t("people:conversation.waitingSinceToday")
+    : i18n.t("people:conversation.waitingDays", { count: days });
 }
 
 /** "Replied today", "Replied 3 days ago": how long a reply has sat unread. */
 export function repliedLabel(since: string): string {
   const days = daysWaiting(since);
-  if (days === 0) return "Replied today";
-  if (days === 1) return "Replied yesterday";
-  return `Replied ${days} days ago`;
+  if (days === 0) return i18n.t("people:conversation.repliedToday");
+  if (days === 1) return i18n.t("people:conversation.repliedYesterday");
+  return i18n.t("people:conversation.repliedDaysAgo", { count: days });
+}
+
+/** "Reply to read · 3 days ago", for the badge beside the buttons. */
+function toReadLabel(since: string): string {
+  const days = daysWaiting(since);
+  if (days === 0) return i18n.t("people:conversation.toReadToday");
+  if (days === 1) return i18n.t("people:conversation.toReadYesterday");
+  return i18n.t("people:conversation.toReadDaysAgo", { count: days });
 }
 
 const today = () => dayjs().format("YYYY-MM-DD");
@@ -51,6 +63,7 @@ function ReplyButtons({
   /** Who it's about, for screen readers when several sit in one list. */
   who?: string;
 }) {
+  const { t } = useTranslation("people");
   const size = compact ? "compact-xs" : "xs";
   const [pressed, setPressed] = useState<"waiting" | "read" | null>(null);
   const change = (which: "waiting" | "read", body: ReplyChange) => {
@@ -66,10 +79,10 @@ function ReplyButtons({
       leftSection={<IconMailExclamation size={14} />}
       loading={spinning("read")}
       onClick={() => change("read", { reply_to_read_since: today() })}
-      aria-label={who ? `They've replied: ${who}` : undefined}
-      title="Their reply needs reading: it goes to the top of Today"
+      aria-label={who ? t("conversation.theyRepliedWho", { who }) : undefined}
+      title={t("conversation.theyRepliedHint")}
     >
-      They've replied
+      {t("conversation.theyReplied")}
     </Button>
   );
   if (toRead) {
@@ -77,7 +90,7 @@ function ReplyButtons({
       <Group gap={6} wrap="nowrap">
         {!compact && (
           <Badge color="orange" variant="light" leftSection={<IconMailExclamation size={12} />}>
-            Reply to read · {repliedLabel(toRead).replace("Replied ", "")}
+            {toReadLabel(toRead)}
           </Badge>
         )}
         <Button
@@ -87,9 +100,9 @@ function ReplyButtons({
           leftSection={<IconMailOpened size={14} />}
           loading={spinning("read")}
           onClick={() => change("read", { reply_to_read_since: null })}
-          aria-label={who ? `Read it: ${who}` : undefined}
+          aria-label={who ? t("conversation.readItWho", { who }) : undefined}
         >
-          Read it
+          {t("conversation.readIt")}
         </Button>
       </Group>
     );
@@ -105,7 +118,7 @@ function ReplyButtons({
           loading={spinning("waiting")}
           onClick={() => change("waiting", { awaiting_reply_since: today() })}
         >
-          I've replied, waiting
+          {t("conversation.iveReplied")}
         </Button>
         {theyReplied}
       </Group>
@@ -125,9 +138,9 @@ function ReplyButtons({
         leftSection={<IconMessageCheck size={14} />}
         loading={spinning("waiting")}
         onClick={() => change("waiting", { awaiting_reply_since: null })}
-        aria-label={who ? `Heard back from ${who}` : undefined}
+        aria-label={who ? t("conversation.heardBackWho", { who }) : undefined}
       >
-        Heard back
+        {t("conversation.heardBack")}
       </Button>
       {theyReplied}
     </Group>

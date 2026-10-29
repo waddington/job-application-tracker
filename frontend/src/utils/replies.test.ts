@@ -17,6 +17,9 @@ describe("replyHabit", () => {
     expect(replyHabit({ replies: 0, usual_reply_days: null })).toBeNull();
     expect(replyHabit({ replies: 1, usual_reply_days: 3 })).toBe("Replied once, in 3 working days");
     expect(replyHabit({ replies: 4, usual_reply_days: 1 })).toBe("Usually replies within 1 working day");
+    expect(replyHabit({ replies: 3, usual_reply_days: 2 })).toBe("Usually replies within 2 working days");
+    expect(replyHabit({ replies: 3, usual_reply_days: 11 })).toBe("Usually replies within 11 working days");
+    expect(replyHabit({ replies: 1, usual_reply_days: 1 })).toBe("Replied once, in 1 working day");
     expect(replyHabit({ replies: 2, usual_reply_days: 0 })).toBe("Usually replies the same day");
     expect(replyHabit({ replies: 1, usual_reply_days: 0 })).toBe("Replied once, the same day");
   });

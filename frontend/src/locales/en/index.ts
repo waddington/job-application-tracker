@@ -4,8 +4,9 @@ import common from "./common";
 import people from "./people";
 import selftest from "./selftest";
 import today from "./today";
+import todos from "./todos";
 
-const en = { common, today, people, selftest } as const;
+const en = { common, today, people, todos, selftest } as const;
 
 export default en;
 export type Namespace = keyof typeof en;

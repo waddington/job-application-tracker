@@ -2,10 +2,10 @@
 // key another language lacks; the frontend does all translating, and the backend only sends
 // codes and ids next to its English (§4).
 //
-// Loaded at start-up, but pages don't show its text yet: shadow mode (./shadow.ts) only
-// compares it with their own English. As each area is cut over, components call
+// Loaded at start-up (main.tsx, and the test setup). Converted areas call
 // `useTranslation("<namespace>")` and `t("key", values)`; code outside components uses
-// `i18n.t("<namespace>:key")`.
+// `i18n.t("<namespace>:key")`. The rest still show their own English until they're cut over
+// (CONTRIBUTING.md "Text in the UI").
 
 import { createInstance, type i18n as I18n, type Resource } from "i18next";
 import { initReactI18next } from "react-i18next";

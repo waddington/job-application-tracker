@@ -58,6 +58,30 @@ export default {
     detailsBackups: "v{{version}} · schema {{schema}} · backups on",
     detailsNoGit: "v{{version}} · schema {{schema}} · data dir isn't a git repo",
   },
+  // How long ago, or how long until, in days (utils/time.ts ago, utils/attention.ts).
+  time: {
+    today: "today",
+    yesterday: "yesterday",
+    tomorrow: "tomorrow",
+    daysAgo_one: "{{count}} day ago",
+    daysAgo_other: "{{count}} days ago",
+    weeksAgo_one: "{{count}} week ago",
+    weeksAgo_other: "{{count}} weeks ago",
+    monthsAgo_one: "{{count}} month ago",
+    monthsAgo_other: "{{count}} months ago",
+    inDays_one: "in {{count}} day",
+    inDays_other: "in {{count}} days",
+    inWeeks_one: "in {{count}} week",
+    inWeeks_other: "in {{count}} weeks",
+    inMonths_one: "in {{count}} month",
+    inMonths_other: "in {{count}} months",
+    dueToday: "due today",
+    overdueBy_one: "overdue by {{count}} day",
+    overdueBy_other: "overdue by {{count}} days",
+    sinceToday: "since today",
+    forDays_one: "for {{count}} day",
+    forDays_other: "for {{count}} days",
+  },
   notFound: {
     title: "Page not found",
     body: "There's nothing at this address.",
@@ -68,6 +92,7 @@ export default {
     save: "Save",
     delete: "Delete",
     deleteNamed: "Delete {{name}}",
+    undo: "Undo",
   },
   // Rename a company or agency (EditNameModal).
   editName: {

@@ -87,10 +87,13 @@ pnpm --dir frontend gen:api
 ## Text in the UI (translations)
 
 The app is being made translatable, English only for now; the plan and its order are in
-[`docs/rfc/i18n.md`](docs/rfc/i18n.md). Pages move over area by area. So far the app's frame
-has: the header, menu, footer, Not found and the shared buttons and dialogs (the files listed
-in `TRANSLATED` in `frontend/eslint.config.js`). Until an area has moved, keep writing its text
-as before. Once it has:
+[`docs/rfc/i18n.md`](docs/rfc/i18n.md). Pages move over area by area. So far:
+- the app's frame (header, menu, footer, Not found, shared buttons and dialogs);
+- Today, with its to-dos, the reply and chase buttons, How did it go?, At a glance and How it
+  works.
+
+The files are listed in `TRANSLATED` in `frontend/eslint.config.js`. Until an area has moved,
+keep writing its text as before. Once it has:
 
 - **English lives in `frontend/src/locales/en/<namespace>.ts`**, one file per area, as a
   nested object with `as const`. Name keys for what the text is for (`waiting.title`), not
@@ -102,6 +105,11 @@ as before. Once it has:
   t("waiting.usuallyReplies", { count: days }); // with usuallyReplies_one / _other keys
   ```
   **Outside a component:** `i18n.t("today:waiting.title")` from `src/i18n`.
+  **Text from another namespace too:** `useTranslation(["todos", "common"])`, then
+  `t("common:actions.cancel")`. A `t()` from `useTranslation("todos")` refuses another
+  namespace's keys, and its own namespace's keys with a prefix.
+- **Text the app saves** (an event's summary, a stage move's note) stays English for now:
+  it's your data, and it moves with `i18n-events`.
 - **Values** go in `{{placeholders}}`, never glued on with `+` or a template string, so a
   translation can put them anywhere in the sentence.
 - **Plurals** are `_one` / `_other` keys used with `count`, never `n === 1 ? … : …`. So no
@@ -111,7 +119,13 @@ as before. Once it has:
   can't hold text (`link`, `img`, `br`, `input`, `meta`): it renders empty.
 - **Dates, numbers and money** go through `src/utils/format.ts`
   (`formatDay(at, "dayMonth", lang)`, `formatNumber`, `formatMoney`), not a fixed
-  `dayjs().format()` or `toLocaleString("en-GB")`. Dates sent to the API stay `YYYY-MM-DD`.
+  `dayjs().format()` or `toLocale*String()`. Dates sent to the API stay `YYYY-MM-DD`.
+  - English dates are British, whatever the browser's locale: "31 Oct 2026",
+    "30 Oct 2026, 19:25" (24-hour). Every date uses one of the dayjs patterns there, so a month
+    is spelled one way everywhere ("Sep", never Intl's "Sept").
+  - `utils/time.ts` `formatDate` and `formatDateTime` go through it too.
+  - Date inputs and pickers get their `valueFormat` ("D MMM YYYY", "D MMM YYYY HH:mm") from
+    `theme.ts`, so don't pass one.
 - **Ids instead of keys built at run time.** Map an id to a key with a typed object rather
   than `` t(`stages.${id}`) ``, which the type check can't follow. Write the map's keys the
   way that file's `t()` takes them, bare for its own namespace (`"nav.items.today"`, typed
@@ -131,12 +145,21 @@ as before. Once it has:
 `pnpm --dir frontend test` also:
 - fails on English keys nothing uses;
 - fails on a placeholder with no value, or a key with no text, in any call the tests run;
-- fails if another language has keys English doesn't, or drops a placeholder.
+- fails if another language is missing a key, a namespace or a plural form it needs (Polish
+  needs one, few, many and other), has keys English doesn't, or drops a placeholder.
 
 `src/i18n/types.check.tsx` proves the type checking still works. In `pnpm dev`, `?lang=pseudo`
 shows every string accented and longer, so any text that skipped the layer stands out.
 
-**Shadow mode** (`src/i18n/shadow.ts`) checks an area's strings before it's cut over.
+**Proving a cutover changed nothing.** `scripts/i18n/text_snapshot.py` records every page's
+visible text and its `aria-label`, `title`, `placeholder` and `alt`. It also records a few
+dialogs and menus it opens and closes again; it never saves anything. Take one on main and one
+on the branch, against the same demo data, then compare them with `scripts/i18n/text_diff.py`.
+It must print `0 view parts differ`. The script's docstring has the steps. Pin anything it can't
+reach (a dialog the demo data doesn't have) in a test.
+
+**Shadow mode** (`src/i18n/shadow.ts`) checks strings before they're cut over, a call at a time;
+nothing uses it now.
 `shadow("people:replies.within", english, { count })` still shows the hard-coded English, but
 it also looks the key up and compares the two.
 - **Where it runs:** always in `pnpm dev` (`?i18n=off` pauses it until the next reload). In a
@@ -149,8 +172,8 @@ it also looks the key up and compares the two.
   - `?` for a key with no text, and `!` for a failed lookup.
 - **A table:** `window.jatI18n.report()` lists everything, worst first.
 - **Under test,** anything but a match throws `ShadowMismatchError`, so every test that renders
-  a shadowed string checks it. Add each new shadow call to `src/i18n/shadowed.test.tsx` too,
-  with the inputs the app gives it.
+  a shadowed string checks it. Pin each new shadow call in a test too, with the inputs the app
+  gives it.
 - **Other helpers:** `shadowTrans` (sentences with tags) and `shadowValue` (format helpers)
   work the same way.
 - **Keys:** shadow keys are typed `"namespace:key"` (`TextKey`), so a typo is a type error.

@@ -5,6 +5,22 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.1.4 (2026-10-29)
+
+- Translations, step four: **Today** now reads its text from the translation files. It's still
+  English and nothing looks different.
+  - **What moved over:** the page itself, to-dos (wherever they show), the reply and chase
+    buttons, ghost and favourite marks, reply habits, How did it go?, an application's At a
+    glance card, and How it works.
+  - **How it was checked:** every page's text was compared before and after, with no
+    differences.
+  - **Developers:** `scripts/i18n/` has that check, for the areas still to come. A language
+    that's missing any key, or a plural form it needs, now fails the tests (#113).
+- **Dates are day, month, year everywhere** ("31 Oct 2026", "30 Oct 2026, 19:25"), whatever
+  your browser's language. An American browser used to show "Oct 31, 2026" and a 12-hour clock
+  in some places, and September was sometimes "Sept". Date inputs show "31 Oct 2026", and
+  date-and-time pickers "30 Oct 2026 19:25" (they showed "30/10/2026 19:25") (#113).
+
 ## 1.1.3 (2026-10-29)
 
 - Translations, step three: the app's frame now reads its text from the translation files.

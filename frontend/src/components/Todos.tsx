@@ -18,6 +18,7 @@ import { IconCheck, IconPencil, IconTrash, IconX } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { useState, type FormEvent } from "react";
+import { useTranslation } from "react-i18next";
 
 import { useAgencies, useApplications, useCompanies, useContacts } from "../api/hooks";
 import { useRoleSummaries } from "../api/roleHooks";
@@ -31,20 +32,22 @@ import {
   type Todo,
   type TodoAbout,
 } from "../api/todoHooks";
+import { i18n } from "../i18n";
 import { formatDate } from "../utils/time";
 import { useToday } from "../utils/useToday";
 
 /** "Overdue", "Today", "Tomorrow" or "By 5 Oct 2026", and how loudly to say it. */
 export function dueLabel(due: string, today: string): { label: string; color: string } {
   const days = dayjs(due).diff(dayjs(today), "day");
-  if (days < 0) return { label: `Overdue · ${formatDate(due)}`, color: "red" };
-  if (days === 0) return { label: "Today", color: "orange" };
-  if (days === 1) return { label: "Tomorrow", color: "yellow" };
-  return { label: `By ${formatDate(due)}`, color: "gray" };
+  if (days < 0) return { label: i18n.t("todos:overdue", { date: formatDate(due) }), color: "red" };
+  if (days === 0) return { label: i18n.t("todos:today"), color: "orange" };
+  if (days === 1) return { label: i18n.t("todos:tomorrow"), color: "yellow" };
+  return { label: i18n.t("todos:by", { date: formatDate(due) }), color: "gray" };
 }
 
 /** One to-do: tick it off, see what it's about and when it's due, edit or delete it. */
 export function TodoLine({ todo, showAbout = true }: { todo: Todo; showAbout?: boolean }) {
+  const { t } = useTranslation(["todos", "common"]);
   const today = useToday();
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(todo.text);
@@ -74,7 +77,7 @@ export function TodoLine({ todo, showAbout = true }: { todo: Todo; showAbout?: b
             value={text}
             onChange={(e) => setText(e.currentTarget.value)}
             onKeyDown={(e) => e.key === "Escape" && setEditing(false)}
-            aria-label="What needs doing"
+            aria-label={t("whatNeedsDoing")}
             maxLength={500}
             style={{ flex: 1 }}
             autoFocus
@@ -84,8 +87,8 @@ export function TodoLine({ todo, showAbout = true }: { todo: Todo; showAbout?: b
             value={due}
             onChange={setDue}
             clearable
-            placeholder="No date"
-            aria-label="Due"
+            placeholder={t("noDate")}
+            aria-label={t("due")}
             w={130}
           />
           <ActionIcon
@@ -93,11 +96,16 @@ export function TodoLine({ todo, showAbout = true }: { todo: Todo; showAbout?: b
             variant="subtle"
             color="teal"
             loading={update.isPending}
-            aria-label="Save to-do"
+            aria-label={t("save")}
           >
             <IconCheck size={16} />
           </ActionIcon>
-          <ActionIcon variant="subtle" color="gray" onClick={() => setEditing(false)} aria-label="Cancel">
+          <ActionIcon
+            variant="subtle"
+            color="gray"
+            onClick={() => setEditing(false)}
+            aria-label={t("common:actions.cancel")}
+          >
             <IconX size={16} />
           </ActionIcon>
         </Group>
@@ -136,7 +144,7 @@ export function TodoLine({ todo, showAbout = true }: { todo: Todo; showAbout?: b
       </Group>
       <Group gap={2} wrap="nowrap">
         {!done && (
-          <Tooltip label="Edit">
+          <Tooltip label={t("edit")}>
             <ActionIcon
               variant="subtle"
               color="gray"
@@ -146,20 +154,20 @@ export function TodoLine({ todo, showAbout = true }: { todo: Todo; showAbout?: b
                 setDue(todo.due_on);
                 setEditing(true);
               }}
-              aria-label={`Edit to-do: ${todo.text}`}
+              aria-label={t("editWho", { text: todo.text })}
             >
               <IconPencil size={14} />
             </ActionIcon>
           </Tooltip>
         )}
-        <Tooltip label="Delete">
+        <Tooltip label={t("delete")}>
           <ActionIcon
             variant="subtle"
             color="gray"
             size="sm"
             loading={remove.isPending}
             onClick={() => remove.mutate(todo)}
-            aria-label={`Delete to-do: ${todo.text}`}
+            aria-label={t("deleteWho", { text: todo.text })}
           >
             <IconTrash size={14} />
           </ActionIcon>
@@ -171,6 +179,7 @@ export function TodoLine({ todo, showAbout = true }: { todo: Todo; showAbout?: b
 
 /** Everything a to-do can be about, grouped, as "type:id" options. */
 function useAboutOptions() {
+  const { t } = useTranslation("todos");
   const { data: contacts } = useContacts();
   const { data: companies } = useCompanies();
   const { data: agencies } = useAgencies();
@@ -179,35 +188,42 @@ function useAboutOptions() {
   const byName = (a: { label: string }, b: { label: string }) => a.label.localeCompare(b.label);
   return [
     {
-      group: "Applications",
+      group: t("about.applications"),
       items: (applications ?? [])
         .filter((a) => !a.archived)
-        .map((a) => ({ value: `application:${a.id}`, label: `${a.company_name} · ${a.role_title}` }))
+        .map((a) => ({
+          value: `application:${a.id}`,
+          label: t("about.companyRole", { company: a.company_name, role: a.role_title }),
+        }))
         .sort(byName),
     },
     {
-      group: "Roles to decide",
+      group: t("about.roles"),
       items: (roles ?? [])
         .filter((r) => r.status === "to_decide")
-        .map((r) => ({ value: `role:${r.id}`, label: `${r.company_name} · ${r.title}` }))
+        .map((r) => ({
+          value: `role:${r.id}`,
+          label: t("about.companyRole", { company: r.company_name, role: r.title }),
+        }))
         .sort(byName),
     },
     {
-      group: "People",
+      group: t("about.people"),
       items: (contacts ?? []).map((c) => ({ value: `contact:${c.id}`, label: c.name })).sort(byName),
     },
     {
-      group: "Companies",
+      group: t("about.companies"),
       items: (companies ?? []).map((c) => ({ value: `company:${c.id}`, label: c.name })).sort(byName),
     },
     {
-      group: "Agencies",
+      group: t("about.agencies"),
       items: (agencies ?? []).map((a) => ({ value: `agency:${a.id}`, label: a.name })).sort(byName),
     },
   ].filter((g) => g.items.length);
 }
 
 function AboutSelect({ value, onChange }: { value: string | null; onChange: (v: string | null) => void }) {
+  const { t } = useTranslation("todos");
   const options = useAboutOptions();
   return (
     <Select
@@ -217,9 +233,9 @@ function AboutSelect({ value, onChange }: { value: string | null; onChange: (v: 
       onChange={onChange}
       searchable
       clearable
-      placeholder="About (optional)"
-      aria-label="About"
-      nothingFoundMessage="Nothing by that name"
+      placeholder={t("about.placeholder")}
+      aria-label={t("about.label")}
+      nothingFoundMessage={t("about.nothingFound")}
       style={{ flex: 1 }}
       miw={160}
     />
@@ -239,6 +255,7 @@ export function AddTodo({
   autoFocus?: boolean;
   onAdded?: () => void;
 }) {
+  const { t } = useTranslation("todos");
   const add = useAddTodo();
   const [text, setText] = useState("");
   const [due, setDue] = useState<string | null>(null);
@@ -271,8 +288,8 @@ export function AddTodo({
           size="xs"
           value={text}
           onChange={(e) => setText(e.currentTarget.value)}
-          placeholder="Reply to their message, look into the company…"
-          aria-label="New to-do"
+          placeholder={t("newPlaceholder")}
+          aria-label={t("new")}
           maxLength={500}
           style={{ flex: 3 }}
           miw={200}
@@ -284,12 +301,12 @@ export function AddTodo({
           value={due}
           onChange={setDue}
           clearable
-          placeholder="By (optional)"
-          aria-label="Due (optional)"
+          placeholder={t("byOptional")}
+          aria-label={t("dueOptional")}
           w={130}
         />
         <Button size="xs" type="submit" variant="light" loading={add.isPending} disabled={!text.trim()}>
-          Add
+          {t("add")}
         </Button>
       </Group>
     </form>
@@ -298,26 +315,27 @@ export function AddTodo({
 
 /** To-dos about one thing, for its page: the open ones, the last few done, and a box to add one. */
 export function TodosCard({ entityType, entityId }: { entityType: TodoAbout; entityId: string }) {
+  const { t } = useTranslation("todos");
   const { data: todos } = useTodos({ entity_type: entityType, entity_id: entityId, status: "all" });
-  const open = (todos ?? []).filter((t) => !t.done_at);
-  const done = (todos ?? []).filter((t) => t.done_at).slice(0, 3);
+  const open = (todos ?? []).filter((x) => !x.done_at);
+  const done = (todos ?? []).filter((x) => x.done_at).slice(0, 3);
   return (
     <Card withBorder>
       <Stack gap="sm">
         <Group gap="xs">
-          <Title order={4}>To-dos</Title>
+          <Title order={4}>{t("title")}</Title>
           {open.length > 0 && <Badge variant="light">{open.length}</Badge>}
         </Group>
-        {open.map((t) => (
-          <TodoLine key={t.id} todo={t} showAbout={false} />
+        {open.map((x) => (
+          <TodoLine key={x.id} todo={x} showAbout={false} />
         ))}
         {todos && !open.length && (
           <Text size="sm" c="dimmed">
-            Nothing to do here. Add a reminder in your own words; it shows on Today until you tick it off.
+            {t("none")}
           </Text>
         )}
-        {done.map((t) => (
-          <TodoLine key={t.id} todo={t} showAbout={false} />
+        {done.map((x) => (
+          <TodoLine key={x.id} todo={x} showAbout={false} />
         ))}
         <AddTodo about={{ type: entityType, id: entityId }} />
       </Stack>
