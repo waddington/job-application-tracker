@@ -93,5 +93,7 @@ export default {
     now: "now {{stage}}",
     archived: "archived",
     similarTitle: "similar title",
+    // Between the parts of a line: "via Northwind Talent · now Applied · archived".
+    separator: " · ",
   },
 } as const;

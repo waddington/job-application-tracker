@@ -82,7 +82,10 @@ export function compare(en: Tree, other: Tree): Comparison {
  *   t(). That's how typed maps of ids to keys are written: bare, the way t() takes them.
  * Not understood: keyPrefix, and keys built at run time (`stage.${id}`), which the app avoids.
  */
-export function usedKeys(source: string, namespaces: readonly string[], defaultNs: string): Set<string> {
+export function usedKeys(code: string, namespaces: readonly string[], defaultNs: string): Set<string> {
+  // A key named only in a comment isn't used. (Rough: a "//" inside a string, as in a URL,
+  // drops the rest of that line, which can only make a key look unused, never hide one.)
+  const source = code.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
   const used = new Set<string>();
   const declared = new Set<string>();
   for (const m of source.matchAll(/useTranslation\(\s*(\[[^\]]*\]|["'][\w-]+["'])/g)) {

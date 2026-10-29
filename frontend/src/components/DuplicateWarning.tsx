@@ -10,7 +10,7 @@ type T = ReturnType<typeof useTranslation>["t"];
 function via(d: Duplicate, t: T): string {
   if (d.route === "agency") {
     const name = d.agency_name ?? d.recruiter_name;
-    return name ? t("duplicates.via", { name }) : t("duplicates.viaRecruiter");
+    return name != null ? t("duplicates.via", { name }) : t("duplicates.viaRecruiter");
   }
   if (d.route === "referral") return t("duplicates.byReferral");
   return t("duplicates.directly");
@@ -25,7 +25,7 @@ function describe(d: Duplicate, t: T): string {
     : via(d, t);
   const bits = [how, t("duplicates.now", { stage: d.stage_name })];
   if (d.archived) bits.push(t("duplicates.archived"));
-  return bits.join(" · ");
+  return bits.join(t("duplicates.separator"));
 }
 
 /**
@@ -56,7 +56,7 @@ export function DuplicateWarning({
             </Anchor>{" "}
             <Text span size="sm" c="dimmed">
               {describe(d, t)}
-              {d.match === "similar_title" ? ` · ${t("duplicates.similarTitle")}` : ""}
+              {d.match === "similar_title" ? t("duplicates.separator") + t("duplicates.similarTitle") : ""}
             </Text>
           </List.Item>
         ))}

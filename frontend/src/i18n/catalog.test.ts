@@ -90,6 +90,11 @@ describe("usedKeys", () => {
     expect(usedKeys(source, ns, "common")).toEqual(new Set(["today:sources.recruiter", "common:appName"]));
   });
 
+  it("doesn't count keys that only appear in comments", () => {
+    const source = `/** e.g. "nav.items.today" */\n// t("nav.items.roles")\nconst x = "nav.items.offers";`;
+    expect(usedKeys(source, ns, "common")).toEqual(new Set(["common:nav.items.offers"]));
+  });
+
   it("credits bare dotted strings (typed id-to-key maps) to the file's namespaces", () => {
     expect(usedKeys(`const KEYS = { Today: "nav.items.today", x: "no-dots" }`, ns, "common")).toEqual(
       new Set(["common:nav.items.today"]),

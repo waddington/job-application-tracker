@@ -13,6 +13,7 @@ const TRANSLATED = [
   "src/components/ApiStatus.tsx",
   "src/components/DeleteButton.tsx",
   "src/components/EditNameModal.tsx",
+  "src/components/HeaderButtons.tsx",
   "src/components/CreatableSelect.tsx",
   "src/components/DuplicateWarning.tsx",
   "src/pages/NotFound.tsx",
@@ -38,10 +39,47 @@ export default tseslint.config(
         {
           mode: "jsx-only",
           "jsx-attributes": {
-            include: ["label", "placeholder", "aria-label", "title", "description", "alt", "error"],
+            include: [
+              "label",
+              ".*Label",
+              "placeholder",
+              "aria-label",
+              "aria-description",
+              "aria-valuetext",
+              "title",
+              "subtitle",
+              "description",
+              "alt",
+              "error",
+              "hint",
+              "empty",
+              "confirm",
+              "nothingFoundMessage",
+            ],
           },
-          // Strings these take are names, not text (form fields, namespaces).
-          callees: { exclude: ["i18n(ext)?", "t", "require", "getInputProps", "useTranslation"] },
+          // Template strings in JSX too: `Delete ${name}` is text.
+          "should-validate-template": true,
+          // Strings these take are names, not text: the plugin's defaults, form fields and
+          // namespaces.
+          callees: {
+            exclude: [
+              "i18n(ext)?",
+              "t",
+              "require",
+              "addEventListener",
+              "removeEventListener",
+              "postMessage",
+              "getElementById",
+              "dispatch",
+              "commit",
+              "includes",
+              "indexOf",
+              "endsWith",
+              "startsWith",
+              "getInputProps",
+              "useTranslation",
+            ],
+          },
         },
       ],
     },

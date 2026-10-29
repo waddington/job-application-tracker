@@ -45,8 +45,7 @@ export interface NavItem {
   /** The heading it sits under in the menu. */
   group: NavGroup;
   label: string;
-  /** The label's text key (docs/rfc/i18n.md); written with its namespace so the unused-key
-   *  test sees it. */
+  /** The label's text key, bare as t() takes it in the common namespace (docs/rfc/i18n.md). */
   labelKey: ItemKey;
   icon: Icon;
   /** Roadmap task that builds the page (shown on its placeholder). */

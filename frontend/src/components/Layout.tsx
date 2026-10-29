@@ -22,7 +22,7 @@ import { useTranslation } from "react-i18next";
 import { NAV, NAV_GROUP_KEYS, NAV_GROUPS } from "../nav";
 import { ApiStatus } from "./ApiStatus";
 import { HeaderSearch } from "./HeaderSearch";
-import { HelpButton, NewApplicationButton } from "./HowItWorks";
+import { HelpButton, NewApplicationButton } from "./HeaderButtons";
 
 function ColorSchemeToggle() {
   const { t } = useTranslation();
@@ -82,9 +82,9 @@ export function Layout() {
         {NAV_GROUPS.map((group, n) => {
           const items = NAV.filter((item) => item.group === group);
           // A heading that only repeats its one item's name ("Today") says nothing.
-          const heading = !(items.length === 1 && items[0]!.label === group);
+          const heading = !(items.length === 1 && t(items[0]!.labelKey) === t(NAV_GROUP_KEYS[group]));
           return (
-            <div key={group} role="group" aria-label={group}>
+            <div key={group} role="group" aria-label={t(NAV_GROUP_KEYS[group])}>
               {n > 0 && <Divider my={4} />}
               {heading && (
                 <Text size="xs" fw={600} c="dimmed" tt="uppercase" px="sm" pt={6} pb={2}>

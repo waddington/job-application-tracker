@@ -120,8 +120,10 @@ as before. Once it has:
   that file's namespaces. Don't use `keyPrefix`.
 - **Hard-coded text is a lint error** in files that have moved over: add each converted file
   to `TRANSLATED` in `frontend/eslint.config.js`. The rule (`i18next/no-literal-string`) checks
-  text in JSX and the props people read or hear (`label`, `placeholder`, `aria-label`,
-  `title`…); strings in plain code, like a form's error messages, still need care.
+  text and template strings in JSX, and the props people read or hear (`label`, `*Label`,
+  `placeholder`, `aria-label`, `title`, `description`, `error`, `hint`, `empty`, `confirm`…).
+  Strings in plain code, like a form's error messages, still need care. A prop that carries
+  prose and isn't on the list goes on it.
 - **Your data is never translated:** stage names, companies, notes and the like show as they
   were typed.
 

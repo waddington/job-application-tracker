@@ -10,7 +10,8 @@ import { EditNameModal } from "./EditNameModal";
 
 // The app's frame and shared bits read their text from locales/en/common.ts (i18n-shell).
 // These pin the English they show, so a slip in the text file shows up here. CreatableSelect's
-// "+ Add" option is checked in a real browser instead: jsdom won't type into its search box.
+// "+ Add" option was checked in a real browser instead (PR #112): jsdom won't type into
+// Mantine's search box.
 
 const HEALTH = { status: "ok", version: "1.1.3", schema: "0014", schema_head: "0014", git_repo: true };
 
@@ -64,13 +65,57 @@ describe("the frame", () => {
     expect(await within(menu).findByText("Connected")).toBeInTheDocument();
   });
 
+  it("the connection tooltip: version and schema, backups on or not", async () => {
+    mockApi({ "/api/v1/health": HEALTH });
+    renderAt("/no-such-page");
+    fireEvent.mouseEnter((await screen.findByText("Connected")).parentElement!);
+    expect(await screen.findByText("v1.1.3 · schema 0014 · backups on")).toBeInTheDocument();
+  });
+
+  it("the connection tooltip without git, and an unknown schema", async () => {
+    mockApi({ "/api/v1/health": { ...HEALTH, git_repo: false, schema: null } });
+    renderAt("/no-such-page");
+    fireEvent.mouseEnter((await screen.findByText("Connected")).parentElement!);
+    expect(await screen.findByText("v1.1.3 · schema ? · data dir isn't a git repo")).toBeInTheDocument();
+  });
+
+  it("says it's connecting while the first check is out", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => new Promise<Response>(() => {})),
+    );
+    renderAt("/no-such-page");
+    fireEvent.mouseEnter((await screen.findByText("Connecting…")).parentElement!);
+    expect(await screen.findByText("Checking the local API")).toBeInTheDocument();
+  });
+
+  it("the theme button says what it switches to", async () => {
+    mockApi({ "/api/v1/health": HEALTH });
+    renderAt("/no-such-page");
+    fireEvent.click(await screen.findByRole("button", { name: "Switch to dark mode" }));
+    expect(await screen.findByRole("button", { name: "Switch to light mode" })).toBeInTheDocument();
+  });
+
+  it("the backup link's tooltip", async () => {
+    mockApi({ "/api/v1/health": HEALTH });
+    renderAt("/no-such-page");
+    fireEvent.mouseEnter(await screen.findByRole("link", { name: "Download a backup" }));
+    expect(
+      await screen.findByText(
+        "Everything in one zip: your data, notes and files. Unzip it and run `jat init` on the folder (it rebuilds everything).",
+      ),
+    ).toBeInTheDocument();
+  });
+
   it("says when the API is offline", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => new Response("", { status: 503 })),
     );
     renderAt("/no-such-page");
-    expect(await screen.findByText("API offline", {}, { timeout: 4000 })).toBeInTheDocument();
+    const offline = await screen.findByText("API offline", {}, { timeout: 4000 });
+    fireEvent.mouseEnter(offline.parentElement!);
+    expect(await screen.findByText("Start it with `uv run jat serve`")).toBeInTheDocument();
   });
 
   it("shows Not found for an unknown address", async () => {
@@ -150,18 +195,41 @@ describe("shared pieces", () => {
             stage_name: "Applied",
             match: "similar_title",
           }),
+          twin({
+            id: "d5",
+            route: "agency",
+            agency_name: null,
+            recruiter_name: "Riley Chen",
+            applied_on: null,
+            stage_name: "Screen",
+          }),
+          twin({
+            id: "d6",
+            route: "direct",
+            applied_on: "2026-12-25",
+            stage_name: "Rejected",
+            archived: true,
+            match: "similar_title",
+          }),
         ],
       },
     });
     renderAt("/applications/a1");
     const items = await screen.findAllByRole("link", { name: "Backend Engineer at Contoso" });
-    expect(items).toHaveLength(4);
+    expect(items).toHaveLength(6);
     const text = (i: number) => items[i]!.closest("li")!.textContent;
-    expect(text(0)).toContain(
-      `via Northwind Talent on ${new Date("2026-03-05T00:00:00").toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })} · now Applied`,
-    );
+    // Dates are in the reader's locale, as before (utils/time formatDate).
+    const day = (iso: string) =>
+      new Date(`${iso}T00:00:00`).toLocaleDateString(undefined, {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      });
+    expect(text(0)).toContain(`via Northwind Talent on ${day("2026-03-05")} · now Applied`);
     expect(text(1)).toContain("via a recruiter · now Screen");
     expect(text(2)).toContain("by referral · now Offer · archived");
     expect(text(3)).toContain("directly · now Applied · similar title");
+    expect(text(4)).toContain("via Riley Chen · now Screen");
+    expect(text(5)).toContain(`directly on ${day("2026-12-25")} · now Rejected · archived · similar title`);
   });
 });
