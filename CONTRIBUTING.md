@@ -138,6 +138,9 @@ keep writing its text as before. Once it has:
   `placeholder`, `aria-label`, `title`, `description`, `error`, `hint`, `empty`, `confirm`…).
   Strings in plain code, like a form's error messages, still need care. A prop that carries
   prose and isn't on the list goes on it.
+- **Adding a language** (once its translation is reviewed): add its code to `LANGUAGES` and
+  its own name to `LANGUAGE_NAMES` in `frontend/src/i18n/language.ts`. The switch in the header
+  lists it from then on.
 - **Your data is never translated:** stage names, companies, notes and the like show as they
   were typed.
 

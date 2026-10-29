@@ -9,6 +9,7 @@ the top, on every page:
 - **New application**;
 - the search box (press <kbd>/</kbd>), which finds anything;
 - **?** (*How it works*), the everyday loop in five numbered steps;
+- the [language](#language) switch;
 - light/dark mode.
 
 ## The basics: companies, roles and applications
@@ -621,7 +622,17 @@ must match; case and accents don't matter.
 
 ## Picking dates
 
-Every calendar rings today in indigo, so you can see where you are.
+Every calendar rings today in indigo, so you can see where you are. Weeks start on Monday, and
+dates read day, month, year ("31 Oct 2026", "30 Oct 2026, 19:25"), whatever language your
+browser is set to.
+
+## Language
+
+The language button at the top right (beside light/dark mode) lists the languages the app
+comes in, each by its own name. For now that's English, with more *Coming soon!*. Your choice
+is kept in this browser; until you pick one, the app follows your browser's language if it
+has it, and English otherwise. What you've typed (companies, notes, stage names) is never
+translated.
 
 ## Dark mode
 

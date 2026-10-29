@@ -4,6 +4,8 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { App } from "../App";
+import { i18n } from "../i18n";
+import { PSEUDO, STORAGE_KEY } from "../i18n/language";
 import { makeRouter } from "../router";
 import { mockApi, row, WORKFLOW } from "../test/mockApi";
 import { EditNameModal } from "./EditNameModal";
@@ -19,9 +21,11 @@ function renderAt(path: string) {
   render(<App router={makeRouter(createMemoryHistory({ initialEntries: [path] }))} />);
 }
 
-afterEach(() => {
+afterEach(async () => {
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
+  localStorage.clear();
+  await i18n.changeLanguage("en");
 });
 
 describe("the frame", () => {
@@ -124,6 +128,37 @@ describe("the frame", () => {
     expect(await screen.findByRole("heading", { name: "Page not found" })).toBeInTheDocument();
     expect(screen.getByText("There's nothing at this address.")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Back to Today" })).toHaveAttribute("href", "/");
+  });
+});
+
+describe("the language switch", () => {
+  it("lists English, ticked, and Coming soon! greyed out", async () => {
+    mockApi({ "/api/v1/health": HEALTH });
+    renderAt("/no-such-page");
+    fireEvent.click(await screen.findByRole("button", { name: "Language" }));
+    const english = await screen.findByRole("menuitem", { name: "English", hidden: true });
+    expect(english).toHaveAttribute("aria-current", "true");
+    expect(english).toHaveAttribute("lang", "en");
+    expect(screen.getByRole("menuitem", { name: "Coming soon!", hidden: true })).toBeDisabled();
+  });
+
+  it("remembers English in this browser, and keeps <html lang> on it", async () => {
+    mockApi({ "/api/v1/health": HEALTH });
+    renderAt("/no-such-page");
+    fireEvent.click(await screen.findByRole("button", { name: "Language" }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: "English", hidden: true }));
+    expect(localStorage.getItem(STORAGE_KEY)).toBe("en");
+    expect(document.documentElement.getAttribute("lang")).toBe("en");
+  });
+
+  it("in dev, switches to the pseudo-language without remembering it", async () => {
+    mockApi({ "/api/v1/health": HEALTH });
+    renderAt("/no-such-page");
+    fireEvent.click(await screen.findByRole("button", { name: "Language" }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Pseudo-language (dev)", hidden: true }));
+    expect(await screen.findByRole("heading", { name: /^\[Þàĝé ñöţ ƒöûñð/ })).toBeInTheDocument();
+    expect(document.documentElement.getAttribute("lang")).toBe(PSEUDO);
+    expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
   });
 });
 

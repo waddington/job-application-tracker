@@ -1,9 +1,10 @@
-import { ActionIcon, Box, Button, Modal, Tooltip } from "@mantine/core";
+import { ActionIcon, Box, Button, Menu, Modal, Tooltip } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { IconHelp, IconPlus } from "@tabler/icons-react";
+import { IconCheck, IconHelp, IconLanguage, IconPlus } from "@tabler/icons-react";
 import { useRouter } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
+import { LANGUAGE_NAMES, LANGUAGES, PSEUDO, saveLanguage } from "../i18n/language";
 import { HowItWorks } from "./HowItWorks";
 import { NewApplicationModal } from "./NewApplicationModal";
 
@@ -66,5 +67,52 @@ export function NewApplicationButton({
         }}
       />
     </>
+  );
+}
+
+/**
+ * Change the language by hand (docs/rfc/i18n.md §6): the shipped languages by their own names,
+ * then "Coming soon!" until a second one ships. The choice is kept in this browser. In dev, the
+ * pseudo-language is offered too.
+ */
+export function LanguageSwitch() {
+  const { t, i18n } = useTranslation();
+  const choose = (lang: string) => {
+    void i18n.changeLanguage(lang);
+    if ((LANGUAGES as readonly string[]).includes(lang)) saveLanguage(lang as (typeof LANGUAGES)[number]);
+  };
+  return (
+    <Menu position="bottom-end" withinPortal>
+      <Menu.Target>
+        <Tooltip label={t("language.label")}>
+          <ActionIcon variant="subtle" size="lg" aria-label={t("language.label")}>
+            <IconLanguage size={18} />
+          </ActionIcon>
+        </Tooltip>
+      </Menu.Target>
+      <Menu.Dropdown>
+        <Menu.Label>{t("language.label")}</Menu.Label>
+        {LANGUAGES.map((lang) => (
+          <Menu.Item
+            key={lang}
+            lang={lang}
+            onClick={() => choose(lang)}
+            rightSection={i18n.language === lang ? <IconCheck size={14} aria-hidden /> : null}
+            aria-current={i18n.language === lang ? "true" : undefined}
+          >
+            {LANGUAGE_NAMES[lang]}
+          </Menu.Item>
+        ))}
+        <Menu.Item disabled>{t("language.comingSoon")}</Menu.Item>
+        {import.meta.env.DEV && (
+          <Menu.Item
+            onClick={() => choose(PSEUDO)}
+            rightSection={i18n.language === PSEUDO ? <IconCheck size={14} aria-hidden /> : null}
+          >
+            {t("language.pseudo")}
+          </Menu.Item>
+        )}
+      </Menu.Dropdown>
+    </Menu>
   );
 }
