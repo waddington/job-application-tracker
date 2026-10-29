@@ -1,5 +1,6 @@
 import { ActionIcon, Button, Tooltip } from "@mantine/core";
 import { IconTrash } from "@tabler/icons-react";
+import { useTranslation } from "react-i18next";
 
 import { useDeleteEntity, type Deletable } from "../api/deleteHooks";
 
@@ -26,8 +27,9 @@ export function DeleteButton({
   blocked?: string | null;
   compact?: boolean;
 }) {
+  const { t } = useTranslation();
   const remove = useDeleteEntity(kind, onDeleted);
-  const label = `Delete ${name}`;
+  const label = t("actions.deleteNamed", { name });
   const run = () => {
     if (blocked) window.alert(blocked);
     else if (window.confirm(confirm)) remove.mutate(id);
@@ -47,7 +49,7 @@ export function DeleteButton({
       loading={remove.isPending}
       onClick={run}
     >
-      Delete
+      {t("actions.delete")}
     </Button>
   );
 }

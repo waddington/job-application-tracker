@@ -3,9 +3,11 @@ import { useHotkeys } from "@mantine/hooks";
 import { IconSearch } from "@tabler/icons-react";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 /** The search box in the header. Enter opens the results; "/" jumps to it from anywhere. */
 export function HeaderSearch() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const current = useRouterState({
     select: (s) => (s.location.pathname === "/search" ? ((s.location.search as { q?: string }).q ?? "") : ""),
@@ -31,8 +33,8 @@ export function HeaderSearch() {
     >
       <TextInput
         ref={input}
-        aria-label="Search everything"
-        placeholder="Search everything"
+        aria-label={t("header.search")}
+        placeholder={t("header.search")}
         leftSection={<IconSearch size={16} />}
         rightSection={<Kbd size="xs">/</Kbd>}
         value={value}

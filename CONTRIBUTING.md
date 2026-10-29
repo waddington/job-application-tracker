@@ -87,9 +87,10 @@ pnpm --dir frontend gen:api
 ## Text in the UI (translations)
 
 The app is being made translatable, English only for now; the plan and its order are in
-[`docs/rfc/i18n.md`](docs/rfc/i18n.md). The translation layer is in place but the pages don't
-use it yet: they move over area by area. Until an area has moved, keep writing its text as
-before. Once it has:
+[`docs/rfc/i18n.md`](docs/rfc/i18n.md). Pages move over area by area. So far the app's frame
+has: the header, menu, footer, Not found and the shared buttons and dialogs (the files listed
+in `TRANSLATED` in `frontend/eslint.config.js`). Until an area has moved, keep writing its text
+as before. Once it has:
 
 - **English lives in `frontend/src/locales/en/<namespace>.ts`**, one file per area, as a
   nested object with `as const`. Name keys for what the text is for (`waiting.title`), not
@@ -112,9 +113,17 @@ before. Once it has:
   (`formatDay(at, "dayMonth", lang)`, `formatNumber`, `formatMoney`), not a fixed
   `dayjs().format()` or `toLocaleString("en-GB")`. Dates sent to the API stay `YYYY-MM-DD`.
 - **Ids instead of keys built at run time.** Map an id to a key with a typed object rather
-  than `` t(`stages.${id}`) ``, which the type check can't follow. Write the map's keys with
-  their namespace (`"insights:sources.recruiter"`), so the unused-key test sees them. Don't
-  use `keyPrefix`.
+  than `` t(`stages.${id}`) ``, which the type check can't follow. Write the map's keys the
+  way that file's `t()` takes them, bare for its own namespace (`"nav.items.today"`, typed
+  like `` `nav.items.${keyof …}` ``): `t()` refuses `"common:nav.items.today"` when `common`
+  is its own namespace. The unused-key test counts any dotted string in a file as a key of
+  that file's namespaces. Don't use `keyPrefix`.
+- **Hard-coded text is a lint error** in files that have moved over: add each converted file
+  to `TRANSLATED` in `frontend/eslint.config.js`. The rule (`i18next/no-literal-string`) checks
+  text and template strings in JSX, and the props people read or hear (`label`, `*Label`,
+  `placeholder`, `aria-label`, `title`, `description`, `error`, `hint`, `empty`, `confirm`…).
+  Strings in plain code, like a form's error messages, still need care. A prop that carries
+  prose and isn't on the list goes on it.
 - **Your data is never translated:** stage names, companies, notes and the like show as they
   were typed.
 

@@ -1,13 +1,9 @@
-import { ActionIcon, Box, Button, List, Modal, Stack, Text, ThemeIcon, Tooltip } from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
-import { IconHelp, IconPlus } from "@tabler/icons-react";
-import { useRouter } from "@tanstack/react-router";
+import { List, Stack, Text, ThemeIcon } from "@mantine/core";
 import type { ReactNode } from "react";
 
 import { shadowTrans } from "../i18n/shadow";
-import { NewApplicationModal } from "./NewApplicationModal";
 
-/** The text of the sentence below, without its tags. HowItWorks.test.tsx checks it still
+/** The text of the sentence below, without its tags. i18n/shadowed.test.tsx checks it still
  *  matches what's rendered, so the two can't drift apart. */
 export const START_FROM_TODAY =
   "Your move is what to do now (replies to read, follow-ups due, your to-dos), Coming up is what's booked, and Waiting on them is who to chase.";
@@ -102,62 +98,5 @@ export function HowItWorks() {
         the roles they mentioned and decide on each under <b>Roles</b>.
       </Text>
     </Stack>
-  );
-}
-
-export function HelpButton() {
-  const [opened, { open, close }] = useDisclosure();
-  return (
-    <>
-      <Tooltip label="How it works">
-        <ActionIcon variant="subtle" size="lg" aria-label="How it works" onClick={open}>
-          <IconHelp size={18} />
-        </ActionIcon>
-      </Tooltip>
-      <Modal opened={opened} onClose={close} title="How it works" size="lg">
-        <HowItWorks />
-      </Modal>
-    </>
-  );
-}
-
-/** "New application" from any page; opens the new application's page once it's added. */
-export function NewApplicationButton({
-  size = "sm",
-  compact,
-}: {
-  size?: "xs" | "sm" | "md";
-  compact?: boolean;
-}) {
-  const [opened, { open, close }] = useDisclosure();
-  const router = useRouter();
-  return (
-    <>
-      {compact ? (
-        <>
-          <Box visibleFrom="sm">
-            <Button size={size} leftSection={<IconPlus size={16} />} onClick={open}>
-              New application
-            </Button>
-          </Box>
-          <Tooltip label="New application">
-            <ActionIcon hiddenFrom="sm" size="lg" aria-label="New application" onClick={open}>
-              <IconPlus size={18} />
-            </ActionIcon>
-          </Tooltip>
-        </>
-      ) : (
-        <Button size={size} leftSection={<IconPlus size={16} />} onClick={open}>
-          New application
-        </Button>
-      )}
-      <NewApplicationModal
-        opened={opened}
-        onClose={(id) => {
-          close();
-          if (id) router.history.push(`/applications/${id}`);
-        }}
-      />
-    </>
   );
 }

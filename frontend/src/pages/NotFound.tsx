@@ -1,13 +1,15 @@
 import { Button, Stack, Text, Title } from "@mantine/core";
 import { Link } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
 
 export function NotFound() {
+  const { t } = useTranslation();
   return (
     <Stack align="flex-start">
-      <Title order={2}>Page not found</Title>
-      <Text c="dimmed">There's nothing at this address.</Text>
+      <Title order={2}>{t("notFound.title")}</Title>
+      <Text c="dimmed">{t("notFound.body")}</Text>
       <Button component={Link} to="/" variant="light">
-        Back to Today
+        {t("notFound.back")}
       </Button>
     </Stack>
   );

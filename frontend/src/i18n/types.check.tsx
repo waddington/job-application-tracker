@@ -6,6 +6,7 @@
 import { Trans, useTranslation } from "react-i18next";
 
 import type { TextKey } from "../locales/en";
+import { NAV, NAV_GROUP_KEYS } from "../nav";
 import { i18n } from ".";
 
 export function typeChecks() {
@@ -35,7 +36,7 @@ export function useTypeChecks() {
   t("greeting", { nam: "Alex" });
 }
 
-/** TextKey ("namespace:key", used by shadow mode and typed id-to-key maps). */
+/** TextKey ("namespace:key", used by shadow mode). */
 export function textKeyChecks(): TextKey[] {
   const good: TextKey[] = ["people:replies.within", "common:nav.items.today", "today:groupBadge"];
   // @ts-expect-error a key that doesn't exist
@@ -47,6 +48,17 @@ export function textKeyChecks(): TextKey[] {
   // @ts-expect-error no namespace
   const bare: TextKey = "replies.within";
   return [...good, unknown, form, branch, bare];
+}
+
+/** t() from useTranslation() takes its own namespace's keys bare, never prefixed with it, so
+ *  typed maps hold bare keys (nav.ts). */
+export function useBareKeyChecks() {
+  const { t } = useTranslation();
+  const group = NAV_GROUP_KEYS.Review;
+  const item = NAV[0]!.labelKey;
+  // @ts-expect-error a common key prefixed with its own namespace
+  const prefixed = t("common:nav.items.today");
+  return [t(group), t(item), t("nav.items.today"), prefixed];
 }
 
 export function TransChecks() {

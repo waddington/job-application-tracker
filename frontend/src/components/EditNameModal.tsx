@@ -1,5 +1,6 @@
 import { Button, Group, Modal, Stack, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
+import { useTranslation } from "react-i18next";
 
 /** Rename a company or agency and set its website. Mount it with a `key` so it starts fresh. */
 export function EditNameModal({
@@ -19,14 +20,13 @@ export function EditNameModal({
   saving: boolean;
   onSave: (values: { name: string; website: string | null }) => void;
 }) {
+  const { t } = useTranslation();
   const form = useForm({
     initialValues: { name, website: website ?? "" },
     validate: {
-      name: (v) => (v.trim() ? null : "It needs a name"),
+      name: (v) => (v.trim() ? null : t("editName.needsName")),
       website: (v) =>
-        !v.trim() || /^https?:\/\/[^\s/]+\.[^\s]+$/.test(v.trim())
-          ? null
-          : "Like https://contoso.example.com",
+        !v.trim() || /^https?:\/\/[^\s/]+\.[^\s]+$/.test(v.trim()) ? null : t("editName.websiteExample"),
     },
   });
   return (
@@ -35,14 +35,18 @@ export function EditNameModal({
         onSubmit={form.onSubmit((v) => onSave({ name: v.name.trim(), website: v.website.trim() || null }))}
       >
         <Stack>
-          <TextInput label="Name" data-autofocus {...form.getInputProps("name")} />
-          <TextInput label="Website" placeholder="https://…" {...form.getInputProps("website")} />
+          <TextInput label={t("editName.name")} data-autofocus {...form.getInputProps("name")} />
+          <TextInput
+            label={t("editName.website")}
+            placeholder={t("editName.websitePlaceholder")}
+            {...form.getInputProps("website")}
+          />
           <Group justify="flex-end">
             <Button variant="default" onClick={onClose}>
-              Cancel
+              {t("actions.cancel")}
             </Button>
             <Button type="submit" loading={saving}>
-              Save
+              {t("actions.save")}
             </Button>
           </Group>
         </Stack>

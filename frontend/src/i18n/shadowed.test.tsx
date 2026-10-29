@@ -3,34 +3,15 @@ import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { HowItWorks, START_FROM_TODAY } from "../components/HowItWorks";
-import { NAV, NAV_GROUP_KEYS, NAV_GROUPS } from "../nav";
 import { overdueBy, replyHabit } from "../utils/replies";
 import { report, resetShadow, shadow } from "./shadow";
 
-// Every real string shadowed so far, checked against the English text files with the inputs
-// the app gives them. Under test a mismatch throws (shadow.ts), so each call is an assertion.
-// Tests that render these pages check them again with real data.
+// Every real string still shadowed, checked against the English text files with the inputs the
+// app gives them (areas already cut over to t() are tested in their own files). Under test a
+// mismatch throws (shadow.ts), so each call is an assertion. Tests that render these pages
+// check them again with real data.
 
 beforeEach(() => resetShadow());
-
-describe("the menu", () => {
-  it.each(NAV)("$label matches its key", (item) => {
-    expect(() => shadow(item.labelKey, item.label)).not.toThrow();
-  });
-
-  it.each(NAV_GROUPS)("the %s heading matches its key", (group) => {
-    expect(() => shadow(NAV_GROUP_KEYS[group], group)).not.toThrow();
-  });
-});
-
-describe("the header and footer", () => {
-  it("both theme labels match", () => {
-    shadow("common:theme.toDark", "Switch to dark mode");
-    shadow("common:theme.toLight", "Switch to light mode");
-    shadow("common:footer.backup", "Download a backup");
-    expect(report().every((r) => r.status === "match")).toBe(true);
-  });
-});
 
 describe("Today", () => {
   it.each(["Your move", "Coming up", "Waiting on them"])("the badge for %s", (group) => {
