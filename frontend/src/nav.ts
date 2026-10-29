@@ -13,6 +13,8 @@ import {
   type Icon,
 } from "@tabler/icons-react";
 
+import type { TextKey } from "./locales/en";
+
 export type NavGroup = "Today" | "Your applications" | "People and companies" | "Files and notes" | "Review";
 
 /** Menu headings, in order. */
@@ -24,11 +26,23 @@ export const NAV_GROUPS: NavGroup[] = [
   "Review",
 ];
 
+/** Each menu heading's text key. */
+export const NAV_GROUP_KEYS: Record<NavGroup, TextKey> = {
+  Today: "common:nav.groups.today",
+  "Your applications": "common:nav.groups.applications",
+  "People and companies": "common:nav.groups.people",
+  "Files and notes": "common:nav.groups.files",
+  Review: "common:nav.groups.review",
+};
+
 export interface NavItem {
   path: string;
   /** The heading it sits under in the menu. */
   group: NavGroup;
   label: string;
+  /** The label's text key (docs/rfc/i18n.md); written with its namespace so the unused-key
+   *  test sees it. */
+  labelKey: TextKey;
   icon: Icon;
   /** Roadmap task that builds the page (shown on its placeholder). */
   task: string;
@@ -41,6 +55,7 @@ export const NAV: NavItem[] = [
     path: "/",
     group: "Today",
     label: "Today",
+    labelKey: "common:nav.items.today",
     icon: IconHome,
     task: "today-page",
     description: "Your move, what's coming up, and who you're waiting on.",
@@ -49,6 +64,7 @@ export const NAV: NavItem[] = [
     path: "/roles",
     group: "Your applications",
     label: "Roles",
+    labelKey: "common:nav.items.roles",
     icon: IconListDetails,
     task: "role-decisions",
     description: "Roles you might go for: pitched by a recruiter or spotted, then applied for or passed on.",
@@ -57,6 +73,7 @@ export const NAV: NavItem[] = [
     path: "/applications",
     group: "Your applications",
     label: "Applications",
+    labelKey: "common:nav.items.applications",
     icon: IconBriefcase,
     task: "app-list",
     description: "Every application as a filterable list or a board.",
@@ -65,6 +82,7 @@ export const NAV: NavItem[] = [
     path: "/recruiters",
     group: "People and companies",
     label: "Recruiters",
+    labelKey: "common:nav.items.recruiters",
     icon: IconUsers,
     task: "recruiters",
     description: "Agencies and recruiters, their contact details and the roles they've sent.",
@@ -73,6 +91,7 @@ export const NAV: NavItem[] = [
     path: "/companies",
     group: "People and companies",
     label: "Companies",
+    labelKey: "common:nav.items.companies",
     icon: IconBuilding,
     task: "detail-pages",
     description: "Companies, their roles and who you've spoken to.",
@@ -81,6 +100,7 @@ export const NAV: NavItem[] = [
     path: "/interviews",
     group: "Your applications",
     label: "Interviews",
+    labelKey: "common:nav.items.interviews",
     icon: IconCalendarEvent,
     task: "interviews",
     description: "Interviews and coding tasks: schedule, prep and debriefs.",
@@ -89,6 +109,7 @@ export const NAV: NavItem[] = [
     path: "/offers",
     group: "Your applications",
     label: "Offers",
+    labelKey: "common:nav.items.offers",
     icon: IconCash,
     task: "offers",
     description: "Offers side by side: salary, bonus, equity, pension, day rate and IR35.",
@@ -97,6 +118,7 @@ export const NAV: NavItem[] = [
     path: "/documents",
     group: "Files and notes",
     label: "Documents",
+    labelKey: "common:nav.items.documents",
     icon: IconFileText,
     task: "documents",
     description: "CV and cover-letter versions, and where each was sent.",
@@ -105,6 +127,7 @@ export const NAV: NavItem[] = [
     path: "/notes",
     group: "Files and notes",
     label: "Notes",
+    labelKey: "common:nav.items.notes",
     icon: IconNotes,
     task: "notes",
     description: "Markdown notes on anything, plus general notes.",
@@ -113,6 +136,7 @@ export const NAV: NavItem[] = [
     path: "/insights",
     group: "Review",
     label: "Insights",
+    labelKey: "common:nav.items.insights",
     icon: IconChartSankey,
     task: "sankey",
     description: "Sankey diagram of your funnel, conversion rates and recruiter scorecards.",
@@ -121,6 +145,7 @@ export const NAV: NavItem[] = [
     path: "/timeline",
     group: "Review",
     label: "Timeline",
+    labelKey: "common:nav.items.timeline",
     icon: IconTimeline,
     task: "timeline",
     description:
