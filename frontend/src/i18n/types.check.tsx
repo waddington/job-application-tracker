@@ -5,6 +5,7 @@
 
 import { Trans, useTranslation } from "react-i18next";
 
+import type { TextKey } from "../locales/en";
 import { i18n } from ".";
 
 export function typeChecks() {
@@ -32,6 +33,20 @@ export function useTypeChecks() {
   t("greting", { name: "Alex" });
   // @ts-expect-error a misspelt placeholder value
   t("greeting", { nam: "Alex" });
+}
+
+/** TextKey ("namespace:key", used by shadow mode and typed id-to-key maps). */
+export function textKeyChecks(): TextKey[] {
+  const good: TextKey[] = ["people:replies.within", "common:nav.items.today", "today:groupBadge"];
+  // @ts-expect-error a key that doesn't exist
+  const unknown: TextKey = "people:replies.nope";
+  // @ts-expect-error a plural form instead of its base key
+  const form: TextKey = "people:replies.within_one";
+  // @ts-expect-error an object, not a string
+  const branch: TextKey = "common:nav";
+  // @ts-expect-error no namespace
+  const bare: TextKey = "replies.within";
+  return [...good, unknown, form, branch, bare];
 }
 
 export function TransChecks() {

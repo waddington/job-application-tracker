@@ -5,10 +5,13 @@
 //   ✗ mismatch  it gives something else (both are logged)
 //   ? missing   no text for the key
 //   ! error     the lookup failed (e.g. a {{placeholder}} with no value)
-// Each key is logged once per result. window.jatI18n.report() prints a table of everything.
+// Each key is logged once per result: the first mismatch for a key, not every later one.
+// window.jatI18n.report() prints a table of everything, keeping each key's worst result.
+// "checks" counts every call, and React's StrictMode renders twice in dev.
 //
-// It's on in `pnpm dev`. In a built app it's off until you switch it on, in this browser only:
-// open the app with ?i18n=shadow (stays on), and ?i18n=off to switch it off again.
+// It's on in `pnpm dev` (until ?i18n=off, for that page load). In a built app it's off until
+// you switch it on, in this browser only: open the app with ?i18n=shadow (stays on), and
+// ?i18n=off to switch it off again.
 // Under test, a mismatch throws, so the test suite checks every shadowed string it renders.
 //
 // The shadow calls are removed as each area is cut over to t() (i18n-finish removes this file).
@@ -56,9 +59,13 @@ function readFlag(): boolean {
   }
 }
 
-/** Whether shadow checks run: always in dev and tests, else when switched on in this browser. */
+/** On by default in dev and tests; in a built app only when this browser has the flag. */
+export const defaultOn = (e: { DEV?: boolean; MODE?: string }, flag: () => boolean) =>
+  Boolean(e.DEV) || e.MODE === "test" || flag();
+
+/** Whether shadow checks run now (setShadow and ?i18n= override the default). */
 export function shadowOn(): boolean {
-  on ??= Boolean(env.DEV) || underTest || (typeof window !== "undefined" && readFlag());
+  on ??= defaultOn(env, () => typeof window !== "undefined" && readFlag());
   return on;
 }
 
@@ -112,15 +119,17 @@ function check(key: string, english: string, lookup: (lng: string) => string, ex
     }
   }
   const before = rows.get(key);
-  // Keep the worst result seen for a key, so one later match can't hide a mismatch.
-  const row: Row =
-    before && before.status !== "match" && status === "match"
-      ? { ...before, checks: before.checks + 1 }
-      : { key, status, english, translation, shown, checks: (before?.checks ?? 0) + 1 };
-  rows.set(key, row);
-  log(row);
-  if (throws && status !== "match") throw new ShadowMismatchError(row);
+  const current: Row = { key, status, english, translation, shown, checks: (before?.checks ?? 0) + 1 };
+  // The report keeps the worst result seen for a key, so a later match can't hide a mismatch.
+  rows.set(
+    key,
+    before && RANK[before.status] <= RANK[status] ? { ...before, checks: current.checks } : current,
+  );
+  log(current);
+  if (throws && status !== "match") throw new ShadowMismatchError(current);
 }
+
+const RANK: Record<Status, number> = { error: 0, missing: 1, mismatch: 2, match: 3 };
 
 let throws = underTest;
 /** For the shadow helper's own tests: record mismatches without throwing. */
@@ -161,8 +170,7 @@ export function shadowValue(id: string, english: string, translated: (lng: strin
 
 /** Every key checked so far, worst result first. */
 export function report(): Row[] {
-  const order: Record<Status, number> = { error: 0, missing: 1, mismatch: 2, match: 3 };
-  return [...rows.values()].sort((a, b) => order[a.status] - order[b.status] || a.key.localeCompare(b.key));
+  return [...rows.values()].sort((a, b) => RANK[a.status] - RANK[b.status] || a.key.localeCompare(b.key));
 }
 
 /** For tests: forget everything checked so far. */

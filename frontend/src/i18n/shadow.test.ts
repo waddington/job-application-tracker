@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { i18n } from ".";
 import { PSEUDO } from "./language";
 import {
+  defaultOn,
   FLAG,
   installShadow,
   report,
@@ -31,6 +32,7 @@ beforeEach(() => {
 afterEach(async () => {
   vi.restoreAllMocks();
   window.localStorage.clear();
+  delete (window as unknown as { jatI18n?: unknown }).jatI18n;
   resetShadow();
   await i18n.changeLanguage("en");
 });
@@ -93,6 +95,34 @@ describe("shadow", () => {
     expect(() => shadow("selftest:plain", "Hello")).not.toThrow();
   });
 
+  it("logs a match once, however often it's checked", () => {
+    shadow("selftest:plain", "Hello");
+    shadow("selftest:plain", "Hello");
+    expect(debug).toHaveBeenCalledTimes(1);
+    expect(row("selftest:plain")?.checks).toBe(2);
+  });
+
+  it("keeps a missing or failed result over a later mismatch", () => {
+    shadow("selftest:greeting", "Hello Alex"); // error: no value for {{name}}
+    shadow("selftest:greeting", "Hullo Alex", { name: "Alex" }); // mismatch
+    expect(row("selftest:greeting")?.status).toBe("error");
+  });
+
+  it("treats a plural key called without count as missing", () => {
+    shadow("selftest:days", "3 days");
+    expect(row("selftest:days")?.status).toBe("missing");
+  });
+
+  it("throws under test on a missing key or a failed lookup, with that call's text", () => {
+    setShadowThrows(true);
+    expect(() => shadow("selftest:nope" as never, "x")).toThrow("i18n shadow missing for selftest:nope");
+    expect(() => shadow("selftest:greeting", "Hello Alex")).toThrow(
+      'i18n shadow error for selftest:greeting: page says "Hello Alex", text file gives "No value for {{name}}"',
+    );
+    expect(() => shadow("selftest:plain", "First")).toThrow('page says "First"');
+    expect(() => shadow("selftest:plain", "Second")).toThrow('page says "Second"');
+  });
+
   it("logs what the current language shows when it isn't English", async () => {
     await i18n.changeLanguage(PSEUDO);
     shadow("selftest:plain", "Hello");
@@ -130,8 +160,13 @@ describe("report", () => {
 });
 
 describe("switching it on and off", () => {
-  it("is on under test", () => {
-    expect(shadowOn()).toBe(true);
+  it("is on by default in dev and tests; in a built app only with this browser's flag", () => {
+    const yes = () => true;
+    const no = () => false;
+    expect(defaultOn({ DEV: true, MODE: "development" }, no)).toBe(true);
+    expect(defaultOn({ DEV: false, MODE: "test" }, no)).toBe(true);
+    expect(defaultOn({ DEV: false, MODE: "production" }, no)).toBe(false);
+    expect(defaultOn({ DEV: false, MODE: "production" }, yes)).toBe(true);
   });
 
   it("checks nothing when off, and still returns the English", () => {

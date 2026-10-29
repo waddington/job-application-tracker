@@ -14,7 +14,11 @@ type Paths<T> = {
   [K in keyof T & string]: T[K] extends string ? K : `${K}.${Paths<T[K]>}`;
 }[keyof T & string];
 type PluralForm = "zero" | "one" | "two" | "few" | "many" | "other";
-type Base<K extends string> = K extends `${infer B}_${PluralForm}` ? B : K;
+type Base<K extends string> = K extends `${infer B}_ordinal_${PluralForm}`
+  ? B
+  : K extends `${infer B}_${PluralForm}`
+    ? B
+    : K;
 
 /** Every key with its namespace, plural forms as one: "today:groupBadge", "people:replies.within". */
 export type TextKey = { [N in Namespace]: `${N}:${Base<Paths<(typeof en)[N]>>}` }[Namespace];

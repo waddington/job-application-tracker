@@ -130,8 +130,9 @@ shows every string accented and longer, so any text that skipped the layer stand
 **Shadow mode** (`src/i18n/shadow.ts`) checks an area's strings before it's cut over.
 `shadow("people:replies.within", english, { count })` still shows the hard-coded English, but
 it also looks the key up and compares the two.
-- **Where it runs:** always in `pnpm dev`. In a built app it runs only after you open it once
-  with `?i18n=shadow`, which is remembered in that browser until you open `?i18n=off`.
+- **Where it runs:** always in `pnpm dev` (`?i18n=off` pauses it until the next reload). In a
+  built app it runs only after you open it once with `?i18n=shadow`, which is remembered in
+  that browser until you open `?i18n=off`.
 - **What the console shows:**
   - `✓` for each key that matches. These are `console.debug` lines, so turn on Chrome's
     "Verbose" level to see them.
@@ -139,7 +140,8 @@ it also looks the key up and compares the two.
   - `?` for a key with no text, and `!` for a failed lookup.
 - **A table:** `window.jatI18n.report()` lists everything, worst first.
 - **Under test,** anything but a match throws `ShadowMismatchError`, so every test that renders
-  a shadowed string checks it.
+  a shadowed string checks it. Add each new shadow call to `src/i18n/shadowed.test.tsx` too,
+  with the inputs the app gives it.
 - **Other helpers:** `shadowTrans` (sentences with tags) and `shadowValue` (format helpers)
   work the same way.
 - **Keys:** shadow keys are typed `"namespace:key"` (`TextKey`), so a typo is a type error.
