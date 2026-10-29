@@ -1,9 +1,11 @@
 import { MantineProvider } from "@mantine/core";
 import { createMemoryHistory } from "@tanstack/react-router";
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { App } from "../App";
+import { i18n } from "../i18n";
+import { PSEUDO, STORAGE_KEY } from "../i18n/language";
 import { makeRouter } from "../router";
 import { mockApi, row, WORKFLOW } from "../test/mockApi";
 import { EditNameModal } from "./EditNameModal";
@@ -19,9 +21,13 @@ function renderAt(path: string) {
   render(<App router={makeRouter(createMemoryHistory({ initialEntries: [path] }))} />);
 }
 
-afterEach(() => {
+afterEach(async () => {
+  cleanup(); // unmount before the language changes back, not after (hooks run in reverse)
   vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
   vi.restoreAllMocks();
+  localStorage.clear();
+  await i18n.changeLanguage("en");
 });
 
 describe("the frame", () => {
@@ -124,6 +130,59 @@ describe("the frame", () => {
     expect(await screen.findByRole("heading", { name: "Page not found" })).toBeInTheDocument();
     expect(screen.getByText("There's nothing at this address.")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Back to Today" })).toHaveAttribute("href", "/");
+  });
+});
+
+describe("the language switch", () => {
+  it("lists English, ticked, and Coming soon! greyed out", async () => {
+    mockApi({ "/api/v1/health": HEALTH });
+    renderAt("/no-such-page");
+    fireEvent.click(await screen.findByRole("button", { name: "Language" }));
+    const english = await screen.findByRole("menuitem", { name: "English", hidden: true });
+    expect(english).toHaveAttribute("aria-current", "true");
+    expect(english).toHaveAttribute("lang", "en");
+    expect(screen.getByRole("menuitem", { name: "Coming soon!", hidden: true })).toBeDisabled();
+  });
+
+  it("the button says it opens a menu, and whether it's open", async () => {
+    mockApi({ "/api/v1/health": HEALTH });
+    renderAt("/no-such-page");
+    const button = await screen.findByRole("button", { name: "Language" });
+    expect(button).toHaveAttribute("aria-haspopup", "menu");
+    expect(button).toHaveAttribute("aria-expanded", "false");
+    fireEvent.click(button);
+    expect(button).toHaveAttribute("aria-expanded", "true");
+  });
+
+  it("switching to English remembers it in this browser and moves <html lang> to it", async () => {
+    await i18n.changeLanguage(PSEUDO);
+    expect(document.documentElement.getAttribute("lang")).toBe(PSEUDO);
+    mockApi({ "/api/v1/health": HEALTH });
+    renderAt("/no-such-page");
+    fireEvent.click(await screen.findByRole("button", { name: /Ļàñĝûàĝé/ }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: "English", hidden: true }));
+    expect(await screen.findByRole("heading", { name: "Page not found" })).toBeInTheDocument();
+    expect(document.documentElement.getAttribute("lang")).toBe("en");
+    expect(localStorage.getItem(STORAGE_KEY)).toBe("en");
+  });
+
+  it("offers the pseudo-language only in dev", async () => {
+    vi.stubEnv("DEV", false);
+    mockApi({ "/api/v1/health": HEALTH });
+    renderAt("/no-such-page");
+    fireEvent.click(await screen.findByRole("button", { name: "Language" }));
+    expect(await screen.findByRole("menuitem", { name: "English", hidden: true })).toBeInTheDocument();
+    expect(screen.queryByRole("menuitem", { name: "Pseudo-language (dev)", hidden: true })).toBeNull();
+  });
+
+  it("in dev, switches to the pseudo-language without remembering it", async () => {
+    mockApi({ "/api/v1/health": HEALTH });
+    renderAt("/no-such-page");
+    fireEvent.click(await screen.findByRole("button", { name: "Language" }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Pseudo-language (dev)", hidden: true }));
+    expect(await screen.findByRole("heading", { name: /^\[Þàĝé ñöţ ƒöûñð/ })).toBeInTheDocument();
+    expect(document.documentElement.getAttribute("lang")).toBe(PSEUDO);
+    expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
   });
 });
 

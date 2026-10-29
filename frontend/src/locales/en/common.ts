@@ -37,6 +37,12 @@ export default {
       timeline: "Timeline",
     },
   },
+  // The language switch in the header. Languages are listed by their own names, not here.
+  language: {
+    label: "Language",
+    comingSoon: "Coming soon!",
+    pseudo: "Pseudo-language (dev)",
+  },
   // One key per state: "dark" and "light" need translating too.
   theme: {
     toDark: "Switch to dark mode",

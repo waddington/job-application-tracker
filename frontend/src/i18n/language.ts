@@ -1,10 +1,12 @@
-// Which language to show (docs/rfc/i18n.md §6): a choice saved in this browser, else the
-// browser's own languages, else English. In dev, ?lang= overrides both, including the
-// pseudo-language. There's no switch in the UI until a second language ships.
+// Which language to show (docs/rfc/i18n.md §6): a choice saved in this browser (the switch in
+// the header), else the browser's own languages, else English. In dev, ?lang= overrides both,
+// including the pseudo-language.
 
 /** Languages the app ships. Add one here when its translation is reviewed. */
 export const LANGUAGES = ["en"] as const;
 export type Language = (typeof LANGUAGES)[number];
+/** Each language's name in itself, as the switch lists it: never translated. */
+export const LANGUAGE_NAMES: Record<Language, string> = { en: "English" };
 export const FALLBACK: Language = "en";
 /**
  * Dev-only: accented, longer text that shows any string the translation layer missed.
@@ -45,6 +47,18 @@ export function pickLanguage({ search = "", stored, browser = [], dev = false }:
     if (fromUrl) return fromUrl;
   }
   return shipped(stored) ?? browser.map(shipped).find(Boolean) ?? FALLBACK;
+}
+
+/** Whether a code is one of the shipped languages (not the pseudo-language, say). */
+export const isLanguage = (code: string): code is Language => (LANGUAGES as readonly string[]).includes(code);
+
+/** Remember the choice in this browser (nothing happens where storage isn't available). */
+export function saveLanguage(lang: Language) {
+  try {
+    window.localStorage.setItem(STORAGE_KEY, lang);
+  } catch {
+    // a private window: it lasts until the page reloads
+  }
 }
 
 /** The saved choice, or null where storage isn't available (private windows, some previews). */

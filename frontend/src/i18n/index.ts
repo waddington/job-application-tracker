@@ -83,6 +83,14 @@ export function createI18n({ lng, resources, strict = false, pseudo = false, rea
   return instance;
 }
 
+/** Keep <html lang> on the language shown, for screen readers and the browser's own tools. */
+function followLanguage(instance: I18n) {
+  if (typeof document === "undefined") return;
+  const set = (lng: string) => document.documentElement.setAttribute("lang", lng);
+  set(instance.language);
+  instance.on("languageChanged", set);
+}
+
 /** Dev servers and tests are strict; a production build never throws over text. */
 export const isStrict = (env: { DEV?: boolean; MODE?: string }) => Boolean(env.DEV) || env.MODE === "test";
 
@@ -103,3 +111,4 @@ export const i18n = createI18n({
   pseudo: env.DEV,
   react: true,
 });
+followLanguage(i18n);

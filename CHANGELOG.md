@@ -5,6 +5,13 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.2.0 (2026-10-29)
+
+- **A language switch** at the top right, beside light/dark mode: English for now, with more
+  languages *Coming soon!*. Your choice is kept in this browser; until you pick one, the app
+  follows your browser's language when it has it. The page's language is set to match, for
+  screen readers (#114).
+
 ## 1.1.4 (2026-10-29)
 
 - Translations, step four: **Today** now reads its text from the translation files. It's still

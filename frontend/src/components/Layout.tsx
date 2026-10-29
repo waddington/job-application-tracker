@@ -22,7 +22,7 @@ import { useTranslation } from "react-i18next";
 import { NAV, NAV_GROUP_KEYS, NAV_GROUPS } from "../nav";
 import { ApiStatus } from "./ApiStatus";
 import { HeaderSearch } from "./HeaderSearch";
-import { HelpButton, NewApplicationButton } from "./HeaderButtons";
+import { HelpButton, LanguageSwitch, NewApplicationButton } from "./HeaderButtons";
 
 function ColorSchemeToggle() {
   const { t } = useTranslation();
@@ -73,6 +73,7 @@ export function Layout() {
             <NewApplicationButton compact />
             <HeaderSearch />
             <HelpButton />
+            <LanguageSwitch />
             <ColorSchemeToggle />
           </Group>
         </Group>
