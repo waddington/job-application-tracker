@@ -5,6 +5,17 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.1.4 (2026-10-29)
+
+- Translations, step four: **Today** now reads its text from the translation files. It's still
+  English and nothing looks different.
+  - **What moved over:** the page itself, to-dos (wherever they show), the reply and chase
+    buttons, ghost and favourite marks, reply habits, How did it go?, an application's At a
+    glance card, and How it works.
+  - **How it was checked:** every page's text was compared before and after, with no
+    differences.
+  - **Developers:** `scripts/i18n/` has that check, for the areas still to come (#113).
+
 ## 1.1.3 (2026-10-29)
 
 - Translations, step three: the app's frame now reads its text from the translation files.
