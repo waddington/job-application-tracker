@@ -5,6 +5,18 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.1.1 (2026-10-29)
+
+- Groundwork for other languages: the app can now be translated, though it's still English
+  only and nothing looks different.
+  - **Added:** i18next, with every text key and placeholder name checked by the type checker; date
+    and number helpers that give the same output as today; a dev-only pseudo-language
+    (`?lang=pseudo`) for spotting untranslated text.
+  - **Tests** for plurals in English, Polish and Chinese, falling back to English, and unused
+    or broken keys.
+  - "Text in the UI" in the contributing guide. The pages move over in later versions
+    ([plan](docs/rfc/i18n.md)) (#110).
+
 ## 1.1.0 (2026-10-27)
 
 - **Today**: the Overview and Next actions are one home page, sorted by what you do about each

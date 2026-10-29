@@ -1,7 +1,7 @@
 {
   "name": "jat-frontend",
   "private": true,
-  "version": "1.1.0",
+  "version": "1.1.1",
   "type": "module",
   "engines": {
     "node": ">=22.12"
@@ -30,9 +30,11 @@
     "@tanstack/react-router": "^1.170.40",
     "d3-sankey": "^0.12.3",
     "dayjs": "^1.11.23",
+    "i18next": "^26.5.11",
     "openapi-fetch": "^0.17.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
+    "react-i18next": "^17.1.9",
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1"
   },
