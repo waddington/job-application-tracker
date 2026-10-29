@@ -49,6 +49,9 @@ export function pickLanguage({ search = "", stored, browser = [], dev = false }:
   return shipped(stored) ?? browser.map(shipped).find(Boolean) ?? FALLBACK;
 }
 
+/** Whether a code is one of the shipped languages (not the pseudo-language, say). */
+export const isLanguage = (code: string): code is Language => (LANGUAGES as readonly string[]).includes(code);
+
 /** Remember the choice in this browser (nothing happens where storage isn't available). */
 export function saveLanguage(lang: Language) {
   try {

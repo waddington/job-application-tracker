@@ -2,9 +2,10 @@ import { ActionIcon, Box, Button, Menu, Modal, Tooltip } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { IconCheck, IconHelp, IconLanguage, IconPlus } from "@tabler/icons-react";
 import { useRouter } from "@tanstack/react-router";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { LANGUAGE_NAMES, LANGUAGES, PSEUDO, saveLanguage } from "../i18n/language";
+import { isLanguage, LANGUAGE_NAMES, LANGUAGES, PSEUDO, saveLanguage } from "../i18n/language";
 import { HowItWorks } from "./HowItWorks";
 import { NewApplicationModal } from "./NewApplicationModal";
 
@@ -77,38 +78,36 @@ export function NewApplicationButton({
  */
 export function LanguageSwitch() {
   const { t, i18n } = useTranslation();
+  const [opened, setOpened] = useState(false);
   const choose = (lang: string) => {
     void i18n.changeLanguage(lang);
-    if ((LANGUAGES as readonly string[]).includes(lang)) saveLanguage(lang as (typeof LANGUAGES)[number]);
+    if (isLanguage(lang)) saveLanguage(lang);
   };
+  const current = (lang: string) =>
+    i18n.resolvedLanguage === lang
+      ? { rightSection: <IconCheck size={14} aria-hidden />, "aria-current": "true" as const }
+      : {};
   return (
-    <Menu position="bottom-end" withinPortal>
-      <Menu.Target>
-        <Tooltip label={t("language.label")}>
+    <Menu position="bottom-end" withinPortal onChange={setOpened}>
+      {/* Tooltip outside Menu.Target, so the button itself gets the menu's aria-haspopup and
+          aria-expanded; hidden while the menu is open. */}
+      <Tooltip label={t("language.label")} disabled={opened}>
+        <Menu.Target>
           <ActionIcon variant="subtle" size="lg" aria-label={t("language.label")}>
             <IconLanguage size={18} />
           </ActionIcon>
-        </Tooltip>
-      </Menu.Target>
+        </Menu.Target>
+      </Tooltip>
       <Menu.Dropdown>
         <Menu.Label>{t("language.label")}</Menu.Label>
         {LANGUAGES.map((lang) => (
-          <Menu.Item
-            key={lang}
-            lang={lang}
-            onClick={() => choose(lang)}
-            rightSection={i18n.language === lang ? <IconCheck size={14} aria-hidden /> : null}
-            aria-current={i18n.language === lang ? "true" : undefined}
-          >
+          <Menu.Item key={lang} lang={lang} onClick={() => choose(lang)} {...current(lang)}>
             {LANGUAGE_NAMES[lang]}
           </Menu.Item>
         ))}
         <Menu.Item disabled>{t("language.comingSoon")}</Menu.Item>
         {import.meta.env.DEV && (
-          <Menu.Item
-            onClick={() => choose(PSEUDO)}
-            rightSection={i18n.language === PSEUDO ? <IconCheck size={14} aria-hidden /> : null}
-          >
+          <Menu.Item onClick={() => choose(PSEUDO)} {...current(PSEUDO)}>
             {t("language.pseudo")}
           </Menu.Item>
         )}

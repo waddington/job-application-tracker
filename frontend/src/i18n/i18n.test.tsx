@@ -1,9 +1,17 @@
 import { render, screen } from "@testing-library/react";
 import { getI18n, I18nextProvider, Trans, useTranslation } from "react-i18next";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { createI18n, i18n, isStrict, MissingKeyError, MissingValueError } from ".";
-import { pickLanguage, PSEUDO, PSEUDO_ALIAS } from "./language";
+import {
+  isLanguage,
+  pickLanguage,
+  PSEUDO,
+  PSEUDO_ALIAS,
+  saveLanguage,
+  STORAGE_KEY,
+  storedLanguage,
+} from "./language";
 import { pseudo, pseudoTree } from "./pseudo";
 
 // Test-only text in three languages with different plural rules: English (one / other), Polish
@@ -280,5 +288,33 @@ describe("pickLanguage", () => {
     expect(pickLanguage({ search: "?lang=en-XA", dev: true })).toBe(PSEUDO);
     expect(pickLanguage({ search: "?lang=pseudo", dev: false })).toBe("en");
     expect(pickLanguage({ search: "?lang=EN-gb", dev: true })).toBe("en");
+  });
+});
+
+describe("the saved choice", () => {
+  it("round-trips through this browser's storage", () => {
+    saveLanguage("en");
+    expect(localStorage.getItem(STORAGE_KEY)).toBe("en");
+    expect(storedLanguage()).toBe("en");
+    localStorage.clear();
+  });
+
+  it("does nothing, and doesn't throw, where storage isn't available", () => {
+    const set = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new Error("private window");
+    });
+    const get = vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+      throw new Error("private window");
+    });
+    expect(() => saveLanguage("en")).not.toThrow();
+    expect(storedLanguage()).toBeNull();
+    set.mockRestore();
+    get.mockRestore();
+  });
+
+  it("knows the shipped languages from the pseudo-language and others", () => {
+    expect(isLanguage("en")).toBe(true);
+    expect(isLanguage(PSEUDO)).toBe(false);
+    expect(isLanguage("fr")).toBe(false);
   });
 });

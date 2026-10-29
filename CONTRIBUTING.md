@@ -138,9 +138,16 @@ keep writing its text as before. Once it has:
   `placeholder`, `aria-label`, `title`, `description`, `error`, `hint`, `empty`, `confirm`…).
   Strings in plain code, like a form's error messages, still need care. A prop that carries
   prose and isn't on the list goes on it.
-- **Adding a language** (once its translation is reviewed): add its code to `LANGUAGES` and
-  its own name to `LANGUAGE_NAMES` in `frontend/src/i18n/language.ts`. The switch in the header
-  lists it from then on.
+- **Adding a language** (once its translation is reviewed; the `multi-language` task does the
+  first):
+  1. its text in `frontend/src/locales/<code>/`, one JSON file per namespace (the tests
+     fail on any missing key or plural form);
+  2. register them in the app instance's `resources` (`frontend/src/i18n/index.ts`);
+  3. import its dayjs locale, and add its row to `PATTERNS` and `NUMBER_LOCALE` in
+     `utils/format.ts`;
+  4. add its code to `LANGUAGES` and its own name to `LANGUAGE_NAMES` in
+     `frontend/src/i18n/language.ts`. The switch lists it from then on. Do this step last:
+     until the others are done, picking it would show English.
 - **Your data is never translated:** stage names, companies, notes and the like show as they
   were typed.
 
