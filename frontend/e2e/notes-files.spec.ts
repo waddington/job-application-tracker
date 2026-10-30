@@ -85,6 +85,12 @@ const card = (page: Page, name: "Notes" | "Links" | "Files") =>
     .locator(".mantine-Card-root")
     .filter({ has: page.getByRole("heading", { name, exact: true, level: 4 }) })
     .last();
+/** Goes to a page without reloading the app, as following a link would. */
+const inApp = (page: Page, path: string) =>
+  page.evaluate((to) => {
+    window.history.pushState({}, "", to);
+    window.dispatchEvent(new PopStateEvent("popstate"));
+  }, path);
 const openNotes = async (page: Page) => {
   await page.goto("/notes");
   await expect(page.getByRole("heading", { name: "Notes", level: 2 })).toBeVisible();
@@ -117,6 +123,7 @@ const upload = async (page: Page, files: { name: string; mimeType: string; buffe
 };
 const text = (name: string, body: string) => ({ name, mimeType: "text/plain", buffer: Buffer.from(body) });
 
+let made = 0; // each test its own names
 /** Makes one thing of each kind and says where its page is. */
 const PAGES: {
   kind: EntityKind;
@@ -125,40 +132,40 @@ const PAGES: {
   {
     kind: "application",
     make: async (request) => {
-      const app = await application(request, "Every Page App Co");
+      const app = await application(request, `Every Page App Co ${++made}`);
       return { id: app.id, path: `/applications/${app.id}` };
     },
   },
   {
     kind: "company",
     make: async (request) => {
-      const made = await company(request, "Every Page Co");
-      return { id: made.id, path: `/companies/${made.id}` };
+      const thing = await company(request, `Every Page Co ${++made}`);
+      return { id: thing.id, path: `/companies/${thing.id}` };
     },
   },
   {
     kind: "agency",
     make: async (request) => {
-      const made = await post<{ id: string }>(request, "agencies", { name: "Every Page Agency" });
-      return { id: made.id, path: `/agencies/${made.id}` };
+      const thing = await post<{ id: string }>(request, "agencies", { name: `Every Page Agency ${++made}` });
+      return { id: thing.id, path: `/agencies/${thing.id}` };
     },
   },
   {
     kind: "contact",
     make: async (request) => {
-      const made = await post<{ id: string }>(request, "contacts", { name: "Every Page Person" });
-      return { id: made.id, path: `/people/${made.id}` };
+      const thing = await post<{ id: string }>(request, "contacts", { name: `Every Page Person ${++made}` });
+      return { id: thing.id, path: `/people/${thing.id}` };
     },
   },
   {
     kind: "role",
     make: async (request) => {
-      const at = await company(request, "Every Page Role Co");
-      const made = await post<{ id: string }>(request, "roles", {
+      const at = await company(request, `Every Page Role Co ${++made}`);
+      const thing = await post<{ id: string }>(request, "roles", {
         company_id: at.id,
-        title: "Every Page Role",
+        title: `Every Page Role ${++made}`,
       });
-      return { id: made.id, path: `/roles/${made.id}` };
+      return { id: thing.id, path: `/roles/${thing.id}` };
     },
   },
 ];
@@ -343,35 +350,38 @@ test.describe("writing a note", () => {
     problems,
   }) => {
     problems.allow(/409.*\/api\/v1\/notes/);
-    const made = await makeNote(request, "Clash note", { body: "First" });
+    const made2 = await makeNote(request, "Clash note", { body: "First" });
     await openNotes(page);
     const dialog = await editNote(page, "Clash note");
     await pause(1100); // timestamps are in whole seconds
-    await request.patch(`${API}/notes/${made.id}`, { data: { body: "From elsewhere" } });
+    await request.patch(`${API}/notes/${made2.id}`, { data: { body: "From elsewhere" } });
     await dialog.getByRole("textbox", { name: "Note", exact: true }).fill("Mine");
     await dialog.getByRole("button", { name: "Save", exact: true }).click();
     await expect(page.getByText(/This note changed since you opened it/).first()).toBeVisible();
     await expect(dialog.getByRole("textbox", { name: "Note", exact: true })).toHaveValue("Mine");
-    expect((await getJson<Note>(request, `notes/${made.id}`)).body.trim()).toBe("From elsewhere");
+    expect((await getJson<Note>(request, `notes/${made2.id}`)).body.trim()).toBe("From elsewhere");
   });
 
-  test("reopening straight after saving shows what was saved, and saves again", async ({ page, request }) => {
-    const made = await makeNote(request, "Reopened note", { body: "First" });
-    await openNotes(page);
-    await page.route(`**${API}/notes/${made.id}`, async (route) => {
-      if (route.request().method() === "GET") await pause(1000);
-      await route.continue();
-    });
-    let dialog = await editNote(page, "Reopened note");
-    await dialog.getByRole("textbox", { name: "Note", exact: true }).fill("Second");
-    await saveNote(dialog);
-    await pause(1100);
-    dialog = await editNote(page, "Reopened note");
-    await expect(dialog.getByRole("textbox", { name: "Note", exact: true })).toHaveValue(/^Second\n?$/);
-    await dialog.getByRole("textbox", { name: "Note", exact: true }).fill("Third");
-    await saveNote(dialog);
-    expect((await getJson<Note>(request, `notes/${made.id}`)).body.trim()).toBe("Third");
-  });
+  // KNOWN BUG (fix-note-reopen-stale on the roadmap): expected to fail until it is fixed.
+  test.fail(
+    "reopening straight after saving shows what was saved, and saves again",
+    async ({ page, request }) => {
+      const made2 = await makeNote(request, "Reopened note", { body: "First" });
+      await openNotes(page);
+      await page.route(`**${API}/notes/${made2.id}`, async (route) => {
+        if (route.request().method() === "GET") await pause(1000);
+        await route.continue();
+      });
+      let dialog = await editNote(page, "Reopened note");
+      await dialog.getByRole("textbox", { name: "Note", exact: true }).fill("Second");
+      await saveNote(dialog);
+      dialog = await editNote(page, "Reopened note");
+      await expect(dialog.getByRole("textbox", { name: "Note", exact: true })).toHaveValue(/^Second\n?$/);
+      await dialog.getByRole("textbox", { name: "Note", exact: true }).fill("Third");
+      await saveNote(dialog);
+      expect((await getJson<Note>(request, `notes/${made2.id}`)).body.trim()).toBe("Third");
+    },
+  );
 
   test("a double click on a slow save adds one", async ({ page, request }) => {
     await page.route(`**${API}/notes`, async (route) => {
@@ -406,8 +416,8 @@ test.describe("writing a note", () => {
 test.describe("when what a note is on goes away", () => {
   test("the note stays, and can still be edited", async ({ page, request }) => {
     const gone = await company(request, "Gone Note Co");
-    const made = await makeNote(request, "Orphan note", { links: [`company:${gone.id}`], body: "Before" });
-    await request.delete(`${API}/companies/${gone.id}`);
+    const made2 = await makeNote(request, "Orphan note", { links: [`company:${gone.id}`], body: "Before" });
+    expect((await request.delete(`${API}/companies/${gone.id}`)).ok()).toBe(true);
     await openNotes(page);
     await expect(page.getByText("Orphan note")).toBeVisible();
     const dialog = await editNote(page, "Orphan note");
@@ -415,7 +425,20 @@ test.describe("when what a note is on goes away", () => {
     const saved = page.waitForResponse((r) => r.request().method() === "PATCH");
     await dialog.getByRole("button", { name: "Save", exact: true }).click();
     expect((await saved).status()).toBe(200);
-    expect((await getJson<Note>(request, `notes/${made.id}`)).body.trim()).toBe("After");
+    expect((await getJson<Note>(request, `notes/${made2.id}`)).body.trim()).toBe("After");
+  });
+});
+
+test.describe("when what a note is on is deleted", () => {
+  // KNOWN BUG (fix-orphan-note-link on the roadmap): expected to fail until it is fixed.
+  test.fail("it counts as a general note again", async ({ page, request }) => {
+    const gone = await company(request, "Orphan General Co");
+    await makeNote(request, "Orphan general", { links: [`company:${gone.id}`] });
+    expect((await request.delete(`${API}/companies/${gone.id}`)).ok()).toBe(true);
+    expect((await notesCalled(request, "Orphan general"))[0]?.links).toEqual([]);
+    await openNotes(page);
+    await page.getByText("General only").click();
+    await expect(page.getByText("Orphan general")).toBeVisible();
   });
 });
 
@@ -426,8 +449,8 @@ test.describe("the Notes page", () => {
     await openNotes(page);
     const search = page.getByRole("textbox", { name: "Search notes" });
     await search.fill("zebra");
-    await expect(page.getByText("Zebra heading")).toBeVisible();
     await expect(page.getByText("Other heading")).toBeHidden();
+    await expect(page.getByText("Zebra heading")).toBeVisible();
     await search.fill("quokka");
     await expect(page.getByText("Other heading")).toBeVisible();
     await expect(page.getByText("Zebra heading")).toBeHidden();
@@ -442,14 +465,14 @@ test.describe("the Notes page", () => {
     await openNotes(page);
     await expect(page.getByText("Scope attached")).toBeVisible();
     await page.getByText("General only").click();
-    await expect(page.getByText("Scope general")).toBeVisible();
     await expect(page.getByText("Scope attached")).toBeHidden();
+    await expect(page.getByText("Scope general")).toBeVisible();
   });
 
   test("a note added on a company's page is here without a reload", async ({ page, request }) => {
     const at = await company(request, "Sync Note Co");
     await openNotes(page);
-    await page.goto(`/companies/${at.id}`);
+    await inApp(page, `/companies/${at.id}`);
     await card(page, "Notes").getByRole("button", { name: "Add note" }).click();
     const dialog = theDialog(page);
     await dialog.getByLabel("Title").fill("Synced note");
@@ -521,11 +544,13 @@ test.describe("links", () => {
 
   test.fail("the X in a rename changes nothing", async ({ page, request }) => {
     const { at, links } = await prepare(page, request, "Cancel Link Co");
+    const writes = watchWrites(page);
     await links.getByRole("button", { name: "Rename Old" }).click();
     await links.getByRole("textbox", { name: "Link title", exact: true }).fill("Changed");
     await links.getByRole("button", { name: "Cancel" }).click();
     await expect(links.getByRole("textbox", { name: "Link title", exact: true })).toBeHidden();
     await pause(300);
+    expect(writes).toEqual([]);
     expect((await linksOn(request, "company", at.id))[0]?.title).toBe("Old");
   });
 
@@ -543,12 +568,24 @@ test.describe("links", () => {
     await page.getByRole("heading", { name: "Enter Link Co", level: 2 }).click();
     await expect(links.getByRole("link", { name: "By blur" })).toBeVisible();
     expect((await linksOn(request, "company", at.id))[0]?.title).toBe("By blur");
+    expect(writes).toHaveLength(2);
   });
 
   // KNOWN BUG (fix-link-rename-tick-error on the roadmap): expected to fail until it is fixed.
 
   test.fail("the tick saves a rename, with no error", async ({ page, request }) => {
     const { at, links } = await prepare(page, request, "Tick Link Co");
+    let release = () => {};
+    const together = new Promise<void>((done) => {
+      release = done;
+      setTimeout(done, 1_000); // a fix sends just one
+    });
+    let held = 0;
+    await page.route(`**${API}/links/*`, async (route) => {
+      if (route.request().method() === "PATCH" && ++held === 2) release();
+      if (route.request().method() === "PATCH") await together;
+      await route.continue();
+    });
 
     await links.getByRole("button", { name: "Rename Old" }).click();
 
@@ -619,16 +656,12 @@ test.describe("files", () => {
     expect((await filesOn(request, "company", at.id))[0]?.original_name).toBe("up-and-out.txt");
   });
 
-  test("an empty file is taken, or refused with a reason", async ({ page, request, problems }) => {
-    problems.allow(/4\d\d.*\/api\/v1\/attachments/);
+  test("an empty file is taken", async ({ page, request }) => {
     const at = await onCompany(page, request, "Empty File Co");
     await upload(page, [text("empty.txt", "")]);
-    await expect(
-      card(page, "Files")
-        .getByRole("link", { name: "empty.txt" })
-        .or(page.getByText("That didn't work").first()),
-    ).toBeVisible();
-    expect((await filesOn(request, "company", at.id)).length).toBeLessThanOrEqual(1);
+    await expect(card(page, "Files").getByRole("link", { name: "empty.txt" })).toBeVisible();
+    await expect(card(page, "Files").getByText(/^0 B ·/)).toBeVisible();
+    expect(await filesOn(request, "company", at.id)).toHaveLength(1);
   });
 
   test("an exported email shows what it's about", async ({ page, request }) => {
@@ -680,5 +713,42 @@ test.describe("files", () => {
     await attach(request, "role", detail.role_id, "job-description.txt", "made up");
     await page.goto(`/applications/${app.id}`);
     await expect(card(page, "Files").getByRole("link", { name: "job-description.txt" })).toBeVisible();
+    await expect(card(page, "Files").getByText("From the role")).toBeVisible();
+  });
+});
+
+test.describe("files that shouldn't open as pages", () => {
+  test("an HTML file downloads under its own name, and can't run here", async ({ page, request }) => {
+    const at = await company(request, "Html File Co");
+    await page.goto(`/companies/${at.id}`);
+    await expect(card(page, "Files").getByText(/Drop files here/)).toBeVisible();
+    await upload(page, [
+      { name: "page.html", mimeType: "text/html", buffer: Buffer.from("<h1>made up</h1>") },
+    ]);
+    const link = card(page, "Files").getByRole("link", { name: "page.html" });
+    await expect(link).toBeVisible();
+    const download = page.waitForEvent("download");
+    await link.click();
+    expect((await download).suggestedFilename()).toBe("page.html");
+    const got = await request.get((await link.getAttribute("href")) ?? "");
+    expect(got.headers()["content-disposition"]).toContain("attachment");
+    expect(got.headers()["content-type"]).not.toContain("text/html");
+    expect(got.headers()["x-content-type-options"]).toBe("nosniff");
+  });
+
+  // KNOWN BUG (fix-file-delete-reason-lost on the roadmap): expected to fail until it is fixed.
+  test.fail("a refused delete says why", async ({ page, request, problems }) => {
+    problems.allow(/409.*\/api\/v1\/attachments/);
+    const at = await company(request, "Refused File Co");
+    await attach(request, "company", at.id, "refused.txt", "made up");
+    await page.route(`**${API}/attachments/*`, (route) =>
+      route.request().method() === "DELETE"
+        ? route.fulfill({ status: 409, json: { detail: "delete that version instead" } })
+        : route.continue(),
+    );
+    await page.goto(`/companies/${at.id}`);
+    page.once("dialog", (d) => void d.accept());
+    await card(page, "Files").getByRole("button", { name: "Delete refused.txt" }).click();
+    await expect(page.getByText("delete that version instead").first()).toBeVisible({ timeout: 3_000 });
   });
 });
