@@ -4,11 +4,14 @@
 # and lists, one-line scalars, [flow, lists] and one-line {flow: mappings}. No anchors and no
 # multi-line strings.
 #
-# status: planned | building | review | done | blocked
+# status: bug | planned | building | review | done | blocked
 #   A task whose branch (worktree-<id>) or PR exists takes its LIVE status from git and
 #   GitHub: building while the branch has commits but no PR, review while the PR is open,
 #   done once merged. The status written here is the fallback when there's no live evidence.
 # owner: lead (Claude) or kai (waiting on Kai).
+# type: bug marks a bug (phase B, with severity: high | medium | low): it starts in the bug status
+#   and keeps its BUG tag as a fix moves it along. Every bug found goes here (CLAUDE.md).
+# detail: optional longer description, shown under a task's short name.
 # estimate_h: agent hours.
 # prd / rfc: optional repo-relative paths.
 
@@ -87,6 +90,26 @@ phases:
       - {id: search, name: "Full-text search across notes and entities", owner: lead, status: done, estimate_h: 3, depends: [notes], prd: docs/prd/tracker.md}
       - {id: readme-refresh-4, name: "README and llms.txt refresh: extras, install guide, v1 release notes", owner: lead, status: done, estimate_h: 1, depends: [offers, backup-export, search]}
 
+  - id: B
+    name: Bugs
+    goal: Real bugs found in the app, recorded when found and fixed with Kai's go-ahead when they change behaviour
+    tasks:
+      - {id: fix-applied-date-wipe, type: bug, severity: high, name: "Saving Details after moving to Applied wipes the applied date", detail: "The move fills the date in on the server, but the form keeps its old empty value, so it looks unsaved and Save sends the empty value back. Found by e2e/application-page.spec.ts, whose two test.fail tests come off with the fix.", owner: kai, estimate_h: 1, prd: docs/prd/tracker.md}
+      - {id: fix-add-another-role-carries-over, type: bug, severity: medium, name: "Add and add another keeps the type, work mode and IR35 for the next role", detail: "Adding a contract role with Add and add another leaves Type, Work mode and IR35 set, so the next role saves as a contract unless you notice, though the rest of the form clears. Found by e2e/roles.spec.ts, whose test.fail test comes off with the fix.", owner: kai, estimate_h: 0.5, prd: docs/prd/tracker.md}
+      - {id: fix-duplicate-agency-name, type: bug, severity: medium, name: "New agency allows a second agency with the same name", detail: "Agency names aren't unique, so the New agency dialog quietly makes a second one with the same name, though New application reuses an existing one. Found by e2e/people.spec.ts.", owner: kai, estimate_h: 0.5, prd: docs/prd/tracker.md}
+      - {id: fix-deleted-person-404, type: bug, severity: low, name: "Deleting a person makes a failed request for their page", detail: "After a delete the person page refetches its summary before moving to Recruiters, giving a 404 and a console error. Nothing shows to the user. Found by e2e/people.spec.ts.", owner: kai, estimate_h: 0.5, prd: docs/prd/tracker.md}
+      - {id: fix-edit-role-list-covers-form, type: bug, severity: low, name: "The role dialog opens with Company's list covering the fields below", detail: "Company is autofocused, which opens its dropdown over Who told you about it and On which call, until you click elsewhere. Found by e2e/roles.spec.ts.", owner: kai, estimate_h: 0.5, prd: docs/prd/tracker.md}
+      - {id: fix-cancel-leaves-created-entity, type: bug, severity: low, name: "Cancelling a dialog keeps a company or agency just created inside it", detail: "Choosing + Add creates it straight away, so Cancel or a typo leaves an unused one behind, in both the role and person dialogs. Pinned as today's behaviour in e2e/roles.spec.ts and e2e/people.spec.ts, to change with the fix.", owner: kai, estimate_h: 0.5, prd: docs/prd/tracker.md}
+  - id: P10
+    name: PM dashboard
+    goal: The same depth as the hype-pie dashboard (Kai, 2026-10-30), so progress, activity and agents can be seen at a glance
+    tasks:
+      - {id: pm-look, name: "PM dashboard look: the hype-pie layout and tabs, a header showing what's live (git, GitHub, roadmap) and a dark mode", owner: lead, status: planned, estimate_h: 2, depends: [], prd: docs/prd/tracker.md}
+      - {id: pm-overview, name: "PM Overview: a strip of live numbers (phase, whole roadmap, PRs, commits today, lines, tests), phases with progress bars and dates, a pipeline of tasks from building to merged, and Happening now (commits and PRs as they land)", owner: lead, status: planned, estimate_h: 3, depends: [pm-look], prd: docs/prd/tracker.md}
+      - {id: pm-roadmap-timeline, name: "PM Roadmap: a timeline of phases and milestones with a line for today, a burn-up of tasks merged vs plan vs scope, and a phase status table", owner: lead, status: planned, estimate_h: 3, depends: [pm-look], prd: docs/prd/tracker.md}
+      - {id: pm-activity, name: "PM Activity: commits over time by Conventional Commit type, PR throughput, PR size, and lines and tests by area", owner: lead, status: planned, estimate_h: 3, depends: [pm-look], prd: docs/prd/tracker.md}
+      - {id: pm-agents, name: "PM Agents: the worktrees being worked in, with state, last activity, commits and unsaved changes, and swimlanes of agents over time", owner: lead, status: planned, estimate_h: 3, depends: [pm-look], prd: docs/prd/tracker.md}
+      - {id: pm-task-pages, name: "PM task pages: a page per task with its stage and the evidence for it, branch, PR, ahead and behind, size, lines, tests and last commit", owner: lead, status: planned, estimate_h: 2, depends: [pm-look], prd: docs/prd/tracker.md}
   - id: P9
     name: Automated browser tests
     goal: A browser suite that opens the app and really uses it, page by page, so dependency changes can be tested before they land
@@ -96,7 +119,7 @@ phases:
       - {id: e2e-applications-list, name: "Browser tests, Applications list: filters, search, sorting, quick view, New application and its errors, and every route with new and existing companies, agencies and people, checking nothing is created twice and it all shows on the other pages (Kai, 2026-10-30)", owner: lead, status: done, estimate_h: 2, depends: [e2e-setup], prd: docs/prd/tracker.md}
       - {id: e2e-board, name: "Browser tests, Board: real dragging, refused moves, closed stages, round columns (Kai, 2026-10-30)", owner: lead, status: done, estimate_h: 2, depends: [e2e-setup], prd: docs/prd/tracker.md}
       - {id: e2e-application-page, name: "Browser tests, an application's page: move and undo, details, log activity, changing its people, documents sent, delete (Kai, 2026-10-30)", owner: lead, status: done, estimate_h: 2, depends: [e2e-setup], prd: docs/prd/tracker.md}
-      - {id: e2e-roles, name: "Browser tests, Roles: create and edit with new or existing company, with or without a person and call, salary or contract pay, files; a company created from inside the dialog; apply, interested, pass, reconsider; the role page (Kai, 2026-10-30)", owner: lead, status: planned, estimate_h: 2, depends: [e2e-setup], prd: docs/prd/tracker.md}
+      - {id: e2e-roles, name: "Browser tests, Roles: create and edit with new or existing company, with or without a person and call, salary or contract pay, files; a company created from inside the dialog; apply, interested, pass, reconsider; the role page (Kai, 2026-10-30)", owner: lead, status: done, estimate_h: 2, depends: [e2e-setup], prd: docs/prd/tracker.md}
       - {id: e2e-interviews-calls, name: "Browser tests, interviews and calls: create, edit and delete from each page they start on, with and without people; reschedule, outcomes (Kai, 2026-10-30)", owner: lead, status: planned, estimate_h: 2, depends: [e2e-setup], prd: docs/prd/tracker.md}
       - {id: e2e-offers, name: "Browser tests, Offers: create, revise, edit, delete, permanent and contract, compare (Kai, 2026-10-30)", owner: lead, status: planned, estimate_h: 1.5, depends: [e2e-setup], prd: docs/prd/tracker.md}
       - {id: e2e-people, name: "Browser tests, people: create and edit recruiters with or without an agency, at a company or independent; recruiter before agency then attached; an agency created from inside the recruiter dialog and checked on its own page; moving and removing an agency; favourites, ghosts, merge, delete, the person page (Kai, 2026-10-30)", owner: lead, status: planned, estimate_h: 2, depends: [e2e-setup], prd: docs/prd/tracker.md}

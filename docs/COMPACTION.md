@@ -414,6 +414,42 @@ next action.
   - Then: "update … COMPACTION.md again for claude code compact command. i want to continue with
     the i18n work".
 
+### 4a. Update, 2026-10-30 evening (read this first; it overrides 4 and 5 where they differ)
+
+- **Kai's current ask:** "work your way through all p9 browser tests, dont do the security fixes". Then
+  stop: the Dependabot fixes (`deps-*`, `security-alerts`) wait until Kai says.
+- **Standing approval for P9 only:** "as long as you're not changing UI behaviour/text/etc, I trust you to
+  review the PRs and auto merge and release for the e2e automated browser tests". Each is a patch: "each of
+  the PRs will be a patch I think". Anything that changes the app still waits for Kai, including bug fixes.
+- **What the tests must cover** (Kai): creating and editing every entity in permutations ("with and without
+  agency, recruiter before agentcy, creating agency from within recruiter modal and checking it exists",
+  "same as above for roles, people, applications, etc etc"), checking nothing is duplicated and it shows on
+  other pages. And "no you add cases too, not me": add your own scenarios.
+- **Bugs** (Kai): "any real bugs, report them in the roadmap", and CLAUDE.md's *Bugs* section. Every bug found
+  goes in phase `B`, with `type: bug`, right away, and Kai is told in the same message. Check suspicions first.
+  Tests showing a known bug land marked `test.fail`. Pinned behaviour Kai may want changed: the same name under
+  another agency makes a second person; Add role twice makes two roles.
+- **PM dashboard:** Kai wants the depth of their hype-pie dashboard (http://localhost:8766/overview): phase `P10`,
+  `pm-*` tasks, planned, not started. It reads the main checkout, so **pull main after every merge**, and restart
+  it after a change to `tools/pm` (`python3 -m tools.pm`, a background job).
+- **P9 state:** released `e2e-setup` (1.2.3), `e2e-today` (1.2.4), `e2e-applications-list` (1.2.5), `e2e-board`
+  (1.2.6), `e2e-application-page` (1.2.7). Then:
+  - `e2e-roles`: PR #128, 49 tests, reviewed and fixed, ready to merge as the next patch (merge main in first);
+  - `e2e-people`: branch `worktree-e2e-people`, 44 tests, 10 failing from test mistakes, not yet reviewed. The
+    fixes it needs: exact names for headings, `/agencies` start button, dedupe test (agencies aren't unique: pin it),
+    `problems.allow` for the 404 after a delete;
+  - not started: `e2e-interviews-calls`, `e2e-offers`, `e2e-companies`, `e2e-documents`, `e2e-notes-files`,
+    `e2e-insights`, `e2e-timeline-search`, `e2e-shell`.
+- **The P9 loop:** worktree `worktree-<task>` from main; `frontend/e2e/<area>.spec.ts`, using `./fixtures`; run it
+  twice; open the PR; a background `general-purpose` reviewer told to read with Read only (max 10 items, also
+  hunting real bugs); fix; merge; release. Helper scripts in the job's `tmp/deps/`: `e2e.sh <spec>`, `finish.py <task>
+  "<covers>" "<title>"` (bump, changelog, roadmap done, PR), `merge.sh <pr>` (run in the worktree), `ship.sh <version>
+  <pr> <worktree>` (from the main checkout: pull, clean up, tag, release, rebuild). Rewrite them if the tmp dir is gone.
+- **Test gotchas:** tests in a file share a server, so use unique names and create what you need through the API;
+  Mantine switches need `check({force:true})` or `click` when the state follows a save; `getByLabel` needs `exact`, and
+  `.first()` for inputs that have a hidden twin; the board's autoscroll needs a wide viewport; prettier reformats specs,
+  so patch scripts should use regexes or re-read first; a tsc error means no build, so every test fails.
+
 ### 5. Work in flight and candidates
 
 - **In flight:** none (after this doc's PR merges).
