@@ -153,13 +153,15 @@ test.describe("moving it", () => {
 
   test("a move that fails says so, and it stays where it was", async ({ page, request, problems }) => {
     problems.allow(/\/move/);
-    const app = await openNew(page, request);
+    await openNew(page, request);
     await page.route("**/move", (route) =>
       route.fulfill({ status: 500, json: { detail: "Server says no" } }),
     );
     await move(page, "Screen");
     await expect(page.getByText("That didn't work")).toBeVisible();
-    expect((await app.read()).stage).toBe("applied");
+    await expect(page.locator(".mantine-Badge-root", { hasText: "Applied" }).first()).toBeVisible();
+    await expect(page.locator(".mantine-Badge-root", { hasText: "Screen" })).toHaveCount(0);
+    await expect(card(page, "Timeline").getByText("Applied → Screen")).toBeHidden();
   });
 });
 
@@ -231,11 +233,20 @@ test.describe("details", () => {
 
   test("Archived takes it off the normal list, and can be undone", async ({ page, request }) => {
     const app = await openNew(page, request);
+    const row = page.getByLabel(`Open ${app.role} at ${app.company}`);
     await page.getByLabel("Archived").click({ force: true });
     await expect.poll(async () => (await app.read()).archived).toBe(true);
     await expect(page.locator(".mantine-Badge-root", { hasText: "Archived" })).toBeVisible();
+    await page.goto("/applications?view=list");
+    await expect(page.getByLabel("Open Senior Backend Engineer at Contoso")).toBeVisible();
+    await expect(row).toBeHidden();
+    await page.getByLabel("Archived").check({ force: true });
+    await expect(row).toBeVisible();
+    await page.goto(`/applications/${app.id}`);
     await page.getByLabel("Archived").click({ force: true });
     await expect.poll(async () => (await app.read()).archived).toBe(false);
+    await page.goto("/applications?view=list");
+    await expect(row).toBeVisible();
   });
 
   test("an unsaved edit survives moving the stage", async ({ page, request }) => {
@@ -377,15 +388,22 @@ test.describe("at a glance", () => {
 test.describe("deleting", () => {
   test("asks first, naming it, and cancelling keeps it", async ({ page, request }) => {
     const app = await openNew(page, request);
+    const deletes: string[] = [];
+    page.on("request", (r) => {
+      if (r.method() === "DELETE") deletes.push(r.url());
+    });
     let asked = "";
     page.once("dialog", (dialog) => {
       asked = dialog.message();
       void dialog.dismiss();
     });
-    await page.getByRole("button", { name: "Delete" }).click();
+    await page.getByRole("button", { name: "Delete", exact: true }).click();
     await expect.poll(() => asked).toContain(`Delete your application to ${app.company} (${app.role})?`);
+    await page.getByPlaceholder("What happened?").fill("Still here");
+    await page.getByRole("button", { name: "Log call" }).click();
+    await expect(card(page, "Timeline").getByText("Still here")).toBeVisible();
+    expect(deletes).toEqual([]);
     expect((await request.get(`/api/v1/applications/${app.id}`)).ok()).toBe(true);
-    await expect(page.getByRole("heading", { name: app.role })).toBeVisible();
   });
 
   test("confirming removes it and returns to the list, keeping its role and company", async ({
@@ -394,9 +412,12 @@ test.describe("deleting", () => {
   }) => {
     const app = await openNew(page, request);
     page.once("dialog", (dialog) => dialog.accept());
-    await page.getByRole("button", { name: "Delete" }).click();
+    await page.getByRole("button", { name: "Delete", exact: true }).click();
     await expect(page).toHaveURL(/\/applications$/);
+    await expect(page.getByLabel("Open Senior Backend Engineer at Contoso")).toBeVisible();
     await expect(page.getByLabel(`Open ${app.role} at ${app.company}`)).toBeHidden();
+    const companies = (await (await request.get("/api/v1/companies")).json()) as { name: string }[];
+    expect(companies.map((c) => c.name)).toContain(app.company);
     const gone = await request.get(`/api/v1/applications/${app.id}`);
     expect(gone.status()).toBe(404);
     const roles = (await (await request.get("/api/v1/roles")).json()) as { title: string }[];
@@ -407,5 +428,208 @@ test.describe("deleting", () => {
     problems.allow(/no-such-application/);
     await page.goto("/applications/no-such-application");
     await expect(page.getByText("Couldn't load this application")).toBeVisible({ timeout: 15_000 });
+  });
+});
+
+test.describe("the applied date and Save", () => {
+  // KNOWN BUG, not fixed yet: the form keeps its old values when a move changes them on the server,
+  // so it shows no date and looks unsaved, and Save then wipes the date. These two are marked as
+  // expected to fail: fixing the bug turns them red, as a reminder to remove test.fail.
+  test.fail(
+    "moving to Applied fills in the date on the form too, with nothing to save",
+    async ({ page, request }) => {
+      const app = await openNew(page, request, { stage: "interested" });
+      await move(page, "Applied");
+      await expect.poll(async () => (await app.read()).applied_on).toBe(today());
+      await expect(page.getByLabel("Applied on", { exact: true })).not.toHaveValue("");
+      await expect(page.getByRole("button", { name: "Save details" })).toBeDisabled();
+    },
+  );
+
+  test.fail("saving a tag after that move keeps the date it filled in", async ({ page, request }) => {
+    const app = await openNew(page, request, { stage: "interested" });
+    await move(page, "Applied");
+    await expect.poll(async () => (await app.read()).applied_on).toBe(today());
+    await page.getByLabel("Tags").first().fill("afterwards");
+    await page.keyboard.press("Enter");
+    await page.getByRole("button", { name: "Save details" }).click();
+    await expect.poll(async () => (await app.read()).tags).toEqual(["afterwards"]);
+    expect((await app.read()).applied_on).toBe(today());
+  });
+
+  test("a failed save keeps what you typed", async ({ page, request, problems }) => {
+    problems.allow(/\/api\/v1\/applications\//);
+    await openNew(page, request);
+    await page.route("**/api/v1/applications/*", (route) =>
+      route.request().method() === "PATCH"
+        ? route.fulfill({ status: 500, json: { detail: "No" } })
+        : route.fallback(),
+    );
+    await page.getByLabel("Follow up on").fill("1 Jan 2099");
+    await page.keyboard.press("Tab");
+    await page.getByRole("button", { name: "Save details" }).click();
+    await expect(page.getByText("That didn't work")).toBeVisible();
+    await expect(page.getByLabel("Follow up on")).toHaveValue("1 Jan 2099");
+    await expect(page.getByRole("button", { name: "Save details" })).toBeEnabled();
+  });
+});
+
+test.describe("editing one with everything attached", () => {
+  const counts = async (request: APIRequestContext) => {
+    const size = async (path: string) =>
+      ((await (await request.get(`/api/v1/${path}`)).json()) as unknown[]).length;
+    return {
+      companies: await size("companies"),
+      agencies: await size("agencies"),
+      contacts: await size("contacts"),
+      roles: await size("roles"),
+    };
+  };
+
+  for (const [name, data, route] of [
+    ["direct", {}, "Route: Applied directly"],
+    ["a referral", { route: "referral" }, "Route: Referral"],
+    [
+      "through an agency and recruiter",
+      { route: "agency", agency_name: "Everything Agency", recruiter_name: "Everything Person" },
+      "Route: Through Everything Person at Everything Agency",
+    ],
+    [
+      "through a recruiter with no agency",
+      { route: "agency", recruiter_name: "Lone Everything" },
+      "Route: Through Lone Everything",
+    ],
+    [
+      "through an agency with no recruiter",
+      { route: "agency", agency_name: "Lone Agency" },
+      "Route: Through Lone Agency",
+    ],
+  ] as const) {
+    test(`${name}: editing changes only what you edit, and adds nobody`, async ({ page, request }) => {
+      const app = await openNew(page, request, data);
+      const before = await counts(request);
+      await page.getByLabel("Follow up on").fill("1 Jan 2099");
+      await page.keyboard.press("Tab");
+      await page.getByLabel("Tags").first().fill("edited");
+      await page.keyboard.press("Enter");
+      await page.getByRole("button", { name: "Save details" }).click();
+      await expect.poll(async () => (await app.read()).tags).toEqual(["edited"]);
+      await move(page, "Screen");
+      await expect.poll(async () => (await app.read()).stage).toBe("screen");
+      await page.reload();
+      await expect(page.getByText("Route:").locator("..")).toHaveText(route);
+      await expect(page.getByLabel("Follow up on")).toHaveValue("1 Jan 2099");
+      expect(await counts(request)).toEqual(before);
+    });
+  }
+
+  test("linked people and documents survive edits, and show on the other pages", async ({
+    page,
+    request,
+  }) => {
+    const app = await openNew(page, request);
+    const contacts = (await (await request.get("/api/v1/contacts")).json()) as { id: string; name: string }[];
+    const sam = contacts.find((c) => c.name === "Sam Patel") as { id: string };
+    const people = card(page, "People");
+    await people.getByPlaceholder("Choose a contact").click();
+    await page.getByRole("option", { name: "Sam Patel", exact: true }).click();
+    await people.getByRole("button", { name: "Link person" }).click();
+    await expect(people.getByRole("link", { name: "Sam Patel" })).toBeVisible();
+    const documents = card(page, "Documents sent");
+    await documents.getByPlaceholder("Pick a CV or cover letter").click();
+    await page.getByRole("option", { name: "Backend CV · v2" }).click();
+    await documents.getByRole("button", { name: "Add", exact: true }).click();
+    await expect(documents.getByText(/^CV · sent/)).toBeVisible();
+
+    await page.getByLabel("Tags").first().fill("kept");
+    await page.keyboard.press("Enter");
+    await page.getByRole("button", { name: "Save details" }).click();
+    await move(page, "Screen");
+    await expect.poll(async () => (await app.read()).stage).toBe("screen");
+    await page.reload();
+    await expect(people.getByRole("link", { name: "Sam Patel" })).toHaveCount(1);
+    await expect(documents.getByText(/^CV · sent/)).toHaveCount(1);
+
+    await page.goto(`/people/${sam.id}`);
+    await expect(page.getByText(app.role).first()).toBeVisible();
+
+    await page.goto("/applications?view=list");
+    const row = page.getByLabel(`Open ${app.role} at ${app.company}`);
+    await expect(row).toContainText(/screen/i);
+    await expect(row).toContainText(/kept/i);
+
+    const co = page.getByLabel(`Open ${app.company}`);
+    await page.goto("/companies");
+    await co.click();
+    await expect(page.getByText(app.role).first()).toBeVisible();
+
+    await page.goto(`/applications/${app.id}`);
+    await people.getByRole("button", { name: "Remove Sam Patel" }).click();
+    await expect.poll(async () => (await app.read()).contacts).toEqual([]);
+    expect(contacts.map((c) => c.id)).toContain(sam.id);
+    const still = (await (await request.get("/api/v1/contacts")).json()) as { id: string }[];
+    expect(still.map((c) => c.id)).toContain(sam.id);
+    await page.goto(`/people/${sam.id}`);
+    await expect(page.getByRole("heading", { name: "Sam Patel" }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: new RegExp(app.role) })).toHaveCount(0);
+  });
+
+  test("linking the same person twice in the same way is refused, leaving one link", async ({
+    page,
+    request,
+    problems,
+  }) => {
+    problems.allow(/\/contacts/); // the server's refusal: a 409
+    const app = await openNew(page, request);
+    const people = card(page, "People");
+    for (let i = 0; i < 2; i++) {
+      await people.getByPlaceholder("Choose a contact").click();
+      await page.getByRole("option", { name: "Jordan Lee", exact: true }).click();
+      await people.getByRole("button", { name: "Link person" }).click();
+      await expect(people.getByRole("link", { name: "Jordan Lee" }).first()).toBeVisible();
+    }
+    await expect(page.getByText("That didn't work")).toBeVisible();
+    await expect.poll(async () => (await app.read()).contacts.length).toBe(1);
+  });
+
+  test("New person with a chosen role uses it, at the existing company", async ({ page, request }) => {
+    const app = await openNew(page, request);
+    const before = await counts(request);
+    const people = card(page, "People");
+    await people.getByLabel("As").click();
+    await page.getByRole("option", { name: "Hiring manager", exact: true }).click();
+    await people.getByRole("button", { name: "New person" }).click();
+    const dialog = page.getByRole("dialog");
+    await dialog.getByLabel("Name").fill("Role Newperson");
+    await dialog.getByRole("button", { name: "Add person", exact: true }).click();
+    await expect(people.getByRole("link", { name: "Role Newperson" })).toBeVisible();
+    await expect
+      .poll(async () => (await app.read()).contacts)
+      .toEqual([expect.objectContaining({ relation: "hiring_manager" })]);
+    const after = await counts(request);
+    expect(after).toEqual({ ...before, contacts: before.contacts + 1 });
+  });
+
+  test("deleting one keeps the people and documents it used", async ({ page, request }) => {
+    const app = await openNew(page, request, {
+      route: "agency",
+      agency_name: "Keep Agency",
+      recruiter_name: "Keep Person",
+    });
+    const documents = card(page, "Documents sent");
+    await documents.getByPlaceholder("Pick a CV or cover letter").click();
+    await page.getByRole("option", { name: "Backend CV · v2" }).click();
+    await documents.getByRole("button", { name: "Add", exact: true }).click();
+    await expect(documents.getByText(/^CV · sent/)).toBeVisible();
+    page.once("dialog", (dialog) => dialog.accept());
+    await page.getByRole("button", { name: "Delete", exact: true }).click();
+    await expect(page).toHaveURL(/\/applications$/);
+    const names = (await (await request.get("/api/v1/contacts")).json()) as { name: string }[];
+    expect(names.map((c) => c.name)).toContain("Keep Person");
+    const agencies = (await (await request.get("/api/v1/agencies")).json()) as { name: string }[];
+    expect(agencies.map((a) => a.name)).toContain("Keep Agency");
+    const docs = (await (await request.get("/api/v1/documents")).json()) as { name: string }[];
+    expect(docs.map((d) => d.name)).toContain("Backend CV");
+    expect((await request.get(`/api/v1/applications/${app.id}`)).status()).toBe(404);
   });
 });
