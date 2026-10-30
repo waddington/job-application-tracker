@@ -12,7 +12,7 @@ NAV = (("/", "Overview"), ("/board", "Board"), ("/roadmap", "Roadmap"))
 
 CSS = """
 :root{--bg:#f7f7f5;--panel:#fff;--text:#1d1d1b;--muted:#6b6b66;--line:#e3e2dd;--accent:#2f6fde;
---planned:#8a8a85;--building:#d98b1a;--review:#7a4fd6;--done:#2e9d5b;--blocked:#d64545;}
+--bug:#c92a4b;--planned:#8a8a85;--building:#d98b1a;--review:#7a4fd6;--done:#2e9d5b;--blocked:#d64545;}
 @media (prefers-color-scheme:dark){:root{--bg:#141413;--panel:#1d1d1b;--text:#ecebe6;--muted:#9c9b95;
 --line:#33322f;--accent:#6d9cf0;}}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);
@@ -31,16 +31,16 @@ main{padding:16px;max-width:1400px;margin:0 auto}
 .bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden;margin:6px 0}
 .bar i{display:block;height:100%;background:var(--done)}
 .pill{display:inline-block;padding:0 8px;border-radius:10px;font-size:12px;color:#fff;white-space:nowrap}
-.pill.planned{background:var(--planned)}.pill.building{background:var(--building)}
+.pill.bug{background:var(--bug)}.pill.planned{background:var(--planned)}.pill.building{background:var(--building)}
 .pill.review{background:var(--review)}.pill.done{background:var(--done)}.pill.blocked{background:var(--blocked)}
 ul.plain{list-style:none;margin:0;padding:0}ul.plain li{padding:6px 0;border-top:1px solid var(--line)}
 ul.plain li:first-child{border-top:0}
 .muted{color:var(--muted)}.small{font-size:12px}code{font-size:12px}
-.board{display:grid;gap:12px;grid-template-columns:repeat(5,minmax(200px,1fr));overflow-x:auto}
+.board{display:grid;gap:12px;grid-template-columns:repeat(6,minmax(180px,1fr));overflow-x:auto}
 .col h2{display:flex;justify-content:space-between}
 .card{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--planned);
 border-radius:6px;padding:8px 10px;margin-bottom:8px}
-.card.building{border-left-color:var(--building)}.card.review{border-left-color:var(--review)}
+.card.bug{border-left-color:var(--bug)}.card.building{border-left-color:var(--building)}.card.review{border-left-color:var(--review)}
 .card.done{border-left-color:var(--done)}.card.blocked{border-left-color:var(--blocked)}
 table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:6px 8px;border-top:1px solid var(--line);
 vertical-align:top}th{color:var(--muted);font-weight:500;font-size:12px}
@@ -48,7 +48,7 @@ vertical-align:top}th{color:var(--muted);font-weight:500;font-size:12px}
 .filters{margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap}
 .filters a{padding:2px 10px;border:1px solid var(--line);border-radius:12px}
 .filters a.active{background:var(--accent);color:#fff;border-color:var(--accent)}
-@media (max-width:700px){.board{grid-template-columns:repeat(5,85vw)}}
+@media (max-width:700px){.board{grid-template-columns:repeat(6,85vw)}}
 """
 
 
@@ -84,6 +84,14 @@ def repo_link(roadmap: Roadmap, path: str, label: str) -> str:
     return f'<a href="https://github.com/{escape(roadmap.repo)}/blob/main/{escape(path)}">{escape(label)}</a>'
 
 
+def bug_tag(task: Task) -> str:
+    """BUG and its severity, on a bug wherever it is, even once a fix has moved it along."""
+    if task.type != "bug":
+        return ""
+    severity = f" · {escape(task.severity)}" if task.severity else ""
+    return f'<span class="pill bug">BUG{severity}</span> '
+
+
 def task_links(roadmap: Roadmap, task: Task) -> str:
     parts = []
     if task.pr:
@@ -100,11 +108,13 @@ def task_links(roadmap: Roadmap, task: Task) -> str:
 
 
 def task_line(roadmap: Roadmap, task: Task, show_status: bool = True) -> str:
-    status = pill(task.status) + " " if show_status else ""
+    # A bug not started shows its tag instead of a second "bug" pill.
+    status = pill(task.status) + " " if show_status and task.status != "bug" else ""
     links = task_links(roadmap, task)
     owner = ' <span class="pill blocked">Kai</span>' if task.owner == "kai" else ""
-    return (f'<li>{status}<b>{escape(task.name)}</b>{owner}<br>'
-            f'<span class="small muted"><code>{escape(task.id)}</code> · {task.phase} · {task.estimate_h:g} h'
+    detail = f'<br><span class="small">{escape(task.detail)}</span>' if task.detail else ""
+    return (f'<li>{status}{bug_tag(task)}<b>{escape(task.name)}</b>{owner}{detail}<br>'
+            f'<span class="small muted"><code>{escape(task.id)}</code> · {escape(task.phase)} · {task.estimate_h:g} h'
             f'{" · " + links if links else ""}</span></li>')
 
 
@@ -119,6 +129,14 @@ def overview(roadmap: Roadmap, snapshot: Snapshot) -> str:
 <span>{s["done_h"]:g} of {s["estimate_h"]:g} h done</span></div>
 {stats}</div><div class="bar"><i style="width:{s["percent"]}%"></i></div></div>"""
 
+    bugs = "".join(task_line(roadmap, t) for t in roadmap.open_bugs())
+    bugs_panel = (
+        f'<div class="panel errors" style="margin-bottom:16px"><h2>Open bugs · {len(roadmap.open_bugs())}</h2>'
+        f'<ul class="plain">{bugs}</ul></div>'
+        if bugs
+        else ""
+    )
+    header += bugs_panel
     active = [t for t in roadmap.tasks if t.status in ("building", "review")]
     now = "".join(task_line(roadmap, t) for t in active) or '<li class="muted">Nothing in flight.</li>'
     nxt = "".join(task_line(roadmap, t, False) for t in roadmap.next_up()[:8])
@@ -180,8 +198,9 @@ def board(roadmap: Roadmap, snapshot: Snapshot, phase: str | None = None) -> str
                 extra = f'<div class="small muted">waits on {escape(", ".join(waiting))}</div>'
             links = task_links(roadmap, t)
             cards.append(
-                f'<div class="card {status}"><b>{escape(t.name)}</b>'
-                f'<div class="small muted"><code>{escape(t.id)}</code> · {t.phase} · {t.estimate_h:g} h'
+                f'<div class="card {status}">{bug_tag(t)}<b>{escape(t.name)}</b>'
+                f'{f"<div class=small>{escape(t.detail)}</div>" if t.detail else ""}'
+                f'<div class="small muted"><code>{escape(t.id)}</code> · {escape(t.phase)} · {t.estimate_h:g} h'
                 f'{" · Kai" if t.owner == "kai" else ""}</div>{extra}'
                 f'{f"<div class=small>{links}</div>" if links else ""}</div>'
             )
@@ -201,7 +220,8 @@ def roadmap_page(roadmap: Roadmap, snapshot: Snapshot) -> str:
                 f'{"✓ " if (d := roadmap.task(dep)) and d.status == "done" else ""}{escape(dep)}' for dep in t.depends
             ) or "—"
             rows.append(
-                f"<tr><td>{pill(t.status)}</td><td><b>{escape(t.name)}</b><br>"
+                f"<tr><td>{pill(t.status)}</td><td>{bug_tag(t)}<b>{escape(t.name)}</b>"
+                f'{f"<br><span class=small>{escape(t.detail)}</span>" if t.detail else ""}<br>'
                 f'<code class="muted">{escape(t.id)}</code></td><td>{t.estimate_h:g} h</td>'
                 f'<td class="small">{deps}</td><td class="small">{escape(t.owner)}</td>'
                 f'<td class="small">{task_links(roadmap, t)}<br>'
@@ -230,7 +250,8 @@ def as_json(roadmap: Roadmap, snapshot: Snapshot) -> dict:
                 "id": p.id, "name": p.name, "goal": p.goal, "estimate_h": p.estimate_h, "done_h": p.done_h,
                 "tasks": [
                     {
-                        "id": t.id, "name": t.name, "status": t.status, "status_source": t.status_source,
+                        "id": t.id, "name": t.name, "type": t.type, "severity": t.severity,
+                        "status": t.status, "status_source": t.status_source,
                         "owner": t.owner, "estimate_h": t.estimate_h, "depends": t.depends,
                         "prd": t.prd, "rfc": t.rfc, "branch": t.branch, "commits_ahead": t.commits_ahead,
                         "pr": {"number": t.pr.number, "state": t.pr.state, "url": t.pr.url} if t.pr else None,

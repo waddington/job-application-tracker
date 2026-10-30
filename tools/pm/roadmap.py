@@ -7,7 +7,8 @@ from pathlib import Path
 
 from .yamlish import YamlishError, parse
 
-STATUSES = ("planned", "building", "review", "done", "blocked")
+STATUSES = ("bug", "planned", "building", "review", "done", "blocked")
+SEVERITIES = ("high", "medium", "low")
 BRANCH_PREFIX = "worktree-"
 
 
@@ -47,6 +48,11 @@ class Task:
     phase: str
     owner: str = "lead"
     planned_status: str = "planned"
+    # "bug" for a bug: it starts in the bug status and keeps this as a fix moves it along.
+    type: str = "task"
+    severity: str | None = None
+    # A longer description: what happens and how it was found. Names stay short.
+    detail: str | None = None
     estimate_h: float = 0.0
     depends: list[str] = field(default_factory=list)
     prd: str | None = None
@@ -100,6 +106,12 @@ class Roadmap:
     def next_up(self) -> list[Task]:
         """Planned tasks whose dependencies are all done, in roadmap order."""
         return [t for t in self.tasks if t.status == "planned" and self.deps_done(t)]
+
+    def open_bugs(self) -> list[Task]:
+        """Bugs not fixed yet, worst first, then in roadmap order."""
+        rank = {s: i for i, s in enumerate(SEVERITIES)}
+        bugs = [t for t in self.tasks if t.type == "bug" and t.status != "done"]
+        return sorted(bugs, key=lambda t: rank.get(t.severity or "", len(SEVERITIES)))
 
     def waiting(self, task: Task) -> list[str]:
         """Dependencies of `task` that aren't done yet."""
@@ -161,6 +173,20 @@ def _task(raw, phase_id: str, errors: list[str]) -> Task | None:
     if status not in STATUSES:
         errors.append(f"{task_id}: unknown status {status!r}")
         status = "planned"
+    kind = str(raw.get("type") or ("bug" if status == "bug" else "task"))
+    if kind not in ("task", "bug"):
+        errors.append(f"{task_id}: unknown type {kind!r}")
+        kind = "task"
+    if kind == "bug" and status == "planned":
+        status = "bug"
+    if status == "bug" and kind != "bug":
+        errors.append(f"{task_id}: status bug on a task that isn't a bug")
+    severity = raw.get("severity")
+    if severity is not None and str(severity) not in SEVERITIES:
+        errors.append(f"{task_id}: unknown severity {severity!r}")
+        severity = None
+    if kind == "bug" and severity is None:
+        errors.append(f"{task_id}: a bug needs a severity (high, medium or low)")
     depends = raw.get("depends") or []
     if not isinstance(depends, list):
         errors.append(f"{task_id}: depends must be a list")
@@ -177,6 +203,9 @@ def _task(raw, phase_id: str, errors: list[str]) -> Task | None:
         owner=str(raw.get("owner") or "lead"),
         planned_status=status,
         status=status,
+        type=kind,
+        severity=str(severity) if severity is not None else None,
+        detail=str(raw["detail"]) if raw.get("detail") is not None else None,
         estimate_h=estimate,
         depends=[str(d) for d in depends],
         prd=raw.get("prd"),
