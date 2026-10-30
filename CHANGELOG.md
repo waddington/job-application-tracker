@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.2.8 (2026-10-30)
+
+- **Developers:** browser tests for Roles: creating and editing with every mix of company, person, call, pay and files, decisions, every view, and deleting. Nothing in the app changes (#128).
+
 ## 1.2.7 (2026-10-30)
 
 - **Developers:** browser tests for an application's page: the summary and its links, moving and undoing, waiting and replies, details, log activity, people, documents sent, At a glance and deleting. Nothing in the app changes (#127).
