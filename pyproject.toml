@@ -1,6 +1,6 @@
 [project]
 name = "job-application-tracker"
-version = "1.2.14"
+version = "1.2.15"
 description = "Self-hosted, local-first job application tracker for software engineers."
 readme = "README.md"
 license = "Apache-2.0"
