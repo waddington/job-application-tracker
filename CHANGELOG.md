@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.2.6 (2026-10-30)
+
+- **Developers:** browser tests for the Board: mouse and keyboard dragging, refused moves, closed stages and round columns. Nothing in the app changes (#126).
+
 ## 1.2.5 (2026-10-30)
 
 - **Developers:** browser tests for the Applications list: filters, search, sorting, the quick view, New application and its errors, and every route with new and existing companies, agencies and people. Nothing in the app changes (#125).
