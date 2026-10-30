@@ -12,7 +12,7 @@ Numbers in brackets are pull requests.
   - **What moved over:** the list and board, the quick view, the application page (details,
     people, role, documents sent, log activity and its timeline) and New application.
   - **How it was checked:** every page's text, and the area's dialogs, menus and board
-    switches, were compared before and after, with no differences.
+    switches, were compared before and after, with no differences (#118).
 - **The board's round columns** (*A column per interview round*) now go by the stage's id
   having "interview" in it, not its name, so they keep working whatever language your stage
   names are in. The default workflow's *Interviewing* is unchanged; a stage of your own named

@@ -26,6 +26,7 @@ export default {
     clearFilter: "Try clearing a filter.",
     none: "No applications yet",
     addFirst: "Add the first one: company, role and how you applied.",
+    newApplication: "New application",
   },
   // The list's columns.
   columns: {
@@ -62,7 +63,8 @@ export default {
     roundsInOrder: "Rounds go in order",
     roundFromInterviews:
       "A card's round comes from its interviews: add or finish a round on the application to move it along.",
-    dropOnNoRound: "Drop it on {{stage}} · No round yet; it moves along as you add its interview rounds.",
+    // {{column}} is the noRoundYet title above.
+    dropOnNoRound: "Drop it on {{column}}; it moves along as you add its interview rounds.",
     notAllowed: "That move isn't allowed",
     cantGo: "{{from}} can't go to {{to}}.",
     moved: "{{company}} moved to {{stage}}",

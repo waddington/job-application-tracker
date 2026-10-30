@@ -138,7 +138,9 @@ export function planDrop(
     return {
       do: "refuse",
       title: roundsInOrder,
-      message: i18n.t("applications:board.dropOnNoRound", { stage: name(to) }),
+      message: i18n.t("applications:board.dropOnNoRound", {
+        column: i18n.t("applications:board.noRoundYet", { stage: name(to) }),
+      }),
     };
   if (to === row.stage) return { do: "nothing" };
   if (!canDrop(workflow, row.stage, to))

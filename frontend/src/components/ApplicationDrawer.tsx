@@ -173,9 +173,9 @@ export function ApplicationSummary({ app }: { app: ApplicationDetail }) {
           </Badge>
         )}
         {app.archived && <Badge variant="outline">{t("summary.archived")}</Badge>}
-        {app.tags.map((t) => (
-          <Badge key={t} variant="dot" color="gray">
-            {t}
+        {app.tags.map((tag) => (
+          <Badge key={tag} variant="dot" color="gray">
+            {tag}
           </Badge>
         ))}
       </Group>
