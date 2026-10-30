@@ -91,6 +91,22 @@ const watchWrites = (page: Page) => {
 const answered = (page: Page, method: string, url: RegExp) =>
   page.waitForResponse((r) => r.request().method() === method && url.test(new URL(r.url()).pathname));
 
+/** Two clicks before the page can react: a double click at its worst. */
+const doubleClick = (button: Locator) =>
+  button.evaluate((b: HTMLElement) => {
+    b.click();
+    b.click();
+  });
+/** The dialog closed, or something on screen says why it didn't: however a fix chooses to answer. */
+const settled = (page: Page, dialog: Locator) =>
+  expect
+    .poll(
+      async () =>
+        (await dialog.isHidden()) ||
+        (await page.locator('.mantine-Notification-root, [class*="InputWrapper-error"]').count()) > 0,
+    )
+    .toBe(true);
+
 const openCompanies = async (page: Page) => {
   await page.goto("/companies");
   await expect(heading(page, "Companies")).toBeVisible();
@@ -285,9 +301,8 @@ test.describe("creating a company", () => {
     await openCompanies(page);
     const dialog = await newCompany(page);
     await dialog.getByLabel("Name").fill("Twin Co");
-    const posted = answered(page, "POST", /\/companies$/);
     await dialog.getByRole("button", { name: "Add company" }).click();
-    await posted;
+    await settled(page, dialog);
     expect(await companies(request, "Twin Co")).toHaveLength(1);
   });
 });
@@ -359,6 +374,8 @@ test.describe("making a company inside other dialogs", () => {
     await roleTitle(dialog).fill("Handed Over Role");
     await submitRole(dialog);
     expect(await companies(request, "Hand Over Co")).toHaveLength(1);
+    const [co] = await companies(request, "Hand Over Co");
+    expect((await rolesCalled(request, "Handed Over Role"))[0]?.company_id).toBe(co?.id);
   });
 
   test("in New application: it's made once and lists the application", async ({ page, request }) => {
@@ -493,7 +510,7 @@ test.describe("renaming a company", () => {
 
   test("shows on roles, applications, people and Companies without a reload", async ({ page, request }) => {
     const here = await company(request, "Before Rename Co");
-    const person = await contact(request, { name: "Rename Watcher", company_id: here.id });
+    await contact(request, { name: "Rename Watcher", company_id: here.id });
     await role(request, { company_id: here.id, title: "Rename Role" });
     await apply(request, { company_name: "Before Rename Co", role_title: "Rename Application" });
     // Each page is seen first, so what it holds has to be refreshed rather than loaded new.
@@ -520,8 +537,8 @@ test.describe("renaming a company", () => {
     await menu(page, "Companies").click();
     await expect(companyRow(page, "After Rename Co")).toBeVisible();
     await expect(companyRow(page, "Before Rename Co")).toBeHidden();
-
-    await page.goto(`/people/${person.id}`);
+    await companyRow(page, "After Rename Co").click();
+    await page.getByRole("link", { name: "Rename Watcher" }).click();
     await expect(page.getByRole("link", { name: "After Rename Co", exact: true })).toBeVisible();
     await page.goto("/applications");
     await expect(applicationRow(page, "Rename Application")).toContainText("After Rename Co");
@@ -562,15 +579,16 @@ test.describe("renaming a company", () => {
   });
 
   // KNOWN BUG (fix-double-save-locked on the roadmap): expected to fail until it is fixed.
-  test.fail("a double click on a slow save closes it, with no error", async ({ page, request }) => {
+  test.fail("a double click sends the save once", async ({ page, request }) => {
     const here = await company(request, "Save Once Co");
     await slow(page, `**${API}/companies/${here.id}`, "PATCH");
     await openCompany(page, here.id, "Save Once Co");
+    const writes = watchWrites(page);
     const dialog = await editDialog(page, "Save Once Co");
     await dialog.getByLabel("Name").fill("Saved Once Co");
-    await dialog.getByRole("button", { name: "Save", exact: true }).dblclick();
-    await expect(dialog).toBeHidden();
+    await doubleClick(dialog.getByRole("button", { name: "Save", exact: true }));
     await expect(heading(page, "Saved Once Co")).toBeVisible();
+    expect(writes).toHaveLength(1);
   });
 
   test("if it's been deleted meanwhile, that's said and the dialog stays", async ({
@@ -633,9 +651,8 @@ test.describe("renaming a company", () => {
     await openCompany(page, here.id, "Wants Name Co");
     const dialog = await editDialog(page, "Wants Name Co");
     await dialog.getByLabel("Name").fill("Taken Name Co");
-    const saved = answered(page, "PATCH", /\/companies\//);
     await dialog.getByRole("button", { name: "Save", exact: true }).click();
-    await saved;
+    await settled(page, dialog);
     expect(await companies(request, "Taken Name Co")).toHaveLength(1);
   });
 });
@@ -681,6 +698,7 @@ test.describe("deleting a company", () => {
     expect((await getJson<Person>(request, `contacts/${person.id}`)).company_id).toBeNull();
     await menu(page, "Roles").click();
     await expect(heading(page, "Roles")).toBeVisible();
+    await expect(page.getByRole("button", { name: /^Edit /, exact: false }).first()).toBeVisible();
     await expect(page.getByRole("link", { name: "Doomed Role", exact: true })).toBeHidden();
     await page.goto(`/people/${person.id}`);
     await expect(heading(page, "Left Behind Person")).toBeVisible();
@@ -714,7 +732,9 @@ test.describe("deleting a company", () => {
 
   test("an archived application still counts", async ({ page, request }) => {
     const made = await apply(request, { company_name: "Archived App Co", role_title: "Archived Role" });
-    await request.patch(`${API}/applications/${made.id}`, { data: { archived: true } });
+    expect((await request.patch(`${API}/applications/${made.id}`, { data: { archived: true } })).ok()).toBe(
+      true,
+    );
     const [here] = await companies(request, "Archived App Co");
     await openCompany(page, here?.id ?? "", "Archived App Co");
     const writes = watchWrites(page);
@@ -961,15 +981,16 @@ test.describe("renaming an agency", () => {
   });
 
   // KNOWN BUG (fix-double-save-locked on the roadmap): expected to fail until it is fixed.
-  test.fail("a double click on a slow save closes it, with no error", async ({ page, request }) => {
+  test.fail("a double click sends the save once", async ({ page, request }) => {
     const here = await agency(request, "Save Once Agency");
     await slow(page, `**${API}/agencies/${here.id}`, "PATCH");
     await openAgency(page, here.id, "Save Once Agency");
+    const writes = watchWrites(page);
     const dialog = await editDialog(page, "Save Once Agency");
     await dialog.getByLabel("Name").fill("Saved Once Agency");
-    await dialog.getByRole("button", { name: "Save", exact: true }).dblclick();
-    await expect(dialog).toBeHidden();
+    await doubleClick(dialog.getByRole("button", { name: "Save", exact: true }));
     await expect(heading(page, "Saved Once Agency")).toBeVisible();
+    expect(writes).toHaveLength(1);
   });
 });
 
@@ -1055,20 +1076,21 @@ test.describe("deleting an agency", () => {
     const saved = answered(page, "PATCH", /\/applications\//);
     await page.getByRole("button", { name: "Save details" }).click();
     expect((await saved).status()).toBe(200);
+    expect((await getJson<{ tags: string[] }>(request, `applications/${made.id}`)).tags).toContain("kept");
   });
 
   test("an application with only the agency stays, labelled as through an agency", async ({
     page,
     request,
   }) => {
-    const here = await agency(request, "Doomed Only Agency");
+    const here = await agency(request, "Doomed Lone Firm");
     const made = await apply(request, {
-      company_name: "Only Agency Client",
-      role_title: "Agency Only Role",
+      company_name: "Lone Route Client",
+      role_title: "Lone Route Role",
       route: "agency",
       agency_id: here.id,
     });
-    await openAgency(page, here.id, "Doomed Only Agency");
+    await openAgency(page, here.id, "Doomed Lone Firm");
     await deleteAnswering(page, true);
     await expect(heading(page, "Recruiters")).toBeVisible();
     expect(await getJson<Application>(request, `applications/${made.id}`)).toMatchObject({
@@ -1077,11 +1099,10 @@ test.describe("deleting an agency", () => {
       recruiter_id: null,
     });
     await menu(page, "Applications").click();
-    const row = applicationRow(page, "Agency Only Role");
-    await expect(row).toContainText("Agency");
-    await expect(row).not.toContainText("Doomed Only Agency");
+    const row = applicationRow(page, "Lone Route Role");
+    await expect(row.getByRole("cell").nth(1)).toHaveText("Agency");
     await page.goto(`/applications/${made.id}`);
-    await expect(page.getByText("Agency Only Role").first()).toBeVisible();
+    await expect(page.getByText("Lone Route Role").first()).toBeVisible();
   });
 
   // KNOWN BUG (fix-agency-delete-blocks-application-save on the roadmap): expected to fail until it is fixed.
@@ -1128,5 +1149,161 @@ test.describe("deleting an agency", () => {
     await deleteAnswering(page, true);
     expect((await refused).status()).toBe(404);
     await expect(notice(page, "Couldn't delete it")).toBeVisible();
+  });
+});
+
+test.describe("agencies, as companies", () => {
+  test("the name is trimmed; Escape changes nothing", async ({ page, request }) => {
+    const here = await agency(request, "Trim Me Agency");
+    await openAgency(page, here.id, "Trim Me Agency");
+    let dialog = await editDialog(page, "Trim Me Agency");
+    await dialog.getByLabel("Name").fill("Escaped Agency");
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
+    await expect(heading(page, "Trim Me Agency")).toBeVisible();
+    dialog = await editDialog(page, "Trim Me Agency");
+    await dialog.getByLabel("Name").fill("  Trimmed Agency ");
+    await saveDialog(dialog);
+    expect(await agencies(request, "Trimmed Agency")).toHaveLength(1);
+  });
+
+  test("deleted meanwhile: it says so, and the dialog stays", async ({ page, request, problems }) => {
+    problems.allow(/404.*\/api\/v1\/agencies/);
+    const here = await agency(request, "Gone Meanwhile Agency");
+    await openAgency(page, here.id, "Gone Meanwhile Agency");
+    const dialog = await editDialog(page, "Gone Meanwhile Agency");
+    await request.delete(`${API}/agencies/${here.id}`);
+    const refused = answered(page, "PATCH", /\/agencies\//);
+    await dialog.getByRole("button", { name: "Save", exact: true }).click();
+    expect((await refused).status()).toBe(404);
+    await expect(notice(page, "That didn't work")).toBeVisible();
+    await expect(dialog).toBeVisible();
+  });
+
+  // KNOWN BUG (fix-duplicate-agency-name on the roadmap): expected to fail until it is fixed.
+  test.fail("to another agency's name doesn't make two the same", async ({ page, request, problems }) => {
+    problems.allow(/\/api\/v1\/agencies/); // a fix may refuse it
+    await agency(request, "Taken Name Agency");
+    const here = await agency(request, "Wants Name Agency");
+    await openAgency(page, here.id, "Wants Name Agency");
+    const dialog = await editDialog(page, "Wants Name Agency");
+    await dialog.getByLabel("Name").fill("Taken Name Agency");
+    await dialog.getByRole("button", { name: "Save", exact: true }).click();
+    await settled(page, dialog);
+    expect(await agencies(request, "Taken Name Agency")).toHaveLength(1);
+  });
+
+  test("the role it sent stays, with no agency named", async ({ page, request }) => {
+    const here = await agency(request, "Sent Role Firm");
+    const who = await contact(request, { name: "Sent Role Recruiter", agency_id: here.id });
+    const client = await company(request, "Sent Role Client");
+    const made = await role(request, { company_id: client.id, title: "Sent Role", contact_id: who.id });
+    await openAgency(page, here.id, "Sent Role Firm");
+    await deleteAnswering(page, true);
+    await expect(heading(page, "Recruiters")).toBeVisible();
+    await page.goto(`/roles/${made.id}`);
+    await expect(page.getByRole("link", { name: "Sent Role Recruiter" }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: "Sent Role Firm" })).toBeHidden();
+  });
+
+  test("a double click on New agency makes one", async ({ page, request }) => {
+    await openRecruiters(page);
+    await page.getByRole("button", { name: "New agency" }).click();
+    const dialog = page.getByRole("dialog");
+    await dialog.getByLabel("Name").fill("Double Click Agency");
+    await dialog.getByRole("button", { name: "Add agency" }).dblclick();
+    await expect(dialog).toBeHidden();
+    await expect
+      .poll(() => agencies(request, "Double Click Agency").then((a) => a.length))
+      .toBeGreaterThan(0);
+    await pause(500);
+    expect(await agencies(request, "Double Click Agency")).toHaveLength(1);
+  });
+
+  test("defaults: a person added on a company's page, a recruiter on an agency's", async ({
+    page,
+    request,
+  }) => {
+    const co = await company(request, "Default Co");
+    await openCompany(page, co.id, "Default Co");
+    await page.getByRole("button", { name: "Add person" }).click();
+    await expect(page.getByRole("dialog").getByLabel("Company").first()).toHaveValue("Default Co");
+    const firm = await agency(request, "Default Firm");
+    await openAgency(page, firm.id, "Default Firm");
+    await page.getByRole("button", { name: "Add recruiter" }).click();
+    await expect(page.getByRole("dialog").getByLabel("Agency").first()).toHaveValue("Default Firm");
+  });
+});
+
+test.describe("what a delete leaves on other pages", () => {
+  // KNOWN BUG (fix-company-page-blank-route on the roadmap): expected to fail until it is fixed.
+  test.fail(
+    "an application left with no agency still says how it came, on its company's page",
+    async ({ page, request }) => {
+      const firm = await agency(request, "Label Firm");
+      await apply(request, {
+        company_name: "Label Client",
+        role_title: "Label Role",
+        route: "agency",
+        agency_id: firm.id,
+      });
+      const [client] = await companies(request, "Label Client");
+      await openAgency(page, firm.id, "Label Firm");
+      await deleteAnswering(page, true);
+      await expect(heading(page, "Recruiters")).toBeVisible();
+      await openCompany(page, client?.id ?? "", "Label Client");
+      await expect(page.getByRole("row").filter({ hasText: "Label Role" })).toContainText("Agency");
+    },
+  );
+
+  // KNOWN BUG (fix-refused-delete-stale-page on the roadmap): expected to fail until it is fixed.
+  test.fail(
+    "after a refused delete, the page shows the application that stopped it",
+    async ({ page, request, problems }) => {
+      problems.allow(/409.*\/api\/v1\/companies/);
+      const here = await company(request, "Refreshed Co");
+      await openCompany(page, here.id, "Refreshed Co");
+      await expect(page.getByText("No applications here yet.")).toBeVisible();
+      await apply(request, { company_name: "Refreshed Co", role_title: "Refreshed Role" });
+      const refused = answered(page, "DELETE", /\/companies\//);
+      await deleteAnswering(page, true);
+      await refused;
+      await expect(page.getByRole("row").filter({ hasText: "Refreshed Role" })).toBeVisible();
+    },
+  );
+
+  // KNOWN BUG (fix-duplicate-company-name on the roadmap): expected to fail until it is fixed.
+  test.fail("New application doesn't make a third company when two share the name", async ({ request }) => {
+    await company(request, "Shared Name Co");
+    await company(request, "Shared Name Co");
+    await apply(request, { company_name: "Shared Name Co", role_title: "Shared Name Role" });
+    expect(await companies(request, "Shared Name Co")).toHaveLength(2);
+  });
+});
+
+test.describe("Enter pressed twice on a slow save", () => {
+  test("New company makes one", async ({ page, request }) => {
+    await slow(page, `**${API}/companies`, "POST");
+    await openCompanies(page);
+    const dialog = await newCompany(page);
+    await dialog.getByLabel("Name").fill("Enter Twice Co");
+    await page.keyboard.press("Enter");
+    await page.keyboard.press("Enter");
+    await expect(heading(page, "Enter Twice Co")).toBeVisible();
+    await pause(1000);
+    expect(await companies(request, "Enter Twice Co")).toHaveLength(1);
+  });
+
+  test("New agency makes one", async ({ page, request }) => {
+    await slow(page, `**${API}/agencies`, "POST");
+    await openRecruiters(page);
+    await page.getByRole("button", { name: "New agency" }).click();
+    const dialog = page.getByRole("dialog");
+    await dialog.getByLabel("Name").fill("Enter Twice Agency");
+    await page.keyboard.press("Enter");
+    await page.keyboard.press("Enter");
+    await expect(dialog).toBeHidden();
+    await pause(1000);
+    expect(await agencies(request, "Enter Twice Agency")).toHaveLength(1);
   });
 });
