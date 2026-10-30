@@ -283,6 +283,7 @@ test.describe("adding a role: who told you", () => {
     await titleField(dialog).fill("Call Role");
     await pickPerson(page, dialog, "Call Person");
     await dialog.getByPlaceholder("Not from a call").click();
+    await expect(page.getByRole("option", { name: /^Intro chat/ })).toBeVisible();
     await expect(page.getByRole("option", { name: /Someone else's chat/ })).toBeHidden();
     await page.getByRole("option", { name: /^Intro chat · \d+ \w+$/ }).click();
     await submit(dialog);
@@ -411,8 +412,8 @@ test.describe("adding a role: the rest", () => {
   });
 
   test("Add and add another keeps who and clears the rest", async ({ page, request }) => {
-    await api.create(request, "contacts", { name: "Many Person" });
-    await company(request, "Many Co");
+    const person = await api.create(request, "contacts", { name: "Many Person" });
+    const co = await company(request, "Many Co");
     await openRoles(page);
     const dialog = await addDialog(page);
     await pickCompany(page, dialog, "Many Co");
@@ -428,8 +429,9 @@ test.describe("adding a role: the rest", () => {
     await expect(dialog).toBeHidden();
     const first = await role(request, "Many First");
     const second = await role(request, "Many Second");
-    expect(second.contact_id).toBe(first.contact_id);
-    expect(second.company_id).toBe(first.company_id);
+    expect(second.contact_id).toBe(person.id);
+    expect(second.company_id).toBe(co.id);
+    expect(first.contact_id).toBe(person.id);
   });
 
   test("started from a person's page, it's about them", async ({ page, request }) => {
@@ -592,6 +594,123 @@ test.describe("editing a role", () => {
   });
 });
 
+test.describe("what a save leaves alone", () => {
+  // KNOWN BUG (fix-add-another-role-carries-over on the roadmap): expected to fail until it is fixed.
+  test.fail("Add and add another clears the type, work mode and IR35 too", async ({ page, request }) => {
+    await company(request, "Carry Co");
+    await openRoles(page);
+    const dialog = await addDialog(page);
+    await pickCompany(page, dialog, "Carry Co");
+    await titleField(dialog).fill("Carry First");
+    await pickFrom(page, dialog, "Work mode", "Remote");
+    await pickFrom(page, dialog, "Type", "Contract");
+    await dialog.getByLabel("Day rate (£)").fill("600");
+    await pickFrom(page, dialog, "IR35", "Inside");
+    await dialog.getByRole("button", { name: "Add and add another" }).click();
+    await expect(titleField(dialog)).toHaveValue("");
+    await titleField(dialog).fill("Carry Second");
+    await submit(dialog);
+    await expect(dialog).toBeHidden();
+    expect(await role(request, "Carry Second")).toMatchObject({
+      work_mode: null,
+      employment_type: null,
+      ir35: null,
+      day_rate: null,
+    });
+  });
+
+  test("changing one field keeps all the others, and a decision", async ({ page, request }) => {
+    const person = await api.create(request, "contacts", { name: "Round Trip Person" });
+    const call = await api.create(request, "meetings", {
+      contact_id: person.id,
+      title: "Round trip call",
+      starts_at: new Date(Date.now() - 86_400_000).toISOString(),
+    });
+    const co = await company(request, "Round Trip Co");
+    const made = await api.create(request, "roles", {
+      company_id: co.id,
+      title: "Round Trip",
+      url: "https://jobs.example.com/round-trip",
+      location: "Bath",
+      work_mode: "hybrid",
+      employment_type: "permanent",
+      salary_min: 70000,
+      salary_max: 80000,
+      currency: "GBP",
+      contact_id: person.id,
+      meeting_id: call.id,
+      description: "Words about it",
+      decision: "passed",
+      decision_reason: "Too far",
+    });
+    const before = await role(request, "Round Trip");
+    await page.goto("/roles");
+    await view(page, "Passed");
+    const dialog = await edit(page, "Round Trip");
+    await dialog.getByLabel("Location").fill("Bristol");
+    await save(dialog);
+    const after = await role(request, "Round Trip");
+    const unchanged = (r: Role) => ({ ...r, location: "", updated_at: "" });
+    expect(after.id).toBe(made.id);
+    expect(after.location).toBe("Bristol");
+    expect(unchanged(after)).toEqual(unchanged(before));
+  });
+
+  test("a fixed-term role keeps its salary fields", async ({ page, request }) => {
+    await company(request, "Fixed Co");
+    await openRoles(page);
+    const dialog = await addDialog(page);
+    await pickCompany(page, dialog, "Fixed Co");
+    await titleField(dialog).fill("Fixed Role");
+    await pickFrom(page, dialog, "Type", "Fixed term");
+    await dialog.getByLabel("Salary from (£)").fill("60000");
+    await submit(dialog);
+    await expect(dialog).toBeHidden();
+    expect(await role(request, "Fixed Role")).toMatchObject({
+      employment_type: "fixed_term",
+      salary_min: 60000,
+    });
+    await page.getByRole("link", { name: "Fixed Role", exact: true }).click();
+    await expect(page.getByText("Fixed term", { exact: true })).toBeVisible();
+  });
+});
+
+test.describe("a company made in the dialog", () => {
+  test("stays even if you then cancel the role", async ({ page, request }) => {
+    await openRoles(page);
+    const dialog = await addDialog(page);
+    await dialog.getByLabel("Company").first().fill("Left Behind Co");
+    await page.getByRole("option", { name: '+ Add "Left Behind Co"' }).click();
+    await dialog.getByRole("button", { name: "Cancel" }).click();
+    await expect(dialog).toBeHidden();
+    expect(await named(request, "companies", "Left Behind Co")).toHaveLength(1);
+  });
+});
+
+test.describe("a role's page", () => {
+  test("Edit and Pass work from it too, and its applications are listed", async ({ page, request }) => {
+    const co = await company(request, "Page Role Co");
+    const made = await api.create(request, "roles", { company_id: co.id, title: "Page Role" });
+    await page.goto(`/roles/${made.id}`);
+    await page.getByRole("button", { name: "Edit", exact: true }).click();
+    const dialog = page.getByRole("dialog");
+    await dialog.getByText("A role you might go for.").click();
+    await dialog.getByLabel("Location").fill("Hull");
+    await save(dialog);
+    await expect(page.getByText("Hull")).toBeVisible();
+    await page.getByRole("button", { name: "Pass: Page Role" }).click();
+    await page.getByRole("dialog").getByRole("button", { name: "Pass", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Reconsider: Page Role" })).toBeVisible();
+    await page.getByRole("button", { name: "Reconsider: Page Role" }).click();
+    await page.getByRole("button", { name: "Apply: Page Role" }).click();
+    await page.getByRole("dialog").getByRole("button", { name: "Create application" }).click();
+    await expect(page).toHaveURL(/\/applications\//);
+    await page.goto(`/roles/${made.id}`);
+    await expect(page.getByRole("heading", { name: "Your application" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Page Role Co · Page Role" })).toBeVisible();
+  });
+});
+
 test.describe("when a role's person changes, its applications follow only where they fit", () => {
   const start = async (page: Page, request: APIRequestContext, key: string) => {
     const agency = await api.create(request, "agencies", { name: `${key} Agency` });
@@ -620,7 +739,26 @@ test.describe("when a role's person changes, its applications follow only where 
     ).toBeVisible();
     await save(dialog);
     await expect.poll(async () => (await applicationOf(request, title)).recruiter_id).toBe(next.id);
-    expect((await applicationOf(request, title)).agency_name).toBe("Follow Agency");
+    const app = await applicationOf(request, title);
+    expect(app.agency_name).toBe("Follow Agency");
+    await page.goto(`/applications/${app.id}`);
+    await expect(page.getByText(/Follow Second/).first()).toBeVisible();
+    const events = (
+      (await (await request.get(`/api/v1/applications/${app.id}`)).json()) as {
+        events: { summary: string | null }[];
+      }
+    ).events;
+    expect(events.some((e) => e.summary?.includes("Follow Second"))).toBe(true);
+  });
+
+  test("taking the person off the role leaves the application alone", async ({ page, request }) => {
+    const { first, title } = await start(page, request, "Drop");
+    const dialog = await edit(page, title);
+    await dialog.getByLabel("Who told you about it").first().click();
+    await page.getByRole("option", { name: "Drop First", exact: true }).click();
+    await save(dialog);
+    await expect.poll(async () => (await role(request, title)).contact_id).toBeNull();
+    expect((await applicationOf(request, title)).recruiter_id).toBe(first.id);
   });
 
   test("someone at another agency doesn't: the application keeps its person", async ({ page, request }) => {
@@ -667,6 +805,21 @@ test.describe("deciding", () => {
       agency_name: "Apply Agency",
     });
     expect(await role(request, "Apply Through")).toMatchObject({ status: "applied" });
+  });
+
+  test("Apply with an independent recruiter is direct, naming them", async ({ page, request }) => {
+    const person = await api.create(request, "contacts", { name: "Indie Person" });
+    await seed(request, "Apply Indie", { contact_id: person.id });
+    await openRoles(page);
+    await page.getByRole("button", { name: "Apply: Apply Indie" }).click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog.getByText("Directly, with Indie Person as your contact.")).toBeVisible();
+    await dialog.getByRole("button", { name: "Create application" }).click();
+    await expect(page).toHaveURL(/\/applications\//);
+    expect(await applicationOf(request, "Apply Indie")).toMatchObject({
+      route: "direct",
+      recruiter_name: "Indie Person",
+    });
   });
 
   test("Apply with no one is a direct application", async ({ page, request }) => {
@@ -720,7 +873,7 @@ test.describe("deciding", () => {
     await page.goto("/roles");
     await view(page, "Interested");
     await expect(page.getByRole("link", { name: "Keen Role", exact: true })).toBeVisible();
-    await page.getByRole("link", { name: "Open application" }).first().waitFor();
+    await expect(lineOf(page, "Keen Role").getByRole("link", { name: "Open application" })).toBeVisible();
     await page.goto(`/applications/${app.id}`);
     await page.getByRole("button", { name: "Move to…" }).click();
     await page.getByRole("menuitem", { name: "Applied", exact: true }).click();
@@ -745,7 +898,7 @@ test.describe("deciding", () => {
     await seed(request, "Pass Reason");
     await openRoles(page);
     await page.getByRole("button", { name: "Pass: Pass Reason" }).click();
-    let dialog = page.getByRole("dialog");
+    const dialog = page.getByRole("dialog");
     await dialog.getByLabel("Why? (optional)").fill("Too far");
     await dialog.getByRole("button", { name: "Pass", exact: true }).click();
     await expect(dialog).toBeHidden();
@@ -760,8 +913,6 @@ test.describe("deciding", () => {
     expect(await role(request, "Pass Reason")).toMatchObject({ status: "to_decide", decision: null });
     await view(page, "To decide");
     await expect(page.getByRole("button", { name: "Pass: Pass Reason" })).toBeVisible();
-    dialog = page.getByRole("dialog");
-    await expect(dialog).toBeHidden();
   });
 
   test("Pass with no reason", async ({ page, request }) => {
