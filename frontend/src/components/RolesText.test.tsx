@@ -6,7 +6,7 @@ import { App } from "../App";
 import type { RoleSummary } from "../api/roleHooks";
 import { roleBadge } from "../api/roleHooks";
 import { makeRouter } from "../router";
-import { mockApi, roleSummary, row, WORKFLOW } from "../test/mockApi";
+import { meeting, mockApi, roleSummary, row, WORKFLOW } from "../test/mockApi";
 import { pay } from "./Roles";
 
 // Roles' text comes from locales/en/roles.ts (i18n-roles). A before/after snapshot of every
@@ -80,6 +80,11 @@ describe("a role's page", () => {
     expect(await fact("From")).toBe("Alex Morgan at Northwind Talent · on Intro call");
   });
 
+  it("shows a call's name as typed, even with a < in it", async () => {
+    page({ contact_id: "c1", contact_name: "Riley Chen", meeting_label: "Intro <platform> chat" });
+    expect(await fact("From")).toBe("Riley Chen · on Intro <platform> chat");
+  });
+
   it("says who it came from without an agency or a call", async () => {
     page({ contact_id: "c1", contact_name: "Riley Chen" });
     expect(await fact("From")).toBe("Riley Chen");
@@ -122,6 +127,7 @@ describe("a role's page", () => {
       }),
       row({ id: "a2", role_id: "r1", route: "direct", recruiter_id: null, recruiter_name: null }),
       row({ id: "a3", role_id: "r1", applied_on: null }),
+      row({ id: "a4", role_id: "r1" }),
     ]);
     expect(
       await screen.findByText("Edit adds what they said about it: team, stack, why it's open."),
@@ -132,7 +138,12 @@ describe("a role's page", () => {
     const lines = within(card)
       .getAllByText(/Direct|via/)
       .map((el) => el.textContent);
-    expect(lines).toEqual(["Direct", "Direct · applied 20 Sep 2026", "via Alex Recruiter"]);
+    expect(lines).toEqual([
+      "Direct",
+      "Direct · applied 20 Sep 2026",
+      "via Alex Recruiter",
+      "via Alex Recruiter · applied 20 Sep 2026",
+    ]);
   });
 
   it("says it couldn't load the role", async () => {
@@ -252,6 +263,24 @@ describe("applying for a role", () => {
     expect(within(dialog).getByText("Through Northwind Talent.")).toBeInTheDocument();
   });
 
+  it("names the Interested dialog", async () => {
+    await open({}, "Interested: Backend Engineer");
+    expect(screen.getByText("Interested: Backend Engineer at Contoso")).toBeInTheDocument();
+  });
+
+  it("stars a favourite recruiter", async () => {
+    mockApi({
+      "/api/v1/workflow": WORKFLOW,
+      "GET /api/v1/role-summaries": [roleSummary({ contact_id: "c1", contact_name: "Riley Chen" })],
+      "GET /api/v1/attachments": [],
+      "GET /api/v1/todos": [],
+      "/api/v1/contacts": [{ id: "c1", name: "Riley Chen", closed_as: null, favourite: true, details: [] }],
+      "/api/v1/health": {},
+    });
+    renderAt("/roles");
+    expect(await screen.findByText("from Riley Chen ★")).toBeInTheDocument();
+  });
+
   it("marks a ghosted recruiter", async () => {
     mockApi({
       "/api/v1/workflow": WORKFLOW,
@@ -275,5 +304,30 @@ describe("applying for a role", () => {
     fireEvent.click(screen.getByRole("button", { name: "Apply: Backend Engineer" }));
     const dialog = await screen.findByRole("dialog");
     expect(within(dialog).getByText("Through Blue Yonder (Sam Patel ★ (ghosted)).")).toBeInTheDocument();
+  });
+});
+
+describe("the role form", () => {
+  it("names each call by its date, and checks the link", async () => {
+    mockApi({
+      "/api/v1/workflow": WORKFLOW,
+      "GET /api/v1/role-summaries": [roleSummary({ contact_id: "c1", contact_name: "Alex Morgan" })],
+      "GET /api/v1/attachments": [],
+      "GET /api/v1/todos": [],
+      "/api/v1/companies": [{ id: "co1", name: "Contoso" }],
+      "/api/v1/contacts": [{ id: "c1", name: "Alex Morgan", details: [] }],
+      "GET /api/v1/meetings": [meeting({ starts_at: "2026-10-14T10:00:00Z", title: "Intro call" })],
+      "/api/v1/health": {},
+    });
+    renderAt("/roles");
+    fireEvent.click(await screen.findByRole("button", { name: "Edit Backend Engineer" }));
+    const dialog = await screen.findByRole("dialog");
+    fireEvent.click(within(dialog).getByPlaceholderText("Not from a call"));
+    expect(
+      await screen.findByRole("option", { name: "Intro call · 14 Oct", hidden: true }),
+    ).toBeInTheDocument();
+    fireEvent.change(within(dialog).getByLabelText("Job ad link"), { target: { value: "jobs.example.com" } });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Save" }));
+    expect(await within(dialog).findByText("Links start with http:// or https://")).toBeInTheDocument();
   });
 });

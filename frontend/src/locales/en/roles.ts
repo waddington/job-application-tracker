@@ -36,14 +36,12 @@ export default {
   // What it pays: "£600 a day, outside IR35", "£80k–£95k". The amounts come ready-made.
   pay: {
     dayRate: "{{rate}} a day",
-    dayRateIr35: "{{rate}} a day, {{ir35}} IR35",
-    ir35: {
-      outside: "outside",
-      inside: "inside",
-    },
+    dayRateOutside: "{{rate}} a day, outside IR35",
+    dayRateInside: "{{rate}} a day, inside IR35",
     range: "{{from}}–{{to}}",
   },
-  // A favourite person's name gets a star, a ghosted one this, wherever a role names them.
+  // A favourite person's name gets a star, a ghosted one this, wherever a role names them. It's
+  // added straight after the name, so it carries its own leading space.
   ghosted: " (ghosted)",
   // The buttons on a role still to decide, and on one you passed.
   actions: {
@@ -183,8 +181,8 @@ export default {
     // Who it came from, linked: "Alex Morgan at Northwind Talent · on Intro call".
     fromPerson: "<person/>",
     fromPersonAgency: "<person/> at <agency/>",
-    fromPersonCall: "<person/> · on {{call}}",
-    fromPersonAgencyCall: "<person/> at <agency/> · on {{call}}",
+    fromPersonCall: "<person/> · on <call/>",
+    fromPersonAgencyCall: "<person/> at <agency/> · on <call/>",
     passedYes: "Yes",
     passedWhy: "{{when}}: {{reason}}",
     whatTheySaid: "What they said",

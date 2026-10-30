@@ -71,18 +71,22 @@ const num = (v: number | string) => (v === "" || v == null ? null : Number(v));
 const WEB_LINK = /^https?:\/\//;
 const isLink = (v: string) => (!v || WEB_LINK.test(v) ? null : i18n.t("roles:form.errors.link"));
 
-const IR35_WORDS = { outside: "roles:pay.ir35.outside", inside: "roles:pay.ir35.inside" } as const;
+const DAY_RATE_IR35 = { outside: "roles:pay.dayRateOutside", inside: "roles:pay.dayRateInside" } as const;
 const LINE_WORK_MODES = {
   remote: "line.workModes.remote",
   hybrid: "line.workModes.hybrid",
   office: "line.workModes.office",
 } as const;
 
-/** A favourite's star and a ghost's "(ghosted)", after a person's name where a role names them. */
+/**
+ * A favourite's star and a ghost's "(ghosted)", added straight after a person's name where a role
+ * names them ("Sam Patel ★ (ghosted)"); the name and its marks go into sentences as one value.
+ */
 function usePersonSuffix(contactId: string | null | undefined): string {
+  const { t } = useTranslation("roles");
   const favourite = useFavourite()(contactId);
   const ghosted = useGhosted()(contactId);
-  return (favourite ? " ★" : "") + (ghosted ? i18n.t("roles:ghosted") : "");
+  return (favourite ? " ★" : "") + (ghosted ? t("ghosted") : "");
 }
 
 /** "£600 a day", "£80k–£95k": what it pays, if you know. */
@@ -91,12 +95,10 @@ export function pay(role: RoleSummary): string | null {
   if (role.day_rate) {
     const rate = `£${role.day_rate}`;
     const ir35 =
-      role.ir35 && Object.hasOwn(IR35_WORDS, role.ir35)
-        ? IR35_WORDS[role.ir35 as keyof typeof IR35_WORDS]
+      role.ir35 && Object.hasOwn(DAY_RATE_IR35, role.ir35)
+        ? DAY_RATE_IR35[role.ir35 as keyof typeof DAY_RATE_IR35]
         : null;
-    return ir35
-      ? i18n.t("roles:pay.dayRateIr35", { rate, ir35: i18n.t(ir35) })
-      : i18n.t("roles:pay.dayRate", { rate });
+    return ir35 ? i18n.t(ir35, { rate }) : i18n.t("roles:pay.dayRate", { rate });
   }
   if (role.salary_min && role.salary_max)
     return i18n.t("roles:pay.range", { from: k(role.salary_min), to: k(role.salary_max) });

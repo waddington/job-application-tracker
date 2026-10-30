@@ -170,3 +170,8 @@ with sync_playwright() as p:
 with open(OUT, "w") as f:
     json.dump(snap, f, indent=1, ensure_ascii=False)
 print(f"{len(snap)} views -> {OUT}")
+# A step that couldn't open compares nothing: say so, so "0 differ" isn't taken on trust.
+missed = [name for name, view in snap.items() if view["text"].startswith("(couldn't open")]
+if missed:
+    print("couldn't open: " + ", ".join(missed))
+    sys.exit(1)

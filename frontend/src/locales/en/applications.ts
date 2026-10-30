@@ -183,7 +183,7 @@ export default {
     link: "Link person",
     newPerson: "New person",
     newHint:
-      "Someone new? <b>New person</b> adds them (at {{company}} unless you change it) and links them as the role chosen above.",
+      "Someone new? <b>New person</b> adds them (at <company/> unless you change it) and links them as the role chosen above.",
   },
   sent: {
     title: "Documents sent",

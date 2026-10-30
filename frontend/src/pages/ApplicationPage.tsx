@@ -211,8 +211,8 @@ function PeopleCard({ app }: { app: ApplicationDetail }) {
           <Trans
             t={t}
             i18nKey="people.newHint"
-            values={{ company: app.company_name }}
-            components={{ b: <b /> }}
+            // The company is a component, not a value: <Trans> would read a "<" in it as markup.
+            components={{ b: <b />, company: <>{app.company_name}</> }}
           />
         </Text>
       </Stack>

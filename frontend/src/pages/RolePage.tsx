@@ -155,7 +155,6 @@ export function RolePage() {
                             ? "page.fromPersonCall"
                             : "page.fromPerson"
                       }
-                      values={{ call: role.meeting_label ?? "" }}
                       components={{
                         person: (
                           <Anchor component={Link} to={`/people/${role.contact_id}`} size="sm">
@@ -167,6 +166,8 @@ export function RolePage() {
                             {role.agency_name}
                           </Anchor>
                         ),
+                        // A component, not a value: <Trans> would read a "<" you typed as markup.
+                        call: <>{role.meeting_label}</>,
                       }}
                     />
                   </Fact>
@@ -201,6 +202,7 @@ export function RolePage() {
             {applications.length > 0 && (
               <Card withBorder>
                 <Title order={4} mb="sm">
+                  {/* Not a plural: no number is shown, and "one" means 21 too in some languages. */}
                   {applications.length === 1 ? t("page.yourApplication") : t("page.applications")}
                 </Title>
                 <Table verticalSpacing="xs">

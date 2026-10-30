@@ -226,6 +226,14 @@ describe("the application page", () => {
     expect(screen.getByText("Interviewer", { selector: "p" })).toBeInTheDocument();
   });
 
+  it("names the company as typed in the new-person hint, even with a < in it", async () => {
+    showApplication({ company_name: "Contoso <UK>" });
+    const hint = await screen.findByText(/Someone new\?/);
+    expect(hint.textContent).toBe(
+      "Someone new? New person adds them (at Contoso <UK> unless you change it) and links them as the role chosen above.",
+    );
+  });
+
   it("asks before deleting, naming what goes with it", async () => {
     const confirm = vi.fn(() => false);
     vi.stubGlobal("confirm", confirm);
