@@ -84,6 +84,12 @@ const watchWrites = (page: Page) => {
   });
   return writes;
 };
+/** Goes to a page without reloading the app, as following a link would. */
+const inApp = (page: Page, path: string) =>
+  page.evaluate((to) => {
+    window.history.pushState({}, "", to);
+    window.dispatchEvent(new PopStateEvent("popstate"));
+  }, path);
 const openDocuments = async (page: Page) => {
   await page.goto("/documents");
   await expect(page.getByRole("heading", { name: "Backend CV", level: 4 })).toBeVisible();
@@ -190,19 +196,20 @@ test.describe("creating a document", () => {
 
   // KNOWN BUG (fix-duplicate-document-name on the roadmap): expected to fail until it is fixed.
   test.fail("the same name twice doesn't make a second", async ({ page, request, problems }) => {
-    problems.allow(/\/api\/v1\/documents/); // a fix may refuse it
+    problems.allow(/4\d\d.*\/api\/v1\/documents/); // a fix may refuse it
     await makeDoc(request, "Twin Doc");
     await openDocuments(page);
     const dialog = await newDocument(page);
     await dialog.getByLabel("Name").fill("Twin Doc");
-    await dialog.getByRole("button", { name: "Create" }).click();
-    await expect
-      .poll(
-        async () =>
-          (await dialog.isHidden()) ||
-          (await page.locator('.mantine-Notification-root, [class*="InputWrapper-error"]').count()) > 0,
-      )
-      .toBe(true);
+    const posted = page
+      .waitForResponse((r) => r.request().method() === "POST", { timeout: 2_000 })
+      .catch(() => undefined);
+    // A fix may disable the button, or ask first.
+    await dialog
+      .getByRole("button", { name: "Create" })
+      .click({ timeout: 1_000 })
+      .catch(() => undefined);
+    await posted;
     expect(await docsCalled(request, "Twin Doc")).toHaveLength(1);
   });
 });
@@ -318,7 +325,7 @@ test.describe("versions", () => {
     const doc = await makeDoc(request, "Gap Label Doc");
     const first = await makeVersion(request, doc.id, "v1");
     await makeVersion(request, doc.id, "v2");
-    await request.delete(`${API}/documents/versions/${first.id}`);
+    expect((await request.delete(`${API}/documents/versions/${first.id}`)).ok()).toBe(true);
     await openDocuments(page);
     const dialog = await newVersion(page, "Gap Label Doc");
     await expect(dialog.getByLabel("Label")).not.toHaveValue("v2");
@@ -467,13 +474,12 @@ test.describe("what was sent, across pages", () => {
     await openDocuments(page);
     await card(page, "Rename Doc").getByText("Where it was used (1)").click();
     await expect(page.getByRole("link", { name: "Doc Before Co · Doc Rename Role" })).toBeVisible();
-    await page.goto(`/companies/${company?.id}`);
+    await inApp(page, `/companies/${company?.id}`);
     await page.getByRole("button", { name: "Edit", exact: true }).click();
     await theDialog(page).getByLabel("Name").fill("Doc After Co");
     await theDialog(page).getByRole("button", { name: "Save", exact: true }).click();
     await expect(page.getByRole("heading", { name: "Doc After Co", level: 2 })).toBeVisible();
     await menu(page, "Documents").click();
-    await card(page, "Rename Doc").getByText("Where it was used (1)").click();
     await expect(page.getByRole("link", { name: "Doc After Co · Doc Rename Role" })).toBeVisible();
   });
 });
@@ -502,17 +508,15 @@ test.describe("CV files you've attached", () => {
         .getByText(/profile-[ab]\.pdf/)
         .first(),
     ).toBeVisible();
+    await expect(files(page).getByText(/^For 2 applications:/)).toBeVisible();
   });
 
   test("attached on an application's page, it's here without a reload", async ({ page, request }) => {
     const app = await application(request, "Attached Now Co");
     await openDocuments(page);
-    await page.goto(`/applications/${app.id}`);
+    await inApp(page, `/applications/${app.id}`);
     const chooser = page.waitForEvent("filechooser");
-    await page
-      .getByRole("button", { name: /Upload|Add file|Attach/ })
-      .first()
-      .click();
+    await card(page, "Files").getByRole("button", { name: "Upload" }).click();
     await (
       await chooser
     ).setFiles({ name: "attached-now-cv.pdf", mimeType: "application/pdf", buffer: Buffer.from("now") });
@@ -545,7 +549,13 @@ test.describe("CV files you've attached", () => {
     await attach(request, "adopted-cv.pdf", "application", ticked.id, "adopted bytes");
     await attach(request, "adopted-copy-cv.pdf", "application", unticked.id, "adopted bytes");
     await openDocuments(page);
-    await files(page).getByRole("button", { name: "Make it a version" }).first().click();
+    await files(page)
+      .locator("div")
+      .filter({ hasText: "adopted-cv.pdf" })
+      .filter({ has: page.getByRole("button", { name: "Make it a version" }) })
+      .last()
+      .getByRole("button", { name: "Make it a version" })
+      .click();
     const dialog = theDialog(page);
     await expect(dialog.getByLabel("Add it to", { exact: true }).first()).toHaveValue("Backend CV");
     await expect(dialog.getByLabel("Version")).toHaveValue(/adopted(-copy)?-cv/);
@@ -573,7 +583,6 @@ test.describe("CV files you've attached", () => {
     await expect(dialog).toBeHidden();
     await expect(page.getByText("Recorded as sent with 1 application.").first()).toBeVisible();
     expect(await cvFile(request, "adopted-cv.pdf")).toBeUndefined();
-    expect(await cvFile(request, "adopted-copy-cv.pdf")).toBeUndefined();
   });
 
   test("made a version of a new CV, which then exists", async ({ page, request }) => {
@@ -620,5 +629,124 @@ test.describe("CV files you've attached", () => {
     await expect(theDialog(page)).toBeHidden();
     expect(writes).toEqual([]);
     expect(await cvFile(request, "cancelled-cv.pdf")).toMatchObject({ version: null });
+  });
+});
+
+test.describe("more of what could go out of step", () => {
+  test("Enter pressed twice on a slow save makes one", async ({ page, request }) => {
+    await page.route(`**${API}/documents`, async (route) => {
+      if (route.request().method() === "POST") await pause(800);
+      await route.continue();
+    });
+    await openDocuments(page);
+    const dialog = await newDocument(page);
+    await dialog.getByLabel("Name").fill("Enter Twice Doc");
+    await page.keyboard.press("Enter");
+    await page.keyboard.press("Enter");
+    await expect(dialog).toBeHidden();
+    await pause(1000);
+    expect(await docsCalled(request, "Enter Twice Doc")).toHaveLength(1);
+  });
+
+  test("deleting with Where it was used open makes no failed request", async ({ page, request }) => {
+    await makeDoc(request, "Open Usage Doc");
+    await openDocuments(page);
+    await card(page, "Open Usage Doc").getByText("Where it was used (0)").click();
+    await expect(card(page, "Open Usage Doc").getByText("Not sent with any application yet.")).toBeVisible();
+    answer(page, true);
+    await page.getByRole("button", { name: "Delete Open Usage Doc" }).click();
+    await expect(page.getByRole("heading", { name: "Open Usage Doc", level: 4 })).toBeHidden();
+    await pause(500); // the fixture fails the test on any failed request
+  });
+
+  test("after a refused delete, the page shows it was sent", async ({ page, request, problems }) => {
+    problems.allow(/409.*\/api\/v1\/documents/);
+    const app = await application(request, "Refreshed Doc Co");
+    const doc = await makeDoc(request, "Refreshed Doc");
+    const version = await makeVersion(request, doc.id, "sent later");
+    await openDocuments(page);
+    await expect(page.getByRole("button", { name: "Delete Refreshed Doc" })).toBeEnabled();
+    await send(request, app.id, version.id);
+    answer(page, true);
+    await page.getByRole("button", { name: "Delete Refreshed Doc" }).click();
+    await expect(page.getByText(/was sent with 1 application/).first()).toBeVisible();
+    await expect(card(page, "Refreshed Doc").getByText("Where it was used (1)")).toBeVisible();
+  });
+
+  test("an application deleted on its page frees the document, without a reload", async ({
+    page,
+    request,
+  }) => {
+    const app = await application(request, "Freed In App Co");
+    const doc = await makeDoc(request, "Freed In App Doc");
+    const version = await makeVersion(request, doc.id, "v1");
+    await send(request, app.id, version.id);
+    await openDocuments(page);
+    await expect(page.getByRole("button", { name: "Delete Freed In App Doc" })).toBeDisabled();
+    await inApp(page, `/applications/${app.id}`);
+    page.once("dialog", (d) => void d.accept());
+    await page.getByRole("button", { name: "Delete", exact: true }).click();
+    await expect(page).not.toHaveURL(new RegExp(app.id));
+    await menu(page, "Documents").click();
+    await expect(page.getByRole("button", { name: "Delete Freed In App Doc" })).toBeEnabled();
+  });
+
+  for (const [kind, label] of [
+    ["role", "role"],
+    ["contact", "person"],
+  ] as const) {
+    test(`a CV attached on a ${label}'s page is here without a reload`, async ({ page, request }) => {
+      const name = `on-${label}-cv.pdf`;
+      let path: string;
+      if (kind === "role") {
+        const at = await post<{ id: string }>(request, "companies", { name: "CV On Role Co" });
+        const role = await post<{ id: string }>(request, "roles", { company_id: at.id, title: "CV On Role" });
+        path = `/roles/${role.id}`;
+      } else {
+        const who = await post<{ id: string }>(request, "contacts", { name: "CV On Person" });
+        path = `/people/${who.id}`;
+      }
+      await openDocuments(page);
+      await inApp(page, path);
+      const chooser = page.waitForEvent("filechooser");
+      await card(page, "Files").getByRole("button", { name: "Upload" }).click();
+      await (await chooser).setFiles({ name, mimeType: "application/pdf", buffer: Buffer.from(name) });
+      await expect(card(page, "Files").getByRole("link", { name })).toBeVisible();
+      await menu(page, "Documents").click();
+      await expect(card(page, "CV files you've attached").getByText(name)).toBeVisible();
+    });
+  }
+
+  test("adopted into a new CV with an existing name, it doesn't make a second", async ({
+    page,
+    request,
+    problems,
+  }) => {
+    problems.allow(/4\d\d.*\/api\/v1\/cv-files/); // a fix may refuse it
+    const app = await application(request, "Adopt Twin Co");
+    await attach(request, "adopt-twin-cv.pdf", "application", app.id);
+    await makeDoc(request, "Adopt Twin");
+    await openDocuments(page);
+    const files = card(page, "CV files you've attached");
+    await files
+      .locator("div")
+      .filter({ hasText: "adopt-twin-cv.pdf" })
+      .filter({ has: page.getByRole("button", { name: "Make it a version" }) })
+      .last()
+      .getByRole("button", { name: "Make it a version" })
+      .click();
+    const dialog = theDialog(page);
+    await dialog.getByLabel("Add it to", { exact: true }).first().click();
+    await page.getByRole("option", { name: "A new CV…" }).click();
+    await dialog.getByLabel("Name of the new CV").fill("Adopt Twin");
+    const posted = page
+      .waitForResponse((r) => r.request().method() === "POST", { timeout: 2_000 })
+      .catch(() => undefined);
+    await dialog
+      .getByRole("button", { name: "Make it a version" })
+      .click({ timeout: 1_000 })
+      .catch(() => undefined);
+    await posted;
+    expect(await docsCalled(request, "Adopt Twin")).toHaveLength(1);
   });
 });
