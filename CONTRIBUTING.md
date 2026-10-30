@@ -90,7 +90,8 @@ The app is being made translatable, English only for now; the plan and its order
 [`docs/rfc/i18n.md`](docs/rfc/i18n.md). Pages move over area by area. So far:
 - the app's frame (header, menu, footer, Not found, shared buttons and dialogs);
 - Today, with its to-dos, the reply and chase buttons, How did it go?, At a glance and How it
-  works.
+  works;
+- Applications: the list and board, the quick view, the application page and New application.
 
 The files are listed in `TRANSLATED` in `frontend/eslint.config.js`. Until an area has moved,
 keep writing its text as before. Once it has:
