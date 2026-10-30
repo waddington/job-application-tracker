@@ -161,6 +161,8 @@ with sync_playwright() as p:
     time.sleep(0.4)
     for name, label in [("edit", "Edit "), ("apply", "Apply: "), ("interested", "Interested: "), ("pass", "Pass: ")]:
         step("roles+" + name, lambda label=label: page.locator(f"[aria-label^='{label}']").first.click(timeout=3000))
+        # Twice: the first may only close a dropdown inside the dialog.
+        page.keyboard.press("Escape")
         page.keyboard.press("Escape")
         time.sleep(0.4)
     browser.close()
