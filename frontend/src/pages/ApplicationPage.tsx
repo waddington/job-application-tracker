@@ -19,6 +19,7 @@ import { IconArrowLeft, IconPlus, IconTrash } from "@tabler/icons-react";
 import { Link, useParams, useRouter } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 
 import { PersonName } from "../components/GhostMark";
 import type { ApplicationDetail } from "../api/client";
@@ -45,6 +46,7 @@ import { InterviewsCard } from "../components/Interviews";
 const toDate = (value: string | null) => (value ? dayjs(value).format("YYYY-MM-DD") : null);
 
 function DetailsCard({ app }: { app: ApplicationDetail }) {
+  const { t } = useTranslation("applications");
   const update = useUpdateApplication();
   const [appliedOn, setAppliedOn] = useState<string | null>(app.applied_on);
   const [followUp, setFollowUp] = useState<string | null>(app.follow_up_on);
@@ -59,33 +61,33 @@ function DetailsCard({ app }: { app: ApplicationDetail }) {
   return (
     <Card withBorder>
       <Stack gap="sm">
-        <Title order={4}>Details</Title>
+        <Title order={4}>{t("details.title")}</Title>
         <Group grow align="flex-start">
           <DateInput
-            label="Applied on"
+            label={t("details.appliedOn")}
             clearable
             value={appliedOn}
             onChange={(v) => setAppliedOn(toDate(v))}
           />
           <DateInput
-            label="Follow up on"
-            description="Shows on Today, under Your move, on this date"
+            label={t("details.followUpOn")}
+            description={t("details.followUpHint")}
             clearable
             value={followUp}
             onChange={(v) => setFollowUp(toDate(v))}
           />
           <DateInput
-            label="Snooze until"
-            description="Won't be flagged as stale before then"
+            label={t("details.snoozeUntil")}
+            description={t("details.snoozeHint")}
             clearable
             value={snoozed}
             onChange={(v) => setSnoozed(toDate(v))}
           />
         </Group>
-        <TagsInput label="Tags" value={tags} onChange={setTags} />
+        <TagsInput label={t("details.tags")} value={tags} onChange={setTags} />
         <Group justify="space-between">
           <Switch
-            label="Archived"
+            label={t("details.archived")}
             checked={app.archived}
             onChange={(e) => update.mutate({ id: app.id, body: { archived: e.currentTarget.checked } })}
           />
@@ -110,7 +112,7 @@ function DetailsCard({ app }: { app: ApplicationDetail }) {
               )
             }
           >
-            Save details
+            {t("details.save")}
           </Button>
         </Group>
       </Stack>
@@ -119,6 +121,7 @@ function DetailsCard({ app }: { app: ApplicationDetail }) {
 }
 
 function PeopleCard({ app }: { app: ApplicationDetail }) {
+  const { t } = useTranslation("applications");
   const { data: contacts } = useContacts();
   const link = useLinkContact();
   const unlink = useUnlinkContact();
@@ -135,10 +138,10 @@ function PeopleCard({ app }: { app: ApplicationDetail }) {
   return (
     <Card withBorder>
       <Stack gap="sm">
-        <Title order={4}>People</Title>
+        <Title order={4}>{t("people.title")}</Title>
         {app.contacts.length === 0 && (
           <Text size="sm" c="dimmed">
-            No one linked yet. Add recruiters, hiring managers and interviewers.
+            {t("people.none")}
           </Text>
         )}
         {app.contacts.map((l) => {
@@ -153,18 +156,19 @@ function PeopleCard({ app }: { app: ApplicationDetail }) {
                   </Anchor>
                 ) : (
                   <Text size="sm" fw={600}>
-                    Unknown contact
+                    {t("people.unknown")}
                   </Text>
                 )}
                 <Text size="xs" c="dimmed">
-                  {relationLabel(l.relation)}
-                  {email ? ` · ${email}` : ""}
+                  {email
+                    ? t("people.relationEmail", { relation: relationLabel(l.relation), email })
+                    : relationLabel(l.relation)}
                 </Text>
               </div>
               <ActionIcon
                 variant="subtle"
                 color="gray"
-                aria-label={`Remove ${person?.name ?? "contact"}`}
+                aria-label={person ? t("people.remove", { name: person.name }) : t("people.removeUnknown")}
                 onClick={() => unlink.mutate({ appId: app.id, linkId: l.id })}
               >
                 <IconTrash size={16} />
@@ -175,14 +179,20 @@ function PeopleCard({ app }: { app: ApplicationDetail }) {
         <Divider />
         <Group grow align="flex-end">
           <Select
-            label="Add a person"
-            placeholder="Choose a contact"
+            label={t("people.add")}
+            placeholder={t("people.choose")}
             searchable
             data={(contacts ?? []).map((c) => ({ value: c.id, label: c.name }))}
             value={contactId}
             onChange={setContactId}
           />
-          <Select label="As" data={RELATIONS} value={relation} onChange={setRelation} allowDeselect={false} />
+          <Select
+            label={t("people.as")}
+            data={RELATIONS}
+            value={relation}
+            onChange={setRelation}
+            allowDeselect={false}
+          />
         </Group>
         <Group grow>
           <Button
@@ -191,15 +201,19 @@ function PeopleCard({ app }: { app: ApplicationDetail }) {
             loading={link.isPending}
             onClick={() => contactId && linkAs(contactId)}
           >
-            Link person
+            {t("people.link")}
           </Button>
           <Button variant="default" leftSection={<IconPlus size={14} />} onClick={() => setCreating(true)}>
-            New person
+            {t("people.newPerson")}
           </Button>
         </Group>
         <Text size="xs" c="dimmed">
-          Someone new? <b>New person</b> adds them (at {app.company_name} unless you change it) and links them
-          as the role chosen above.
+          <Trans
+            t={t}
+            i18nKey="people.newHint"
+            values={{ company: app.company_name }}
+            components={{ b: <b /> }}
+          />
         </Text>
       </Stack>
       <ContactFormModal
@@ -212,13 +226,20 @@ function PeopleCard({ app }: { app: ApplicationDetail }) {
   );
 }
 
+const WORK_MODES = {
+  remote: "role.workModes.remote",
+  hybrid: "role.workModes.hybrid",
+  office: "role.workModes.office",
+} as const;
+
 function RoleCard({ app }: { app: ApplicationDetail }) {
+  const { t } = useTranslation("applications");
   const { data: roles } = useRoles();
   const role = roles?.find((r) => r.id === app.role_id);
   return (
     <Card withBorder>
       <Stack gap={6}>
-        <Title order={4}>Role</Title>
+        <Title order={4}>{t("role.title")}</Title>
         <Anchor component={Link} to={`/roles/${app.role_id}`} size="sm" fw={600}>
           {app.role_title}
         </Anchor>
@@ -226,14 +247,18 @@ function RoleCard({ app }: { app: ApplicationDetail }) {
           {app.company_name}
         </Anchor>
         {role?.location && <Text size="sm">{role.location}</Text>}
-        {role?.work_mode && (
-          <Text size="sm" tt="capitalize">
-            {role.work_mode}
-          </Text>
-        )}
+        {role?.work_mode &&
+          (Object.hasOwn(WORK_MODES, role.work_mode) ? (
+            <Text size="sm">{t(WORK_MODES[role.work_mode as keyof typeof WORK_MODES])}</Text>
+          ) : (
+            // A value the app doesn't know (older or hand-edited data) shows as saved, capitalised.
+            <Text size="sm" tt="capitalize">
+              {role.work_mode}
+            </Text>
+          ))}
         {role?.url && (
           <Anchor href={role.url} target="_blank" rel="noreferrer" size="sm">
-            Job ad
+            {t("role.jobAd")}
           </Anchor>
         )}
       </Stack>
@@ -242,6 +267,7 @@ function RoleCard({ app }: { app: ApplicationDetail }) {
 }
 
 export function ApplicationPage() {
+  const { t } = useTranslation("applications");
   const { appId } = useParams({ from: "/applications/$appId" });
   const { data: app, isLoading, isError, error } = useApplication(appId);
   const router = useRouter();
@@ -251,19 +277,15 @@ export function ApplicationPage() {
       <Group justify="space-between">
         <Anchor component={Link} to="/applications" size="sm">
           <Group gap={4}>
-            <IconArrowLeft size={14} /> All applications
+            <IconArrowLeft size={14} /> {t("page.back")}
           </Group>
         </Anchor>
         {app && (
           <DeleteButton
             kind="application"
             id={app.id}
-            name={`${app.company_name} · ${app.role_title}`}
-            confirm={
-              `Delete your application to ${app.company_name} (${app.role_title})? Its interviews, ` +
-              "offer, timeline and record of documents sent go with it; notes and files stay. " +
-              "To keep it but hide it, archive it instead."
-            }
+            name={t("page.deleteName", { company: app.company_name, role: app.role_title })}
+            confirm={t("page.deleteConfirm", { company: app.company_name, role: app.role_title })}
             onDeleted={() => router.history.push("/applications")}
           />
         )}
@@ -288,17 +310,17 @@ export function ApplicationPage() {
               <AttachmentsCard
                 entityType="application"
                 entityId={app.id}
-                inherited={{ entityType: "role", entityId: app.role_id, label: "From the role" }}
+                inherited={{ entityType: "role", entityId: app.role_id, label: t("page.fromRole") }}
               />
               <Card withBorder>
                 <Stack gap="sm">
-                  <Title order={4}>Log activity</Title>
+                  <Title order={4}>{t("log.title")}</Title>
                   <LogActivity key={app.id} id={app.id} />
                 </Stack>
               </Card>
               <Card withBorder>
                 <Stack gap="sm">
-                  <Title order={4}>Timeline</Title>
+                  <Title order={4}>{t("timeline.title")}</Title>
                   <ApplicationTimeline app={app} />
                 </Stack>
               </Card>

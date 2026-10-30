@@ -16,9 +16,11 @@ import { Badge, Card, Group, Paper, ScrollArea, Stack, Switch, Text } from "@man
 import { useLocalStorage } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { PersonMarks } from "./GhostMark";
 import type { ApplicationRow } from "../api/client";
+import { i18n } from "../i18n";
 import { useMoveApplication, type Workflow } from "../api/hooks";
 import {
   buildColumns,
@@ -27,8 +29,8 @@ import {
   columnTitle,
   isRoundColumn,
   isSuggested,
+  planDrop,
   splitByRound,
-  stageOfColumn,
   visibleColumns,
   type Column,
 } from "../utils/board";
@@ -39,26 +41,32 @@ import { RoundBadge } from "./Interviews";
 const KEYBOARD_CODES = { start: ["Space"], cancel: ["Escape"], end: ["Space"] };
 
 /** Screen-reader messages in words (company, stage names) rather than ids. */
-function announcements(rows: ApplicationRow[], titles: Map<string, string>): Announcements {
-  const label = (id: UniqueIdentifier) => rows.find((r) => r.id === id)?.company_name ?? "Application";
+export function announcements(rows: ApplicationRow[], titles: Map<string, string>): Announcements {
+  const label = (id: UniqueIdentifier) =>
+    rows.find((r) => r.id === id)?.company_name ?? i18n.t("applications:board.drag.application");
   // The column's own title, so round columns can be told apart ("Interviewing · Round 2").
   const stage = (id: UniqueIdentifier | undefined) => (id ? (titles.get(String(id)) ?? String(id)) : "");
   return {
-    onDragStart: ({ active }) => `Picked up ${label(active.id)}. Use arrow keys to move, Space to drop.`,
+    onDragStart: ({ active }) => i18n.t("applications:board.drag.pickedUp", { card: label(active.id) }),
     onDragOver: ({ active, over }) =>
-      over ? `${label(active.id)} is over ${stage(over.id)}.` : `${label(active.id)} isn't over a stage.`,
+      over
+        ? i18n.t("applications:board.drag.over", { card: label(active.id), column: stage(over.id) })
+        : i18n.t("applications:board.drag.notOver", { card: label(active.id) }),
     onDragEnd: ({ active, over }) =>
-      over ? `${label(active.id)} dropped on ${stage(over.id)}.` : `${label(active.id)} dropped.`,
-    onDragCancel: ({ active }) => `Cancelled. ${label(active.id)} stays where it was.`,
+      over
+        ? i18n.t("applications:board.drag.droppedOn", { card: label(active.id), column: stage(over.id) })
+        : i18n.t("applications:board.drag.dropped", { card: label(active.id) }),
+    onDragCancel: ({ active }) => i18n.t("applications:board.drag.cancelled", { card: label(active.id) }),
   };
 }
 
 function CardBody({ row }: { row: ApplicationRow }) {
+  const { t } = useTranslation("applications");
   const via =
     row.route === "agency"
       ? row.recruiter_name || row.agency_name
       : row.route === "referral"
-        ? "Referral"
+        ? t("routes.referral")
         : null;
   return (
     <>
@@ -75,7 +83,7 @@ function CardBody({ row }: { row: ApplicationRow }) {
       )}
       {row.reply_to_read_since && (
         <Badge mt={6} size="xs" variant="light" color="orange">
-          Reply to read
+          {t("board.replyToRead")}
         </Badge>
       )}
       <Group gap={6} mt={6} justify="space-between" wrap="nowrap">
@@ -94,6 +102,7 @@ function CardBody({ row }: { row: ApplicationRow }) {
 }
 
 function DraggableCard({ row, onOpen }: { row: ApplicationRow; onOpen: (id: string) => void }) {
+  const { t } = useTranslation("applications");
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: row.id, data: { row } });
   return (
     <Card
@@ -106,7 +115,7 @@ function DraggableCard({ row, onOpen }: { row: ApplicationRow; onOpen: (id: stri
         cursor: "grab",
         borderLeft: row.stale ? "3px solid var(--mantine-color-red-6)" : undefined,
       }}
-      aria-label={`${row.company_name}: ${row.role_title}`}
+      aria-label={t("board.card", { company: row.company_name, role: row.role_title })}
       {...attributes}
       {...listeners}
       onClick={() => onOpen(row.id)}
@@ -134,6 +143,7 @@ function StageColumn({
   dropState: "idle" | "suggested" | "allowed" | "blocked";
   onOpen: (id: string) => void;
 }) {
+  const { t } = useTranslation("applications");
   const { setNodeRef, isOver } = useDroppable({ id: columnKey(column) });
   const closed = column.stage.kind !== "active";
   // Usual next stages stand out; any other stage still takes the drop (unless the workflow
@@ -153,7 +163,7 @@ function StageColumn({
       radius="md"
       bg="var(--mantine-color-default-hover)"
       style={{ border, opacity: dropState === "blocked" ? 0.45 : 1, transition: "opacity 120ms" }}
-      aria-label={`${columnTitle(column)} column`}
+      aria-label={t("board.column", { title: columnTitle(column) })}
     >
       <Group justify="space-between" mb="xs" wrap="nowrap">
         <Badge color={column.stage.color} variant={closed ? "outline" : "light"} radius="sm">
@@ -181,6 +191,7 @@ export function Board({
   rows: ApplicationRow[];
   onOpen: (id: string) => void;
 }) {
+  const { t } = useTranslation("applications");
   const [active, setActive] = useState<ApplicationRow | null>(null);
   const [showClosed, setShowClosed] = useState(false);
   // Remembered: a column per interview round, or one per stage.
@@ -211,54 +222,27 @@ export function Board({
   const onDragEnd = (event: DragEndEvent) => {
     const row = event.active.data.current?.row as ApplicationRow | undefined;
     setActive(null);
+    if (!row) return;
     const over = event.over ? String(event.over.id) : undefined;
-    const to = over ? stageOfColumn(over) : undefined;
-    if (!row || !to || !over || over === ownColumn(row.id)) return;
-    // Within a split stage a card's column is its round, which comes from its interviews; and
-    // a card coming in can't skip ahead to a round.
-    if (to === row.stage && over !== to) {
-      notifications.show({
-        color: "orange",
-        title: "Rounds go in order",
-        message:
-          "A card's round comes from its interviews: add or finish a round on the application to move it along.",
-      });
-      return;
-    }
-    if (isRoundColumn(over)) {
-      notifications.show({
-        color: "orange",
-        title: "Rounds go in order",
-        message: `Drop it on ${names.get(to) ?? to} · No round yet; it moves along as you add its interview rounds.`,
-      });
-      return;
-    }
-    if (to === row.stage) return;
-    if (!canDrop(workflow, row.stage, to)) {
-      notifications.show({
-        color: "orange",
-        title: "That move isn't allowed",
-        message: `${names.get(row.stage) ?? row.stage} can't go to ${names.get(to) ?? to}.`,
-      });
-      return;
-    }
-    move.mutate({ id: row.id, to_stage: to, stageName: names.get(to) });
-    if (workflow.stages.find((s) => s.id === to)?.kind !== "active") {
-      notifications.show({ message: `${row.company_name} moved to ${names.get(to) ?? to}` });
-    }
+    const plan = planDrop(workflow, row, over, ownColumn(row.id));
+    if (plan.do === "refuse")
+      notifications.show({ color: "orange", title: plan.title, message: plan.message });
+    if (plan.do !== "move") return;
+    move.mutate({ id: row.id, to_stage: plan.to, stageName: names.get(plan.to) });
+    if (plan.notice) notifications.show({ message: plan.notice });
   };
 
   return (
     <Stack gap="xs">
       <Group gap="lg">
         <Switch
-          label="Show closed stages"
+          label={t("board.showClosed")}
           checked={showClosed}
           onChange={(e) => setShowClosed(e.currentTarget.checked)}
           size="xs"
         />
         <Switch
-          label="A column per interview round"
+          label={t("board.byRound")}
           checked={byRound}
           onChange={(e) => setByRound(e.currentTarget.checked)}
           size="xs"

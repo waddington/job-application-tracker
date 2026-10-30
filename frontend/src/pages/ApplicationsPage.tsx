@@ -20,6 +20,7 @@ import {
 import { useDebouncedValue, useLocalStorage } from "@mantine/hooks";
 import { IconBriefcase, IconChevronDown, IconChevronUp, IconPlus, IconSearch } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { PersonMarks } from "../components/GhostMark";
 import type { ApplicationRow } from "../api/client";
@@ -35,6 +36,7 @@ import { Board } from "../components/Board";
 import { NewApplicationModal } from "../components/NewApplicationModal";
 import { RoundBadge } from "../components/Interviews";
 import { StageBadge } from "../components/StageBadge";
+import { i18n } from "../i18n";
 import { ago } from "../utils/time";
 
 type Sort = NonNullable<ApplicationFilters["sort"]>;
@@ -66,11 +68,17 @@ function SortHeader({
 
 function routeLabel(row: ApplicationRow): string {
   if (row.route === "agency")
-    return [row.recruiter_name, row.agency_name].filter(Boolean).join(" · ") || "Agency";
-  return row.route === "referral" ? "Referral" : "Direct";
+    return (
+      [row.recruiter_name, row.agency_name].filter(Boolean).join(i18n.t("applications:routes.separator")) ||
+      i18n.t("applications:routes.agency")
+    );
+  return row.route === "referral"
+    ? i18n.t("applications:routes.referral")
+    : i18n.t("applications:routes.direct");
 }
 
 export function ApplicationsPage() {
+  const { t } = useTranslation("applications");
   const [q, setQ] = useState("");
   const [debouncedQ] = useDebouncedValue(q, 250);
   const [stage, setStage] = useState<string[]>([]);
@@ -117,7 +125,7 @@ export function ApplicationsPage() {
       <Group justify="space-between">
         <Group gap="sm">
           <IconBriefcase size={26} stroke={1.6} />
-          <Title order={2}>Applications</Title>
+          <Title order={2}>{t("title")}</Title>
           {rows && (
             <Badge variant="light" color="gray">
               {rows.length}
@@ -130,61 +138,65 @@ export function ApplicationsPage() {
             value={view}
             onChange={(v) => setView(v as "list" | "board")}
             data={[
-              { value: "list", label: "List" },
-              { value: "board", label: "Board" },
+              { value: "list", label: t("view.list") },
+              { value: "board", label: t("view.board") },
             ]}
-            aria-label="View"
+            aria-label={t("view.label")}
           />
         </Group>
       </Group>
 
       <Group gap="sm" align="flex-end" wrap="wrap">
         <TextInput
-          placeholder="Search company, role, recruiter…"
+          placeholder={t("filters.searchPlaceholder")}
           leftSection={<IconSearch size={16} />}
           value={q}
           onChange={(e) => setQ(e.currentTarget.value)}
           w={300}
-          aria-label="Search"
+          aria-label={t("filters.search")}
         />
         <MultiSelect
-          placeholder={stage.length ? undefined : "All stages"}
+          placeholder={stage.length ? undefined : t("filters.allStages")}
           data={(workflow?.stages ?? []).map((s) => ({ value: s.id, label: s.name }))}
           value={stage}
           onChange={setStage}
           clearable
           w={240}
-          aria-label="Stages"
+          aria-label={t("filters.stages")}
         />
         <Select
-          placeholder="Any route"
+          placeholder={t("filters.anyRoute")}
           data={[
-            { value: "direct", label: "Direct" },
-            { value: "agency", label: "Recruiter" },
-            { value: "referral", label: "Referral" },
+            { value: "direct", label: t("routes.direct") },
+            { value: "agency", label: t("routes.recruiter") },
+            { value: "referral", label: t("routes.referral") },
           ]}
           value={route}
           onChange={setRoute}
           clearable
           w={140}
-          aria-label="Route"
+          aria-label={t("filters.route")}
         />
         <Select
-          placeholder="Any agency"
+          placeholder={t("filters.anyAgency")}
           data={(agencies ?? []).map((a) => ({ value: a.id, label: a.name }))}
           value={agencyId}
           onChange={setAgencyId}
           clearable
           searchable
           w={200}
-          aria-label="Agency"
+          aria-label={t("filters.agency")}
         />
         <Switch
-          label="Needs chasing"
+          label={t("filters.needsChasing")}
           checked={staleOnly}
           onChange={(e) => setStaleOnly(e.currentTarget.checked)}
         />
-        <Switch label="Archived" checked={archived} onChange={(e) => setArchived(e.currentTarget.checked)} />
+        <Switch
+          label={t("filters.archived")}
+          checked={archived}
+          onChange={(e) => setArchived(e.currentTarget.checked)}
+        />
       </Group>
 
       {isLoading ? (
@@ -194,13 +206,13 @@ export function ApplicationsPage() {
       ) : !rows?.length ? (
         <Card withBorder p="xl">
           <Stack align="center" gap="xs">
-            <Text fw={600}>{filtered ? "No applications match these filters" : "No applications yet"}</Text>
+            <Text fw={600}>{filtered ? t("empty.noMatch") : t("empty.none")}</Text>
             <Text c="dimmed" size="sm">
-              {filtered ? "Try clearing a filter." : "Add the first one: company, role and how you applied."}
+              {filtered ? t("empty.clearFilter") : t("empty.addFirst")}
             </Text>
             {!filtered && (
               <Button mt="sm" leftSection={<IconPlus size={16} />} onClick={() => setCreating(true)}>
-                New application
+                {t("empty.newApplication")}
               </Button>
             )}
           </Stack>
@@ -213,22 +225,22 @@ export function ApplicationsPage() {
             <Table.Thead>
               <Table.Tr>
                 <Table.Th>
-                  <SortHeader label="Company / role" asc="company" sort={sort} onSort={setSort} />
+                  <SortHeader label={t("columns.companyRole")} asc="company" sort={sort} onSort={setSort} />
                 </Table.Th>
-                <Table.Th>Route</Table.Th>
+                <Table.Th>{t("columns.route")}</Table.Th>
                 <Table.Th>
-                  <SortHeader label="Stage" asc="stage" sort={sort} onSort={setSort} />
+                  <SortHeader label={t("columns.stage")} asc="stage" sort={sort} onSort={setSort} />
                 </Table.Th>
                 <Table.Th>
                   <SortHeader
-                    label="Last activity"
+                    label={t("columns.lastActivity")}
                     asc="last_activity"
                     desc="-last_activity"
                     sort={sort}
                     onSort={setSort}
                   />
                 </Table.Th>
-                <Table.Th>Tags</Table.Th>
+                <Table.Th>{t("columns.tags")}</Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
@@ -243,7 +255,7 @@ export function ApplicationsPage() {
                     }
                   }}
                   tabIndex={0}
-                  aria-label={`Open ${row.role_title} at ${row.company_name}`}
+                  aria-label={t("openRow", { role: row.role_title, company: row.company_name })}
                   style={{ cursor: "pointer" }}
                 >
                   <Table.Td>
@@ -272,20 +284,20 @@ export function ApplicationsPage() {
                     </Text>
                     {row.stale && (
                       <Text size="xs" c="red">
-                        needs chasing
+                        {t("needsChasing")}
                       </Text>
                     )}
                     {row.reply_to_read_since && (
                       <Text size="xs" c="orange" fw={600}>
-                        reply to read
+                        {t("replyToRead")}
                       </Text>
                     )}
                   </Table.Td>
                   <Table.Td>
                     <Group gap={4}>
-                      {row.tags.map((t) => (
-                        <Badge key={t} size="sm" variant="dot" color="gray">
-                          {t}
+                      {row.tags.map((tag) => (
+                        <Badge key={tag} size="sm" variant="dot" color="gray">
+                          {tag}
                         </Badge>
                       ))}
                     </Group>

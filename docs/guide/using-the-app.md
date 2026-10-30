@@ -223,8 +223,9 @@ into *No round yet*, then *Round 1*, *Round 2*… up to the furthest any applica
 next booked round, or else the last one done (cancelled rounds don't count). Rounds go in order
 and come from the interviews you add on the application, so the round columns don't take drops:
 drop a card on *No round yet* to move it into Interviewing (one that already has rounds goes
-straight to its round), and it moves along as you add rounds. Any active stage whose name says
-"interview" splits the same way.
+straight to its round), and it moves along as you add rounds. Any active stage whose id in
+`config.toml` says "interview" (`interviewing`, `onsite_interview`) splits the same way,
+whatever its name.
 
 Every stage change is timestamped on the application's timeline, and **Undo last move**
 reverts a mistake. By default you can move between any stages; you can make them strict

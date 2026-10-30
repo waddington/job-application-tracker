@@ -1,5 +1,6 @@
 import type { ApplicationRow } from "../api/client";
 import type { Workflow, WorkflowStage } from "../api/hooks";
+import { i18n } from "../i18n";
 
 export interface Column {
   stage: WorkflowStage;
@@ -19,15 +20,19 @@ const MAX_GAP_FILLED = 6;
 
 /** The column's heading: the stage, and its round when split ("Interviewing · Round 2"). */
 export function columnTitle(column: Column): string {
-  if (column.round === undefined) return column.stage.name;
-  return `${column.stage.name} · ${column.round === null ? "No round yet" : `Round ${column.round}`}`;
+  const stage = column.stage.name;
+  if (column.round === undefined) return stage;
+  return column.round === null
+    ? i18n.t("applications:board.noRoundYet", { stage })
+    : i18n.t("applications:board.round", { stage, round: column.round });
 }
 
 /** A drop on a round's own column: rounds follow the interviews you add, so cards can't be put there. */
 export const isRoundColumn = (key: string) => /#round-\d+$/.test(key);
 
 /**
- * An interviewing stage (its id or name says "interview") becomes a column per round, Round 1
+ * An interviewing stage (its id says "interview": names are yours, and may be in any language)
+ * becomes a column per round, Round 1
  * up to the furthest any application has got (the current or next round), so you can see how
  * far each has got. "No round yet" always comes first:
  * it's where an application moving into the stage lands (rounds go in order, from the
@@ -36,7 +41,7 @@ export const isRoundColumn = (key: string) => /#round-\d+$/.test(key);
 export function splitByRound(columns: Column[]): Column[] {
   return columns.flatMap((column) => {
     const roundOf = (row: ApplicationRow) => row.current_round?.round ?? null;
-    const interviewing = /interview/i.test(`${column.stage.id} ${column.stage.name}`);
+    const interviewing = /interview/i.test(column.stage.id);
     if (column.stage.kind !== "active" || !interviewing) return [column];
     // Every round up to the furthest, so progress reads left to right; past MAX_GAP_FILLED,
     // only rounds someone's at (a mistyped "Round 12" doesn't add a dozen empty columns).
@@ -103,4 +108,53 @@ export function visibleColumns(
   opts: { showClosed: boolean; dragging: boolean },
 ): Column[] {
   return columns.filter((c) => c.stage.kind !== "closed" || opts.showClosed || opts.dragging);
+}
+
+export type DropPlan =
+  | { do: "nothing" }
+  | { do: "refuse"; title: string; message: string }
+  // A notice for a move the card leaves the active stages with (the card is tucked away).
+  | { do: "move"; to: string; notice?: string };
+
+/**
+ * What dropping `row` on the column `over` does: nothing (its own column, or nowhere), a refusal
+ * with the reason, or a move. `own` is the card's own column.
+ */
+export function planDrop(
+  workflow: Workflow,
+  row: ApplicationRow,
+  over: string | undefined,
+  own: string | undefined,
+): DropPlan {
+  const to = over ? stageOfColumn(over) : undefined;
+  if (!over || !to || over === own) return { do: "nothing" };
+  const name = (id: string) => workflow.stages.find((s) => s.id === id)?.name ?? id;
+  const roundsInOrder = i18n.t("applications:board.roundsInOrder");
+  // Within a split stage a card's column is its round, which comes from its interviews; and
+  // a card coming in can't skip ahead to a round.
+  if (to === row.stage && over !== to)
+    return { do: "refuse", title: roundsInOrder, message: i18n.t("applications:board.roundFromInterviews") };
+  if (isRoundColumn(over))
+    return {
+      do: "refuse",
+      title: roundsInOrder,
+      message: i18n.t("applications:board.dropOnNoRound", {
+        column: i18n.t("applications:board.noRoundYet", { stage: name(to) }),
+      }),
+    };
+  if (to === row.stage) return { do: "nothing" };
+  if (!canDrop(workflow, row.stage, to))
+    return {
+      do: "refuse",
+      title: i18n.t("applications:board.notAllowed"),
+      message: i18n.t("applications:board.cantGo", { from: name(row.stage), to: name(to) }),
+    };
+  const active = workflow.stages.find((s) => s.id === to)?.kind === "active";
+  return {
+    do: "move",
+    to,
+    notice: active
+      ? undefined
+      : i18n.t("applications:board.moved", { company: row.company_name, stage: name(to) }),
+  };
 }

@@ -5,6 +5,19 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.2.1 (2026-10-30)
+
+- Translations, step five: **Applications** now read their text from the translation files.
+  It's still English and nothing looks different.
+  - **What moved over:** the list and board, the quick view, the application page (details,
+    people, role, documents sent, log activity and its timeline) and New application.
+  - **How it was checked:** every page's text, and the area's dialogs, menus and board
+    switches, were compared before and after, with no differences (#118).
+- **The board's round columns** (*A column per interview round*) now go by the stage's id
+  having "interview" in it, not its name, so they keep working whatever language your stage
+  names are in. The default workflow's *Interviewing* is unchanged; a stage of your own named
+  "Interview…" whose id doesn't say so no longer splits (#118).
+
 ## 1.2.0 (2026-10-29)
 
 - **A language switch** at the top right, beside light/dark mode: English for now, with more

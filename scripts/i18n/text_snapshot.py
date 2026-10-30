@@ -93,6 +93,46 @@ with sync_playwright() as p:
     opened("happened", lambda: page.get_by_role("button", name="Happened").first.click(timeout=3000))
     opened("didnt-happen", lambda: page.get_by_role("button", name="Didn't happen").first.click(timeout=3000))
     opened("done-recently", lambda: page.get_by_role("button", name="Done recently").first.click(timeout=3000))
+
+    # Applications: the quick view and its Move to… menu, the board's switches, New application
+    # with each route, and the application page's Move to… menu.
+    def step(name, *clicks):
+        try:
+            for click in clicks:
+                click()
+                time.sleep(0.3)
+            snap[name] = grab(page)
+        except Exception as e:  # noqa: BLE001
+            snap[name] = {"text": f"(couldn't open: {type(e).__name__})", "attrs": []}
+
+    visit(page, "/applications?view=list")
+    step("applications+quick-view", lambda: page.locator("[aria-label^='Open ']").first.click(timeout=3000))
+    step("applications+quick-view-move", lambda: page.get_by_role("button", name="Move to…").first.click(timeout=3000))
+    page.keyboard.press("Escape")
+    page.keyboard.press("Escape")
+    time.sleep(0.4)
+    visit(page, "/applications?view=board")
+    step(
+        "applications+board-closed-rounds",
+        lambda: page.get_by_label("Show closed stages").click(timeout=3000),
+        lambda: page.get_by_label("A column per interview round").click(timeout=3000),
+    )
+    page.get_by_label("A column per interview round").click(timeout=3000)  # back to the default
+    visit(page, "/applications?view=list")
+    new = page.get_by_role("button", name="New application").first
+    step("applications+new", lambda: new.click(timeout=3000))
+    step("applications+new-errors", lambda: page.get_by_role("button", name="Add application").click(timeout=3000))
+    step("applications+new-agency", lambda: page.get_by_text("Through a recruiter").click(timeout=3000))
+    dialog = page.get_by_role("dialog")
+    step("applications+new-referral", lambda: dialog.get_by_text("Referral", exact=True).click(timeout=3000))
+    page.keyboard.press("Escape")
+    time.sleep(0.4)
+    visit(page, "/")
+    first_app = page.evaluate(LINKS, "/applications/")[:1]
+    if first_app:
+        visit(page, first_app[0])
+        step("application+move", lambda: page.get_by_role("button", name="Move to…").first.click(timeout=3000))
+    page.keyboard.press("Escape")
     browser.close()
 
 with open(OUT, "w") as f:
