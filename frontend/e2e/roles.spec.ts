@@ -547,14 +547,9 @@ test.describe("editing a role", () => {
     await seedRole(request, "Edit Remove Person", { contact_id: person.id });
     await openRoles(page);
     const dialog = await edit(page, "Edit Remove Person");
-    await dialog.getByLabel("Who told you about it").first().hover();
-    await dialog
-      .getByLabel("Who told you about it")
-      .first()
-      .locator("..")
-      .locator("..")
-      .getByRole("button")
-      .click();
+    // Choosing the selected name again takes it off.
+    await dialog.getByLabel("Who told you about it").first().click();
+    await page.getByRole("option", { name: "Removed Person", exact: true }).click();
     await save(dialog);
     await expect(lineOf(page, "Edit Remove Person")).not.toContainText("from Removed Person");
     expect((await role(request, "Edit Remove Person")).contact_id).toBeNull();
@@ -853,7 +848,7 @@ test.describe("a role's to-dos and deleting", () => {
     await openRoles(page);
     await page.getByRole("link", { name: "Delete Page", exact: true }).click();
     page.once("dialog", (dialog) => dialog.accept());
-    await page.getByRole("button", { name: "Delete" }).click();
+    await page.getByRole("button", { name: "Delete", exact: true }).click();
     await expect(page).toHaveURL(/\/roles$/);
     expect(await role(request, "Delete Page")).toBeUndefined();
   });
