@@ -368,12 +368,19 @@ test.describe("writing a note", () => {
     async ({ page, request }) => {
       const made2 = await makeNote(request, "Reopened note", { body: "First" });
       await openNotes(page);
+      let holding = false;
+      let release = () => {};
+      const reopened = new Promise<void>((done) => (release = done));
       await page.route(`**${API}/notes/${made2.id}`, async (route) => {
-        if (route.request().method() === "GET") await pause(1000);
+        if (holding && route.request().method() === "GET") {
+          setTimeout(release, 3_000); // a fix may wait for it before opening
+          await reopened;
+        }
         await route.continue();
       });
       let dialog = await editNote(page, "Reopened note");
       await dialog.getByRole("textbox", { name: "Note", exact: true }).fill("Second");
+      holding = true;
       await saveNote(dialog);
       dialog = await editNote(page, "Reopened note");
       await expect(dialog.getByRole("textbox", { name: "Note", exact: true })).toHaveValue(/^Second\n?$/);
@@ -434,10 +441,12 @@ test.describe("when what a note is on is deleted", () => {
   test.fail("it counts as a general note again", async ({ page, request }) => {
     const gone = await company(request, "Orphan General Co");
     await makeNote(request, "Orphan general", { links: [`company:${gone.id}`] });
+    const kept = await company(request, "Orphan Sibling Co");
+    await makeNote(request, "Orphan sibling", { links: [`company:${kept.id}`] });
     expect((await request.delete(`${API}/companies/${gone.id}`)).ok()).toBe(true);
-    expect((await notesCalled(request, "Orphan general"))[0]?.links).toEqual([]);
     await openNotes(page);
     await page.getByText("General only").click();
+    await expect(page.getByText("Orphan sibling")).toBeHidden();
     await expect(page.getByText("Orphan general")).toBeVisible();
   });
 });
@@ -576,13 +585,11 @@ test.describe("links", () => {
   test.fail("the tick saves a rename, with no error", async ({ page, request }) => {
     const { at, links } = await prepare(page, request, "Tick Link Co");
     let release = () => {};
-    const together = new Promise<void>((done) => {
-      release = done;
-      setTimeout(done, 1_000); // a fix sends just one
-    });
+    const together = new Promise<void>((done) => (release = done));
     let held = 0;
     await page.route(`**${API}/links/*`, async (route) => {
-      if (route.request().method() === "PATCH" && ++held === 2) release();
+      if (route.request().method() === "PATCH" && ++held === 1) setTimeout(release, 1_000); // a fix sends just one
+      if (held === 2) release();
       if (route.request().method() === "PATCH") await together;
       await route.continue();
     });
