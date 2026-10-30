@@ -29,8 +29,8 @@ import {
   columnTitle,
   isRoundColumn,
   isSuggested,
+  planDrop,
   splitByRound,
-  stageOfColumn,
   visibleColumns,
   type Column,
 } from "../utils/board";
@@ -41,7 +41,7 @@ import { RoundBadge } from "./Interviews";
 const KEYBOARD_CODES = { start: ["Space"], cancel: ["Escape"], end: ["Space"] };
 
 /** Screen-reader messages in words (company, stage names) rather than ids. */
-function announcements(rows: ApplicationRow[], titles: Map<string, string>): Announcements {
+export function announcements(rows: ApplicationRow[], titles: Map<string, string>): Announcements {
   const label = (id: UniqueIdentifier) =>
     rows.find((r) => r.id === id)?.company_name ?? i18n.t("applications:board.drag.application");
   // The column's own title, so round columns can be told apart ("Interviewing · Round 2").
@@ -222,42 +222,14 @@ export function Board({
   const onDragEnd = (event: DragEndEvent) => {
     const row = event.active.data.current?.row as ApplicationRow | undefined;
     setActive(null);
+    if (!row) return;
     const over = event.over ? String(event.over.id) : undefined;
-    const to = over ? stageOfColumn(over) : undefined;
-    if (!row || !to || !over || over === ownColumn(row.id)) return;
-    // Within a split stage a card's column is its round, which comes from its interviews; and
-    // a card coming in can't skip ahead to a round.
-    if (to === row.stage && over !== to) {
-      notifications.show({
-        color: "orange",
-        title: t("board.roundsInOrder"),
-        message: t("board.roundFromInterviews"),
-      });
-      return;
-    }
-    if (isRoundColumn(over)) {
-      notifications.show({
-        color: "orange",
-        title: t("board.roundsInOrder"),
-        message: t("board.dropOnNoRound", { stage: names.get(to) ?? to }),
-      });
-      return;
-    }
-    if (to === row.stage) return;
-    if (!canDrop(workflow, row.stage, to)) {
-      notifications.show({
-        color: "orange",
-        title: t("board.notAllowed"),
-        message: t("board.cantGo", { from: names.get(row.stage) ?? row.stage, to: names.get(to) ?? to }),
-      });
-      return;
-    }
-    move.mutate({ id: row.id, to_stage: to, stageName: names.get(to) });
-    if (workflow.stages.find((s) => s.id === to)?.kind !== "active") {
-      notifications.show({
-        message: t("board.moved", { company: row.company_name, stage: names.get(to) ?? to }),
-      });
-    }
+    const plan = planDrop(workflow, row, over, ownColumn(row.id));
+    if (plan.do === "refuse")
+      notifications.show({ color: "orange", title: plan.title, message: plan.message });
+    if (plan.do !== "move") return;
+    move.mutate({ id: row.id, to_stage: plan.to, stageName: names.get(plan.to) });
+    if (plan.notice) notifications.show({ message: plan.notice });
   };
 
   return (

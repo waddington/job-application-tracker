@@ -63,6 +63,19 @@ describe("board helpers", () => {
     expect(ids({ showClosed: false, dragging: true })).toContain("rejected");
   });
 
+  it("finds the interviewing stage by its id, whatever its name says", () => {
+    const stages = [
+      ...wf.stages,
+      { ...wf.stages[2]!, id: "interviewing", name: "Entretiens" }, // a name in another language
+      { ...wf.stages[2]!, id: "panel", name: "Interviews" }, // "interview" only in the name
+    ];
+    const cols = splitByRound(buildColumns({ ...wf, stages } as Workflow, rows));
+    expect(cols.filter((c) => c.stage.id === "interviewing").map(columnTitle)).toEqual([
+      "Entretiens · No round yet",
+    ]);
+    expect(cols.filter((c) => c.stage.id === "panel").map(columnTitle)).toEqual(["Interviews"]);
+  });
+
   it("splits a stage into a column per interview round, No round yet first", () => {
     const round = (n: number) => ({ round: n, label: `Round ${n}` });
     const stages = [...wf.stages, { ...wf.stages[2]!, id: "interviewing", name: "Interviewing" }];

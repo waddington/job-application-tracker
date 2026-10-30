@@ -109,3 +109,50 @@ export function visibleColumns(
 ): Column[] {
   return columns.filter((c) => c.stage.kind !== "closed" || opts.showClosed || opts.dragging);
 }
+
+export type DropPlan =
+  | { do: "nothing" }
+  | { do: "refuse"; title: string; message: string }
+  // A notice for a move the card leaves the active stages with (the card is tucked away).
+  | { do: "move"; to: string; notice?: string };
+
+/**
+ * What dropping `row` on the column `over` does: nothing (its own column, or nowhere), a refusal
+ * with the reason, or a move. `own` is the card's own column.
+ */
+export function planDrop(
+  workflow: Workflow,
+  row: ApplicationRow,
+  over: string | undefined,
+  own: string | undefined,
+): DropPlan {
+  const to = over ? stageOfColumn(over) : undefined;
+  if (!over || !to || over === own) return { do: "nothing" };
+  const name = (id: string) => workflow.stages.find((s) => s.id === id)?.name ?? id;
+  const roundsInOrder = i18n.t("applications:board.roundsInOrder");
+  // Within a split stage a card's column is its round, which comes from its interviews; and
+  // a card coming in can't skip ahead to a round.
+  if (to === row.stage && over !== to)
+    return { do: "refuse", title: roundsInOrder, message: i18n.t("applications:board.roundFromInterviews") };
+  if (isRoundColumn(over))
+    return {
+      do: "refuse",
+      title: roundsInOrder,
+      message: i18n.t("applications:board.dropOnNoRound", { stage: name(to) }),
+    };
+  if (to === row.stage) return { do: "nothing" };
+  if (!canDrop(workflow, row.stage, to))
+    return {
+      do: "refuse",
+      title: i18n.t("applications:board.notAllowed"),
+      message: i18n.t("applications:board.cantGo", { from: name(row.stage), to: name(to) }),
+    };
+  const active = workflow.stages.find((s) => s.id === to)?.kind === "active";
+  return {
+    do: "move",
+    to,
+    notice: active
+      ? undefined
+      : i18n.t("applications:board.moved", { company: row.company_name, stage: name(to) }),
+  };
+}
