@@ -78,7 +78,7 @@ function routeLabel(row: ApplicationRow): string {
 }
 
 export function ApplicationsPage() {
-  const { t } = useTranslation(["applications", "common"]);
+  const { t } = useTranslation("applications");
   const [q, setQ] = useState("");
   const [debouncedQ] = useDebouncedValue(q, 250);
   const [stage, setStage] = useState<string[]>([]);
@@ -212,7 +212,7 @@ export function ApplicationsPage() {
             </Text>
             {!filtered && (
               <Button mt="sm" leftSection={<IconPlus size={16} />} onClick={() => setCreating(true)}>
-                {t("common:header.newApplication")}
+                {t("empty.newApplication")}
               </Button>
             )}
           </Stack>
@@ -295,9 +295,9 @@ export function ApplicationsPage() {
                   </Table.Td>
                   <Table.Td>
                     <Group gap={4}>
-                      {row.tags.map((t) => (
-                        <Badge key={t} size="sm" variant="dot" color="gray">
-                          {t}
+                      {row.tags.map((tag) => (
+                        <Badge key={tag} size="sm" variant="dot" color="gray">
+                          {tag}
                         </Badge>
                       ))}
                     </Group>

@@ -68,6 +68,11 @@ describe("how an application came about", () => {
     expect(await routeLine()).toBe("Route: Through Northwind Talent");
   });
 
+  it("names the recruiter alone", async () => {
+    showApplication({ agency_id: null, agency_name: null });
+    expect(await routeLine()).toBe("Route: Through Alex Recruiter");
+  });
+
   it("says an agency when it knows neither", async () => {
     showApplication({ recruiter_id: null, recruiter_name: null, agency_id: null, agency_name: null });
     expect(await routeLine()).toBe("Route: Through an agency");
@@ -104,6 +109,8 @@ describe("the application's timeline", () => {
   it("titles each kind of event", async () => {
     showApplication({
       events: [
+        event("e0", "2026-08-31T10:00:00Z", { kind: "call" }),
+        event("e00", "2026-08-31T11:00:00Z", { kind: "note" }),
         event("e1", "2026-09-01T10:00:00Z", { kind: "stage_change", to_stage: "interested" }),
         event("e2", "2026-09-02T10:00:00Z", {
           kind: "stage_change",
@@ -128,6 +135,8 @@ describe("the application's timeline", () => {
       ".mantine-Card-root",
     ) as HTMLElement;
     for (const title of [
+      "Call",
+      "Note",
       "Added as Interested",
       "Interested → Applied",
       "Undone: back to Interested",
@@ -339,6 +348,46 @@ describe("New application", () => {
   });
 });
 
+describe("the list", () => {
+  it("says how each one came about", async () => {
+    mockApi({
+      "/api/v1/workflow": WORKFLOW,
+      "/api/v1/agencies": [],
+      "/api/v1/health": {},
+      "/api/v1/applications": [
+        row({ id: "a1" }),
+        row({ id: "a2", company_name: "Fabrikam", recruiter_id: null, recruiter_name: null }),
+        row({
+          id: "a3",
+          company_name: "Litware",
+          recruiter_id: null,
+          recruiter_name: null,
+          agency_id: null,
+          agency_name: null,
+        }),
+        row({
+          id: "a4",
+          company_name: "Northwind Traders",
+          route: "direct",
+          agency_id: null,
+          agency_name: null,
+        }),
+        row({ id: "a5", company_name: "Proseware", route: "referral", agency_id: null, agency_name: null }),
+      ],
+    });
+    renderAt("/applications?view=list");
+    const route = async (company: string) => {
+      const line = await screen.findByRole("row", { name: new RegExp(`at ${company}$`) });
+      return line.querySelectorAll("td")[1]!.textContent;
+    };
+    expect(await route("Contoso")).toBe("Alex Recruiter · Northwind Talent");
+    expect(await route("Fabrikam")).toBe("Northwind Talent");
+    expect(await route("Litware")).toBe("Agency");
+    expect(await route("Northwind Traders")).toBe("Direct");
+    expect(await route("Proseware")).toBe("Referral");
+  });
+});
+
 describe("the board", () => {
   const workflow = {
     ...WORKFLOW,
@@ -366,7 +415,9 @@ describe("the board", () => {
 
   it("explains a drop it won't make", () => {
     const applied = card();
-    expect(planDrop(workflow, applied, "screen", "applied")).toEqual({ do: "move", to: "screen" });
+    const toScreen = planDrop(workflow, applied, "screen", "applied");
+    expect(toScreen).toEqual({ do: "move", to: "screen" });
+    expect(toScreen.do === "move" && toScreen.notice).toBeUndefined(); // an active stage: no notice
     expect(planDrop(workflow, applied, "interested", "applied")).toEqual({
       do: "refuse",
       title: "That move isn't allowed",
@@ -383,6 +434,12 @@ describe("the board", () => {
       title: "Rounds go in order",
       message:
         "A card's round comes from its interviews: add or finish a round on the application to move it along.",
+    });
+    // A stage since removed from config.toml is named by its id.
+    expect(planDrop(workflow, card({ stage: "old_stage" }), "interested", "old_stage")).toEqual({
+      do: "refuse",
+      title: "That move isn't allowed",
+      message: "old_stage can't go to Interested.",
     });
     expect(planDrop(workflow, applied, "applied", "applied")).toEqual({ do: "nothing" });
     expect(planDrop(workflow, applied, undefined, "applied")).toEqual({ do: "nothing" });

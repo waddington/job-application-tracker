@@ -128,9 +128,10 @@ with sync_playwright() as p:
     page.keyboard.press("Escape")
     time.sleep(0.4)
     visit(page, "/")
-    first_app = page.evaluate(LINKS, "/applications/")[0]
-    visit(page, first_app)
-    step("application+move", lambda: page.get_by_role("button", name="Move to…").first.click(timeout=3000))
+    first_app = page.evaluate(LINKS, "/applications/")[:1]
+    if first_app:
+        visit(page, first_app[0])
+        step("application+move", lambda: page.get_by_role("button", name="Move to…").first.click(timeout=3000))
     page.keyboard.press("Escape")
 
     # Roles: each view, a role's page, and the dialogs (add with its errors and contract fields,

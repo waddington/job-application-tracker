@@ -236,9 +236,6 @@ function RoleCard({ app }: { app: ApplicationDetail }) {
   const { t } = useTranslation("applications");
   const { data: roles } = useRoles();
   const role = roles?.find((r) => r.id === app.role_id);
-  // A mode the app doesn't know (an older or hand-edited value) shows as it was saved.
-  const workMode = (mode: string) =>
-    Object.hasOwn(WORK_MODES, mode) ? t(WORK_MODES[mode as keyof typeof WORK_MODES]) : mode;
   return (
     <Card withBorder>
       <Stack gap={6}>
@@ -250,7 +247,15 @@ function RoleCard({ app }: { app: ApplicationDetail }) {
           {app.company_name}
         </Anchor>
         {role?.location && <Text size="sm">{role.location}</Text>}
-        {role?.work_mode && <Text size="sm">{workMode(role.work_mode)}</Text>}
+        {role?.work_mode &&
+          (Object.hasOwn(WORK_MODES, role.work_mode) ? (
+            <Text size="sm">{t(WORK_MODES[role.work_mode as keyof typeof WORK_MODES])}</Text>
+          ) : (
+            // A value the app doesn't know (older or hand-edited data) shows as saved, capitalised.
+            <Text size="sm" tt="capitalize">
+              {role.work_mode}
+            </Text>
+          ))}
         {role?.url && (
           <Anchor href={role.url} target="_blank" rel="noreferrer" size="sm">
             {t("role.jobAd")}
