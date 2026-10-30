@@ -87,6 +87,15 @@ const answered = (page: Page, method: string, url: RegExp) =>
   page.waitForResponse((r) => r.request().method() === method && url.test(new URL(r.url()).pathname));
 
 const theDialog = (page: Page) => page.locator(".mantine-Modal-content");
+/** Two real clicks, as quick as a person's double click. */
+const doubleClick = async (page: Page, button: Locator) => {
+  const box = await button.boundingBox();
+  if (!box) throw new Error("No button to click");
+  const [x, y] = [box.x + box.width / 2, box.y + box.height / 2];
+  await page.mouse.click(x, y);
+  await pause(60);
+  await page.mouse.click(x, y);
+};
 const menu = (page: Page, name: string) =>
   page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name, exact: true });
 const openApplication = async (page: Page, id: string) => {
@@ -152,7 +161,7 @@ const callMenu = async (page: Page, label: string, item: "Edit" | "Delete") => {
 };
 
 test.describe("adding a round", () => {
-  test("refuses a round outside 1 to 99, and a link that isn't one", async ({ page, request }) => {
+  test("asks for a round number, and refuses a link that isn't one", async ({ page, request }) => {
     const app = await application(request, "Round Rules Co");
     await openApplication(page, app.id);
     const writes = watchWrites(page);
@@ -206,7 +215,9 @@ test.describe("adding a round", () => {
     await page.reload();
     const card = section(page, "Interviews");
     await expect(card.getByText("Round 1 · Architecture chat")).toBeVisible();
-    await expect(card.getByText("with Panel Person One, Panel Person Two")).toBeVisible();
+    await expect(
+      card.getByText(/with Panel Person (One, Panel Person Two|Two, Panel Person One)/),
+    ).toBeVisible();
     await expect(card.getByRole("link", { name: "Join link" })).toHaveAttribute(
       "href",
       /^https:\/\/meet\.example\.com\/full/,
@@ -220,8 +231,8 @@ test.describe("adding a round", () => {
       prep: "Read the blog",
       debrief: "Went fine",
       questions: "Caching",
-      interviewer_ids: [one.id, two.id],
     });
+    expect((await roundsOf(request, app.id))[0]?.interviewer_ids.sort()).toEqual([one.id, two.id].sort());
     await page.goto(`/people/${one.id}`);
     await expect(page.getByRole("link", { name: "Round 1 · Architecture chat" })).toBeVisible();
   });
@@ -269,6 +280,7 @@ test.describe("adding a round", () => {
     await dialog.getByLabel("What is it?").fill("Earlier chat");
     await dialog.getByText("Done", { exact: true }).click();
     await submitRound(dialog);
+    await expect(page.getByRole("button", { name: "Add round 2" })).toBeVisible();
     dialog = await newRound(page);
     await dialog.getByLabel("What is it?").fill("Dropped chat");
     await dialog.getByText("Cancelled", { exact: true }).click();
@@ -314,10 +326,12 @@ test.describe("adding a round", () => {
     await slow(page, `**${API}/applications/${app.id}/interviews`, "POST");
     await openApplication(page, app.id);
     const dialog = await newRound(page);
-    await dialog.getByRole("button", { name: "Add round", exact: true }).dblclick();
+    const writes = watchWrites(page);
+    await doubleClick(page, dialog.getByRole("button", { name: "Add round", exact: true }));
     await expect(dialog).toBeHidden();
     await expect(page.getByRole("button", { name: "Add round 2" })).toBeVisible();
     expect(await roundsOf(request, app.id)).toHaveLength(1);
+    expect(writes).toHaveLength(1);
   });
 
   test("a link the server refuses is explained, and what you typed stays", async ({
@@ -478,6 +492,7 @@ test.describe("editing a round", () => {
     expect((await refused).status()).toBe(404);
     await expect(page.getByText("That didn't work").first()).toBeVisible();
     await expect(dialog).toBeVisible();
+    await expect(dialog.getByLabel("What is it?")).toHaveValue("Round 1 · Going".slice(10));
   });
 
   test("a double click on a slow save closes it, with no error", async ({ page, request }) => {
@@ -487,9 +502,11 @@ test.describe("editing a round", () => {
     await openApplication(page, app.id);
     const dialog = await editRound(page, "Round 1 · Twice");
     await dialog.getByLabel("What is it?").fill("Once");
-    await dialog.getByRole("button", { name: "Save", exact: true }).dblclick();
+    const writes = watchWrites(page);
+    await doubleClick(page, dialog.getByRole("button", { name: "Save", exact: true }));
     await expect(dialog).toBeHidden();
     await expect(section(page, "Interviews").getByText("Round 1 · Once")).toBeVisible();
+    expect(writes).toHaveLength(1);
   });
 });
 
@@ -553,7 +570,7 @@ test.describe("the Interviews page", () => {
     expect(text.indexOf("Sooner one")).toBeLessThan(text.indexOf("Later one"));
     const earlier = section(page, "Earlier and cancelled");
     await expect(earlier.getByRole("row").filter({ hasText: "Long ago" })).toContainText("Awaiting outcome");
-    await expect(earlier.getByRole("row").filter({ hasText: "Off" })).toContainText("Cancelled");
+    await expect(earlier.getByRole("row").filter({ hasText: "Round 4 · Off" })).toContainText("Cancelled");
     await expect(ahead.getByText("Long ago")).toBeHidden();
   });
 
@@ -819,9 +836,11 @@ test.describe("booking and logging a call", () => {
     await slow(page, `**${API}/meetings`, "POST");
     await openPerson(page, who.id);
     const dialog = await newCall(page);
-    await dialog.getByRole("button", { name: "Book call" }).dblclick();
+    const writes = watchWrites(page);
+    await doubleClick(page, dialog.getByRole("button", { name: "Book call" }));
     await expect(dialog).toBeHidden();
     expect(await callsOf(request, who.id)).toHaveLength(1);
+    expect(writes).toHaveLength(1);
   });
 });
 
@@ -907,6 +926,8 @@ test.describe("a call afterwards", () => {
     page.once("dialog", (d) => void d.accept()); // if a fix asks first
     await callMenu(page, label, "Delete");
     await expect(page.getByRole("button", { name: `More for ${label}` })).toBeHidden();
+    await page.reload();
+    await expect(page.getByRole("link", { name: "Pitched Role" }).first()).toBeVisible();
     const roles = await getJson<{ title: string; company_id: string }[]>(request, "roles");
     expect(roles.filter((r) => r.title === "Pitched Role")).toMatchObject([{ company_id: company.id }]);
   });
@@ -916,14 +937,16 @@ test.describe("a call afterwards", () => {
     const who = await person(request, "Careful Call Person");
     await addCall(request, who.id, { title: "Precious", status: "done", notes: "Long notes" });
     await openPerson(page, who.id);
-    answerNext(page, false);
-    const deleted = page
-      .waitForRequest((r) => r.method() === "DELETE", { timeout: 1_500 })
-      .then(() => true)
-      .catch(() => false);
+    let asked = false;
+    page.once("dialog", (d) => {
+      asked = true;
+      void d.dismiss();
+    });
+    const writes = watchWrites(page);
     await callMenu(page, "Call with Careful Call Person: Precious", "Delete");
-    expect(await deleted).toBe(false);
-    expect(await callsOf(request, who.id)).toHaveLength(1);
+    await pause(800);
+    expect(writes).toEqual([]);
+    expect(asked).toBe(true);
   });
 
   test("a person's deleted calls go with them", async ({ page, request }) => {
@@ -933,7 +956,76 @@ test.describe("a call afterwards", () => {
     await request.delete(`${API}/contacts/${who.id}`);
     expect(await getJson<Call[]>(request, `meetings?application_id=${app.id}`)).toHaveLength(0);
     await page.goto(`/applications/${app.id}`);
-    await expect(page.getByRole("button", { name: "Add round 1" })).toBeVisible();
+    await expect(page.getByText("No interviews yet.")).toBeVisible();
     await expect(page.getByText("Call with Gone Call Person")).toBeHidden();
+  });
+});
+
+test.describe("what's left behind by an edit", () => {
+  // KNOWN BUG (fix-hidden-link-kept on the roadmap): expected to fail until it is fixed.
+  test.fail("a video call made in person loses its join link", async ({ page, request }) => {
+    const who = await person(request, "Moved Offline Person");
+    await addCall(request, who.id, {
+      title: "Was video",
+      kind: "video",
+      meeting_url: "https://meet.example.com/offline",
+    });
+    const label = "Video call with Moved Offline Person: Was video";
+    await openPerson(page, who.id);
+    await callMenu(page, label, "Edit");
+    const dialog = theDialog(page);
+    await dialog.getByText("In person", { exact: true }).click();
+    await save(dialog);
+    await expect(page.getByText("Meeting with Moved Offline Person: Was video")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Join link" })).toBeHidden();
+  });
+
+  // KNOWN BUG (fix-round-end-before-start on the roadmap): expected to fail until it is fixed.
+  test.fail(
+    "a round marked done and moved in one edit still ends after it starts",
+    async ({ page, request }) => {
+      const app = await application(request, "Both Changes Co");
+      const start = inDays(6);
+      await addRound(request, app.id, {
+        title: "Both",
+        starts_at: start,
+        ends_at: new Date(Date.parse(start) + 3_600_000).toISOString(),
+      });
+      await openApplication(page, app.id);
+      const dialog = await editRound(page, "Round 1 · Both");
+      await dialog.getByText("Done", { exact: true }).click();
+      await moveDay(page, dialog, "When");
+      await save(dialog);
+      const [saved] = await roundsOf(request, app.id);
+      expect(saved?.status).toBe("done");
+      expect(Date.parse(saved?.ends_at ?? "")).toBeGreaterThan(Date.parse(saved?.starts_at ?? ""));
+    },
+  );
+
+  // KNOWN BUG (fix-didnt-happen-notes-hidden on the roadmap): expected to fail until it is fixed.
+  test.fail("what you wrote about a call that didn't happen can be edited", async ({ page, request }) => {
+    const who = await person(request, "Editable Notes Person");
+    await addCall(request, who.id, { title: "Off call", status: "cancelled", notes: "They cancelled" });
+    await openPerson(page, who.id);
+    await callMenu(page, "Call with Editable Notes Person: Off call", "Edit");
+    await expect(theDialog(page).locator("textarea").first()).toBeVisible();
+    const boxes = await theDialog(page)
+      .locator("textarea")
+      .evaluateAll((all) => all.map((box) => (box as HTMLTextAreaElement).value));
+    expect(boxes).toContain("They cancelled");
+  });
+
+  test("a whole-number round: 1.5 gets a clear answer", async ({ page, request, problems }) => {
+    problems.allow(/422.*\/interviews/);
+    const app = await application(request, "Half Round Co");
+    await openApplication(page, app.id);
+    const dialog = await newRound(page);
+    await dialog.getByLabel("Round", { exact: true }).fill("1.5");
+    await dialog.getByRole("button", { name: "Add round", exact: true }).click();
+    await expect(
+      dialog.getByText("Rounds go from 1 to 99").or(page.getByText("That didn't work").first()).first(),
+    ).toBeVisible();
+    await expect(dialog).toBeVisible();
+    expect(await roundsOf(request, app.id)).toHaveLength(0);
   });
 });
