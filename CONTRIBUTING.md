@@ -91,7 +91,8 @@ The app is being made translatable, English only for now; the plan and its order
 - the app's frame (header, menu, footer, Not found, shared buttons and dialogs);
 - Today, with its to-dos, the reply and chase buttons, How did it go?, At a glance and How it
   works;
-- Applications: the list and board, the quick view, the application page and New application.
+- Applications: the list and board, the quick view, the application page and New application;
+- Roles: the Roles page, a role's page, the role form, Apply / Interested / Pass and role lines.
 
 The files are listed in `TRANSLATED` in `frontend/eslint.config.js`. Until an area has moved,
 keep writing its text as before. Once it has:

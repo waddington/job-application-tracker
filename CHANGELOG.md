@@ -5,6 +5,15 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.2.2 (2026-10-30)
+
+- Translations, step six: **Roles** now read their text from the translation files. It's still
+  English and nothing looks different.
+  - **What moved over:** the Roles page, a role's page, adding and editing a role, Apply /
+    Interested / Pass, and role lines wherever they show (Today, people, companies, calls).
+  - **How it was checked:** every page's text, every Roles view and the roles dialogs were
+    compared before and after, with no differences (#120).
+
 ## 1.2.1 (2026-10-30)
 
 - Translations, step five: **Applications** now read their text from the translation files.
