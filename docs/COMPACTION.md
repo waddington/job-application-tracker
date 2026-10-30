@@ -506,15 +506,18 @@ Keep this whole section word for word in the summary: it is the live plan.
 - `fix-applied-date-wipe` (high): saving Details after a move to Applied wipes the date. Two `test.fail` tests. Can
   have hit Kai's real data; I recommended fixing it first and Kai hasn't answered.
 - `fix-add-another-role-carries-over` (medium): one `test.fail` test.
+- `fix-duplicate-role` (medium): Add role twice makes two roles, with no backend dedup. Kai: "shouldnt there be some
+  backend dedup to prevent that? Record it as a bug". Its pinned test becomes `test.fail` in #131.
 - `fix-duplicate-agency-name` (medium): one `test.fail` test (in #131).
 - `fix-deleted-person-404`, `fix-edit-role-list-covers-form`, `fix-cancel-leaves-created-entity` (low).
 Remove a bug's `test.fail` in the PR that fixes it. A fix branch is `worktree-<bug id>`, and the board follows it.
 
+**Settled:** two people can share a name. Kai: "yes there can be 2 people with the same name". Keep that test pinned; it
+isn't a bug.
+
 **Waiting on Kai:**
-- Which bugs to fix, and when.
-- Two behaviours pinned by tests, not logged as bugs: the same recruiter name under another agency makes a second
-  person; Add role twice makes two roles (only New application reuses a role).
-- When to start P10, and whether it goes before the remaining tests.
+- Which bugs to fix, and when. Kai: "the bugs: youre not fixing them now, only recording them".
+- P10 isn't now. Kai: "we're not doing p10 or anything else yet, we're doing p9 the e2e tests".
 - The Dependabot PRs after P9.
 
 **Dependabot, already reviewed (31 alerts: 27 open, 4 auto-dismissed; no PRs made). Three PRs, one per lockfile:**
