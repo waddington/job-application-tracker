@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.2.4 (2026-10-30)
+
+- **Developers:** browser tests for Today: its groups and sections, offers, replies, chasing, How did it go?, to-dos, follow-ups, snoozing, Ghosted and roles to decide. Nothing in the app changes (#124).
+
 ## 1.2.3 (2026-10-30)
 
 - **Developers:** browser tests. `pnpm --dir frontend e2e` opens the real app in Chrome on
