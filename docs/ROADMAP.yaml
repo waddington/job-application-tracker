@@ -94,6 +94,7 @@ phases:
     goal: Real bugs found in the app, recorded when found and fixed with Kai's go-ahead when they change behaviour
     tasks:
       - {id: fix-applied-date-wipe, type: bug, severity: high, name: "Saving Details after moving to Applied wipes the applied date", detail: "The move fills the date in on the server, but the form keeps its old empty value, so it looks unsaved and Save sends the empty value back. Found by e2e/application-page.spec.ts, whose two test.fail tests come off with the fix.", owner: kai, estimate_h: 1, prd: docs/prd/tracker.md}
+      - {id: fix-add-another-role-carries-over, type: bug, severity: medium, name: "Add and add another keeps the type, work mode and IR35 for the next role", detail: "Adding a contract role with Add and add another leaves Type, Work mode and IR35 set, so the next role saves as a contract unless you notice, though the rest of the form clears. Found by e2e/roles.spec.ts, whose test.fail test comes off with the fix.", owner: kai, estimate_h: 0.5, prd: docs/prd/tracker.md}
   - id: P10
     name: PM dashboard
     goal: The same depth as the hype-pie dashboard (Kai, 2026-10-30), so progress, activity and agents can be seen at a glance
