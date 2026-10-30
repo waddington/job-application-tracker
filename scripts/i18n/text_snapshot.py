@@ -133,8 +133,45 @@ with sync_playwright() as p:
         visit(page, first_app[0])
         step("application+move", lambda: page.get_by_role("button", name="Move to…").first.click(timeout=3000))
     page.keyboard.press("Escape")
+
+    # Roles: each view, a role's page, and the dialogs (add with its errors and contract fields,
+    # edit, apply, interested, pass), each closed again.
+    def view(name):
+        page.locator(".mantine-SegmentedControl-root").get_by_text(name, exact=True).click(timeout=3000)
+
+    visit(page, "/roles")
+    for name in ["Interested", "Applied", "Closed", "Passed", "All"]:
+        step("roles+" + name.lower(), lambda name=name: view(name))
+    for n, href in enumerate(page.evaluate(LINKS, "/roles/")[:3]):
+        visit(page, href)
+        snap[f"role#{n}"] = grab(page)
+    visit(page, "/roles")
+    view("All")
+    time.sleep(0.5)
+    step("roles+add", lambda: page.get_by_role("button", name="Add role").first.click(timeout=3000))
+    add_role = page.get_by_role("dialog").get_by_role("button", name="Add role")
+    step("roles+add-errors", lambda: add_role.click(timeout=3000))
+    step(
+        "roles+add-contract",
+        lambda: page.get_by_role("dialog").get_by_label("Type").click(timeout=3000),
+        lambda: page.get_by_role("option", name="Contract").click(timeout=3000),
+    )
+    page.keyboard.press("Escape")
+    page.keyboard.press("Escape")
+    time.sleep(0.4)
+    for name, label in [("edit", "Edit "), ("apply", "Apply: "), ("interested", "Interested: "), ("pass", "Pass: ")]:
+        step("roles+" + name, lambda label=label: page.locator(f"[aria-label^='{label}']").first.click(timeout=3000))
+        # Twice: the first may only close a dropdown inside the dialog.
+        page.keyboard.press("Escape")
+        page.keyboard.press("Escape")
+        time.sleep(0.4)
     browser.close()
 
 with open(OUT, "w") as f:
     json.dump(snap, f, indent=1, ensure_ascii=False)
 print(f"{len(snap)} views -> {OUT}")
+# A step that couldn't open compares nothing: say so, so "0 differ" isn't taken on trust.
+missed = [name for name, view in snap.items() if view["text"].startswith("(couldn't open")]
+if missed:
+    print("couldn't open: " + ", ".join(missed))
+    sys.exit(1)

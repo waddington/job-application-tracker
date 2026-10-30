@@ -187,7 +187,7 @@ describe("the application page", () => {
       {},
       { "/api/v1/roles": [{ id: "r1", title: "Backend Engineer", work_mode: "office", url: null }] },
     );
-    expect(await screen.findByText("Office")).toBeInTheDocument();
+    expect(await screen.findByText("In office")).toBeInTheDocument();
   });
 
   it("shows a work mode it doesn't know as it was saved", async () => {
@@ -224,6 +224,14 @@ describe("the application page", () => {
     expect(screen.getByText("Unknown contact")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Remove contact" })).toBeInTheDocument();
     expect(screen.getByText("Interviewer", { selector: "p" })).toBeInTheDocument();
+  });
+
+  it("names the company as typed in the new-person hint, even with a < in it", async () => {
+    showApplication({ company_name: "Contoso <UK>" });
+    const hint = await screen.findByText(/Someone new\?/);
+    expect(hint.textContent).toBe(
+      "Someone new? New person adds them (at Contoso <UK> unless you change it) and links them as the role chosen above.",
+    );
   });
 
   it("asks before deleting, naming what goes with it", async () => {

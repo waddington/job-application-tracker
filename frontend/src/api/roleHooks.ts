@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api, unwrap, type Schemas } from "./client";
 import { invalidateApplicationViews, keys } from "./hooks";
+import { i18n } from "../i18n";
 
 export type RoleSummary = Schemas["RoleSummary"];
 export type RoleStatus = RoleSummary["status"];
@@ -14,18 +15,20 @@ export interface RoleFilters {
   meeting_id?: string;
 }
 
-export const ROLE_STATUS: Record<RoleStatus, { label: string; color: string }> = {
-  to_decide: { label: "To decide", color: "yellow" },
-  interested: { label: "Interested", color: "cyan" },
-  closed: { label: "Closed", color: "dark" },
-  applied: { label: "Applied", color: "blue" },
-  passed: { label: "Passed", color: "gray" },
+export const ROLE_STATUS: Record<RoleStatus, { label: `roles:status.${RoleStatus}`; color: string }> = {
+  to_decide: { label: "roles:status.to_decide", color: "yellow" },
+  interested: { label: "roles:status.interested", color: "cyan" },
+  closed: { label: "roles:status.closed", color: "dark" },
+  applied: { label: "roles:status.applied", color: "blue" },
+  passed: { label: "roles:status.passed", color: "gray" },
 };
 
 /** A role's badge: its status, or for one closed before you applied, the stage it ended at. */
 export function roleBadge(role: RoleSummary): { label: string; color: string } {
   const status = ROLE_STATUS[role.status];
-  return role.status === "closed" && role.closed_as ? { ...status, label: role.closed_as } : status;
+  // closed_as is the stage's name, as written in config.toml.
+  const label = role.status === "closed" && role.closed_as ? role.closed_as : i18n.t(status.label);
+  return { label, color: status.color };
 }
 
 function notifyError(error: Error) {

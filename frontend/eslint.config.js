@@ -36,6 +36,10 @@ const TRANSLATED = [
   "src/components/NewApplicationModal.tsx",
   "src/components/SentDocuments.tsx",
   "src/components/StageBadge.tsx",
+  // i18n-roles
+  "src/components/Roles.tsx",
+  "src/pages/RolesPage.tsx",
+  "src/pages/RolePage.tsx",
 ];
 
 export default tseslint.config(

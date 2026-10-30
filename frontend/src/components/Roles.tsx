@@ -22,6 +22,7 @@ import { IconListCheck, IconPaperclip, IconPencil, IconPlus } from "@tabler/icon
 import { Link, useRouter } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 
 import { useContacts, useCompanies, useWorkflow } from "../api/hooks";
 import { useTodos } from "../api/todoHooks";
@@ -37,7 +38,9 @@ import {
   type RoleSummary,
 } from "../api/roleHooks";
 import type { Schemas } from "../api/client";
+import { i18n } from "../i18n";
 import { beforeApplied } from "../utils/applied";
+import { formatDay } from "../utils/format";
 import { useFavourite, useGhosted } from "./GhostMark";
 import { CreatableSelect } from "./CreatableSelect";
 import { DeleteButton } from "./DeleteButton";
@@ -65,14 +68,40 @@ interface Values {
 
 const blank = (s: string) => s.trim() || null;
 const num = (v: number | string) => (v === "" || v == null ? null : Number(v));
-const isLink = (v: string) => (!v || /^https?:\/\//.test(v) ? null : "Links start with http:// or https://");
+const WEB_LINK = /^https?:\/\//;
+const isLink = (v: string) => (!v || WEB_LINK.test(v) ? null : i18n.t("roles:form.errors.link"));
+
+const DAY_RATE_IR35 = { outside: "roles:pay.dayRateOutside", inside: "roles:pay.dayRateInside" } as const;
+const LINE_WORK_MODES = {
+  remote: "line.workModes.remote",
+  hybrid: "line.workModes.hybrid",
+  office: "line.workModes.office",
+} as const;
+
+/**
+ * A favourite's star and a ghost's "(ghosted)", added straight after a person's name where a role
+ * names them ("Sam Patel ★ (ghosted)"); the name and its marks go into sentences as one value.
+ */
+function usePersonSuffix(contactId: string | null | undefined): string {
+  const { t } = useTranslation("roles");
+  const favourite = useFavourite()(contactId);
+  const ghosted = useGhosted()(contactId);
+  return (favourite ? " ★" : "") + (ghosted ? t("ghosted") : "");
+}
 
 /** "£600 a day", "£80k–£95k": what it pays, if you know. */
 export function pay(role: RoleSummary): string | null {
   const k = (n: number) => (n >= 1000 ? `£${Math.round(n / 1000)}k` : `£${n}`);
-  if (role.day_rate)
-    return `£${role.day_rate} a day${role.ir35 && role.ir35 !== "unknown" ? `, ${role.ir35} IR35` : ""}`;
-  if (role.salary_min && role.salary_max) return `${k(role.salary_min)}–${k(role.salary_max)}`;
+  if (role.day_rate) {
+    const rate = `£${role.day_rate}`;
+    const ir35 =
+      role.ir35 && Object.hasOwn(DAY_RATE_IR35, role.ir35)
+        ? DAY_RATE_IR35[role.ir35 as keyof typeof DAY_RATE_IR35]
+        : null;
+    return ir35 ? i18n.t(ir35, { rate }) : i18n.t("roles:pay.dayRate", { rate });
+  }
+  if (role.salary_min && role.salary_max)
+    return i18n.t("roles:pay.range", { from: k(role.salary_min), to: k(role.salary_max) });
   if (role.salary_min ?? role.salary_max) return k((role.salary_min ?? role.salary_max)!);
   return null;
 }
@@ -103,6 +132,7 @@ export function RoleFormModal({
   const save = useSaveRole();
   const uploadTo = useUploadFilesTo();
   const [files, setFiles] = useState<File[]>([]);
+  const { t } = useTranslation(["roles", "common"]);
   const form = useForm<Values>({
     initialValues: {
       companyId: role?.company_id ?? companyId ?? null,
@@ -120,8 +150,8 @@ export function RoleFormModal({
       description: role?.description ?? "",
     },
     validate: {
-      companyId: (v) => (v ? null : "Which company? Type a new name to add it."),
-      title: (v) => (v.trim() ? null : "What's the role?"),
+      companyId: (v) => (v ? null : t("form.errors.company")),
+      title: (v) => (v.trim() ? null : t("form.errors.role")),
       url: isLink,
     },
   });
@@ -177,18 +207,18 @@ export function RoleFormModal({
     <Modal
       opened={opened}
       onClose={onClose}
-      title={role ? `Edit ${role.title}` : "Add a role to decide on"}
+      title={role ? t("form.editTitle", { role: role.title }) : t("form.addTitle")}
       size="lg"
     >
       <form onSubmit={submit}>
         <Stack>
           <Text size="sm" c="dimmed">
-            A role you might go for. It waits under <b>Roles</b> until you apply or pass.
+            <Trans t={t} i18nKey="form.intro" components={{ b: <b /> }} />
           </Text>
           <Group grow align="flex-start">
             <CreatableSelect
-              label="Company"
-              placeholder="Pick or type a new one"
+              label={t("form.company")}
+              placeholder={t("form.companyPlaceholder")}
               items={(companies ?? []).map((c) => ({ value: c.id, label: c.name }))}
               value={form.values.companyId}
               onChange={(v) => form.setFieldValue("companyId", v)}
@@ -197,12 +227,16 @@ export function RoleFormModal({
               error={form.errors.companyId}
               data-autofocus
             />
-            <TextInput label="Role" placeholder="Platform Engineer" {...form.getInputProps("title")} />
+            <TextInput
+              label={t("form.role")}
+              placeholder={t("form.rolePlaceholder")}
+              {...form.getInputProps("title")}
+            />
           </Group>
           <Group grow align="flex-start">
             <Select
-              label="Who told you about it"
-              placeholder="No one: you found it"
+              label={t("form.who")}
+              placeholder={t("form.whoPlaceholder")}
               searchable
               clearable
               data={(contacts ?? []).map((c) => ({ value: c.id, label: c.name }))}
@@ -213,13 +247,16 @@ export function RoleFormModal({
               }}
             />
             <Select
-              label="On which call"
-              placeholder={form.values.contactId ? "Not from a call" : "Pick who first"}
+              label={t("form.call")}
+              placeholder={form.values.contactId ? t("form.notFromCall") : t("form.pickWhoFirst")}
               clearable
               disabled={!form.values.contactId}
               data={(theirCalls ?? []).map((m) => ({
                 value: m.id,
-                label: `${m.title ?? m.label} · ${dayjs(m.starts_at).format("D MMM")}`,
+                label: t("form.callOption", {
+                  call: m.title ?? m.label,
+                  date: formatDay(m.starts_at, "dayMonth", i18n.language),
+                }),
               }))}
               {...form.getInputProps("meetingId")}
             />
@@ -229,31 +266,37 @@ export function RoleFormModal({
             form.values.contactId &&
             form.values.contactId !== role.contact_id && (
               <Text size="xs" c="dimmed">
-                Saving also gives this role's open applications the new person where they fit how you applied
-                (through their agency, or someone at the company for a direct one), noted on their timelines;
-                others keep theirs.
+                {t("form.newPersonHint")}
               </Text>
             )}
-          <TextInput label="Job ad link" placeholder="https://…" {...form.getInputProps("url")} />
+          <TextInput
+            label={t("form.jobAd")}
+            placeholder={t("form.jobAdPlaceholder")}
+            {...form.getInputProps("url")}
+          />
           <Group grow align="flex-start">
-            <TextInput label="Location" placeholder="London" {...form.getInputProps("location")} />
+            <TextInput
+              label={t("form.location")}
+              placeholder={t("form.locationPlaceholder")}
+              {...form.getInputProps("location")}
+            />
             <Select
-              label="Work mode"
+              label={t("form.workMode")}
               clearable
               data={[
-                { value: "remote", label: "Remote" },
-                { value: "hybrid", label: "Hybrid" },
-                { value: "office", label: "Office" },
+                { value: "remote", label: t("form.workModes.remote") },
+                { value: "hybrid", label: t("form.workModes.hybrid") },
+                { value: "office", label: t("form.workModes.office") },
               ]}
               {...form.getInputProps("workMode")}
             />
             <Select
-              label="Type"
+              label={t("form.type")}
               clearable
               data={[
-                { value: "permanent", label: "Permanent" },
-                { value: "contract", label: "Contract" },
-                { value: "fixed_term", label: "Fixed term" },
+                { value: "permanent", label: t("form.types.permanent") },
+                { value: "contract", label: t("form.types.contract") },
+                { value: "fixed_term", label: t("form.types.fixed_term") },
               ]}
               {...form.getInputProps("employment")}
             />
@@ -261,18 +304,18 @@ export function RoleFormModal({
           {contract ? (
             <Group grow align="flex-start">
               <NumberInput
-                label="Day rate (£)"
+                label={t("form.dayRate")}
                 min={0}
                 thousandSeparator=","
                 {...form.getInputProps("dayRate")}
               />
               <Select
-                label="IR35"
+                label={t("form.ir35")}
                 clearable
                 data={[
-                  { value: "outside", label: "Outside" },
-                  { value: "inside", label: "Inside" },
-                  { value: "unknown", label: "Not sure" },
+                  { value: "outside", label: t("form.ir35Options.outside") },
+                  { value: "inside", label: t("form.ir35Options.inside") },
+                  { value: "unknown", label: t("form.ir35Options.unknown") },
                 ]}
                 {...form.getInputProps("ir35")}
               />
@@ -280,13 +323,13 @@ export function RoleFormModal({
           ) : (
             <Group grow align="flex-start">
               <NumberInput
-                label="Salary from (£)"
+                label={t("form.salaryFrom")}
                 min={0}
                 thousandSeparator=","
                 {...form.getInputProps("salaryMin")}
               />
               <NumberInput
-                label="Salary to (£)"
+                label={t("form.salaryTo")}
                 min={0}
                 thousandSeparator=","
                 {...form.getInputProps("salaryMax")}
@@ -294,17 +337,17 @@ export function RoleFormModal({
             </Group>
           )}
           <Textarea
-            label="Notes"
-            description="What they said about it: team, stack, why it's open."
+            label={t("form.notes")}
+            description={t("form.notesHint")}
             autosize
             minRows={2}
             {...form.getInputProps("description")}
           />
           {!role && (
             <FileInput
-              label="Job description or other files"
-              description="Optional: PDFs, documents. Kept with the role, and on the application once you apply."
-              placeholder="Choose files"
+              label={t("form.files")}
+              description={t("form.filesHint")}
+              placeholder={t("form.chooseFiles")}
               multiple
               clearable
               value={files}
@@ -314,11 +357,11 @@ export function RoleFormModal({
           )}
           <Group justify="flex-end">
             <Button variant="default" onClick={onClose} style={{ order: 0 }}>
-              Cancel
+              {t("common:actions.cancel")}
             </Button>
             {/* "Add role" first: pressing Enter submits with the first submit button. */}
             <Button type="submit" loading={save.isPending} style={{ order: 2 }}>
-              {role ? "Save" : "Add role"}
+              {role ? t("common:actions.save") : t("form.add")}
             </Button>
             {!role && (
               <Button
@@ -328,7 +371,7 @@ export function RoleFormModal({
                 data-another="yes"
                 style={{ order: 1 }}
               >
-                Add and add another
+                {t("form.addAnother")}
               </Button>
             )}
           </Group>
@@ -349,18 +392,21 @@ export function ApplyModal({
   /** Track it at the starting stage (Interested) rather than applying. */
   interested?: boolean;
 }) {
+  const { t } = useTranslation(["roles", "common"]);
   const { data: workflow } = useWorkflow();
   const apply = useApplyForRole();
   const router = useRouter();
   const [picked, setPicked] = useState<string | null>(null);
   const [appliedOn, setAppliedOn] = useState<string | null>(interested ? null : dayjs().format("YYYY-MM-DD"));
-  const ghost =
-    (useFavourite()(role.contact_id) ? " ★" : "") + (useGhosted()(role.contact_id) ? " (ghosted)" : "");
+  const ghost = usePersonSuffix(role.contact_id);
+  const person = role.contact_name ? role.contact_name + ghost : null;
   const how = role.agency_id
-    ? `Through ${role.agency_name}${role.contact_name ? ` (${role.contact_name}${ghost})` : ""}`
-    : role.contact_name
-      ? `Directly, with ${role.contact_name}${ghost} as your contact`
-      : "Directly";
+    ? person
+      ? t("apply.throughAgencyPerson", { agency: String(role.agency_name), person })
+      : t("apply.throughAgency", { agency: String(role.agency_name) })
+    : person
+      ? t("apply.directWith", { person })
+      : t("apply.direct");
   const hasApplied = workflow?.stages.some((s) => s.id === "applied");
   const stage = picked ?? (!interested && hasApplied ? "applied" : (workflow?.initial ?? null));
   // The applied date follows the stage (none before Applied, today from Applied on), until you
@@ -397,35 +443,38 @@ export function ApplyModal({
     <Modal
       opened
       onClose={onClose}
-      title={`${interested ? "Interested" : "Apply"}: ${role.title} at ${role.company_name}`}
+      title={t(interested ? "apply.interestedTitle" : "apply.applyTitle", {
+        role: role.title,
+        company: role.company_name,
+      })}
     >
       <Stack>
-        <Text size="sm">{how}.</Text>
+        <Text size="sm">{how}</Text>
         <Group grow align="flex-start">
           <Select
-            label="Stage"
+            label={t("apply.stage")}
             data={(workflow?.stages ?? []).map((s) => ({ value: s.id, label: s.name }))}
             value={stage}
             onChange={setStage}
             allowDeselect={false}
           />
           <DateInput
-            label="Applied on"
+            label={t("apply.appliedOn")}
             clearable
             value={appliedOn}
             onChange={(v) => {
               setDateTouched(true);
               setAppliedOn(v);
             }}
-            placeholder="Not yet"
+            placeholder={t("apply.notYet")}
           />
         </Group>
         <Group justify="flex-end">
           <Button variant="default" onClick={onClose}>
-            Cancel
+            {t("common:actions.cancel")}
           </Button>
           <Button onClick={submit} loading={apply.isPending}>
-            Create application
+            {t("apply.create")}
           </Button>
         </Group>
       </Stack>
@@ -435,14 +484,15 @@ export function ApplyModal({
 
 /** Pass on a role, with an optional reason (it's kept, under Passed). */
 export function PassModal({ role, onClose }: { role: RoleSummary; onClose: () => void }) {
+  const { t } = useTranslation(["roles", "common"]);
   const save = useSaveRole();
   const [reason, setReason] = useState("");
   return (
-    <Modal opened onClose={onClose} title={`Pass on ${role.title} at ${role.company_name}`}>
+    <Modal opened onClose={onClose} title={t("pass.title", { role: role.title, company: role.company_name })}>
       <Stack>
         <Textarea
-          label="Why? (optional)"
-          placeholder="Office five days a week, too junior, rate too low…"
+          label={t("pass.why")}
+          placeholder={t("pass.whyPlaceholder")}
           autosize
           minRows={2}
           value={reason}
@@ -451,7 +501,7 @@ export function PassModal({ role, onClose }: { role: RoleSummary; onClose: () =>
         />
         <Group justify="flex-end">
           <Button variant="default" onClick={onClose}>
-            Cancel
+            {t("common:actions.cancel")}
           </Button>
           <Button
             color="gray"
@@ -463,7 +513,7 @@ export function PassModal({ role, onClose }: { role: RoleSummary; onClose: () =>
               )
             }
           >
-            Pass
+            {t("pass.pass")}
           </Button>
         </Group>
       </Stack>
@@ -474,6 +524,7 @@ export function PassModal({ role, onClose }: { role: RoleSummary; onClose: () =>
 /** Apply / Interested / Pass for a role still to decide, Reconsider for one you passed, and a
  * link once there's an application. */
 export function RoleActions({ role }: { role: RoleSummary }) {
+  const { t } = useTranslation("roles");
   const [open, setOpen] = useState<"apply" | "interested" | "pass" | null>(null);
   const save = useSaveRole();
   const { data: workflow } = useWorkflow();
@@ -482,7 +533,7 @@ export function RoleActions({ role }: { role: RoleSummary }) {
   if (role.application_ids.length > 0)
     return (
       <Anchor component={Link} to={`/applications/${role.application_ids.at(-1)}`} size="xs">
-        Open application
+        {t("actions.openApplication")}
       </Anchor>
     );
   return (
@@ -493,9 +544,9 @@ export function RoleActions({ role }: { role: RoleSummary }) {
             size="compact-xs"
             variant="light"
             onClick={() => setOpen("apply")}
-            aria-label={`Apply: ${role.title}`}
+            aria-label={t("actions.applyLabel", { role: role.title })}
           >
-            Apply
+            {t("actions.apply")}
           </Button>
           {canBeInterested && (
             <Button
@@ -503,9 +554,9 @@ export function RoleActions({ role }: { role: RoleSummary }) {
               variant="light"
               color="cyan"
               onClick={() => setOpen("interested")}
-              aria-label={`Interested: ${role.title}`}
+              aria-label={t("actions.interestedLabel", { role: role.title })}
             >
-              Interested
+              {t("actions.interested")}
             </Button>
           )}
           <Button
@@ -513,9 +564,9 @@ export function RoleActions({ role }: { role: RoleSummary }) {
             variant="subtle"
             color="gray"
             onClick={() => setOpen("pass")}
-            aria-label={`Pass: ${role.title}`}
+            aria-label={t("actions.passLabel", { role: role.title })}
           >
-            Pass
+            {t("actions.pass")}
           </Button>
         </>
       ) : (
@@ -525,9 +576,9 @@ export function RoleActions({ role }: { role: RoleSummary }) {
           color="gray"
           loading={save.isPending}
           onClick={() => save.mutate({ id: role.id, body: { decision: null } })}
-          aria-label={`Reconsider: ${role.title}`}
+          aria-label={t("actions.reconsiderLabel", { role: role.title })}
         >
-          Reconsider
+          {t("actions.reconsider")}
         </Button>
       )}
       {open === "apply" && <ApplyModal role={role} onClose={() => setOpen(null)} />}
@@ -539,8 +590,8 @@ export function RoleActions({ role }: { role: RoleSummary }) {
 
 /** One role: what, where, who pitched it, pay, status and what to do next. */
 export function RoleLine({ role, showSource = true }: { role: RoleSummary; showSource?: boolean }) {
-  const ghost =
-    (useFavourite()(role.contact_id) ? " ★" : "") + (useGhosted()(role.contact_id) ? " (ghosted)" : "");
+  const { t } = useTranslation("roles");
+  const ghost = usePersonSuffix(role.contact_id);
   const status = roleBadge(role);
   const money = pay(role);
   const [editing, setEditing] = useState(false);
@@ -575,7 +626,7 @@ export function RoleLine({ role, showSource = true }: { role: RoleSummary; showS
                   c="dimmed"
                   fz="xs"
                   role="img"
-                  aria-label={`${files.length} file${files.length === 1 ? "" : "s"} on ${role.title}`}
+                  aria-label={t("line.files", { count: files.length, role: role.title })}
                 >
                   <IconPaperclip size={12} />
                   {files.length}
@@ -589,15 +640,21 @@ export function RoleLine({ role, showSource = true }: { role: RoleSummary; showS
           <Text size="xs" c="dimmed">
             {[
               money,
-              role.work_mode,
+              role.work_mode && Object.hasOwn(LINE_WORK_MODES, role.work_mode)
+                ? t(LINE_WORK_MODES[role.work_mode as keyof typeof LINE_WORK_MODES])
+                : role.work_mode,
               role.location,
               showSource && role.contact_name
-                ? `from ${role.contact_name}${ghost}${role.agency_name ? ` (${role.agency_name})` : ""}`
+                ? role.agency_name
+                  ? t("line.fromAgency", { person: role.contact_name + ghost, agency: role.agency_name })
+                  : t("line.from", { person: role.contact_name + ghost })
                 : null,
-              role.status === "passed" && role.decision_reason ? `passed: ${role.decision_reason}` : null,
+              role.status === "passed" && role.decision_reason
+                ? t("line.passed", { reason: role.decision_reason })
+                : null,
             ]
               .filter(Boolean)
-              .join(" · ")}
+              .join(t("line.separator"))}
           </Text>
         </div>
         {/* Two groups that wrap as wholes: the status and its actions, then the icons. */}
@@ -613,17 +670,17 @@ export function RoleLine({ role, showSource = true }: { role: RoleSummary; showS
               variant="subtle"
               color="gray"
               size="sm"
-              aria-label={`Edit ${role.title}`}
+              aria-label={t("line.edit", { role: role.title })}
               onClick={() => setEditing(true)}
             >
               <IconPencil size={14} />
             </ActionIcon>
-            <Tooltip label="Add a to-do">
+            <Tooltip label={t("line.addTodo")}>
               <ActionIcon
                 variant="subtle"
                 color="gray"
                 size="sm"
-                aria-label={`Add a to-do about ${role.title}`}
+                aria-label={t("line.addTodoLabel", { role: role.title })}
                 onClick={() => setAddingTodo((v) => !v)}
               >
                 <IconListCheck size={14} />
@@ -636,7 +693,7 @@ export function RoleLine({ role, showSource = true }: { role: RoleSummary; showS
                 kind="role"
                 id={role.id}
                 name={role.title}
-                confirm={`Delete the role ${role.title} at ${role.company_name}? Passing on it keeps a record instead.`}
+                confirm={t("line.deleteConfirm", { role: role.title, company: role.company_name })}
               />
             )}
           </Group>
@@ -670,6 +727,7 @@ export function RolesCard({
   empty: string;
   showSource?: boolean;
 }) {
+  const { t } = useTranslation("roles");
   const { data: roles } = useRoleSummaries(filters);
   const [adding, setAdding] = useState(false);
   return (
@@ -682,7 +740,7 @@ export function RolesCard({
           leftSection={<IconPlus size={14} />}
           onClick={() => setAdding(true)}
         >
-          Add role
+          {t("add")}
         </Button>
       </Group>
       {!roles?.length ? (

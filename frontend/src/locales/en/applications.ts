@@ -162,11 +162,11 @@ export default {
   role: {
     title: "Role",
     jobAd: "Job ad",
-    // How the role is worked (the role's page says "In the office"; this card always said "Office").
+    // How the role is worked: one wording everywhere (Kai: "In office").
     workModes: {
       remote: "Remote",
       hybrid: "Hybrid",
-      office: "Office",
+      office: "In office",
     },
   },
   people: {
@@ -183,7 +183,7 @@ export default {
     link: "Link person",
     newPerson: "New person",
     newHint:
-      "Someone new? <b>New person</b> adds them (at {{company}} unless you change it) and links them as the role chosen above.",
+      "Someone new? <b>New person</b> adds them (at <company/> unless you change it) and links them as the role chosen above.",
   },
   sent: {
     title: "Documents sent",
