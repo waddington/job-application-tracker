@@ -3,11 +3,12 @@
 import applications from "./applications";
 import common from "./common";
 import people from "./people";
+import roles from "./roles";
 import selftest from "./selftest";
 import today from "./today";
 import todos from "./todos";
 
-const en = { common, today, applications, people, todos, selftest } as const;
+const en = { common, today, applications, roles, people, todos, selftest } as const;
 
 export default en;
 export type Namespace = keyof typeof en;
