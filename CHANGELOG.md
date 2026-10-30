@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.2.10 (2026-10-30)
+
+- **Developers:** browser tests for companies and agencies: creating them from their pages and inside the person, role and New application dialogs, renaming and websites showing across pages, what a delete leaves behind and what it refuses. Nothing in the app changes (#134).
+
 ## 1.2.9 (2026-10-30)
 
 - **Developers:** browser tests for people and agencies: creating and editing each in every order and from inside each other's dialogs, details, favourites, ghosts, merging, deleting and the person page. Nothing in the app changes (#131).
