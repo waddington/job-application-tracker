@@ -81,6 +81,8 @@ const save = async (dialog: Locator) => {
   await dialog.getByRole("button", { name: "Save", exact: true }).click();
   await expect(dialog).toBeHidden();
 };
+/** A refusal from the contacts API: the request itself, and the browser's console line about it. */
+const REFUSED = /409.*\/api\/v1\/contacts/;
 const view = (page: Page, name: string | RegExp) =>
   page.locator(".mantine-SegmentedControl-root").getByText(name).click();
 
@@ -125,15 +127,33 @@ test.describe("creating an agency", () => {
   });
 
   // KNOWN BUG (fix-duplicate-agency-name on the roadmap): expected to fail until it is fixed.
-  test.fail("the same name twice doesn't make a second agency", async ({ page, request }) => {
+  test.fail("the same name twice doesn't make a second agency", async ({ page, request, problems }) => {
+    problems.allow(/\/api\/v1\/agencies/); // a fix may refuse it
     await create(request, "agencies", { name: "Twin Agency" });
     await openPage(page);
     await page.getByRole("button", { name: "New agency" }).click();
     const dialog = page.getByRole("dialog");
     await dialog.getByLabel("Name").fill("Twin Agency");
+    const posted = page.waitForResponse(
+      (r) => r.url().endsWith("/api/v1/agencies") && r.request().method() === "POST",
+    );
     await dialog.getByRole("button", { name: "Add agency" }).click();
-    await expect(dialog).toBeHidden();
+    await posted;
     expect(await agencies(request, "Twin Agency")).toHaveLength(1);
+  });
+
+  // KNOWN BUG (fix-new-agency-keeps-draft on the roadmap): expected to fail until it is fixed.
+  test.fail("closing it leaves nothing behind for next time", async ({ page }) => {
+    await openPage(page);
+    await page.getByRole("button", { name: "New agency" }).click();
+    const dialog = page.getByRole("dialog");
+    await dialog.getByLabel("Name").fill("Draft Agency");
+    await dialog.getByLabel("Website").fill("https://draft.example.com");
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
+    await page.getByRole("button", { name: "New agency" }).click();
+    await expect(dialog.getByLabel("Name")).toHaveValue("");
+    await expect(dialog.getByLabel("Website")).toHaveValue("");
   });
 });
 
@@ -224,6 +244,100 @@ test.describe("creating a person", () => {
     expect(await agencies(request, "Left Behind Agency")).toHaveLength(1);
   });
 
+  test("the keyboard's way to + Add makes exactly one, and keeps the dialog open", async ({
+    page,
+    request,
+  }) => {
+    await openPage(page);
+    const dialog = await newPerson(page);
+    await dialog.getByLabel("Name").fill("Keyboard Person");
+    await dialog.getByLabel("Agency").first().fill("Keyboard Agency");
+    await page.getByRole("option", { name: '+ Add "Keyboard Agency"' }).waitFor();
+    await page.keyboard.press("ArrowDown");
+    await page.keyboard.press("Enter");
+    await expect(dialog.getByLabel("Agency").first()).toHaveValue("Keyboard Agency");
+    await expect(dialog).toBeVisible();
+    expect(await agencies(request, "Keyboard Agency")).toHaveLength(1);
+    await addPerson(dialog);
+    const [agency] = await agencies(request, "Keyboard Agency");
+    expect(await person(request, "Keyboard Person")).toMatchObject({ agency_id: agency?.id });
+  });
+
+  // Saving with a name typed but no option chosen mustn't quietly drop the agency.
+  // KNOWN BUG (fix-typed-agency-lost on the roadmap): expected to fail until it is fixed.
+  test.fail("an agency typed but not chosen isn't lost without a word", async ({ page, request }) => {
+    await openPage(page);
+    const dialog = await newPerson(page);
+    await dialog.getByLabel("Name").fill("Typed Person");
+    await dialog.getByLabel("Agency").first().fill("Typed Agency");
+    await dialog.getByRole("button", { name: "Add person", exact: true }).click();
+    await page.waitForTimeout(800); // either outcome below is fine, so nothing to wait on
+    const saved = await people(request, "Typed Person");
+    if (saved.length) expect(saved[0]?.agency_id).not.toBeNull();
+    else await expect(dialog).toBeVisible();
+  });
+
+  // KNOWN BUG (fix-typed-agency-lost on the roadmap): expected to fail until it is fixed.
+  test.fail("Enter in the Agency box doesn't lose the typed agency either", async ({ page, request }) => {
+    await openPage(page);
+    const dialog = await newPerson(page);
+    await dialog.getByLabel("Name").fill("Entered Person");
+    await dialog.getByLabel("Agency").first().fill("Entered Agency");
+    await page.getByRole("option", { name: '+ Add "Entered Agency"' }).waitFor();
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(800);
+    const saved = await people(request, "Entered Person");
+    if (saved.length) expect(saved[0]?.agency_id).not.toBeNull();
+    else await expect(dialog).toBeVisible();
+  });
+
+  test("an existing agency in other capitals is the same one", async ({ page, request }) => {
+    const agency = await create(request, "agencies", { name: "Capital Agency" });
+    await openPage(page);
+    const dialog = await newPerson(page);
+    await dialog.getByLabel("Name").fill("Capital Person");
+    await dialog.getByLabel("Agency").first().fill("CAPITAL agency");
+    await page.getByRole("option", { name: "Capital Agency", exact: true }).click();
+    await expect(page.getByRole("option", { name: /^\+ Add/ })).toHaveCount(0);
+    await addPerson(dialog);
+    expect(await agencies(request, "Capital Agency")).toHaveLength(1);
+    expect(await agencies(request, "CAPITAL agency")).toHaveLength(0);
+    expect(await person(request, "Capital Person")).toMatchObject({ agency_id: agency.id });
+  });
+
+  // KNOWN BUG (fix-duplicate-agency-name on the roadmap): expected to fail until it is fixed.
+  test.fail("an existing agency with a stray inner space isn't offered as new", async ({ page, request }) => {
+    await create(request, "agencies", { name: "Spaced Agency" });
+    await openPage(page);
+    const dialog = await newPerson(page);
+    await dialog.getByLabel("Agency").first().fill("Spaced  Agency");
+    await page.getByRole("option").first().waitFor();
+    await expect(page.getByRole("option", { name: /^\+ Add/ })).toHaveCount(0);
+  });
+
+  // KNOWN BUG (fix-duplicate-agency-name on the roadmap): expected to fail until it is fixed.
+  test.fail(
+    "typing an agency's name before the list has loaded doesn't make a second",
+    async ({ page, request }) => {
+      await create(request, "agencies", { name: "Slow Agency" });
+      const made = await create(request, "contacts", { name: "Slow Person" });
+      await page.route("**/api/v1/agencies", async (route) => {
+        await new Promise((done) => setTimeout(done, 2000));
+        await route.continue();
+      });
+      const dialog = await editFromPage(page, made.id, "Slow Person");
+      await dialog.getByLabel("Agency").first().fill("Slow Agency");
+      const early = page.getByRole("option", { name: '+ Add "Slow Agency"' });
+      // Offered while the list is still loading? Then taking it is what someone would do.
+      await early.waitFor({ timeout: 1000 }).then(
+        () => early.click(),
+        () => undefined,
+      );
+      await page.waitForTimeout(2500); // the list has arrived, and anything made has saved
+      expect(await agencies(request, "Slow Agency")).toHaveLength(1);
+    },
+  );
+
   test("at an existing company", async ({ page, request }) => {
     const company = await create(request, "companies", { name: "People Co" });
     await openPage(page);
@@ -236,9 +350,9 @@ test.describe("creating a person", () => {
       agency_id: null,
     });
     await view(page, "Companies");
-    await expect(page.getByRole("link", { name: "Company Person" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Company Person", exact: true })).toBeVisible();
     await page.goto(`/companies/${company.id}`);
-    await expect(page.getByRole("link", { name: "Company Person" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Company Person", exact: true })).toBeVisible();
   });
 
   test("with a new company made inside the dialog", async ({ page, request }) => {
@@ -319,7 +433,7 @@ test.describe("creating a person", () => {
     request,
     problems,
   }) => {
-    problems.allow(/\/api\/v1\/contacts/);
+    problems.allow(REFUSED);
     await create(request, "contacts", {
       name: "Email Owner",
       details: [{ kind: "email", value: "taken@example.com" }],
@@ -329,9 +443,49 @@ test.describe("creating a person", () => {
     await dialog.getByLabel("Name").fill("Email Copier");
     await dialog.getByLabel("Value").first().fill("taken@example.com");
     await dialog.getByRole("button", { name: "Add person", exact: true }).click();
-    await expect(page.getByText("That didn't work")).toBeVisible();
+    await expect(page.getByText("Email Owner already has taken@example.com")).toBeVisible();
     await expect(dialog.getByLabel("Name")).toHaveValue("Email Copier");
     expect(await people(request, "Email Copier")).toHaveLength(0);
+  });
+
+  for (const [written, kind] of [
+    ["SAME.MAIL@Example.com", "Email"],
+    ["https://www.linkedin.com/in/same-profile/", "LinkedIn"],
+    ["https://linkedin.com/in/same-profile?trk=1", "LinkedIn"],
+  ] as const) {
+    test(`${written} counts as the same as what someone else has`, async ({ page, request, problems }) => {
+      problems.allow(REFUSED);
+      const owner = "Same Owner";
+      if (!(await people(request, owner)).length)
+        await create(request, "contacts", {
+          name: owner,
+          details: [
+            { kind: "email", value: "same.mail@example.com" },
+            { kind: "linkedin", value: "https://www.linkedin.com/in/same-profile" },
+          ],
+        });
+      await openPage(page);
+      const dialog = await newPerson(page);
+      await dialog.getByLabel("Name").fill("Same Copier");
+      await dialog.getByLabel("Kind").first().click();
+      await page.getByRole("option", { name: kind, exact: true }).click();
+      await dialog.getByLabel("Value").first().fill(written);
+      await dialog.getByRole("button", { name: "Add person", exact: true }).click();
+      await expect(page.getByText(`${owner} already has ${written}`)).toBeVisible();
+      expect(await people(request, "Same Copier")).toHaveLength(0);
+    });
+  }
+
+  test("a mistake left in a cancelled form isn't there next time", async ({ page }) => {
+    await openPage(page);
+    let dialog = await newPerson(page);
+    await dialog.getByRole("button", { name: "Add person", exact: true }).click();
+    await expect(dialog.getByText("Who is it?")).toBeVisible();
+    await dialog.getByRole("button", { name: "Cancel" }).click();
+    await expect(dialog).toBeHidden();
+    dialog = await newPerson(page);
+    await expect(dialog.getByLabel("Name")).toBeVisible();
+    await expect(dialog.getByText("Who is it?")).toBeHidden();
   });
 
   test("the same name twice is allowed: they may be two people", async ({ page, request }) => {
@@ -438,6 +592,109 @@ test.describe("editing a person", () => {
     expect(await agencies(request, "Off Agency")).toHaveLength(1);
   });
 
+  test("a recruiter with details and a title, then given an agency, keeps them", async ({
+    page,
+    request,
+  }) => {
+    const made = await create(request, "contacts", {
+      name: "Full Person",
+      title: "Principal",
+      details: [
+        { kind: "email", value: "full@example.com", label: "work" },
+        { kind: "phone", value: "+44 7700 900222" },
+      ],
+    });
+    const agency = await create(request, "agencies", { name: "Full Agency" });
+    const dialog = await editFromPage(page, made.id, "Full Person");
+    await pick(page, dialog, "Agency", "Full Agency");
+    await save(dialog);
+    const saved = await person(request, "Full Person");
+    expect(saved).toMatchObject({ agency_id: agency.id, title: "Principal" });
+    expect(saved.details.map((d) => [d.kind, d.value, d.label])).toEqual([
+      ["email", "full@example.com", "work"],
+      ["phone", "+44 7700 900222", null],
+    ]);
+  });
+
+  test("the X takes the agency off", async ({ page, request }) => {
+    const agency = await create(request, "agencies", { name: "Cross Agency" });
+    const made = await create(request, "contacts", { name: "Cross Person", agency_id: agency.id });
+    const dialog = await editFromPage(page, made.id, "Cross Person");
+    await dialog.locator(".mantine-InputClearButton-root").first().click();
+    await expect(dialog.getByLabel("Agency").first()).toHaveValue("");
+    await save(dialog);
+    expect((await person(request, "Cross Person")).agency_id).toBeNull();
+  });
+
+  // KNOWN BUG (fix-emptied-agency-kept on the roadmap): expected to fail until it is fixed.
+  test.fail("emptying the Agency box takes the agency off", async ({ page, request }) => {
+    const agency = await create(request, "agencies", { name: "Emptied Agency" });
+    const made = await create(request, "contacts", { name: "Emptied Person", agency_id: agency.id });
+    const dialog = await editFromPage(page, made.id, "Emptied Person");
+    await dialog.getByLabel("Agency").first().fill("");
+    await save(dialog);
+    expect((await person(request, "Emptied Person")).agency_id).toBeNull();
+  });
+
+  test("an agency made inside the dialog stays after Cancel, but they aren't at it", async ({
+    page,
+    request,
+  }) => {
+    const made = await create(request, "contacts", { name: "Cancel Inline" });
+    const dialog = await editFromPage(page, made.id, "Cancel Inline");
+    await addInside(page, dialog, "Agency", "Cancel Inline Agency");
+    await dialog.getByRole("button", { name: "Cancel", exact: true }).click();
+    await expect(dialog).toBeHidden();
+    expect((await person(request, "Cancel Inline")).agency_id).toBeNull();
+    expect(await agencies(request, "Cancel Inline Agency")).toHaveLength(1);
+  });
+
+  test("Cancel sends nothing, and the form shows what's saved when reopened", async ({ page, request }) => {
+    const made = await create(request, "contacts", { name: "Cancel Edit" });
+    const dialog = await editFromPage(page, made.id, "Cancel Edit");
+    const sent: string[] = [];
+    page.on("request", (r) => {
+      if (r.method() !== "GET") sent.push(`${r.method()} ${r.url()}`);
+    });
+    await dialog.getByLabel("Name").fill("Cancel Changed");
+    await dialog.getByRole("button", { name: "Cancel", exact: true }).click();
+    await expect(dialog).toBeHidden();
+    await page.getByRole("button", { name: "Edit", exact: true }).click();
+    await expect(dialog.getByLabel("Name")).toHaveValue("Cancel Edit");
+    expect(sent).toEqual([]);
+  });
+
+  // KNOWN BUG (fix-stale-edit-after-save on the roadmap): expected to fail until it is fixed.
+  test.fail(
+    "reopening straight after saving shows the new values, not the old ones",
+    async ({ page, request }) => {
+      const made = await create(request, "contacts", { name: "Stale Edit", title: "Old Title" });
+      const dialog = await editFromPage(page, made.id, "Stale Edit");
+      await page.route("**/contacts/*/summary", async (route) => {
+        await new Promise((done) => setTimeout(done, 1000));
+        await route.continue();
+      });
+      await dialog.getByLabel("Job title").fill("New Title");
+      await save(dialog);
+      await page.getByRole("button", { name: "Edit", exact: true }).click();
+      await expect(dialog.getByLabel("Job title")).toHaveValue("New Title");
+    },
+  );
+
+  test("the pencil on an agency's page moves them away", async ({ page, request }) => {
+    const from = await create(request, "agencies", { name: "Pencil From" });
+    const to = await create(request, "agencies", { name: "Pencil To" });
+    await create(request, "contacts", { name: "Pencil Person", agency_id: from.id });
+    await page.goto(`/agencies/${from.id}`);
+    await page.getByRole("button", { name: "Edit Pencil Person" }).click();
+    const dialog = page.getByRole("dialog");
+    await pick(page, dialog, "Agency", "Pencil To");
+    await save(dialog);
+    await expect(page.getByRole("link", { name: "Pencil Person" })).toBeHidden();
+    await page.goto(`/agencies/${to.id}`);
+    await expect(page.getByRole("link", { name: "Pencil Person" })).toBeVisible();
+  });
+
   test("from an agency to a company", async ({ page, request }) => {
     const agency = await create(request, "agencies", { name: "Switch Agency" });
     const company = await create(request, "companies", { name: "Switch Co" });
@@ -518,7 +775,7 @@ test.describe("editing a person", () => {
   });
 
   test("giving them someone else's email is refused", async ({ page, request, problems }) => {
-    problems.allow(/\/api\/v1\/contacts/);
+    problems.allow(REFUSED);
     await create(request, "contacts", {
       name: "Owner Two",
       details: [{ kind: "email", value: "owned@example.com" }],
@@ -530,7 +787,7 @@ test.describe("editing a person", () => {
     await page.getByRole("option", { name: "Email", exact: true }).click();
     await dialog.getByLabel("Value").first().fill("owned@example.com");
     await dialog.getByRole("button", { name: "Save", exact: true }).click();
-    await expect(page.getByText("That didn't work")).toBeVisible();
+    await expect(page.getByText("Owner Two already has owned@example.com")).toBeVisible();
     await expect(dialog).toBeVisible();
     expect((await person(request, "Copier Two")).details).toHaveLength(0);
   });
@@ -566,22 +823,31 @@ test.describe("finding people", () => {
   test("says when no one matches", async ({ page }) => {
     await openPage(page);
     await page.getByLabel("Search recruiters").fill("no such person anywhere");
+    await expect(page.getByText("No matches.")).toBeVisible();
     await expect(page.getByRole("link", { name: "Alex Morgan" })).toBeHidden();
   });
 });
 
 test.describe("favourites", () => {
   test("starring from the tile files them under Favourites, first in the list", async ({ page, request }) => {
-    const made = await create(request, "contacts", { name: "Aaa Star" });
+    const made = await create(request, "contacts", { name: "Zzz Star" });
     await openPage(page);
-    await page.getByRole("button", { name: "Favourite: Aaa Star" }).click();
-    await expect.poll(async () => (await person(request, "Aaa Star")).favourite).toBe(true);
+    await page.getByRole("button", { name: "Favourite: Zzz Star" }).click();
+    await expect.poll(async () => (await person(request, "Zzz Star")).favourite).toBe(true);
+    const names = page.getByRole("link");
+    await expect
+      .poll(async () => {
+        const all = await names.allTextContents();
+        const at = (name: string) => all.findIndex((text) => text.includes(name));
+        return at("Zzz Star") >= 0 && at("Zzz Star") < at("Alex Morgan");
+      })
+      .toBe(true);
     await view(page, /^Favourites · \d+$/);
-    await expect(page.getByRole("link", { name: "Aaa Star" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Zzz Star" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Sam Patel" })).toBeHidden();
     await page.goto(`/people/${made.id}`);
-    await page.getByRole("button", { name: "Favourite: Aaa Star" }).click();
-    await expect.poll(async () => (await person(request, "Aaa Star")).favourite).toBe(false);
+    await page.getByRole("button", { name: "Favourite: Zzz Star" }).click();
+    await expect.poll(async () => (await person(request, "Zzz Star")).favourite).toBe(false);
   });
 });
 
@@ -678,6 +944,77 @@ test.describe("merging", () => {
     await expect(page.getByRole("link", { name: "Merge Role" })).toBeVisible();
   });
 
+  test("calls, links, to-dos and notes come across, and shared things aren't doubled", async ({
+    page,
+    request,
+  }) => {
+    const keep = await create(request, "contacts", {
+      name: "Moves Keep",
+      details: [{ kind: "phone", value: "+44 7700 900444" }],
+    });
+    const other = await create(request, "contacts", {
+      name: "Moves Other",
+      details: [{ kind: "phone", value: "+44 7700 900444" }],
+    });
+    await create(request, "meetings", {
+      contact_id: other.id,
+      title: "Moved call",
+      starts_at: new Date(Date.now() + 86_400_000).toISOString(),
+    });
+    const about = { entity_type: "contact", entity_id: other.id };
+    await create(request, "links", { ...about, url: "https://moved.example.com/", title: "Moved link" });
+    await create(request, "todos", { ...about, text: "Moved to-do" });
+    await create(request, "notes", { title: "Moved note", links: [`contact:${other.id}`] });
+    const app = await create(request, "applications/quick", {
+      company_name: "Moves Co",
+      role_title: "Moves App",
+      tags: [],
+    });
+    for (const person of [keep, other]) {
+      const added = await request.post(`/api/v1/applications/${app.id}/contacts`, {
+        data: { contact_id: person.id, relation: "hiring_manager" },
+      });
+      expect(added.ok()).toBe(true);
+    }
+    const dialog = await merge(page, keep, "Moves Other");
+    // Made while the dialog is open, so the merge is the first thing to meet it.
+    await create(request, "notes", { title: "Late note", links: [`contact:${other.id}`] });
+    await dialog.getByRole("button", { name: "Merge into Moves Keep" }).click();
+    await expect(dialog).toBeHidden();
+    await page.reload();
+    await expect(page.getByRole("heading", { name: "Moves Keep", level: 2 })).toBeVisible();
+    for (const text of ["Moved call", "Moved link", "Moved to-do", "Moved note", "Late note"])
+      await expect(page.getByText(text).first()).toBeVisible();
+    expect((await person(request, "Moves Keep")).details.map((d) => d.value)).toEqual(["+44 7700 900444"]);
+    const detail = (await (await request.get(`/api/v1/applications/${app.id}`)).json()) as {
+      contacts: { contact_id: string; relation: string }[];
+    };
+    expect(detail.contacts).toEqual([
+      expect.objectContaining({ contact_id: keep.id, relation: "hiring_manager" }),
+    ]);
+  });
+
+  // KNOWN BUG (fix-merge-nudge-old-linkedin on the roadmap): expected to fail until it is fixed.
+  test.fail(
+    "two people with different old-style LinkedIn profiles aren't called the same",
+    async ({ page, request }) => {
+      const keep = await create(request, "contacts", {
+        name: "Pub First",
+        details: [{ kind: "linkedin", value: "https://www.linkedin.com/pub/same-name/1/2/3" }],
+      });
+      await create(request, "contacts", {
+        name: "Pub Second",
+        details: [{ kind: "linkedin", value: "https://www.linkedin.com/pub/same-name/4/5/6" }],
+      });
+      await page.goto(`/people/${keep.id}`);
+      await expect(page.getByRole("heading", { name: "Pub First", level: 2 })).toBeVisible();
+      await page.getByRole("button", { name: "Merge…" }).click();
+      await page.getByRole("dialog").getByPlaceholder("Choose a person").click();
+      await expect(page.getByRole("option", { name: /^Pub Second/ })).toBeVisible();
+      await expect(page.getByText("same LinkedIn")).toHaveCount(0);
+    },
+  );
+
   test("the kept person's own fields win", async ({ page, request }) => {
     const agency = await create(request, "agencies", { name: "Win Agency" });
     const otherAgency = await create(request, "agencies", { name: "Lose Agency" });
@@ -736,6 +1073,7 @@ test.describe("deleting a person", () => {
     page.once("dialog", (dialog) => dialog.accept());
     await page.getByRole("button", { name: "Delete", exact: true }).click();
     await expect(page).toHaveURL(/\/recruiters$/);
+    await expect(page.getByRole("link", { name: "Alex Morgan" }).first()).toBeVisible();
     await expect(page.getByRole("link", { name: "Gone Person" })).toBeHidden();
     expect(await people(request, "Gone Person")).toHaveLength(0);
     const detail = (await (await request.get(`/api/v1/applications/${app.id}`)).json()) as {
@@ -758,7 +1096,10 @@ test.describe("a person's page", () => {
       name: "Show Person",
       title: "Lead Consultant",
       agency_id: agency.id,
+      details: [{ kind: "phone", value: "+44 7700 900333" }],
     });
+    const co = await create(request, "companies", { name: "Show Role Co" });
+    await create(request, "roles", { company_id: co.id, title: "Show Role", contact_id: made.id });
     await create(request, "applications/quick", {
       company_name: "Show Co",
       role_title: "Show App",
@@ -772,7 +1113,14 @@ test.describe("a person's page", () => {
     await page.getByRole("link", { name: "Show Agency" }).first().click();
     await expect(page).toHaveURL(/\/agencies\//);
     await page.goBack();
-    await expect(page.getByText("Show App").first()).toBeVisible();
+    await expect(page.getByText("+44 7700 900333")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Show Role" }).first()).toBeVisible();
+    await page
+      .getByRole("link", { name: /Show App/ })
+      .first()
+      .click();
+    await expect(page).toHaveURL(/\/applications\//);
+    await page.goBack();
     await page.getByRole("link", { name: "All people" }).click();
     await expect(page).toHaveURL(/\/recruiters$/);
   });
