@@ -5,6 +5,14 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.2.14 (2026-10-30)
+
+- **Developers:** browser tests for Documents: creating CVs and cover letters, versions with real files, what can't be deleted, what was sent across pages, and CV files becoming versions. Nothing in the app changes (#138).
+
+## 1.2.13 (2026-10-30)
+
+- **Developers:** browser tests for Offers: adding, revising, editing and deleting offers, permanent, contract and fixed term, and comparing them. Nothing in the app changes (#137).
+
 ## 1.2.12 (2026-10-30)
 
 - **Developers:** browser tests for people, second pass: real waits, known-bug tests any fix can satisfy, the Company box, and people moving agency. Nothing in the app changes (#136).
