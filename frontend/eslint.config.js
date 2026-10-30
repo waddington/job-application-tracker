@@ -53,6 +53,11 @@ export default tseslint.config(
     rules: { ...reactHooks.configs.recommended.rules },
   },
   {
+    // Playwright fixtures call their callback `use`, which isn't React's.
+    files: ["e2e/**"],
+    rules: { "react-hooks/rules-of-hooks": "off" },
+  },
+  {
     files: TRANSLATED,
     plugins: { i18next },
     rules: {

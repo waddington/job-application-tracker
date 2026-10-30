@@ -459,3 +459,6 @@ vite.config.ts.timestamp-*
 
 # Turbo Repo
 .turbo
+
+# Playwright (browser tests)
+frontend/test-results/

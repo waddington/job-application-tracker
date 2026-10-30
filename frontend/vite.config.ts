@@ -52,6 +52,7 @@ export default defineConfig({
   build: { outDir: "dist", sourcemap: true },
   test: {
     environment: "jsdom",
+    include: ["src/**/*.test.{ts,tsx}"], // e2e/ is Playwright's
     setupFiles: ["./src/test/setup.ts"],
     css: false,
   },
