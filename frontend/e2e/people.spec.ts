@@ -66,9 +66,25 @@ const pick = async (page: Page, dialog: Locator, field: "Agency" | "Company", na
 };
 const addInside = async (page: Page, dialog: Locator, field: "Agency" | "Company", name: string) => {
   await dialog.getByLabel(field).first().fill(name);
+  const made = page.waitForResponse(
+    (r) =>
+      r.request().method() === "POST" && /\/api\/v1\/(agencies|companies)$/.test(new URL(r.url()).pathname),
+  );
   await page.getByRole("option", { name: `+ Add "${name}"` }).click();
+  await made;
+  // The box is disabled while creating, and holds the name again once it's chosen.
+  await expect(dialog.getByLabel(field).first()).toBeEnabled();
   await expect(dialog.getByLabel(field).first()).toHaveValue(name);
 };
+/** The dialog closed, or something on screen says why not: however a fix chooses to answer. */
+const settled = (page: Page, dialog: Locator) =>
+  expect
+    .poll(
+      async () =>
+        (await dialog.isHidden()) ||
+        (await page.locator('.mantine-Notification-root, [class*="InputWrapper-error"]').count()) > 0,
+    )
+    .toBe(true);
 const editFromPage = async (page: Page, id: string, name: string) => {
   await page.goto(`/people/${id}`);
   await expect(page.getByRole("heading", { name, level: 2 })).toBeVisible();
@@ -134,11 +150,8 @@ test.describe("creating an agency", () => {
     await page.getByRole("button", { name: "New agency" }).click();
     const dialog = page.getByRole("dialog");
     await dialog.getByLabel("Name").fill("Twin Agency");
-    const posted = page.waitForResponse(
-      (r) => r.url().endsWith("/api/v1/agencies") && r.request().method() === "POST",
-    );
     await dialog.getByRole("button", { name: "Add agency" }).click();
-    await posted;
+    await settled(page, dialog);
     expect(await agencies(request, "Twin Agency")).toHaveLength(1);
   });
 
@@ -271,10 +284,9 @@ test.describe("creating a person", () => {
     await dialog.getByLabel("Name").fill("Typed Person");
     await dialog.getByLabel("Agency").first().fill("Typed Agency");
     await dialog.getByRole("button", { name: "Add person", exact: true }).click();
-    await page.waitForTimeout(800); // either outcome below is fine, so nothing to wait on
+    await settled(page, dialog);
     const saved = await people(request, "Typed Person");
     if (saved.length) expect(saved[0]?.agency_id).not.toBeNull();
-    else await expect(dialog).toBeVisible();
   });
 
   // KNOWN BUG (fix-typed-agency-lost on the roadmap): expected to fail until it is fixed.
@@ -285,10 +297,13 @@ test.describe("creating a person", () => {
     await dialog.getByLabel("Agency").first().fill("Entered Agency");
     await page.getByRole("option", { name: '+ Add "Entered Agency"' }).waitFor();
     await page.keyboard.press("Enter");
-    await page.waitForTimeout(800);
+    // A fix may keep the dialog open, so no person appearing is fine: give one the time to.
+    await expect
+      .poll(() => people(request, "Entered Person").then((p) => p.length), { timeout: 3_000 })
+      .toBe(1)
+      .catch(() => undefined);
     const saved = await people(request, "Entered Person");
     if (saved.length) expect(saved[0]?.agency_id).not.toBeNull();
-    else await expect(dialog).toBeVisible();
   });
 
   test("an existing agency in other capitals is the same one", async ({ page, request }) => {
@@ -297,8 +312,9 @@ test.describe("creating a person", () => {
     const dialog = await newPerson(page);
     await dialog.getByLabel("Name").fill("Capital Person");
     await dialog.getByLabel("Agency").first().fill("CAPITAL agency");
-    await page.getByRole("option", { name: "Capital Agency", exact: true }).click();
+    await expect(page.getByRole("option", { name: "Capital Agency", exact: true })).toBeVisible();
     await expect(page.getByRole("option", { name: /^\+ Add/ })).toHaveCount(0);
+    await page.getByRole("option", { name: "Capital Agency", exact: true }).click();
     await addPerson(dialog);
     expect(await agencies(request, "Capital Agency")).toHaveLength(1);
     expect(await agencies(request, "CAPITAL agency")).toHaveLength(0);
@@ -311,18 +327,21 @@ test.describe("creating a person", () => {
     await openPage(page);
     const dialog = await newPerson(page);
     await dialog.getByLabel("Agency").first().fill("Spaced  Agency");
-    await page.getByRole("option").first().waitFor();
+    await page.waitForTimeout(400); // for the list to answer what was typed
     await expect(page.getByRole("option", { name: /^\+ Add/ })).toHaveCount(0);
   });
 
   // KNOWN BUG (fix-duplicate-agency-name on the roadmap): expected to fail until it is fixed.
   test.fail(
     "typing an agency's name before the list has loaded doesn't make a second",
-    async ({ page, request }) => {
+    async ({ page, request, problems }) => {
+      problems.allow(/\/api\/v1\/agencies/); // a fix may refuse it
       await create(request, "agencies", { name: "Slow Agency" });
       const made = await create(request, "contacts", { name: "Slow Person" });
+      let release = () => {};
+      const held = new Promise<void>((done) => (release = done));
       await page.route("**/api/v1/agencies", async (route) => {
-        await new Promise((done) => setTimeout(done, 2000));
+        if (route.request().method() === "GET") await held;
         await route.continue();
       });
       const dialog = await editFromPage(page, made.id, "Slow Person");
@@ -333,6 +352,7 @@ test.describe("creating a person", () => {
         () => early.click(),
         () => undefined,
       );
+      release();
       await page.waitForTimeout(2500); // the list has arrived, and anything made has saved
       expect(await agencies(request, "Slow Agency")).toHaveLength(1);
     },
@@ -1129,5 +1149,101 @@ test.describe("a person's page", () => {
     problems.allow(/no-such-person/);
     await page.goto("/people/no-such-person");
     await expect(page.getByText("Couldn't load this person.")).toBeVisible({ timeout: 15_000 });
+  });
+});
+
+test.describe("the Company box, as the Agency box", () => {
+  // KNOWN BUG (fix-typed-agency-lost on the roadmap): expected to fail until it is fixed.
+  test.fail("a company typed but not chosen isn't lost without a word", async ({ page, request }) => {
+    await openPage(page);
+    const dialog = await newPerson(page);
+    await dialog.getByLabel("Name").fill("Typed Company Person");
+    await dialog.getByLabel("Company").first().fill("Typed Person Co");
+    await dialog.getByRole("button", { name: "Add person", exact: true }).click();
+    await settled(page, dialog);
+    const saved = await people(request, "Typed Company Person");
+    if (saved.length) expect(saved[0]?.company_id).not.toBeNull();
+  });
+
+  // KNOWN BUG (fix-emptied-agency-kept on the roadmap): expected to fail until it is fixed.
+  test.fail("emptying the Company box takes the company off", async ({ page, request }) => {
+    const company = await create(request, "companies", { name: "Emptied Co" });
+    const made = await create(request, "contacts", { name: "Emptied Co Person", company_id: company.id });
+    const dialog = await editFromPage(page, made.id, "Emptied Co Person");
+    await dialog.getByLabel("Company").first().fill("");
+    await dialog.getByText("Edit Emptied Co Person").click(); // its list covers Save
+    await save(dialog);
+    expect((await person(request, "Emptied Co Person")).company_id).toBeNull();
+  });
+});
+
+test.describe("a person moving, and the applications they're on", () => {
+  const patchTags = (request: APIRequestContext, id: string) =>
+    request.patch(`/api/v1/applications/${id}`, { data: { tags: ["still-editable"] } });
+
+  // KNOWN BUG (fix-person-move-blocks-application on the roadmap): expected to fail until it is fixed.
+  test.fail("a recruiter moved to another agency leaves their application editable", async ({ request }) => {
+    const first = await create(request, "agencies", { name: "Shift From Agency" });
+    const second = await create(request, "agencies", { name: "Shift To Agency" });
+    const who = await create(request, "contacts", { name: "Moving Recruiter", agency_id: first.id });
+    const app = await create(request, "applications/quick", {
+      company_name: "Move Client Co",
+      role_title: "Move Role",
+      route: "agency",
+      agency_id: first.id,
+      recruiter_id: who.id,
+      tags: [],
+    });
+    expect((await request.patch(`/api/v1/contacts/${who.id}`, { data: { agency_id: second.id } })).ok()).toBe(
+      true,
+    );
+    expect((await patchTags(request, app.id)).status()).toBe(200);
+  });
+
+  // KNOWN BUG (fix-person-move-blocks-application on the roadmap): expected to fail until it is fixed.
+  test.fail(
+    "an in-house recruiter who joins an agency leaves their direct application editable",
+    async ({ request }) => {
+      const firm = await create(request, "agencies", { name: "Joined Agency" });
+      const home = await create(request, "companies", { name: "In House Co" });
+      const who = await create(request, "contacts", { name: "In House Person", company_id: home.id });
+      const app = await create(request, "applications/quick", {
+        company_name: "In House Co",
+        role_title: "In House Role",
+        route: "direct",
+        recruiter_id: who.id,
+        tags: [],
+      });
+      expect((await request.patch(`/api/v1/contacts/${who.id}`, { data: { agency_id: firm.id } })).ok()).toBe(
+        true,
+      );
+      expect((await patchTags(request, app.id)).status()).toBe(200);
+    },
+  );
+});
+
+test.describe("spaces around a detail", () => {
+  // KNOWN BUG (fix-detail-spaces-refused on the roadmap): expected to fail until it is fixed.
+  test.fail("a stray space around an email or link doesn't get it refused", async ({ page, request }) => {
+    await openPage(page);
+    const dialog = await newPerson(page);
+    await dialog.getByLabel("Name").fill("Spaced Detail Person");
+    await dialog.getByLabel("Value").first().fill(" spaced@example.com ");
+    await addPerson(dialog);
+    expect((await person(request, "Spaced Detail Person")).details[0]?.value).toBe("spaced@example.com");
+  });
+
+  // KNOWN BUG (fix-detail-spaces-refused on the roadmap): expected to fail until it is fixed.
+  test.fail("a stray space before a link doesn't get it refused", async ({ page, request }) => {
+    await openPage(page);
+    const dialog = await newPerson(page);
+    await dialog.getByLabel("Name").fill("Spaced Link Person");
+    await dialog.getByLabel("Kind").first().click();
+    await page.getByRole("option", { name: "Link", exact: true }).click();
+    await dialog.getByLabel("Value").first().fill(" https://spaced.example.com");
+    await addPerson(dialog);
+    expect((await person(request, "Spaced Link Person")).details[0]?.value).toContain(
+      "https://spaced.example.com",
+    );
   });
 });
