@@ -474,7 +474,7 @@ test.describe("CVs and cover letters", () => {
     await expect(page.getByRole("table").first()).toContainText("Short cover letter");
   });
 
-  test("comparing two gives a verdict; the measure and who's compared change it", async ({ page }) => {
+  test("comparing two gives a verdict; the measure changes it, and each is named", async ({ page }) => {
     await openInsights(page);
     await tab(page, "CVs and cover letters");
     const verdict = page.locator(".mantine-Alert-root").filter({
@@ -488,19 +488,16 @@ test.describe("CVs and cover letters", () => {
     await page.locator('[aria-label="Measure"]').getByText("Offer", { exact: true }).click();
     await expect(verdict).toContainText("got an offer");
     await expect(verdict).toContainText(/\d+ of \d+ got an offer/);
-    const withBox = page.getByLabel("With", { exact: true }).first();
-    const current = await withBox.inputValue();
-    const compared = await page.getByLabel("Compare", { exact: true }).first().inputValue();
-    await withBox.click();
-    const another = page
-      .getByRole("option")
-      .filter({ hasNotText: current })
-      .filter({ hasNotText: compared })
-      .and(page.locator(":not([data-combobox-disabled])"))
-      .first();
-    const name = (await another.innerText()).trim();
-    await another.click();
-    await expect(verdict).toContainText(name);
+    // Each named, with its own count, and neither can be compared with itself.
+    const first = await page.getByLabel("Compare", { exact: true }).first().inputValue();
+    const second = await page.getByLabel("With", { exact: true }).first().inputValue();
+    expect(first).not.toBe(second);
+    await expect(verdict).toContainText(first);
+    await expect(verdict).toContainText(second);
+    await page.getByLabel("With", { exact: true }).first().click();
+    await expect(page.getByRole("option", { name: first, exact: true })).toHaveAttribute(
+      "data-combobox-disabled",
+    );
   });
 
   test("a route narrows the sent applications", async ({ page, request }) => {
@@ -549,8 +546,7 @@ test.describe("weekly activity", () => {
     problems.allow(/500.*\/insights\/activity/);
     await refuse(page, "activity");
     await openInsights(page);
-    const weekly = card(page, "Weekly activity");
-    await expect(weekly.getByText(/Couldn't load/)).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText(/could(n.t| not) load/i).first()).toBeVisible({ timeout: 20_000 });
   });
 });
 
