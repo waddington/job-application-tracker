@@ -121,6 +121,7 @@ test.describe("filtering", () => {
     const alpine = all.find((a: { company_name: string }) => a.company_name === "Alpine Ski House");
     await request.patch(`/api/v1/applications/${alpine.id}`, { data: { archived: true } });
     await page.reload();
+    await expect(row(page, ...CONTOSO)).toBeVisible();
     await expect(row(page, "Site Reliability Engineer", "Alpine Ski House")).toBeHidden();
     await page.getByLabel("Archived").check({ force: true });
     await expect(row(page, "Site Reliability Engineer", "Alpine Ski House")).toBeVisible();
@@ -176,9 +177,22 @@ test.describe("sorting", () => {
       .toBe(ascending(await days()).join());
   });
 
-  test("by stage, in the workflow's order", async ({ page }) => {
+  test("by stage, in the workflow's order", async ({ page, request }) => {
+    const workflow = await (await request.get("/api/v1/workflow")).json();
+    const order: string[] = workflow.stages.map((stage: { name: string }) => stage.name.toLowerCase());
     await page.getByRole("button", { name: "Stage", exact: true }).click();
-    await expect.poll(async () => (await companies(page)).at(0)).toBe("Northwind Traders"); // Interested
+    const positions = async () => {
+      const badges = await page
+        .locator("tbody tr td:nth-child(3) .mantine-Badge-root:first-child")
+        .allInnerTexts();
+      return badges.map((badge) => order.indexOf(badge.toLowerCase()));
+    };
+    await expect
+      .poll(async () => {
+        const at = await positions();
+        return at.join() === [...at].sort((a, b) => a - b).join() && at.length > 3;
+      })
+      .toBe(true);
   });
 });
 
@@ -228,6 +242,10 @@ test.describe("the quick view", () => {
     await drawer.getByPlaceholder("What happened?").fill("Rang about next steps");
     await drawer.getByRole("button", { name: "Log call" }).click();
     await expect(drawer.getByText("Rang about next steps")).toBeVisible();
+    await page.reload();
+    await row(page, ...CONTOSO).click();
+    await expect(page.getByRole("dialog").getByText("Rang about next steps")).toBeVisible();
+    await expect(row(page, ...CONTOSO)).toContainText("today");
   });
 });
 
@@ -307,6 +325,10 @@ test.describe("New application", () => {
     await expect(page.getByText("Application added")).toBeVisible();
     await expect(page.getByText("Platform Lead at Humongous Insurance")).toBeVisible();
 
+    const roles = await (await request.get("/api/v1/roles")).json();
+    expect(roles.find((r: { title: string }) => r.title === "Platform Lead").url).toBe(
+      "https://jobs.example.com/platform-lead",
+    );
     const all = await (await request.get("/api/v1/applications")).json();
     const added = all.find((a: { role_title: string }) => a.role_title === "Platform Lead");
     expect(added).toMatchObject({
@@ -343,7 +365,9 @@ test.describe("New application, each way of naming who's involved", () => {
   const list = async <T>(request: APIRequestContext, path: string): Promise<T[]> =>
     (await request.get(`/api/v1/${path}`)).json();
   const named = async (request: APIRequestContext, path: string, name: string) =>
-    (await list<{ name: string }>(request, path)).filter((x) => x.name.toLowerCase() === name.toLowerCase());
+    (await list<{ id: string; name: string; agency_id?: string; company_id?: string }>(request, path)).filter(
+      (x) => x.name.toLowerCase() === name.toLowerCase(),
+    );
   const saved = async (request: APIRequestContext, role: string) =>
     (await list<{ role_title: string }>(request, "applications")).find((a) => a.role_title === role);
   const add = async (page: Page, company: string, role: string) => {
@@ -384,9 +408,10 @@ test.describe("New application, each way of naming who's involved", () => {
       route: "direct",
       recruiter_name: "Dana Inhouse",
     });
-    const [person] = await named(request, "contacts", "Dana Inhouse");
+    const people = await named(request, "contacts", "Dana Inhouse");
     const [company] = await named(request, "companies", "Perm Inhouse Ltd");
-    expect(person).toMatchObject({ company_id: (company as unknown as { id: string }).id, agency_id: null });
+    expect(people).toHaveLength(1);
+    expect(people[0]).toMatchObject({ company_id: company?.id, agency_id: null });
   });
 
   test("through a new agency with no person", async ({ page, request }) => {
@@ -412,7 +437,9 @@ test.describe("New application, each way of naming who's involved", () => {
       agency_name: null,
       recruiter_name: "Robin Solo",
     });
-    expect((await named(request, "contacts", "Robin Solo"))[0]).toMatchObject({ agency_id: null });
+    const people = await named(request, "contacts", "Robin Solo");
+    expect(people).toHaveLength(1);
+    expect(people[0]).toMatchObject({ agency_id: null });
   });
 
   test("through an existing agency, with a new recruiter who joins it", async ({ page, request }) => {
@@ -423,8 +450,12 @@ test.describe("New application, each way of naming who's involved", () => {
     await submit(page, dialog, "Perm New Recruiter", "Perm New Recruiter Ltd");
     expect(await named(request, "agencies", "Northwind Talent")).toHaveLength(1);
     const [agency] = await named(request, "agencies", "Northwind Talent");
-    expect((await named(request, "contacts", "Quinn Newhire"))[0]).toMatchObject({
-      agency_id: (agency as unknown as { id: string }).id,
+    const people = await named(request, "contacts", "Quinn Newhire");
+    expect(people).toHaveLength(1);
+    expect(people[0]).toMatchObject({ agency_id: agency?.id });
+    expect(await saved(request, "Perm New Recruiter")).toMatchObject({
+      agency_name: "Northwind Talent",
+      recruiter_name: "Quinn Newhire",
     });
   });
 
@@ -471,11 +502,297 @@ test.describe("New application, each way of naming who's involved", () => {
     await page.goto("/companies");
     await expect(page.getByLabel("Open Perm Everywhere Ltd")).toBeVisible();
     await page.goto("/recruiters");
-    await expect(page.getByRole("link", { name: "Sky Everywhere" }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: "Sky Everywhere" })).toHaveCount(1);
     await expect(page.getByRole("link", { name: "Perm Everywhere Agency" }).first()).toBeVisible();
     await page.goto("/roles");
     await page.locator(".mantine-SegmentedControl-root").getByText("All", { exact: true }).click();
     await expect(page.getByRole("link", { name: "Perm Everywhere", exact: true })).toBeVisible();
+  });
+});
+
+test.describe("New application, with people who already exist", () => {
+  interface Named {
+    id: string;
+    name: string;
+    agency_id?: string | null;
+    company_id?: string | null;
+  }
+  const all = async (request: APIRequestContext, path: string): Promise<Named[]> =>
+    (await request.get(`/api/v1/${path}`)).json();
+  const count = async (request: APIRequestContext, path: string, name: string) =>
+    (await all(request, path)).filter((x) => x.name.toLowerCase() === name.toLowerCase());
+  const create = async (request: APIRequestContext, path: string, data: object): Promise<Named> => {
+    const made = await request.post(`/api/v1/${path}`, { data });
+    expect(made.ok()).toBe(true);
+    return made.json();
+  };
+  const saved = async (request: APIRequestContext, role: string) =>
+    ((await (await request.get("/api/v1/applications")).json()) as { role_title: string }[]).find(
+      (a) => a.role_title === role,
+    );
+  const start = async (page: Page, company: string, role: string, through = false) => {
+    await page.reload(); // so the form's lists include what the test just made through the API
+    await page.getByRole("banner").getByRole("button", { name: "New application" }).click();
+    const dialog = page.getByRole("dialog");
+    await dialog.getByLabel("Company").fill(company);
+    await dialog.getByLabel("Role", { exact: true }).fill(role);
+    if (through) await dialog.getByText("Through a recruiter").click();
+    return dialog;
+  };
+  const submit = async (page: Page, dialog: Locator, role: string) => {
+    await dialog.getByRole("button", { name: "Add application" }).click();
+    await expect(page.getByText("Application added")).toBeVisible();
+    await expect(page.getByRole("heading", { name: role })).toBeVisible();
+  };
+
+  test("existing company, agency and recruiter: nothing is added twice", async ({ page, request }) => {
+    const company = await create(request, "companies", { name: "Reuse Co" });
+    const agency = await create(request, "agencies", { name: "Reuse Agency" });
+    await create(request, "contacts", { name: "Reuse Person", agency_id: agency.id });
+    const dialog = await start(page, "Reuse Co", "Reuse All", true);
+    await dialog.getByLabel("Agency").fill("Reuse Agency");
+    await dialog.getByLabel("Recruiter", { exact: true }).fill("Reuse Person");
+    await submit(page, dialog, "Reuse All");
+    expect((await count(request, "companies", "Reuse Co")).map((c) => c.id)).toEqual([company.id]);
+    expect((await count(request, "agencies", "Reuse Agency")).map((a) => a.id)).toEqual([agency.id]);
+    expect(await count(request, "contacts", "Reuse Person")).toHaveLength(1);
+    expect(await saved(request, "Reuse All")).toMatchObject({
+      agency_name: "Reuse Agency",
+      recruiter_name: "Reuse Person",
+    });
+  });
+
+  test("existing company with a new agency and recruiter", async ({ page, request }) => {
+    await create(request, "companies", { name: "Half Co" });
+    const dialog = await start(page, "Half Co", "Half New", true);
+    await dialog.getByLabel("Agency").fill("Half Agency");
+    await dialog.getByLabel("Recruiter", { exact: true }).fill("Half Person");
+    await submit(page, dialog, "Half New");
+    expect(await count(request, "companies", "Half Co")).toHaveLength(1);
+    expect(await count(request, "agencies", "Half Agency")).toHaveLength(1);
+    expect(await count(request, "contacts", "Half Person")).toHaveLength(1);
+  });
+
+  test("names in other capitals and with stray spaces aren't added twice", async ({ page, request }) => {
+    await create(request, "companies", { name: "Caps Co" });
+    const agency = await create(request, "agencies", { name: "Caps Agency" });
+    await create(request, "contacts", { name: "Caps Person", agency_id: agency.id });
+    const dialog = await start(page, "  caps co ", "Caps Test", true);
+    await dialog.getByLabel("Agency").fill(" CAPS agency");
+    await dialog.getByLabel("Recruiter", { exact: true }).fill("caps PERSON ");
+    await submit(page, dialog, "Caps Test");
+    expect(await count(request, "companies", "Caps Co")).toHaveLength(1);
+    expect(await count(request, "agencies", "Caps Agency")).toHaveLength(1);
+    expect(await count(request, "contacts", "Caps Person")).toHaveLength(1);
+  });
+
+  test("an existing in-house person at the company is reused", async ({ page, request }) => {
+    const company = await create(request, "companies", { name: "Inhouse Co" });
+    await create(request, "contacts", { name: "Inhouse Person", company_id: company.id });
+    const dialog = await start(page, "Inhouse Co", "Inhouse Reuse");
+    await dialog.getByLabel("Who reached out? (optional)").fill("Inhouse Person");
+    await expect(dialog.getByText("New person at the company")).toBeHidden();
+    await submit(page, dialog, "Inhouse Reuse");
+    expect(await count(request, "contacts", "Inhouse Person")).toHaveLength(1);
+  });
+
+  test("the same in-house name at another company is a new person", async ({ page, request }) => {
+    const company = await create(request, "companies", { name: "First Co" });
+    await create(request, "contacts", { name: "Shared Name", company_id: company.id });
+    const dialog = await start(page, "Second Co", "Shared Name Role");
+    await dialog.getByLabel("Who reached out? (optional)").fill("Shared Name");
+    await expect(dialog.getByText("New person at the company")).toBeVisible();
+    await submit(page, dialog, "Shared Name Role");
+    expect(await count(request, "contacts", "Shared Name")).toHaveLength(2);
+  });
+
+  test("an existing recruiter named alone brings their agency", async ({ page, request }) => {
+    const agency = await create(request, "agencies", { name: "Alone Agency" });
+    await create(request, "contacts", { name: "Alone Person", agency_id: agency.id });
+    const dialog = await start(page, "Alone Co", "Alone Test", true);
+    await dialog.getByLabel("Recruiter", { exact: true }).fill("Alone Person");
+    await submit(page, dialog, "Alone Test");
+    expect(await count(request, "contacts", "Alone Person")).toHaveLength(1);
+    expect(await saved(request, "Alone Test")).toMatchObject({
+      agency_name: "Alone Agency",
+      recruiter_name: "Alone Person",
+    });
+  });
+
+  // What happens today, pinned so a change is noticed: a person belongs to one agency, so the same
+  // name at another agency is taken to be someone else.
+  test("a recruiter's name under another agency makes a second person", async ({ page, request }) => {
+    const agency = await create(request, "agencies", { name: "Home Agency" });
+    await create(request, "agencies", { name: "Other Agency" });
+    await create(request, "contacts", { name: "Moving Person", agency_id: agency.id });
+    const dialog = await start(page, "Moving Co", "Moving Test", true);
+    await dialog.getByLabel("Agency").fill("Other Agency");
+    await dialog.getByLabel("Recruiter", { exact: true }).fill("Moving Person");
+    await submit(page, dialog, "Moving Test");
+    expect(await count(request, "contacts", "Moving Person")).toHaveLength(2);
+    expect(await saved(request, "Moving Test")).toMatchObject({ agency_name: "Other Agency" });
+  });
+
+  test("two applications in a row reuse what the first created, without a reload", async ({
+    page,
+    request,
+  }) => {
+    let dialog = await start(page, "Row Co", "Row First", true);
+    await dialog.getByLabel("Agency").fill("Row Agency");
+    await dialog.getByLabel("Recruiter", { exact: true }).fill("Row Person");
+    await submit(page, dialog, "Row First");
+    await page.getByRole("banner").getByRole("button", { name: "New application" }).click();
+    dialog = page.getByRole("dialog");
+    await dialog.getByLabel("Company").fill("Row Co");
+    await dialog.getByLabel("Role", { exact: true }).fill("Row Second");
+    await dialog.getByText("Through a recruiter").click();
+    await dialog.getByLabel("Agency").fill("Row Agency");
+    await dialog.getByLabel("Recruiter", { exact: true }).fill("Row Person");
+    await submit(page, dialog, "Row Second");
+    expect(await count(request, "companies", "Row Co")).toHaveLength(1);
+    expect(await count(request, "agencies", "Row Agency")).toHaveLength(1);
+    expect(await count(request, "contacts", "Row Person")).toHaveLength(1);
+  });
+
+  test("the same job again, past the warning, is a second application on one role", async ({
+    page,
+    request,
+  }) => {
+    const dialog = await start(page, "Again Co", "Again Role");
+    await submit(page, dialog, "Again Role");
+    const next = await start(page, "Again Co", "Again Role");
+    await expect(next.getByText("You may have applied for this already")).toBeVisible();
+    await submit(page, next, "Again Role");
+    const apps = (await (await request.get("/api/v1/applications")).json()) as { role_title: string }[];
+    expect(apps.filter((a) => a.role_title === "Again Role")).toHaveLength(2);
+    const roles = (await (await request.get("/api/v1/roles")).json()) as { title: string }[];
+    expect(roles.filter((r) => r.title === "Again Role")).toHaveLength(1);
+  });
+
+  test("switching to Directly drops the agency, and the person becomes in-house", async ({
+    page,
+    request,
+  }) => {
+    const dialog = await start(page, "Switch Co", "Switch Test", true);
+    await dialog.getByLabel("Agency").fill("Switch Dropped Agency");
+    await dialog.getByLabel("Recruiter", { exact: true }).fill("Switch Person");
+    await dialog.getByRole("radiogroup").getByText("Directly", { exact: true }).click();
+    await submit(page, dialog, "Switch Test");
+    expect(await saved(request, "Switch Test")).toMatchObject({ route: "direct", agency_name: null });
+    expect(await count(request, "agencies", "Switch Dropped Agency")).toHaveLength(0);
+    const [company] = await count(request, "companies", "Switch Co");
+    expect((await count(request, "contacts", "Switch Person"))[0]).toMatchObject({
+      company_id: company?.id,
+      agency_id: null,
+    });
+  });
+
+  test("picking from the lists works, and recruiters narrow to the agency", async ({ page, request }) => {
+    const chosen = await create(request, "agencies", { name: "Pick Agency" });
+    const other = await create(request, "agencies", { name: "Unpicked Agency" });
+    await create(request, "contacts", { name: "Pick Person", agency_id: chosen.id });
+    await create(request, "contacts", { name: "Unpicked Person", agency_id: other.id });
+    await create(request, "companies", { name: "Pick Co" });
+    await page.reload();
+    await page.getByRole("banner").getByRole("button", { name: "New application" }).click();
+    const dialog = page.getByRole("dialog");
+    await dialog.getByLabel("Company").click();
+    await page.getByRole("option", { name: "Pick Co", exact: true }).click();
+    await dialog.getByLabel("Role", { exact: true }).fill("Pick Test");
+    await dialog.getByText("Through a recruiter").click();
+    await dialog.getByLabel("Agency").click();
+    await page.getByRole("option", { name: "Pick Agency", exact: true }).click();
+    await dialog.getByLabel("Recruiter", { exact: true }).click();
+    await expect(page.getByRole("option", { name: "Unpicked Person", exact: true })).toBeHidden();
+    await page.getByRole("option", { name: "Pick Person", exact: true }).click();
+    await submit(page, dialog, "Pick Test");
+    expect(await saved(request, "Pick Test")).toMatchObject({
+      company_name: "Pick Co",
+      agency_name: "Pick Agency",
+      recruiter_name: "Pick Person",
+    });
+  });
+
+  test("the stage you pick is the one it starts at", async ({ page, request }) => {
+    const dialog = await start(page, "Stage Co", "Stage Test");
+    await dialog.getByLabel("Stage", { exact: true }).click();
+    await page.getByRole("option", { name: "Applied", exact: true }).click();
+    await submit(page, dialog, "Stage Test");
+    expect(await saved(request, "Stage Test")).toMatchObject({ stage: "applied" });
+  });
+
+  test("a failed save keeps what you typed, and trying again adds one", async ({
+    page,
+    request,
+    problems,
+  }) => {
+    problems.allow(/applications\/quick/);
+    const dialog = await start(page, "Retry Co", "Retry Test");
+    await page.route("**/api/v1/applications/quick", (route) =>
+      route.fulfill({ status: 500, json: { detail: "Server says no" } }),
+    );
+    await dialog.getByRole("button", { name: "Add application" }).click();
+    await expect(page.getByText("That didn't work")).toBeVisible();
+    await expect(dialog.getByLabel("Company")).toHaveValue("Retry Co");
+    await page.unroute("**/api/v1/applications/quick");
+    await submit(page, dialog, "Retry Test");
+    const apps = (await (await request.get("/api/v1/applications")).json()) as { role_title: string }[];
+    expect(apps.filter((a) => a.role_title === "Retry Test")).toHaveLength(1);
+  });
+
+  test("double-clicking Add adds one", async ({ page, request }) => {
+    const dialog = await start(page, "Double Co", "Double Test");
+    await dialog.getByRole("button", { name: "Add application" }).dblclick();
+    await expect(page.getByText("Application added").first()).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Double Test" })).toBeVisible();
+    const apps = (await (await request.get("/api/v1/applications")).json()) as { role_title: string }[];
+    expect(apps.filter((a) => a.role_title === "Double Test")).toHaveLength(1);
+  });
+});
+
+test.describe("after adding one, moving around without reloading", () => {
+  const menu = (page: Page, name: string) =>
+    page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name, exact: true });
+  const addHere = async (page: Page, company: string, role: string) => {
+    await page.getByRole("banner").getByRole("button", { name: "New application" }).click();
+    const dialog = page.getByRole("dialog");
+    await dialog.getByLabel("Company").fill(company);
+    await dialog.getByLabel("Role", { exact: true }).fill(role);
+    await dialog.getByRole("button", { name: "Add application" }).click();
+    await expect(page.getByRole("heading", { name: role })).toBeVisible();
+  };
+
+  test("it's in the list", async ({ page }) => {
+    await addHere(page, "Fresh List Ltd", "Fresh List");
+    await menu(page, "Applications").click();
+    await expect(row(page, "Fresh List", "Fresh List Ltd")).toBeVisible();
+  });
+
+  test("Today's numbers go up", async ({ page }) => {
+    await menu(page, "Today").click();
+    const active = page.getByText(/^\d+ active$/);
+    await expect(active).toBeVisible();
+    const before = Number.parseInt(await active.innerText(), 10);
+    await addHere(page, "Fresh Today Ltd", "Fresh Today");
+    await menu(page, "Today").click();
+    await expect(page.getByText(`${before + 1} active`)).toBeVisible();
+  });
+
+  test("the company's page lists it", async ({ page }) => {
+    await menu(page, "Companies").click();
+    await page.getByLabel("Open Litware").click();
+    await expect(page.getByRole("heading", { name: "Litware" }).first()).toBeVisible();
+    await addHere(page, "Litware", "Fresh Company Role");
+    await page.getByRole("link", { name: "Litware" }).first().click();
+    await expect(page.getByText("Fresh Company Role").first()).toBeVisible();
+  });
+
+  test("the Timeline shows it", async ({ page }) => {
+    await menu(page, "Timeline").click();
+    await expect(page.getByRole("heading", { name: "Timeline", level: 2 })).toBeVisible();
+    await addHere(page, "Fresh Timeline Ltd", "Fresh Timeline");
+    await menu(page, "Timeline").click();
+    await expect(page.getByText(/Fresh Timeline/).first()).toBeVisible();
   });
 });
 
