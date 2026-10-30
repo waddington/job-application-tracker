@@ -5,6 +5,13 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.2.3 (2026-10-30)
+
+- **Developers:** browser tests. `pnpm --dir frontend e2e` opens the real app in Chrome on
+  throwaway demo data and uses it; any browser error fails the test. This first step covers
+  starting up, every page in the menu and adding an application, and more areas follow. See
+  *Checks* in `CONTRIBUTING.md`. Nothing in the app changes (#123).
+
 ## 1.2.2 (2026-10-30)
 
 - Translations, step six: **Roles** now read their text from the translation files. It's still

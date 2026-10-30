@@ -74,7 +74,25 @@ pnpm --dir frontend typecheck
 pnpm --dir frontend lint
 pnpm --dir frontend test
 pnpm --dir frontend format:check
+pnpm --dir frontend e2e
 ```
+
+**Browser tests** (`frontend/e2e/`, [Playwright](https://playwright.dev/)) open the real app in
+the Chrome on your machine and use it, so they need Chrome installed and nothing downloaded.
+`pnpm --dir frontend e2e` builds the frontend, then runs them.
+To watch them, build first (`pnpm --dir frontend build`), then run
+`pnpm --dir frontend exec playwright test --ui`; add a file's name to run just that one.
+
+- Each test file gets its own server on fresh demo data (`scripts/seed_demo.py`) in a temp
+  folder, and checks that's the server answering before any test runs. Tests in a file share its
+  data, so don't rely on an exact count or on what another test left behind.
+- Use relative addresses (`page.goto("/roles")`), so a test can only reach that server.
+- Each test gets a fresh browser context, with nothing kept in localStorage.
+- A console error, an uncaught exception or a failed request fails the test. A test that
+  provokes one on purpose says so with `problems.allow(/…/)`.
+- Import `test` and `expect` from `./fixtures`, not from Playwright. Find things the way a person
+  does: `getByRole`, `getByLabel`, `getByText`.
+- Run them before changing a dependency's version, and add to them when you add to the app.
 
 If you change an API route or schema, regenerate the OpenAPI spec and the frontend's types,
 and commit both (`tests/test_openapi.py` fails if they drift):

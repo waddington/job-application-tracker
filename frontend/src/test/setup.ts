@@ -1,12 +1,16 @@
 import "@testing-library/jest-dom/vitest";
 
-import { cleanup } from "@testing-library/react";
+import { cleanup, configure } from "@testing-library/react";
 
 // Every component under test reads its text through the app's i18n instance (English).
 import "../i18n";
 import { afterEach } from "vitest";
 
 afterEach(() => cleanup());
+
+// findBy… and waitFor give up after a second by default: too tight when every file runs at once
+// on a busy machine, and a different test failed each time.
+configure({ asyncUtilTimeout: 5000 });
 
 // jsdom lacks these browser APIs, which Mantine uses.
 Object.defineProperty(window, "matchMedia", {

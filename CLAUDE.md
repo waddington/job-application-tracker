@@ -117,7 +117,7 @@ PR.** PRs that only touch internal planning files (`docs/ROADMAP.yaml`, `docs/CO
 - Run the app: `pnpm --dir frontend install && pnpm --dir frontend build`, then
   `uv run jat serve` (http://127.0.0.1:8770; API docs at `/api/docs`). Development:
   `uv run jat serve --dev` plus `pnpm --dir frontend dev` (http://127.0.0.1:5173, which proxies `/api`).
-- Frontend checks (run in `frontend/`): `pnpm typecheck`, `pnpm lint`, `pnpm test`,
+- Frontend checks (run in `frontend/`): `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm e2e` (browser tests),
   `pnpm format:check`. TypeScript is pinned to 5.9 (typescript-eslint doesn't support TS 7 yet).
 - **Node >= 22.12** (`.nvmrc` says `22`; Node 22.23.3 is installed in nvm, alongside Kai's
   22.5.1). Vite 8's native rolldown binary needs it, and `engine-strict` makes pnpm fail
