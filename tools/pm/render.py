@@ -36,7 +36,7 @@ main{padding:16px;max-width:1400px;margin:0 auto}
 ul.plain{list-style:none;margin:0;padding:0}ul.plain li{padding:6px 0;border-top:1px solid var(--line)}
 ul.plain li:first-child{border-top:0}
 .muted{color:var(--muted)}.small{font-size:12px}code{font-size:12px}
-.board{display:grid;gap:12px;grid-template-columns:repeat(6,minmax(200px,1fr));overflow-x:auto}
+.board{display:grid;gap:12px;grid-template-columns:repeat(6,minmax(180px,1fr));overflow-x:auto}
 .col h2{display:flex;justify-content:space-between}
 .card{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--planned);
 border-radius:6px;padding:8px 10px;margin-bottom:8px}
@@ -108,12 +108,13 @@ def task_links(roadmap: Roadmap, task: Task) -> str:
 
 
 def task_line(roadmap: Roadmap, task: Task, show_status: bool = True) -> str:
-    status = pill(task.status) + " " if show_status else ""
+    # A bug not started shows its tag instead of a second "bug" pill.
+    status = pill(task.status) + " " if show_status and task.status != "bug" else ""
     links = task_links(roadmap, task)
     owner = ' <span class="pill blocked">Kai</span>' if task.owner == "kai" else ""
     detail = f'<br><span class="small">{escape(task.detail)}</span>' if task.detail else ""
-    return (f'<li>{status}{bug_tag(task) if task.status != "bug" else ""}<b>{escape(task.name)}</b>{owner}{detail}<br>'
-            f'<span class="small muted"><code>{escape(task.id)}</code> · {task.phase} · {task.estimate_h:g} h'
+    return (f'<li>{status}{bug_tag(task)}<b>{escape(task.name)}</b>{owner}{detail}<br>'
+            f'<span class="small muted"><code>{escape(task.id)}</code> · {escape(task.phase)} · {task.estimate_h:g} h'
             f'{" · " + links if links else ""}</span></li>')
 
 
@@ -199,7 +200,7 @@ def board(roadmap: Roadmap, snapshot: Snapshot, phase: str | None = None) -> str
             cards.append(
                 f'<div class="card {status}">{bug_tag(t)}<b>{escape(t.name)}</b>'
                 f'{f"<div class=small>{escape(t.detail)}</div>" if t.detail else ""}'
-                f'<div class="small muted"><code>{escape(t.id)}</code> · {t.phase} · {t.estimate_h:g} h'
+                f'<div class="small muted"><code>{escape(t.id)}</code> · {escape(t.phase)} · {t.estimate_h:g} h'
                 f'{" · Kai" if t.owner == "kai" else ""}</div>{extra}'
                 f'{f"<div class=small>{links}</div>" if links else ""}</div>'
             )

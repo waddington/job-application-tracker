@@ -205,7 +205,7 @@ def _task(raw, phase_id: str, errors: list[str]) -> Task | None:
         status=status,
         type=kind,
         severity=str(severity) if severity is not None else None,
-        detail=raw.get("detail"),
+        detail=str(raw["detail"]) if raw.get("detail") is not None else None,
         estimate_h=estimate,
         depends=[str(d) for d in depends],
         prd=raw.get("prd"),

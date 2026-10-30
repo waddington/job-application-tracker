@@ -176,13 +176,16 @@ the call, note the assumption in the PR, and keep going.
 Every real bug found, however it's found (tests, a review, trying the app, or in passing while
 doing something else), goes on the roadmap straight away, like an issue in Jira:
 - **Where:** phase `B` in `docs/ROADMAP.yaml`, with `type: bug`, `severity: high | medium | low`, an
-  id named `fix-<what>` and what happens and how it was found in `name`. It then shows in the PM
-  dashboard's Bugs column, the backlog and Open bugs. A fix on `worktree-<id>` moves it along the
-  board like any task, keeping its BUG tag.
+  id named `fix-<what>`, a short `name`, what happens and how it was found in `detail`, `owner` and
+  `estimate_h`. It then shows in the PM dashboard's Bugs column, the Bugs phase of the Roadmap and
+  Open bugs on the Overview. A fix on `worktree-<id>` moves it along the board like any task,
+  keeping its BUG tag. A bug that comes back after a merged fix gets a new id.
 - **Record it even if you're not fixing it now,** and even when you're sure it's small. Say so to
   Kai in the same message. Don't record what's only suspected: check it first, then record it.
 - **A fix that changes behaviour or text needs Kai's go-ahead,** unless a standing instruction
   covers it. A test that shows the bug can land before the fix, marked `test.fail`.
+- **Bugs aren't picked up by "next up":** raise them with Kai, and start one when he says go or a
+  standing instruction covers it.
 
 ### When the roadmap runs out
 The roadmap has run out when every task is `done` or `blocked` on Kai. Then, without waiting

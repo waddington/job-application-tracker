@@ -145,6 +145,7 @@ class BugTests(unittest.TestCase):
     def test_the_home_page_lists_open_bugs(self):
         html = render.overview(self.roadmap(), Snapshot(live=Live()))
         self.assertIn("Open bugs · 2", html)
+        self.assertIn("BUG · high", html)
         self.assertIn("Bad bug", html)
         self.assertLess(html.index("Bad bug"), html.index("Small bug"))
 
