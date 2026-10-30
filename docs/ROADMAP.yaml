@@ -4,11 +4,13 @@
 # and lists, one-line scalars, [flow, lists] and one-line {flow: mappings}. No anchors and no
 # multi-line strings.
 #
-# status: planned | building | review | done | blocked
+# status: bug | planned | building | review | done | blocked
 #   A task whose branch (worktree-<id>) or PR exists takes its LIVE status from git and
 #   GitHub: building while the branch has commits but no PR, review while the PR is open,
 #   done once merged. The status written here is the fallback when there's no live evidence.
 # owner: lead (Claude) or kai (waiting on Kai).
+# type: bug marks a bug (phase B, with severity: high | medium | low): it starts in the bug status
+#   and keeps its BUG tag as a fix moves it along. Every bug found goes here (CLAUDE.md).
 # estimate_h: agent hours.
 # prd / rfc: optional repo-relative paths.
 
@@ -87,6 +89,11 @@ phases:
       - {id: search, name: "Full-text search across notes and entities", owner: lead, status: done, estimate_h: 3, depends: [notes], prd: docs/prd/tracker.md}
       - {id: readme-refresh-4, name: "README and llms.txt refresh: extras, install guide, v1 release notes", owner: lead, status: done, estimate_h: 1, depends: [offers, backup-export, search]}
 
+  - id: B
+    name: Bugs
+    goal: Real bugs found in the app, recorded when found and fixed with Kai's go-ahead when they change behaviour
+    tasks:
+      - {id: fix-applied-date-wipe, type: bug, severity: high, name: "Moving an application to Applied, then saving Details, wipes the applied date. The move fills it in on the server, but the form keeps its old empty value, so it looks unsaved and Save sends the empty value back. Found by e2e/application-page.spec.ts, whose two test.fail tests come off with the fix", owner: kai, estimate_h: 1, prd: docs/prd/tracker.md}
   - id: P9
     name: Automated browser tests
     goal: A browser suite that opens the app and really uses it, page by page, so dependency changes can be tested before they land
