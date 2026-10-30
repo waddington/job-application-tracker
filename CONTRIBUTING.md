@@ -80,12 +80,14 @@ pnpm --dir frontend e2e
 **Browser tests** (`frontend/e2e/`, [Playwright](https://playwright.dev/)) open the real app in
 the Chrome on your machine and use it, so they need Chrome installed and nothing downloaded.
 `pnpm --dir frontend e2e` builds the frontend, then runs them.
-`pnpm --dir frontend exec playwright test --ui` shows them running; add a file's name to run
-just that one.
+To watch them, build first (`pnpm --dir frontend build`), then run
+`pnpm --dir frontend exec playwright test --ui`; add a file's name to run just that one.
 
 - Each test file gets its own server on fresh demo data (`scripts/seed_demo.py`) in a temp
-  folder, so a test can change anything. It can't reach a real data folder.
-- Each test gets a fresh browser, with nothing kept in localStorage.
+  folder, and checks that's the server answering before any test runs. Tests in a file share its
+  data, so don't rely on an exact count or on what another test left behind.
+- Use relative addresses (`page.goto("/roles")`), so a test can only reach that server.
+- Each test gets a fresh browser context, with nothing kept in localStorage.
 - A console error, an uncaught exception or a failed request fails the test. A test that
   provokes one on purpose says so with `problems.allow(/…/)`.
 - Import `test` and `expect` from `./fixtures`, not from Playwright. Find things the way a person

@@ -40,44 +40,51 @@ test("adds an application, which is still there after a reload", async ({ page }
   await dialog.getByLabel("Company").fill("Trey Research");
   await dialog.getByLabel("Role", { exact: true }).fill("Staff Engineer");
   await dialog.getByRole("button", { name: "Add application" }).click();
-  await expect(page.getByRole("heading", { name: "Staff Engineer" })).toBeVisible();
   await expect(page.getByText("Application added")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Staff Engineer" })).toBeVisible();
   await page.reload();
   await expect(page.getByRole("heading", { name: "Staff Engineer" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Trey Research" }).first()).toBeVisible();
 });
 
 test.describe("the safety net itself", () => {
-  // These must fail: if they pass, the suite isn't catching what it says it catches.
-  test.fail("a console error fails the test", async ({ page }) => {
+  test("sees a console error", async ({ page, problems }) => {
+    problems.allow(/something broke/);
     await page.goto("/");
     await page.evaluate(() => console.error("something broke"));
+    await expect.poll(() => problems.list()).toContainEqual(expect.stringContaining("something broke"));
   });
 
-  test.fail("an uncaught exception fails the test", async ({ page }) => {
+  test("sees an uncaught exception", async ({ page, problems }) => {
+    problems.allow(/something broke/);
     await page.goto("/");
     await page.evaluate(() =>
       setTimeout(() => {
         throw new Error("something broke");
       }),
     );
-    await page.waitForTimeout(100);
+    await expect.poll(() => problems.list()).toContainEqual(expect.stringContaining("something broke"));
   });
 
-  test.fail("a failed request fails the test", async ({ page }) => {
-    await page.goto("/");
-    await page.evaluate(() => fetch("/api/v1/applications/no-such-id"));
-  });
-
-  test("an expected problem can be allowed", async ({ page, problems }) => {
+  test("sees a failed request", async ({ page, problems }) => {
     problems.allow(/no-such-id/);
     await page.goto("/");
     await page.evaluate(() => fetch("/api/v1/applications/no-such-id"));
+    await expect.poll(() => problems.list()).toContainEqual(expect.stringContaining("HTTP 404"));
   });
 
-  test("runs on demo data, not a real data folder", async ({ page, baseURL }) => {
+  // Must fail: if this passes, problems aren't failing tests.
+  test.fail("a problem nobody allowed fails the test", async ({ page }) => {
+    await page.goto("/");
+    await page.evaluate(() => console.error("something broke"));
+  });
+
+  test("runs on its own demo server, not the tracker", async ({ page, baseURL, request }) => {
     expect(baseURL).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/);
-    expect(new URL(baseURL ?? "").port).not.toBe("8770"); // the tracker's own port
+    expect(new URL(baseURL ?? "").port).not.toBe("8770");
+    const health = await (await request.get("/api/v1/health")).json();
+    expect(health.data_dir).toContain("jat-e2e-");
+    expect(health.git_repo).toBe(false);
     await page.goto("/applications?view=list");
     await expect(page.getByLabel("Open Senior Backend Engineer at Contoso")).toBeVisible();
   });

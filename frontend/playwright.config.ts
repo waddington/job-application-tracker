@@ -6,7 +6,7 @@ export default defineConfig({
   testDir: "./e2e",
   outputDir: "./test-results",
   fullyParallel: false, // tests in a file share its server; files run side by side
-  forbidOnly: true,
+  forbidOnly: !!process.env.CI,
   retries: 0,
   reporter: [["list"]],
   timeout: 30_000,
