@@ -62,9 +62,7 @@ const pickRoute = async (page: Page, within: Locator, name: string) => {
   await within.getByLabel("Route", { exact: true }).first().click();
   await page.getByRole("option", { name, exact: true }).click();
 };
-const flowAnswer = (page: Page, path: "flow" | "whole-flow" | "stats" | "conversations" | "scorecard") =>
-  page.waitForResponse((r) => new URL(r.url()).pathname.endsWith(`/${path}`) && r.ok());
-/** Fails one Insights request, and says so to the fixture. */
+/** Fails one Insights request. */
 const refuse = async (page: Page, path: string) => {
   await page.route(new RegExp(`/insights/${path}(\\?|$)`), (route) =>
     route.fulfill({ status: 500, json: { detail: "Failed for the test" } }),
@@ -93,20 +91,25 @@ test.describe("the whole picture", () => {
       await expect(
         chart(page)
           .locator("rect title")
-          .filter({ hasText: `${node.name}: ` })
-          .first(),
-      ).toContainText(plural(node.reached, "role"));
+          .filter({ hasText: new RegExp(`^${node.name}: `) }),
+      ).toHaveText(`${node.name}: ${plural(node.reached, "role")}`);
     }
   });
 
-  test("a new role passed on or deciding is counted", async ({ page, request }) => {
+  test("a new role is counted, whether deciding or passed on", async ({ page, request }) => {
     const before = (await getJson<Flow>(request, "insights/whole-flow")).applications;
     const at = await post<{ id: string }>(request, "companies", { name: "Whole Picture Co" });
     await post(request, "roles", { company_id: at.id, title: "Whole Picture Role" });
+    await post(request, "roles", {
+      company_id: at.id,
+      title: "Whole Picture Passed",
+      decision: "passed",
+      decision_reason: "Made up reason",
+    });
     await openInsights(page);
     await expect(chart(page)).toHaveAttribute(
       "aria-label",
-      new RegExp(`^Sankey diagram of ${plural(before + 1, "role")},`),
+      new RegExp(`^Sankey diagram of ${plural(before + 2, "role")},`),
     );
   });
 
@@ -154,29 +157,31 @@ test.describe("the Sankey chart", () => {
     await expect(idle).toBeVisible();
   });
 
-  test("a flow's title gives its share of where it came from", async ({ page, request }) => {
+  test("a flow's title gives its share, and hovering it shows that", async ({ page, request }) => {
     const flow = await getJson<Flow>(request, "insights/flow");
     await openFlow(page);
     const [link] = flow.links;
     const from = flow.nodes.find((n) => n.id === link?.source);
     const to = flow.nodes.find((n) => n.id === link?.target);
     const share = Math.round((100 * (link?.value ?? 0)) / (from?.reached ?? 1));
-    await expect(
-      chart(page)
-        .locator("path title")
-        .filter({ hasText: `${from?.name} → ${to?.name}: ` }),
-    ).toHaveText(
-      `${from?.name} → ${to?.name}: ${plural(link?.value ?? 0, "application")} (${share}% of ${from?.name})`,
-    );
+    const words = `${from?.name} → ${to?.name}: ${plural(link?.value ?? 0, "application")} (${share}% of ${from?.name})`;
+    const path = chart(page)
+      .locator("path")
+      .filter({ has: page.locator("title", { hasText: `${from?.name} → ${to?.name}: ` }) });
+    await expect(path.locator("title")).toHaveText(words);
+    await path.dispatchEvent("mouseover");
+    await expect(page.locator("p", { hasText: words })).toBeVisible();
   });
 
   test("on a phone it scrolls by itself, and the page doesn't", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 800 });
     await openFlow(page);
-    const overflow = await page.evaluate(
-      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
-    );
-    expect(overflow).toBeLessThanOrEqual(1);
+    await expect(page.getByRole("heading", { name: "Stage by stage" })).toBeVisible();
+    await expect
+      .poll(() =>
+        page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth),
+      )
+      .toBeLessThanOrEqual(1);
     const box = await chart(page).boundingBox();
     expect(box?.width).toBeGreaterThan(390);
   });
@@ -188,7 +193,9 @@ test.describe("Applications", () => {
     const stats = await getJson<Stats>(request, "insights/stats");
     await openInsights(page);
     await tab(page, "Applications");
-    await expect(page.getByText(`${plural(flow.applications, "application")} by the date`)).toBeVisible();
+    await expect(
+      page.getByText(new RegExp(`^${plural(flow.applications, "application")} by the date`)),
+    ).toBeVisible();
     const stages = card(page, "Stage by stage");
     for (const stage of stats.stages.filter((s) => s.reached > 0)) {
       await expect(
@@ -212,30 +219,48 @@ test.describe("Applications", () => {
     await openInsights(page);
     await tab(page, "Applications");
     const flowCard = card(page, "Where applications go");
-    await expect(flowCard.getByText(`${plural(all.applications, "application")} by the date`)).toBeVisible();
+    const says = (n: number) => flowCard.getByText(new RegExp(`^${plural(n, "application")} by the date`));
+    await expect(says(all.applications)).toBeVisible();
     await pickRoute(page, flowCard, "Via an agency");
-    await expect(
-      flowCard.getByText(`${plural(agency.applications, "application")} by the date`),
-    ).toBeVisible();
+    await expect(says(agency.applications)).toBeVisible();
+    await expect(chart(page).locator("path")).toHaveCount(agency.links.length);
     await pickRoute(page, flowCard, "Any route");
-    await expect(flowCard.getByText(`${plural(all.applications, "application")} by the date`)).toBeVisible();
+    await expect(says(all.applications)).toBeVisible();
   });
 
-  test("a date range changes what's asked for, and what's shown", async ({ page, request }) => {
+  test("a date range is asked of every tab, and what comes back is shown", async ({ page, request }) => {
     const all = await getJson<Flow>(request, "insights/flow");
+    const asked: string[] = [];
+    page.on("request", (r) => {
+      const url = new URL(r.url());
+      if (url.pathname.includes("/insights/") && url.searchParams.has("since"))
+        asked.push(url.pathname.split("/").pop() ?? "");
+    });
+    // Seeded applications are all recent, so the answer for a shorter range is made up.
+    await page.route(/\/insights\/flow\?.*since=/, (route) =>
+      route.fulfill({ json: { applications: 777, nodes: [], links: [] } }),
+    );
     await openInsights(page);
     await tab(page, "Applications");
     const flowCard = card(page, "Where applications go");
-    await expect(flowCard.getByText(`${plural(all.applications, "application")} by the date`)).toBeVisible();
-    const answer = flowAnswer(page, "flow");
+    await expect(
+      flowCard.getByText(new RegExp(`^${plural(all.applications, "application")} by the date`)),
+    ).toBeVisible();
     await range(page, "Last 30 days");
-    const got = await answer;
-    const since = new URL(got.url()).searchParams.get("since");
-    expect(Math.abs(Date.parse(since ?? "") - (Date.now() - 30 * 86_400_000))).toBeLessThan(60_000);
-    const inRange = ((await got.json()) as Flow).applications;
-    await expect(flowCard.getByText(`${plural(inRange, "application")} by the date`)).toBeVisible();
+    await expect(flowCard.getByText(/^777 applications by the date/)).toBeVisible();
+    await tab(page, "The whole picture");
+    await tab(page, "Recruiter conversations");
+    await tab(page, "CVs and cover letters");
+    await expect
+      .poll(() => asked)
+      .toEqual(
+        expect.arrayContaining(["flow", "stats", "scorecard", "whole-flow", "conversations", "documents"]),
+      );
     await range(page, "All time");
-    await expect(flowCard.getByText(`${plural(all.applications, "application")} by the date`)).toBeVisible();
+    await tab(page, "Applications");
+    await expect(
+      flowCard.getByText(new RegExp(`^${plural(all.applications, "application")} by the date`)),
+    ).toBeVisible();
   });
 
   test("nothing matching says so; nothing moved yet says so", async ({ page }) => {
@@ -263,12 +288,13 @@ test.describe("Applications", () => {
     await expect(page.getByText("Couldn't load the stats.")).toBeVisible({ timeout: 20_000 });
   });
 
-  // KNOWN BUG (fix-insights-stale-after-new-application on the roadmap): expected to fail until it is fixed.
-  test.fail("a new application counts, without a reload", async ({ page, request }) => {
+  test("a new application counts, without a reload", async ({ page, request }) => {
+    // The clock stands still, so only a refresh can bring the new number.
+    await page.clock.setFixedTime(new Date());
     const before = (await getJson<Flow>(request, "insights/flow")).applications;
     await openInsights(page);
     await tab(page, "Applications");
-    await expect(page.getByText(`${plural(before, "application")} by the date`)).toBeVisible();
+    await expect(page.getByText(new RegExp(`^${plural(before, "application")} by the date`))).toBeVisible();
     await page.getByRole("button", { name: "New application" }).first().click();
     const dialog = theDialog(page);
     await dialog.getByLabel("Company").fill("Counted Now Co");
@@ -281,7 +307,11 @@ test.describe("Applications", () => {
       .getByRole("link", { name: "Insights", exact: true })
       .click();
     await tab(page, "Applications");
-    await expect(page.getByText(`${plural(before + 1, "application")} by the date`)).toBeVisible();
+    // KNOWN BUG (fix-insights-stale-after-new-application on the roadmap): expected to fail until it is fixed.
+    test.fail();
+    await expect(
+      page.getByText(new RegExp(`^${plural(before + 1, "application")} by the date`)),
+    ).toBeVisible();
   });
 });
 
@@ -307,7 +337,7 @@ test.describe("the scorecard", () => {
     const score = card(page, "Recruiter scorecard");
     const person = score.getByRole("row").filter({ hasText: "Scored Recruiter" });
     await expect(person.getByRole("cell").nth(1)).toHaveText("2");
-    await expect(person.getByRole("cell").nth(2)).toContainText("0");
+    await expect(person.getByRole("cell").nth(2)).toHaveText(/^0\b/);
     await expect(person.getByText("2 active")).toBeVisible();
     await expect(person.getByRole("link", { name: "Scored Agency" })).toHaveAttribute(
       "href",
@@ -339,7 +369,10 @@ test.describe("the scorecard", () => {
 });
 
 test.describe("Recruiter conversations", () => {
-  test("counts what happened, and a call held since shows", async ({ page, request }) => {
+  test("the numbers, the person's row, why you passed and the chart agree with the API", async ({
+    page,
+    request,
+  }) => {
     const who = await post<{ id: string }>(request, "contacts", { name: "Talked To Person" });
     const call = await post<{ id: string }>(request, "meetings", {
       contact_id: who.id,
@@ -356,15 +389,41 @@ test.describe("Recruiter conversations", () => {
       decision_reason: "Too far to travel",
     });
     await post(request, "roles", { company_id: at.id, title: "Pitched Still Open", contact_id: who.id });
+    const data = await getJson<{
+      total: { calls_held: number; pitched: number; applied: number; passed: number; deciding: number };
+      people_talked_to: number;
+      flow: Flow;
+      people: {
+        id: string;
+        name: string;
+        calls_held: number;
+        pitched: number;
+        passed: number;
+        deciding: number;
+      }[];
+    }>(request, "insights/conversations");
+    expect(data.people.find((p) => p.id === who.id)).toMatchObject({
+      calls_held: 1,
+      pitched: 2,
+      passed: 1,
+      deciding: 1,
+    });
     await openInsights(page);
     await tab(page, "Recruiter conversations");
+    await expect(page.getByText("Calls held", { exact: true }).first()).toBeVisible();
+    const statValue = (label: string) =>
+      page.getByText(label, { exact: true }).first().locator("xpath=following-sibling::*[1]");
+    await expect(statValue("Roles pitched")).toHaveText(String(data.total.pitched));
+    await expect(statValue("Passed")).toHaveText(String(data.total.passed));
+    await expect(statValue("Still deciding")).toHaveText(String(data.total.deciding));
     const people = card(page, "Who you talk to");
-    await expect(people.getByRole("link", { name: "Talked To Person" })).toBeVisible();
+    const row = people.getByRole("row").filter({ has: page.getByRole("link", { name: "Talked To Person" }) });
+    await expect(row).toBeVisible();
     const reasons = card(page, "Why you passed");
     await expect(reasons.getByRole("link", { name: "Pitched And Passed" })).toBeVisible();
     await expect(reasons.getByText(/Too far to travel/)).toBeVisible();
-    await expect(page.getByText("Calls held").first()).toBeVisible();
-    await expect(page.getByText("Still deciding").first()).toBeVisible();
+    await expect(chart(page).locator("path")).toHaveCount(data.flow.links.length);
+    await expect(chart(page).locator("rect")).toHaveCount(data.flow.nodes.length);
   });
 
   test("by people and by agency", async ({ page, request }) => {
@@ -397,38 +456,71 @@ test.describe("Recruiter conversations", () => {
 });
 
 test.describe("CVs and cover letters", () => {
-  test("shows which works best, by kind and measure", async ({ page }) => {
+  test("shows which works best, kind by kind, with the API's numbers", async ({ page, request }) => {
+    const data = await getJson<{ kinds: { kind: string; documents: { name: string; sent: number }[] }[] }>(
+      request,
+      "insights/documents",
+    );
+    expect(data.kinds.map((k) => k.kind)).toEqual(["cv", "cover_letter"]);
     await openInsights(page);
     await tab(page, "CVs and cover letters");
     await expect(page.getByRole("heading", { name: "Which CV works best" })).toBeVisible();
+    await expect(page.getByRole("table").first()).toContainText("Backend CV");
     await page
       .locator('[aria-label="Kind of document"]')
       .getByText(/^Cover letter/)
       .click();
     await expect(page.getByRole("heading", { name: "Which cover letter works best" })).toBeVisible();
+    await expect(page.getByRole("table").first()).toContainText("Short cover letter");
   });
 
-  test("comparing two gives a verdict, and a measure can change", async ({ page }) => {
+  test("comparing two gives a verdict; the measure and who's compared change it", async ({ page }) => {
     await openInsights(page);
     await tab(page, "CVs and cover letters");
+    const verdict = page.locator(".mantine-Alert-root").filter({
+      has: page.locator(".mantine-Alert-title", {
+        hasText: /Too few to tell|Could be chance|A hint|Likely real/,
+      }),
+    });
     await expect(page.getByLabel("Compare", { exact: true }).first()).toBeVisible();
-    const measure = page.locator('[aria-label="Measure"]');
-    await measure.getByText("Offer", { exact: true }).click();
-    await expect(page.locator(".mantine-Alert-root").first()).toBeVisible();
-    await expect(page.locator(".mantine-Alert-title").first()).toHaveText(
-      /Too few to tell|Could be chance|A hint|Likely real/,
-    );
+    await page.locator('[aria-label="Measure"]').getByText("Heard back", { exact: true }).click();
+    await expect(verdict).toContainText("heard back");
+    await page.locator('[aria-label="Measure"]').getByText("Offer", { exact: true }).click();
+    await expect(verdict).toContainText("got an offer");
+    await expect(verdict).toContainText(/\d+ of \d+ got an offer/);
+    const withBox = page.getByLabel("With", { exact: true }).first();
+    const current = await withBox.inputValue();
+    const compared = await page.getByLabel("Compare", { exact: true }).first().inputValue();
+    await withBox.click();
+    const another = page
+      .getByRole("option")
+      .filter({ hasNotText: current })
+      .filter({ hasNotText: compared })
+      .and(page.locator(":not([data-combobox-disabled])"))
+      .first();
+    const name = (await another.innerText()).trim();
+    await another.click();
+    await expect(verdict).toContainText(name);
   });
 
   test("a route narrows the sent applications", async ({ page, request }) => {
     const all = await getJson<{ applications: number }>(request, "insights/documents");
     const agency = await getJson<{ applications: number }>(request, "insights/documents?route=agency");
+    expect(agency.applications).toBeLessThan(all.applications);
     await openInsights(page);
     await tab(page, "CVs and cover letters");
     const section = card(page, "Which CV works best");
     await expect(section.getByText(new RegExp(`Your ${all.applications} sent application`))).toBeVisible();
     await pickRoute(page, section, "Via an agency");
     await expect(section.getByText(new RegExp(`Your ${agency.applications} sent application`))).toBeVisible();
+  });
+
+  test("if it can't load, it says so", async ({ page, problems }) => {
+    problems.allow(/500.*\/insights\/documents/);
+    await refuse(page, "documents");
+    await openInsights(page);
+    await tab(page, "CVs and cover letters");
+    await expect(page.getByText("Couldn't load how your CVs are doing.")).toBeVisible({ timeout: 20_000 });
   });
 });
 
@@ -451,19 +543,36 @@ test.describe("weekly activity", () => {
     await page.reload();
     await expect(weeks.last()).toHaveAttribute("aria-label", new RegExp(`\\b${before + 1} added`));
   });
+
+  // KNOWN BUG (fix-weekly-activity-no-error on the roadmap): expected to fail until it is fixed.
+  test.fail("if it can't load, it says so rather than spinning", async ({ page, problems }) => {
+    problems.allow(/500.*\/insights\/activity/);
+    await refuse(page, "activity");
+    await openInsights(page);
+    const weekly = card(page, "Weekly activity");
+    await expect(weekly.getByText(/Couldn't load/)).toBeVisible({ timeout: 20_000 });
+  });
 });
 
 test.describe("seen on other pages", () => {
-  test("a recruiter's new name shows on the scorecard", async ({ page, request }) => {
+  test("a new name for an agency or a recruiter shows on the scorecard", async ({ page, request }) => {
     const firm = await post<{ id: string }>(request, "agencies", { name: "Renamed Score Agency" });
+    const who = await post<{ id: string }>(request, "contacts", {
+      name: "Before Score Person",
+      agency_id: firm.id,
+    });
     await quick(request, "Renamed Score Client", "Renamed Score Role", {
       route: "agency",
       agency_id: firm.id,
+      recruiter_id: who.id,
     });
     await request.patch(`${API}/agencies/${firm.id}`, { data: { name: "After Score Agency" } });
+    await request.patch(`${API}/contacts/${who.id}`, { data: { name: "After Score Person" } });
     await openInsights(page);
     await tab(page, "Applications");
     const score = card(page, "Recruiter scorecard");
+    await expect(score.getByText("After Score Person")).toBeVisible();
+    await expect(score.getByText("Before Score Person")).toBeHidden();
     await score.getByText("Agencies", { exact: true }).click();
     await expect(score.getByRole("link", { name: "After Score Agency" })).toBeVisible();
     await expect(score.getByRole("link", { name: "Renamed Score Agency" })).toBeHidden();
