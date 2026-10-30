@@ -206,20 +206,41 @@ test.describe("adding a role: company", () => {
     expect((await role(request, "Twice Second")).company_name).toBe("Twice Co");
   });
 
-  // What happens today, pinned so a change is noticed: only New application reuses a role with
-  // the same title at the same company (the guide says so); this form adds another.
-  test("the same title at the same company, added here twice, makes two roles", async ({ page, request }) => {
-    await company(request, "Same Co");
+  // KNOWN BUG (fix-duplicate-role on the roadmap): expected to fail until it is fixed. Only New
+  // application reuses a role with the same title at the same company.
+  test.fail(
+    "the same title at the same company, added twice, doesn't make two roles",
+    async ({ page, request, problems }) => {
+      problems.allow(/\/api\/v1\/roles/); // a fix may refuse it
+      await company(request, "Same Co");
+      await openRoles(page);
+      for (let i = 0; i < 2; i++) {
+        const dialog = await addDialog(page);
+        await pickCompany(page, dialog, "Same Co");
+        await titleField(dialog).fill("Same Role");
+        const posted = page.waitForResponse(
+          (r) => r.url().endsWith("/api/v1/roles") && r.request().method() === "POST",
+        );
+        await submit(dialog);
+        await posted;
+        await page.keyboard.press("Escape");
+        await expect(dialog).toBeHidden();
+      }
+      const all = await api.list<Role>(request, "role-summaries");
+      expect(all.filter((r) => r.title === "Same Role")).toHaveLength(1);
+    },
+  );
+
+  test("a double click on Add role adds one", async ({ page, request }) => {
+    await company(request, "Double Co");
     await openRoles(page);
-    for (let i = 0; i < 2; i++) {
-      const dialog = await addDialog(page);
-      await pickCompany(page, dialog, "Same Co");
-      await titleField(dialog).fill("Same Role");
-      await submit(dialog);
-      await expect(dialog).toBeHidden();
-    }
+    const dialog = await addDialog(page);
+    await pickCompany(page, dialog, "Double Co");
+    await titleField(dialog).fill("Double Role");
+    await dialog.getByRole("button", { name: "Add role", exact: true }).dblclick();
+    await expect(dialog).toBeHidden();
     const all = await api.list<Role>(request, "role-summaries");
-    expect(all.filter((r) => r.title === "Same Role")).toHaveLength(2);
+    expect(all.filter((r) => r.title === "Double Role")).toHaveLength(1);
   });
 });
 
