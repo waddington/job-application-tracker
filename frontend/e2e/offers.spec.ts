@@ -766,7 +766,7 @@ test.describe("more permutations", () => {
       const app = await application(request, "Loading Offer Co");
       await addOffer(request, app.id, { employment_type: "permanent", salary: 80000 });
       await page.route(`**${API}/offers?*`, async (route) => {
-        await pause(1000);
+        await pause(2500);
         await route.continue();
       });
       await page.goto(`/applications/${app.id}`);
@@ -785,7 +785,10 @@ test.describe("more permutations", () => {
       holiday_days: 1,
     });
     await openApplication(page, app.id);
-    await expect(card(page).getByText(/1 day's holiday/)).toBeVisible();
-    await expect(card(page).getByText(/1 month(?!s)/)).toBeVisible();
+    await expect(card(page).getByText(/\b1 day(?!s)/)).toBeVisible();
+    await expect(card(page).getByText(/\b1 month(?!s)/)).toBeVisible();
+    await openOffers(page);
+    await expect(await cellOf(page, "Singular Co", "Holiday")).toHaveText(/^1 day$/);
+    await expect(await cellOf(page, "Singular Co", "Length")).toHaveText(/^1 month$/);
   });
 });
