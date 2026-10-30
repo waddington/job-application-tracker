@@ -51,6 +51,8 @@ class Task:
     # "bug" for a bug: it starts in the bug status and keeps this as a fix moves it along.
     type: str = "task"
     severity: str | None = None
+    # A longer description: what happens and how it was found. Names stay short.
+    detail: str | None = None
     estimate_h: float = 0.0
     depends: list[str] = field(default_factory=list)
     prd: str | None = None
@@ -203,6 +205,7 @@ def _task(raw, phase_id: str, errors: list[str]) -> Task | None:
         status=status,
         type=kind,
         severity=str(severity) if severity is not None else None,
+        detail=raw.get("detail"),
         estimate_h=estimate,
         depends=[str(d) for d in depends],
         prd=raw.get("prd"),

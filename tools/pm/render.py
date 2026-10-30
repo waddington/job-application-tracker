@@ -111,7 +111,8 @@ def task_line(roadmap: Roadmap, task: Task, show_status: bool = True) -> str:
     status = pill(task.status) + " " if show_status else ""
     links = task_links(roadmap, task)
     owner = ' <span class="pill blocked">Kai</span>' if task.owner == "kai" else ""
-    return (f'<li>{status}{bug_tag(task) if task.status != "bug" else ""}<b>{escape(task.name)}</b>{owner}<br>'
+    detail = f'<br><span class="small">{escape(task.detail)}</span>' if task.detail else ""
+    return (f'<li>{status}{bug_tag(task) if task.status != "bug" else ""}<b>{escape(task.name)}</b>{owner}{detail}<br>'
             f'<span class="small muted"><code>{escape(task.id)}</code> · {task.phase} · {task.estimate_h:g} h'
             f'{" · " + links if links else ""}</span></li>')
 
@@ -197,6 +198,7 @@ def board(roadmap: Roadmap, snapshot: Snapshot, phase: str | None = None) -> str
             links = task_links(roadmap, t)
             cards.append(
                 f'<div class="card {status}">{bug_tag(t)}<b>{escape(t.name)}</b>'
+                f'{f"<div class=small>{escape(t.detail)}</div>" if t.detail else ""}'
                 f'<div class="small muted"><code>{escape(t.id)}</code> · {t.phase} · {t.estimate_h:g} h'
                 f'{" · Kai" if t.owner == "kai" else ""}</div>{extra}'
                 f'{f"<div class=small>{links}</div>" if links else ""}</div>'
@@ -217,7 +219,8 @@ def roadmap_page(roadmap: Roadmap, snapshot: Snapshot) -> str:
                 f'{"✓ " if (d := roadmap.task(dep)) and d.status == "done" else ""}{escape(dep)}' for dep in t.depends
             ) or "—"
             rows.append(
-                f"<tr><td>{pill(t.status)}</td><td>{bug_tag(t)}<b>{escape(t.name)}</b><br>"
+                f"<tr><td>{pill(t.status)}</td><td>{bug_tag(t)}<b>{escape(t.name)}</b>"
+                f'{f"<br><span class=small>{escape(t.detail)}</span>" if t.detail else ""}<br>'
                 f'<code class="muted">{escape(t.id)}</code></td><td>{t.estimate_h:g} h</td>'
                 f'<td class="small">{deps}</td><td class="small">{escape(t.owner)}</td>'
                 f'<td class="small">{task_links(roadmap, t)}<br>'

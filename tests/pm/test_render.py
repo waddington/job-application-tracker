@@ -123,6 +123,25 @@ class BugTests(unittest.TestCase):
         self.assertLess(html.index('pill bug">bug'), html.index('pill planned">planned'))
         self.assertIn("BUG · high", html)
 
+    def test_details_show_and_are_escaped(self):
+        data = {
+            "project": "demo",
+            "repo": "owner/demo",
+            "phases": [
+                {
+                    "id": "B",
+                    "name": "Bugs",
+                    "goal": "g",
+                    "tasks": [
+                        {"id": "d", "name": "Short", "type": "bug", "severity": "low", "detail": "<b>Longer</b>"}
+                    ],
+                }
+            ],
+        }
+        roadmap = apply_live(from_data(data), Live())
+        for html in (render.board(roadmap, Snapshot(live=Live())), render.roadmap_page(roadmap, Snapshot(live=Live()))):
+            self.assertIn("&lt;b&gt;Longer&lt;/b&gt;", html)
+
     def test_the_home_page_lists_open_bugs(self):
         html = render.overview(self.roadmap(), Snapshot(live=Live()))
         self.assertIn("Open bugs · 2", html)

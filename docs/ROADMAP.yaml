@@ -93,7 +93,17 @@ phases:
     name: Bugs
     goal: Real bugs found in the app, recorded when found and fixed with Kai's go-ahead when they change behaviour
     tasks:
-      - {id: fix-applied-date-wipe, type: bug, severity: high, name: "Moving an application to Applied, then saving Details, wipes the applied date. The move fills it in on the server, but the form keeps its old empty value, so it looks unsaved and Save sends the empty value back. Found by e2e/application-page.spec.ts, whose two test.fail tests come off with the fix", owner: kai, estimate_h: 1, prd: docs/prd/tracker.md}
+      - {id: fix-applied-date-wipe, type: bug, severity: high, name: "Saving Details after moving to Applied wipes the applied date", detail: "The move fills the date in on the server, but the form keeps its old empty value, so it looks unsaved and Save sends the empty value back. Found by e2e/application-page.spec.ts, whose two test.fail tests come off with the fix.", owner: kai, estimate_h: 1, prd: docs/prd/tracker.md}
+  - id: P10
+    name: PM dashboard
+    goal: The same depth as the hype-pie dashboard (Kai, 2026-10-30), so progress, activity and agents can be seen at a glance
+    tasks:
+      - {id: pm-look, name: "PM dashboard look: the hype-pie layout and tabs, a header showing what's live (git, GitHub, roadmap) and a dark mode", owner: lead, status: planned, estimate_h: 2, depends: [], prd: docs/prd/tracker.md}
+      - {id: pm-overview, name: "PM Overview: a strip of live numbers (phase, whole roadmap, PRs, commits today, lines, tests), phases with progress bars and dates, a pipeline of tasks from building to merged, and Happening now (commits and PRs as they land)", owner: lead, status: planned, estimate_h: 3, depends: [pm-look], prd: docs/prd/tracker.md}
+      - {id: pm-roadmap-timeline, name: "PM Roadmap: a timeline of phases and milestones with a line for today, a burn-up of tasks merged vs plan vs scope, and a phase status table", owner: lead, status: planned, estimate_h: 3, depends: [pm-look], prd: docs/prd/tracker.md}
+      - {id: pm-activity, name: "PM Activity: commits over time by Conventional Commit type, PR throughput, PR size, and lines and tests by area", owner: lead, status: planned, estimate_h: 3, depends: [pm-look], prd: docs/prd/tracker.md}
+      - {id: pm-agents, name: "PM Agents: the worktrees being worked in, with state, last activity, commits and unsaved changes, and swimlanes of agents over time", owner: lead, status: planned, estimate_h: 3, depends: [pm-look], prd: docs/prd/tracker.md}
+      - {id: pm-task-pages, name: "PM task pages: a page per task with its stage and the evidence for it, branch, PR, ahead and behind, size, lines, tests and last commit", owner: lead, status: planned, estimate_h: 2, depends: [pm-look], prd: docs/prd/tracker.md}
   - id: P9
     name: Automated browser tests
     goal: A browser suite that opens the app and really uses it, page by page, so dependency changes can be tested before they land
