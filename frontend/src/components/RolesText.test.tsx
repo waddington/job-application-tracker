@@ -90,9 +90,9 @@ describe("a role's page", () => {
     expect(await fact("From")).toBe("Riley Chen · on Coffee chat");
   });
 
-  it("names the terms, in the office", async () => {
+  it("names the terms, in office", async () => {
     page({ employment_type: "fixed_term", work_mode: "office" });
-    expect(await fact("Terms")).toBe("Fixed term · In the office");
+    expect(await fact("Terms")).toBe("Fixed term · In office");
   });
 
   it("says when and why you passed", async () => {
@@ -170,7 +170,7 @@ describe("role lines", () => {
       roleSummary({ id: "r2", title: "Platform Engineer", contact_id: "c2", contact_name: "Riley Chen" }),
     ]);
     expect(
-      await screen.findByText("£80k–£95k · office · London · from Alex Morgan (Northwind Talent)"),
+      await screen.findByText("£80k–£95k · in office · London · from Alex Morgan (Northwind Talent)"),
     ).toBeInTheDocument();
     expect(screen.getByText("from Riley Chen")).toBeInTheDocument();
   });

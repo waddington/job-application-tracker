@@ -65,7 +65,7 @@ export default {
     workModes: {
       remote: "remote",
       hybrid: "hybrid",
-      office: "office",
+      office: "in office", // lower case, like the rest of the line
     },
     from: "from {{person}}",
     fromAgency: "from {{person}} ({{agency}})",
@@ -103,7 +103,7 @@ export default {
     workModes: {
       remote: "Remote",
       hybrid: "Hybrid",
-      office: "Office",
+      office: "In office",
     },
     type: "Type",
     types: {
@@ -172,7 +172,7 @@ export default {
     workModes: {
       remote: "Remote",
       hybrid: "Hybrid",
-      office: "In the office",
+      office: "In office",
     },
     types: {
       permanent: "Permanent",

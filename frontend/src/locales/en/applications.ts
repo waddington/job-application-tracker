@@ -162,11 +162,11 @@ export default {
   role: {
     title: "Role",
     jobAd: "Job ad",
-    // How the role is worked (the role's page says "In the office"; this card always said "Office").
+    // How the role is worked: one wording everywhere (Kai: "In office").
     workModes: {
       remote: "Remote",
       hybrid: "Hybrid",
-      office: "Office",
+      office: "In office",
     },
   },
   people: {

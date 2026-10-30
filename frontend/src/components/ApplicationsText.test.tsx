@@ -187,7 +187,7 @@ describe("the application page", () => {
       {},
       { "/api/v1/roles": [{ id: "r1", title: "Backend Engineer", work_mode: "office", url: null }] },
     );
-    expect(await screen.findByText("Office")).toBeInTheDocument();
+    expect(await screen.findByText("In office")).toBeInTheDocument();
   });
 
   it("shows a work mode it doesn't know as it was saved", async () => {

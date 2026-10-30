@@ -13,6 +13,8 @@ Numbers in brackets are pull requests.
     Interested / Pass, and role lines wherever they show (Today, people, companies, calls).
   - **How it was checked:** every page's text, every Roles view and the roles dialogs were
     compared before and after, with no differences (#120).
+- **Working in an office is "In office" everywhere.** It said "Office" when adding a role and on
+  an application, "In the office" on a role's page and "office" in the roles list (#120).
 
 ## 1.2.1 (2026-10-30)
 
