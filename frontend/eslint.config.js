@@ -28,6 +28,14 @@ const TRANSLATED = [
   "src/components/OutcomeNotes.tsx",
   "src/components/HowItWorks.tsx",
   "src/components/AtAGlance.tsx",
+  // i18n-applications
+  "src/pages/ApplicationsPage.tsx",
+  "src/pages/ApplicationPage.tsx",
+  "src/components/ApplicationDrawer.tsx",
+  "src/components/Board.tsx",
+  "src/components/NewApplicationModal.tsx",
+  "src/components/SentDocuments.tsx",
+  "src/components/StageBadge.tsx",
 ];
 
 export default tseslint.config(

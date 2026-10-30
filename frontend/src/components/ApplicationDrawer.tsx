@@ -27,6 +27,7 @@ import {
 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 
 import { PersonMarks } from "./GhostMark";
 import type { ApiEvent, ApplicationDetail } from "../api/client";
@@ -38,6 +39,7 @@ import {
   useUndoMove,
   useWorkflow,
 } from "../api/hooks";
+import { i18n } from "../i18n";
 import { ago, formatDate, formatDateTime } from "../utils/time";
 import { AtAGlance } from "./AtAGlance";
 import { DuplicateWarning } from "./DuplicateWarning";
@@ -57,17 +59,42 @@ function newestFirst(events: ApiEvent[]): ApiEvent[] {
   return [...events].sort((a, b) => b.occurred_at.localeCompare(a.occurred_at));
 }
 
+// An event's kind to its title; a kind not listed shows as it is, capitalised.
+const KIND_TITLES = {
+  call: "applications:timeline.kinds.call",
+  email: "applications:timeline.kinds.email",
+  message: "applications:timeline.kinds.message",
+  note: "applications:timeline.kinds.note",
+  file: "applications:timeline.kinds.file",
+  interview: "applications:timeline.kinds.interview",
+  manual: "applications:timeline.kinds.manual",
+} as const;
+
+const isKnownKind = (kind: string): kind is keyof typeof KIND_TITLES => Object.hasOwn(KIND_TITLES, kind);
+
 function eventTitle(event: ApiEvent, names: Map<string, string>): string {
   if (event.kind === "stage_change") {
-    const to = names.get(event.to_stage ?? "") ?? event.to_stage;
-    if (!event.from_stage) return `Added as ${to}`;
+    const to = names.get(event.to_stage ?? "") ?? event.to_stage ?? "";
+    if (!event.from_stage) return i18n.t("applications:timeline.added", { stage: to });
     const undo = (event.data as { undo_of?: string } | undefined)?.undo_of;
-    return undo ? `Undone: back to ${to}` : `${names.get(event.from_stage) ?? event.from_stage} → ${to}`;
+    return undo
+      ? i18n.t("applications:timeline.undone", { stage: to })
+      : i18n.t("applications:timeline.moved", { from: names.get(event.from_stage) ?? event.from_stage, to });
   }
+  if (isKnownKind(event.kind)) return i18n.t(KIND_TITLES[event.kind]);
   return event.kind.charAt(0).toUpperCase() + event.kind.slice(1);
 }
 
+// The log button names the kind of activity: "Log call".
+const LOG_BUTTON = {
+  call: "log.submit.call",
+  email: "log.submit.email",
+  message: "log.submit.message",
+  note: "log.submit.note",
+} as const;
+
 function LogActivity({ id }: { id: string }) {
+  const { t } = useTranslation("applications");
   const [kind, setKind] = useState<"call" | "email" | "message" | "note">("call");
   const [summary, setSummary] = useState("");
   const log = useLogActivity();
@@ -78,14 +105,14 @@ function LogActivity({ id }: { id: string }) {
         value={kind}
         onChange={(v) => setKind(v as typeof kind)}
         data={[
-          { value: "call", label: "Call" },
-          { value: "email", label: "Email" },
-          { value: "message", label: "Message" },
-          { value: "note", label: "Note" },
+          { value: "call", label: t("log.kinds.call") },
+          { value: "email", label: t("log.kinds.email") },
+          { value: "message", label: t("log.kinds.message") },
+          { value: "note", label: t("log.kinds.note") },
         ]}
       />
       <Textarea
-        placeholder="What happened?"
+        placeholder={t("log.placeholder")}
         autosize
         minRows={2}
         value={summary}
@@ -103,7 +130,7 @@ function LogActivity({ id }: { id: string }) {
             )
           }
         >
-          Log {kind}
+          {t(LOG_BUTTON[kind])}
         </Button>
       </Group>
     </Stack>
@@ -112,6 +139,7 @@ function LogActivity({ id }: { id: string }) {
 
 /** Title, company, badges, move/undo and key facts. Used by the drawer and the full page. */
 export function ApplicationSummary({ app }: { app: ApplicationDetail }) {
+  const { t } = useTranslation("applications");
   const { data: workflow } = useWorkflow();
   const stages = stageLookup(workflow);
   const names = new Map([...stages.values()].map((s) => [s.id, s.name]));
@@ -141,17 +169,17 @@ export function ApplicationSummary({ app }: { app: ApplicationDetail }) {
         <RoundBadge round={app.current_round} stageKind={app.stage_kind} />
         {app.stale && (
           <Badge color="red" variant="light">
-            Needs chasing
+            {t("summary.needsChasing")}
           </Badge>
         )}
-        {app.archived && <Badge variant="outline">Archived</Badge>}
+        {app.archived && <Badge variant="outline">{t("summary.archived")}</Badge>}
         {app.tags.map((t) => (
           <Badge key={t} variant="dot" color="gray">
             {t}
           </Badge>
         ))}
       </Group>
-      <DuplicateWarning duplicates={app.duplicates} title="Also applied for this job" />
+      <DuplicateWarning duplicates={app.duplicates} title={t("summary.alsoApplied")} />
 
       <Group gap="xs">
         <Menu shadow="md" position="bottom-start">
@@ -162,16 +190,16 @@ export function ApplicationSummary({ app }: { app: ApplicationDetail }) {
               disabled={!app.allowed_next.length}
               loading={move.isPending}
             >
-              Move to…
+              {t("summary.moveTo")}
             </Button>
           </Menu.Target>
           <Menu.Dropdown>
-            {usual.length > 0 && others.length > 0 && <Menu.Label>Usual next</Menu.Label>}
+            {usual.length > 0 && others.length > 0 && <Menu.Label>{t("summary.usualNext")}</Menu.Label>}
             {usual.map(moveItem)}
             {usual.length > 0 && others.length > 0 && (
               <>
                 <Menu.Divider />
-                <Menu.Label>Other stages</Menu.Label>
+                <Menu.Label>{t("summary.otherStages")}</Menu.Label>
               </>
             )}
             {others.map(moveItem)}
@@ -185,7 +213,7 @@ export function ApplicationSummary({ app }: { app: ApplicationDetail }) {
           loading={undo.isPending}
           onClick={() => undo.mutate(app.id)}
         >
-          Undo last move
+          {t("summary.undoMove")}
         </Button>
         {app.stage_kind === "active" && (
           <ApplicationWaiting id={app.id} since={app.awaiting_reply_since} toRead={app.reply_to_read_since} />
@@ -193,17 +221,32 @@ export function ApplicationSummary({ app }: { app: ApplicationDetail }) {
       </Group>
       <Stack gap={4}>
         <Text size="sm">
-          <b>Route:</b> <RouteLine app={app} />
+          <Trans t={t} i18nKey="summary.route" components={{ b: <b />, route: <RouteLine app={app} /> }} />
         </Text>
         <Text size="sm">
-          <b>Applied on:</b> {formatDate(app.applied_on)}
+          <Trans
+            t={t}
+            i18nKey="summary.appliedOn"
+            values={{ date: formatDate(app.applied_on) }}
+            components={{ b: <b /> }}
+          />
         </Text>
         <Text size="sm">
-          <b>Last activity:</b> {ago(app.days_since_activity)}
+          <Trans
+            t={t}
+            i18nKey="summary.lastActivity"
+            values={{ ago: ago(app.days_since_activity) }}
+            components={{ b: <b /> }}
+          />
         </Text>
         {app.follow_up_on && (
           <Text size="sm">
-            <b>Follow up on:</b> {formatDate(app.follow_up_on)}
+            <Trans
+              t={t}
+              i18nKey="summary.followUpOn"
+              values={{ date: formatDate(app.follow_up_on) }}
+              components={{ b: <b /> }}
+            />
           </Text>
         )}
       </Stack>
@@ -237,9 +280,10 @@ export function ApplicationTimeline({ app }: { app: ApplicationDetail }) {
 }
 
 export function ApplicationLoadError({ error }: { error: unknown }) {
+  const { t } = useTranslation("applications");
   return (
-    <Alert color="red" title="Couldn't load this application">
-      {error instanceof Error ? error.message : "Something went wrong."}
+    <Alert color="red" title={t("summary.loadFailed")}>
+      {error instanceof Error ? error.message : t("summary.somethingWrong")}
     </Alert>
   );
 }
@@ -247,9 +291,10 @@ export function ApplicationLoadError({ error }: { error: unknown }) {
 export { LogActivity };
 
 export function ApplicationDrawer({ id, onClose }: { id: string | null; onClose: () => void }) {
+  const { t } = useTranslation("applications");
   const { data: app, isLoading, isError, error } = useApplication(id);
   return (
-    <Drawer opened={!!id} onClose={onClose} position="right" size="lg" title="Application">
+    <Drawer opened={!!id} onClose={onClose} position="right" size="lg" title={t("summary.drawerTitle")}>
       {isError ? (
         <ApplicationLoadError error={error} />
       ) : isLoading || !app ? (
@@ -266,11 +311,11 @@ export function ApplicationDrawer({ id, onClose }: { id: string | null; onClose:
             rightSection={<IconExternalLink size={14} />}
             onClick={onClose}
           >
-            Open full page
+            {t("summary.openFullPage")}
           </Button>
-          <Divider label="Log activity" labelPosition="left" />
+          <Divider label={t("log.title")} labelPosition="left" />
           <LogActivity key={app.id} id={app.id} />
-          <Divider label="Timeline" labelPosition="left" />
+          <Divider label={t("timeline.title")} labelPosition="left" />
           <ApplicationTimeline app={app} />
         </Stack>
       )}
@@ -280,6 +325,7 @@ export function ApplicationDrawer({ id, onClose }: { id: string | null; onClose:
 
 /** How the application came about, with the recruiter, agency and company linked to their pages. */
 function RouteLine({ app }: { app: ApplicationDetail }) {
+  const { t } = useTranslation("applications");
   // A name with no id (shouldn't happen) still shows, just not as a link.
   const person = app.recruiter_name && (
     <>
@@ -303,23 +349,23 @@ function RouteLine({ app }: { app: ApplicationDetail }) {
       app.agency_name
     ));
   if (app.route === "agency") {
-    if (!person && !agency) return <>Through an agency</>;
-    return (
-      <>
-        Through {person}
-        {person && agency && " at "}
-        {agency}
-      </>
-    );
+    if (!person && !agency) return <>{t("routeLine.throughAgency")}</>;
+    if (person && agency)
+      return (
+        <Trans
+          t={t}
+          i18nKey="routeLine.throughBoth"
+          components={{ person: <>{person}</>, agency: <>{agency}</> }}
+        />
+      );
+    return <Trans t={t} i18nKey="routeLine.throughOne" components={{ who: <>{person || agency}</> }} />;
   }
-  if (app.route === "referral") return <>Referral</>;
-  if (!person) return <>Applied directly</>;
-  return (
-    <>
-      Directly, via {person} at{" "}
-      <Anchor component={Link} to={`/companies/${app.company_id}`} inherit>
-        {app.company_name}
-      </Anchor>
-    </>
+  if (app.route === "referral") return <>{t("routeLine.referral")}</>;
+  if (!person) return <>{t("routeLine.directly")}</>;
+  const company = (
+    <Anchor component={Link} to={`/companies/${app.company_id}`} inherit>
+      {app.company_name}
+    </Anchor>
   );
+  return <Trans t={t} i18nKey="routeLine.directlyVia" components={{ person: <>{person}</>, company }} />;
 }

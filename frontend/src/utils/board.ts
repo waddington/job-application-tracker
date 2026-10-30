@@ -1,5 +1,6 @@
 import type { ApplicationRow } from "../api/client";
 import type { Workflow, WorkflowStage } from "../api/hooks";
+import { i18n } from "../i18n";
 
 export interface Column {
   stage: WorkflowStage;
@@ -19,15 +20,19 @@ const MAX_GAP_FILLED = 6;
 
 /** The column's heading: the stage, and its round when split ("Interviewing · Round 2"). */
 export function columnTitle(column: Column): string {
-  if (column.round === undefined) return column.stage.name;
-  return `${column.stage.name} · ${column.round === null ? "No round yet" : `Round ${column.round}`}`;
+  const stage = column.stage.name;
+  if (column.round === undefined) return stage;
+  return column.round === null
+    ? i18n.t("applications:board.noRoundYet", { stage })
+    : i18n.t("applications:board.round", { stage, round: column.round });
 }
 
 /** A drop on a round's own column: rounds follow the interviews you add, so cards can't be put there. */
 export const isRoundColumn = (key: string) => /#round-\d+$/.test(key);
 
 /**
- * An interviewing stage (its id or name says "interview") becomes a column per round, Round 1
+ * An interviewing stage (its id says "interview": names are yours, and may be in any language)
+ * becomes a column per round, Round 1
  * up to the furthest any application has got (the current or next round), so you can see how
  * far each has got. "No round yet" always comes first:
  * it's where an application moving into the stage lands (rounds go in order, from the
@@ -36,7 +41,7 @@ export const isRoundColumn = (key: string) => /#round-\d+$/.test(key);
 export function splitByRound(columns: Column[]): Column[] {
   return columns.flatMap((column) => {
     const roundOf = (row: ApplicationRow) => row.current_round?.round ?? null;
-    const interviewing = /interview/i.test(`${column.stage.id} ${column.stage.name}`);
+    const interviewing = /interview/i.test(column.stage.id);
     if (column.stage.kind !== "active" || !interviewing) return [column];
     // Every round up to the furthest, so progress reads left to right; past MAX_GAP_FILLED,
     // only rounds someone's at (a mistyped "Round 12" doesn't add a dozen empty columns).

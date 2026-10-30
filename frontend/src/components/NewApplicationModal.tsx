@@ -16,6 +16,7 @@ import { useDebouncedValue } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import dayjs from "dayjs";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 import {
   useAgencies,
@@ -58,6 +59,8 @@ function findByName<T extends { name: string }>(items: T[] | undefined, name: st
 
 const unique = (names: string[]) => [...new Set(names)];
 
+const WEB_LINK = /^https?:\/\//;
+
 export function NewApplicationModal({
   opened,
   onClose,
@@ -70,18 +73,17 @@ export function NewApplicationModal({
   const { data: agencies } = useAgencies();
   const { data: contacts } = useContacts();
   const create = useCreateApplication();
+  const { t } = useTranslation(["applications", "common"]);
 
   const form = useForm<Values>({
     mode: "controlled",
     initialValues: EMPTY,
     validate: {
-      company: (v) => (v.trim() ? null : "Which company?"),
-      roleTitle: (v) => (v.trim() ? null : "What's the role?"),
-      roleUrl: (v) => (!v || /^https?:\/\//.test(v) ? null : "Links start with http:// or https://"),
+      company: (v) => (v.trim() ? null : t("new.errors.company")),
+      roleTitle: (v) => (v.trim() ? null : t("new.errors.role")),
+      roleUrl: (v) => (!v || WEB_LINK.test(v) ? null : t("new.errors.link")),
       agency: (v, values) =>
-        values.route === "agency" && !v.trim() && !values.recruiter.trim()
-          ? "Add the agency or recruiter"
-          : null,
+        values.route === "agency" && !v.trim() && !values.recruiter.trim() ? t("new.errors.agency") : null,
     },
   });
 
@@ -156,8 +158,8 @@ export function NewApplicationModal({
         onSuccess: (created) => {
           notifications.show({
             color: "teal",
-            title: "Application added",
-            message: `${created.role_title} at ${created.company_name}`,
+            title: t("new.added"),
+            message: t("new.addedBody", { role: created.role_title, company: created.company_name }),
           });
           close(created.id);
         },
@@ -166,61 +168,61 @@ export function NewApplicationModal({
   });
 
   return (
-    <Modal opened={opened} onClose={() => close()} title="New application" size="lg">
+    <Modal opened={opened} onClose={() => close()} title={t("new.title")} size="lg">
       <form onSubmit={submit}>
         <Stack>
           <Text size="sm" c="dimmed">
-            Type names as you go: a company, agency or person you haven't added yet is created for you.
+            {t("new.intro")}
           </Text>
           <Group grow align="flex-start">
             <Autocomplete
-              label="Company"
-              placeholder="Contoso"
+              label={t("new.company")}
+              placeholder={t("new.companyPlaceholder")}
               data={unique((companies ?? []).map((c) => c.name))}
-              description={
-                form.values.company.trim() && !company
-                  ? "New company: it's added for you"
-                  : "Pick one or type a new name"
-              }
+              description={form.values.company.trim() && !company ? t("new.newCompany") : t("new.pickOrType")}
               data-autofocus
               {...form.getInputProps("company")}
             />
             <TextInput
-              label="Role"
-              placeholder="Senior Backend Engineer"
+              label={t("new.role")}
+              placeholder={t("new.rolePlaceholder")}
               {...form.getInputProps("roleTitle")}
             />
           </Group>
           {showDuplicates && (
             <DuplicateWarning
               duplicates={duplicates}
-              title="You may have applied for this already"
+              title={t("new.maybeApplied")}
               onNavigate={() => onClose()} // keep the draft: reopening the form picks up where you left off
             />
           )}
-          <TextInput label="Job ad link" placeholder="https://…" {...form.getInputProps("roleUrl")} />
+          <TextInput
+            label={t("new.jobAd")}
+            placeholder={t("new.jobAdPlaceholder")}
+            {...form.getInputProps("roleUrl")}
+          />
           <div>
             <Text size="sm" fw={500} mb={4}>
-              How did you apply?
+              {t("new.how")}
             </Text>
             <SegmentedControl
               data={[
-                { value: "direct", label: "Directly" },
-                { value: "agency", label: "Through a recruiter" },
-                { value: "referral", label: "Referral" },
+                { value: "direct", label: t("new.routes.direct") },
+                { value: "agency", label: t("new.routes.agency") },
+                { value: "referral", label: t("new.routes.referral") },
               ]}
               {...form.getInputProps("route")}
             />
           </div>
           {form.values.route === "direct" && (
             <Autocomplete
-              label="Who reached out? (optional)"
+              label={t("new.whoReachedOut")}
               description={
                 form.values.recruiter.trim() && !recruiterMatch
-                  ? "New person at the company"
-                  : "An in-house recruiter or head of talent, if they contacted you"
+                  ? t("new.newPersonAtCompany")
+                  : t("new.inHouseHint")
               }
-              placeholder="Riley Chen"
+              placeholder={t("new.personPlaceholder")}
               data={unique(peopleAtCompany.map((c) => c.name))}
               {...form.getInputProps("recruiter")}
             />
@@ -228,22 +230,18 @@ export function NewApplicationModal({
           {form.values.route === "agency" && (
             <Group grow align="flex-start">
               <Autocomplete
-                label="Agency"
-                placeholder="Northwind Talent"
+                label={t("new.agency")}
+                placeholder={t("new.agencyPlaceholder")}
                 data={unique((agencies ?? []).map((a) => a.name))}
-                description={
-                  typedNewAgency ? "New agency: it's added for you" : "Pick one or type a new name"
-                }
+                description={typedNewAgency ? t("new.newAgency") : t("new.pickOrType")}
                 {...form.getInputProps("agency")}
               />
               <Autocomplete
-                label="Recruiter"
-                placeholder="Alex Recruiter"
+                label={t("new.recruiter")}
+                placeholder={t("new.recruiterPlaceholder")}
                 data={unique(recruitersHere.map((c) => c.name))}
                 description={
-                  form.values.recruiter.trim() && !recruiterMatch
-                    ? "New person: they're added for you"
-                    : "Optional"
+                  form.values.recruiter.trim() && !recruiterMatch ? t("new.newRecruiter") : t("new.optional")
                 }
                 {...form.getInputProps("recruiter")}
               />
@@ -251,25 +249,29 @@ export function NewApplicationModal({
           )}
           <Group grow align="flex-start">
             <Select
-              label="Stage"
+              label={t("new.stage")}
               data={(workflow?.stages ?? []).map((s) => ({ value: s.id, label: s.name }))}
               allowDeselect={false}
               {...form.getInputProps("stage")}
             />
             <DateInput
-              label="Applied on"
-              placeholder="Not yet"
+              label={t("new.appliedOn")}
+              placeholder={t("new.notYet")}
               clearable
               {...form.getInputProps("appliedOn")}
             />
           </Group>
-          <TagsInput label="Tags" placeholder="python, fintech, remote…" {...form.getInputProps("tags")} />
+          <TagsInput
+            label={t("new.tags")}
+            placeholder={t("new.tagsPlaceholder")}
+            {...form.getInputProps("tags")}
+          />
           <Group justify="flex-end">
             <Button variant="default" onClick={() => close()}>
-              Cancel
+              {t("common:actions.cancel")}
             </Button>
             <Button type="submit" loading={create.isPending}>
-              Add application
+              {t("new.add")}
             </Button>
           </Group>
         </Stack>
