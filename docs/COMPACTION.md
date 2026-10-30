@@ -445,10 +445,37 @@ Keep this whole section word for word in the summary: it is the live plan.
 - "do 5 then 6" (i18n) was finished: v1.2.1, v1.2.2.
 
 **In flight, in order:**
-1. **PR #131, `e2e-people`** (worktree `.claude/worktrees/e2e-people`, 44 tests passing, 1.2.9). A background reviewer
-   was running. If its report was lost across the compaction, run it again (prompt below). Apply its findings, add
-   the missing permutations, record any real bug it confirms, run twice, merge with `merge.sh 131`, then release with
-   `ship.sh 1.2.9 131 e2e-people`.
+1. **PR #131, `e2e-people`** (worktree `.claude/worktrees/e2e-people`, 44 tests passing, 1.2.9). Reviewed, not yet
+   applied: no need to run the reviewer again. The app bugs below are predictions: test them, and record in phase B only
+   what a test confirms. Apply, run twice, `merge.sh 131`, then `ship.sh 1.2.9 131 e2e-people`. The findings:
+   - **Suspected bug, agency typed but not chosen:** typing a new agency then pressing Add person or Enter, without the
+     `+ Add` option, probably saves with no agency and no warning (`CreatableSelect.tsx`). On edit, clearing the text
+     probably keeps the old agency. Test: both, `ArrowDown`+Enter on `+ Add` (exactly one made), and the clearable X.
+   - **Suspected bug, stale edit:** reopening Edit right after saving can overwrite the edit with old values
+     (`ContactFormModal.tsx` resets only on `opened` and `contact?.id`; `refresh` doesn't wait). Test: delay
+     `**/contacts/*/summary` by 1 s, edit the title, save, click Edit at once, expect the new title.
+   - **Suspected bug, New agency draft:** closing the dialog probably keeps the typed name (only a save resets it). Test:
+     reopen, expect an empty Name. Also trigger "Who is it?", cancel, reopen, and expect no error in the person dialog.
+   - **The duplicate agency `test.fail` can stay green after a fix** that refuses and keeps the dialog open: wait for the
+     POST response instead of `toBeHidden`, keep only the count check, and allow the POST.
+   - **Refused tests pass on any failure:** assert the wording (`Email Owner already has taken@example.com`, from
+     `domain/people.py`), and narrow `problems.allow` to the POST or PATCH and the status. Add, each refused with no second
+     person: `TAKEN@Example.com`, and the same LinkedIn profile as `https://www.linkedin.com/in/x/` and
+     `https://linkedin.com/in/x?trk=1`.
+   - **Merge:** also seed on the other person a meeting, a link, a to-do, a Markdown note (check after a reload, and one
+     made just before the merge), an application where both hold the same relation (one row), and a phone both have (one
+     detail).
+   - **Agency permutations:** an "exactly one" helper for inline creates; an existing agency's name in other capitals
+     (no `+ Add`, no second one); an inner double space (`Twin  Agency`); typing while GET `/agencies` is delayed; a recruiter
+     with details and a title then given an agency (details unchanged); edit, make an agency inline, Cancel; edit, change
+     the name, Cancel, reopen (nothing sent); the pencil on an agency's page, moving someone away.
+   - **Tests claiming more than they check:** "says when no one matches" should assert `No matches.`; "first in the list"
+     should use `Zzz Star` and assert order; wait for `Alex Morgan` before the hidden check after a delete; seed a role and
+     a detail on the person-page test and follow the application link; `exact: true` on `Company Person`.
+   - **Agency edit and delete** belong in `e2e-companies`: a rename showing on a recruiter's tile, clearing the website, and
+     a delete leaving recruiters with `agency_id: null`.
+   - **Suspected, separate:** `MergePerson.tsx`'s LinkedIn regex keeps only the first path segment of `/pub/`, so its "same
+     LinkedIn" nudge can fire for two different people.
 2. **This doc's PR**, if still open: merge it (internal docs merge without asking).
 3. **Then the remaining tasks, in order:** `e2e-companies` (agencies were partly covered in people: create, rename and
    delete, from their pages and inside other dialogs, what can't be deleted), `e2e-interviews-calls`, `e2e-offers`,
