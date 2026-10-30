@@ -8,7 +8,7 @@ and how to carry on afterwards, so the work continues as if nothing happened.
 After compaction, the session follows [Resuming](#resuming-after-compaction), and
 [Re-expanding](#re-expanding-what-the-summary-dropped) when it needs a detail back.
 
-Sections 3, 4 and 5 are a snapshot (2026-10-29, after PR #101); refresh them before each
+Sections 3, 4 and 5 are a snapshot (2026-10-30, after PR #115); refresh them before each
 compaction in a small docs PR. This repo is public: nothing here may contain Kai's job-search
 data (no real companies, people, salaries or notes).
 
@@ -46,10 +46,22 @@ next action.
   enough). For a feature PR Kai is previewing, finish it, then ask for an explicit "merge N";
   ask separately for the release if it isn't covered. Roadmap-only PRs (#100, #101) merged
   without asking. Never work around a refusal; ask, and give the `!` command as a fallback.
+- **Approval, i18n era (#110–#114).** Kai approves per PR in the message, e.g. "merge 110 and
+  release v1.1.1 then do the next item (shadow calls), you can also merge that and release once
+  ready, i approve", "looks good, merge and release, then start the next one", "you can merge
+  and release once ready". **And then stops:** "stop after merge and release, dont start the
+  next one"; "then stop once thats done, dont start the next". So: one i18n area per go-ahead;
+  after merge and release, report and wait. Kai previews each feature PR first: "i want to
+  check the dev version before merging" → a dev preview (section 6) before asking.
+- **Plan before building when asked.** "lets plan it firtst and dont start building until i say
+  so" (Docker); "dont build yet, just commit the plan"; "noooo noo no no, dont buikld antyhing
+  eyt … undo all of that. i want to know what each PR would be". When Kai asks for a plan,
+  write it (an RFC in `docs/rfc/`, roadmap tasks) and stop; build only on "lets get
+  building" / "do the first item".
 - **Branches.** "also delete branches on remote that are no longer needed". After each merge
   only `main` should remain, locally and on GitHub.
 - **PM dashboard.** "keep the PM dashboard up to date, or even backfill items if they were not
-  added". Every task gets a `docs/ROADMAP.yaml` entry in phase P7 (id = branch name minus
+  added". Every task gets a `docs/ROADMAP.yaml` entry in phase P7 (P8 for i18n; id = branch name minus
   `worktree-`, `prd: docs/prd/tracker.md`, `depends` on real task ids) in the PR that builds
   it, `status: building`, set to `done` just before merging. `uv run pytest -q tests/pm`
   checks the file still parses.
@@ -71,8 +83,10 @@ next action.
   every PR: "most are patch unless its new feature then it would be minor. it should be very
   explicit asking me for permission to merge a major bump". The rules are in `CLAUDE.md`
   (*Versions and releases*): bump in each PR, release each version, ask before any major.
-  Released: v1.0.0 (#97) and v1.1.0 (#99, the Today page). Only internal planning files
-  (`docs/ROADMAP.yaml`, `docs/COMPACTION.md`, `docs/IDEAS.md`) skip the bump.
+  Released: v1.0.0, v1.1.0, v1.1.1–v1.1.4, v1.2.0. Kai: "yes add release for each change"
+  (each i18n PR is its own patch release; the switcher was minor). Only internal planning
+  files (`docs/ROADMAP.yaml`, `docs/COMPACTION.md`, `docs/IDEAS.md`, `docs/rfc/` plans) skip
+  the bump.
 - **Privacy.** Kai's data never enters this repo. Tests, fixtures, seed data and screenshots use
   fictional names (Contoso, Fabrikam, Litware, Northwind Talent, Northwind Pay, Blue Yonder
   Recruitment, Alex Morgan, Riley Chen, Sam Patel, Jordan Lee…) and example.com. Never act on
@@ -91,6 +105,9 @@ next action.
   repo's Website field and the README link ("merge it, setup github pages, update the repo url
   to point to the pages"). **Not given yet:** the description and topics proposed in #96 (see
   section 5). Kai uploads the social preview by hand (Settings → General → Social preview).
+- **English dates are day, month, year.** Kai: "english dates should be 31st October 2026 (day
+  month year), american is month day year". Every date goes through the dayjs patterns in
+  `utils/format.ts` ("31 Oct 2026", "30 Oct 2026, 19:25"), never the browser's locale.
 - **Documents** go in the repo, not artifacts. Deleting anything of Kai's needs confirmation.
 - **No agent-team skill in this repo.** Plain `general-purpose` subagents for reviews and
   fact-checks.
@@ -193,9 +210,28 @@ next action.
   Companies. *Files and notes*: Documents, Notes. *Review*: Insights, Timeline. Detail pages:
   `/applications/$id`, `/roles/$id`, `/companies/$id`, `/agencies/$id`, `/people/$id`,
   `/search?q=`.
-- **Header** (`components/Layout.tsx`): wordmark → `/`; **New application**; search (`/`);
-  **?** How it works (`components/HowItWorks.tsx`); theme toggle. Every date picker rings today
-  (#82, theme `classNames` in `theme.ts` + `theme.module.css`).
+- **Header** (`components/Layout.tsx`; buttons in `components/HeaderButtons.tsx`): wordmark →
+  `/`; **New application**; search (`/`); **?** How it works; the **language switch**
+  (`LanguageSwitch`, #114: English ticked, *Coming soon!* greyed out, *Pseudo-language (dev)*
+  in dev only; saved in localStorage `jat.language`; `<html lang>` follows); theme toggle.
+  Every date picker rings today (#82) and shows "D MMM YYYY" (`theme.ts` `valueFormat`);
+  calendars follow the language (`DatesProvider` in `App.tsx`, weeks from Monday).
+- **Translations (i18n, in progress; plan `docs/rfc/i18n.md`).** i18next + react-i18next.
+  - `frontend/src/i18n/`: `index.ts` (`createI18n`, the app's `i18n`, strict mode throws
+    `MissingValueError`/`MissingKeyError` in dev and tests), `language.ts` (`LANGUAGES`,
+    `LANGUAGE_NAMES`, `pickLanguage`, `saveLanguage`, `isLanguage`, `PSEUDO` = `en-XA`,
+    `?lang=pseudo` in dev), `pseudo.ts`, `catalog.ts` (key and placeholder checks, unused-key
+    scanner), `shadow.ts` (shadow mode, unused now), `types.check.tsx` (type tests).
+  - English text: `frontend/src/locales/en/{common,today,people,todos,selftest}.ts` (`as const`,
+    typed via `i18next.d.ts`; `TextKey` = "ns:key"). Other languages will be JSON in
+    `locales/<code>/`; a missing key, namespace or plural form fails `catalog.test.ts`.
+  - Converted so far: the frame (header, menu, footer, Not found, shared dialogs), Today and
+    everything on it (to-dos, reply/chase buttons, marks, reply habits, How did it go?, At a
+    glance, How it works), and the switch. Their files are in `TRANSLATED` in
+    `frontend/eslint.config.js` (lint rule `i18next/no-literal-string`).
+  - `utils/format.ts`: `formatDay(value, pattern, lang)` and helpers; every date through the
+    dayjs `PATTERNS`. `utils/time.ts` `formatDate`/`formatDateTime`/`ago` go through it.
+  - `scripts/i18n/text_snapshot.py` + `text_diff.py`: before/after text check (section 6).
 - **Today** (`pages/TodayPage.tsx`, `TodayPage.module.css`, `api/next_actions.py`; #99
   replaced `HomePage.tsx` and `NextActionsPage.tsx`): one line of numbers (active, interviews
   in two weeks, offers to answer) over a thin pipeline; then three groups (`Bucket`, h3, a
@@ -311,108 +347,128 @@ next action.
   `insights/{whole-flow,flow,stats,activity,scorecard,conversations,documents}`, `search`, `backup`
   (+ `/archive`, `/snapshot`, `/push`).
 
-### 4. Current state (snapshot 2026-10-29, after #101)
+### 4. Current state (snapshot 2026-10-30, after #115)
 
-- **main at `db6bdb8`** (merge of #101), plus this doc's PR until it merges. No other open PRs,
-  worktrees or remote branches. Version **1.1.0**, released as v1.1.0 (tag on `071f7e6`).
-- **Merged since the last snapshot:**
-  - #93 compaction doc; #94 roadmap: Windows support, one-command install, Docker; #95 roadmap:
-    a double-click desktop app and a hosted version with accounts;
-  - #96 marketing refresh: README first screen ("No account. No cloud. No AI. No tracking."),
-    social card B + its script, website copy and SEO for non-developers, `llms.txt`, local
-    Swagger UI, `.env.example` path, board.png retaken wider;
-  - #97 1.0.0 and semver rules in `CLAUDE.md`, released v1.0.0; #98 roadmap: multi-language,
-    Chinese first;
-  - #99 the Today page (1.1.0), released v1.1.0; #100 roadmap: a live demo site with no server;
-    #101 roadmap: `jat mcp`.
-- **Tests on main:** 351 backend, 149 frontend. The machine is sometimes loaded: frontend
-  tests that time out in a full run pass when run on their own; rerun those files first.
-- **Kai's tracker** runs in Kai's terminal (answered `200` on 2026-10-27). Kai was told to
-  restart after #96 (local API docs) and #99 (Today, version 1.1.0); unconfirmed.
-- **Kai's messages since #92, in order:** compaction refresh (#93); "use agents, I want to
-  review the user-facing marketing side … dont make any changes, just give me an analysis …
-  I want to climb to the top of all GH tags search pages … setup google analytics or search
-  console" (three reviewers, a report); "no tracking" (another selling point); "why would
-  windows not be supported? … update the roadmap, dockerise this … Or does that make it harder
-  for the lay-person?" (#94); "add the double click desktop item for lay-people … also an item
-  for a cloud version that i host with user accounts" (#95); "item 3 loading swagger docs from
-  cdn … work through all the SEO type items … except item 5 … add an item to the roadmap to cut
-  a release after bumping to 1.0.0 … forget search console and GA … skip the CI tests workflow
-  … Dont work on the roadmap stuff yet … preview it before its merged" (#96);
-  '"with automatic git backups." to "with optional automatic git backups."'; "for the new
-  social card, change the screenshot part … all of these competitor tools have a kanban"
-  (Sankey); "lets go with b, then merge it" (#96); "start the dashboard"; "bump to version
-  1.0.0, add claude instructions that each PR should follow semver … very explicit asking me for
-  permission to merge a major bump … then create a release" (#97, v1.0.0); "is it worth having
-  a different language version? e.g. chinese?" then "yes add multi-lang support to the
-  roadmap, near the top" (#98) and "leave it for now" (Chinese README); "should we try and coin
-  a new phrase?" then "forget it"; "a slightly better name … than job application tracker?"
-  (ideas given, no decision); "The overview and next actions page are a bit confused … perhaps
-  rethink these pages" (picked one Today page) then, while building: "dont merge until ive
-  approved", "lots of empty space on the right", "what happened to gone quiet and needs
-  attention", "add data so that all sections appear", "now it looks very busy" (picked a slimmer
-  strip and flat groups), "rows/overflow doesnt look right", "small horizontal lines", "now it
-  looks like a spreadsheet … our most difficult task yet" (three looks, then a fourth), "I like
-  the new one, ship that", "i approve, ship/merge, update local main" (#99), "i approve the
-  release, do it" (v1.1.0); "a demo site deployed somewhere. no backend just the ui … what are
-  your ideas" (#100); "mcp or smt so local agents can query the status and perhaps make
-  changes" (#101); "whats the roadmap URL"; then this compaction refresh.
+- **main at `7e9fe8b`** (merge of #114; #115 merged just before), plus this doc's PR until it
+  merges. No other open PRs, worktrees or remote branches. Version **1.2.0**, released as
+  v1.2.0 (tag on `7e9fe8b`).
+- **Merged since the last snapshot (#102):**
+  - #103 roadmap: Docker built locally (`docker-image`) and a published image later
+    (`docker-image-publish`); #104 `docs/rfc/docker.md`, the Docker plan, shelved ("lets
+    shelve this for now, add the extra detail somewhere for when we do dockerize it");
+  - #105–#109 the i18n plan: `docs/rfc/i18n.md` (questions answered, backend never translates,
+    type checking across the API, data impact §4a, no backfill, a release per patch), 14 tasks
+    plus `multi-language` in their own phase **P8**, listed before P7 so they head the backlog;
+  - #110 `i18n-setup` (1.1.1): the layer, helpers, tests, used nowhere;
+  - #111 `i18n-shadow` (1.1.2): shadow mode on real strings, console only;
+  - #112 `i18n-shell` (1.1.3): the frame cut over, lint rule on;
+  - #113 `i18n-today` (1.1.4): Today cut over, dates day-month-year everywhere, the text
+    snapshot scripts, a strict check that every language has every key and plural form;
+  - #114 `i18n-switcher` (1.2.0): the language switch;
+  - #115 roadmap: `tests-reorganise` (P7).
+- **Tests on main:** 351 backend, 285 frontend.
+- **Kai's tracker** runs in Kai's terminal (answered `200` on 2026-10-30). Only frontend changes
+  since #99, so a page refresh is enough.
+- **Kai's messages since #102, in order** (word for word where quoted):
+  - "okay lets dockerize this. but lets plan it firtst and dont start building until i say so"
+    (7 questions answered) → #103; "okay lets shelve this for now, add the extra detail
+    somewhere for when we do dockerize it" → #104.
+  - "lets plan i18n support, we could do the transormatio to support it but still only have en
+    for now. think through the questions wed need to asnwer, and then answer them" → #105;
+    "how will we go from code compoinent location that needs text, to getting the actual text
+    from the strings file? will there be type checking on strings file keys" → #106.
+  - "Great, lets get building but first tell me what each PR would be?" then "noooo noo no no,
+    dont buikld antyhing eyt" and "undo all of that. i want to know what each PR would be"
+    (the early start was deleted unpushed).
+  - "how will the backend handle this? are we reimplenting i18n twice basically?"; "so hopw does
+    tyer checking work when backend sends an ID/code and the frontend looks it up".
+  - "okay I would want to split out the setup PR to a few more PRs 1. add dependencies and
+    scafollding/utils code with their tests … 2. add some shadow calls that are not surfaced to
+    user, only in logs/console so i can check them 3. then continue with other order, page by
+    page extracting strings and cutting over usage to it".
+  - "commit the plan, each PR as a work item on the board/backlog. Make the i18n tasks top of
+    backlog/roadmap are any of these patches?" (#107); "how will adding i18n impact data we have
+    in databasE?"; "what did you mean by backfill events"; "1. yes add release for each change
+    2. what do you mean i18n events? … 3. yes skip the backfill dont build yet, just commit the
+    plan" (#108); "whats the pm dahboar link".
+  - "split out the i18n tasks to P8 just for it, then do the first item" (#109, #110); "merge 110
+    and release v1.1.1 then do the next item (shadow calls), you can also merge that and release
+    once ready, i approve" (#111); "okay whats the next part?"; "yeah lets do that, i want to
+    check the dev version before merhing. will there be a way to see the dev version with the
+    accented text and with the real text?"; "looks good, merge and release, then start the next
+    one" (#112 → #113).
+  - During #113: "dropdown calendar not yet updated, will that come in a later one or should it
+    be part of this one?"; "english dates should be 31st October 2026 (day month year), american
+    is month day year"; "to decide, apply, interested, are not done yet"; "dont merge yet"; "if
+    there are things planned for later that is fine"; "looks good, merge then release"; "when we
+    have multipee locales, will trhere be a check to ensure that every strings key is present in
+    all locales? it would be a bad bad error if one is missing" (made strict); "stop after merge
+    and release, dont start the next one".
+  - "does this feature also includea alnaguage picker/switcher for manual changes? if not, add it
+    to the roadmap, do it as the next item in this feature, and the languages should be English
+    and a 'Coming soon!'" (#114); "dev version can have the psuedo language as an option in the
+    picker"; "where do the strings for the pseudo language come from/"; "also add a feature to
+    the roadmap to reorganise the tests and also add react testing library to test individual
+    components" (#115); "you can merge and release once ready"; "then stop once thats done, dont
+    start the next".
+  - Then: "update … COMPACTION.md again for claude code compact command. i want to continue with
+    the i18n work".
 
 ### 5. Work in flight and candidates
 
 - **In flight:** none (after this doc's PR merges).
-- **Planned on the roadmap (P7), not started** ("Dont work on the roadmap stuff yet"; build one
-  only when Kai asks): `windows-support`, `multi-language` (Chinese first, with a Chinese
-  README), `packaged-install` (PyPI, `uvx`), `docker-image`, `desktop-app`, `hosted-version`
-  (Kai hosts, with accounts), `demo-site` (GitHub Pages, the real backend in the browser via
-  Pyodide behind a service worker, per-browser changes that reset daily, a Demo banner),
-  `mcp-server` (`jat mcp`, stdio, read-only unless writes are switched on, undoable, no
-  deleting).
+- **Next: the i18n work, P8, in this order** (Kai wants to continue it; one area per go-ahead,
+  preview before merge, stop after merge and release unless told otherwise):
+  1. **`i18n-applications`** (1.2.1): list, board (round columns found by stage id, not the word
+     "interview"), quick view (`ApplicationDrawer`), application page, New application, stage
+     badge, documents sent, People card, `DuplicateWarning` callers' titles.
+  2. `i18n-roles`: Roles page, role page, Apply / Interested / Pass, `utils/applied.ts`, and the
+     role lines on Today (To decide, Apply, Interested, Pass).
+  3. `i18n-people`: Recruiters, person page and form, Merge, companies and agencies, Timeline
+     button.
+  4. `i18n-interviews-offers`: Interviews page and rounds, round form, Reschedule, calls
+     (`Meetings.tsx`: the Happened button, call times), Offers (`formatMoney`).
+  5. `i18n-files-notes`: Documents and CV files, attachments, links, notes and editor, search.
+  6. `i18n-insights`: every tab, the Sankey (fixed node ids as a Literal in the API).
+  7. `i18n-timeline`: titles built in the frontend from kind and fields.
+  8. `i18n-errors`: error codes (Literal) + `errors` namespace.
+  9. `i18n-events`: `data.msg` on new events, a typed `msg` in the API; "Followed up" and "No
+     reply" (saved English today) move here. No backfill.
+  10. `i18n-finish`: the lint rule everywhere, `shadow.ts` removed, a pseudo screenshot pass, RFC
+      done. Then `multi-language` (Chinese, a native-speaker review).
+- **Planned elsewhere, not started** (build only when Kai asks): `tests-reorganise` (P7: a test
+  file per component next to it with React Testing Library, shared render helpers in
+  `src/test/`, `@testing-library/user-event`, backend tests by module, a Testing section in
+  CONTRIBUTING); `docker-image` (plan in `docs/rfc/docker.md`), `docker-image-publish`,
+  `windows-support`, `packaged-install`, `desktop-app`, `hosted-version`, `demo-site`,
+  `mcp-server`.
 - **Offered, waiting on Kai:**
-  - The GitHub description and topics proposed in #96: description "Self-hosted job
+  - The GitHub description and topics proposed in #96 (description "Self-hosted job
     application tracker for software engineers. No account, no cloud, no AI, no tracking.
     Kanban board, recruiter CRM, interview rounds, follow-ups, offer comparison and Sankey
     insights; your data in readable files on your machine, with optional git backups. A free,
     open-source Huntr / Teal alternative."; topics: drop `jobhunt`, `job-seekers`, `recruiters`,
-    add `huntr-alternative`, `kanban`, `privacy`.
-  - A short brand name ahead of "a self-hosted job application tracker" (ideas: Pursuit,
-    Offerboard, Shortlist, Followup, Dossier, Waypoint, Jobfolio; availability checks
-    offered). Keep the repo name either way (search, and the Pages URL has no redirect).
-  - The same tile rows on other pages' long lists (Interviews, Offers, Roles, a person's
-    calls), as a separate small PR.
-  - Drop *Screen* from the default workflow for everyone (Kai can already remove it from their
-    own `config.toml` with the block we gave).
-  - Drafts for other places to post (r/Python showcase format, a Show HN); Kai has the
-    r/selfhosted megathread comment. Kai posts; never post on Kai's behalf. Growth plan from
-    the #96 analysis: awesome-selfhosted from ~late Feb 2027 (needs a first release 4 months
-    old, and a human-written PR), alternativeto.net, dev.to, Show HN once install is smooth.
-  - Rebuild `docs/screenshots/demo.gif` from the new screenshots (Today, the whole picture,
-    Insights tabs incl. CVs, Timeline by role, ghosts, board rounds); show a preview first. Its
-    `scripts/demo_gif/scene.html` caption "A Sankey diagram from applied to offer" is stale.
+    add `huntr-alternative`, `kanban`, `privacy`).
+  - A short brand name (ideas: Pursuit, Offerboard, Shortlist, Followup, Dossier, Waypoint,
+    Jobfolio). Keep the repo name either way.
+  - Tile rows on other pages; dropping *Screen* from the default workflow; post drafts (Kai
+    posts); rebuilding `demo.gif` (preview first).
+  - `docs/IDEAS.md` still lists "An MCP server" as rejected (reversed in #101); a one-line fix
+    was offered.
 - **Noticed, not promised:**
-  - Ghost and star still missing in: the Timeline *About* select's people, to-do "about" text
-    on Today.
-  - Reply times: only weekdays, no bank holidays; waits on people before #73 weren't recorded.
-  - CV files: an unticked application stays on offer until it has a CV recorded; files
-    attached to applications don't use the "no CV yet" rule.
-  - On phones: the header search overlaps the page title (Today's rows wrap properly since
-    #99).
+  - i18n: labels computed outside components (`utils/attention.ts`, `waitingLabel`…) don't
+    re-render on a language change by themselves; fine while English-only, revisit for
+    `multi-language`. Calendar names can't be pseudo-accented (they're dayjs locale data).
+    `firstDayOfWeek` is fixed at Monday (TODO in `App.tsx`).
+  - Ghost and star still missing in the Timeline *About* select and to-do "about" text.
+  - Reply times: weekdays only, no bank holidays.
+  - On phones: the header search overlaps the page title.
   - The application page's People card ignores a recruiter set through the route.
-  - Today: a to-do on a role shows both on its role line and in Coming up; to-dos dated months
-    ahead still count in Coming up; the numbers line hides when applications fail to load,
-    offers count included.
-  - Sankeys: the whole picture can still have a flow brushing a holding node's label (e.g.
-    Screen → Withdrawn under *Still interviewing*); `untangle` only reorders columns.
-  - Recruiter conversations' stat tiles and table still say *Passed* (only the Sankey says
-    *Decided not to apply*).
-  - Board round columns split only stages named "interview"; a Screen stage with rounds doesn't.
-  - Reschedules before #90 have a count but no earlier time; a status change plus a new time
-    in one save isn't counted as a reschedule.
-  - `insights-stats.png` and `demo.gif` show older UI; `recruiters.png`, `person.png` and
-    `roles.png` don't show ghosts, favourites, reply times or *Interested* yet.
-  - Small nits left on purpose: re-passing a role re-stamps `decided_on`; all-day timeline
-    items at UTC midnight; `GET /meetings?upcoming` defaults to UTC; timeline "pitched"
-    wording even for a referrer.
+  - Today: a to-do on a role shows on its role line and in Coming up; to-dos months ahead still
+    count in Coming up.
+  - Recruiter conversations' tiles and table still say *Passed*.
+  - Board round columns only split stages named "interview" (fix with `i18n-applications`).
+  - `insights-stats.png`, `demo.gif`, `recruiters.png`, `person.png`, `roles.png` show older UI.
 
 ### 6. The delivery loop
 
@@ -442,6 +498,26 @@ next action.
    `gh release create vX.Y.Z --title vX.Y.Z --notes-file <that changelog section>
    --verify-tag` (notes extracted with a script into the tmp dir; make relative links
    absolute). Needs Kai's approval in the current message (section 1).
+
+**An i18n area's cutover** (since #113; CONTRIBUTING "Text in the UI"):
+1. Worktree `worktree-i18n-<area>`; set its P8 task `building`.
+2. Baseline: build main's frontend in the worktree (it starts identical), seed demo data
+   (`scripts/seed_demo.py <tmp>/demo-x`), `uv run jat --data-dir … serve --port 88xx`, then
+   `uv run --with playwright python scripts/i18n/text_snapshot.py http://127.0.0.1:88xx before.json`.
+   Take it twice and diff for stability.
+3. Write the English in `locales/en/<ns>.ts` (new namespace → `locales/en/index.ts`), cut the
+   components over (`useTranslation("<ns>")`, `t()`, `<Trans>` for markup, `i18n.t("ns:key")`
+   outside components; another namespace too → `useTranslation(["ns", "common"])`); text the
+   app *saves* stays English with a comment (`i18n-events`). Add the files to `TRANSLATED`.
+4. Typecheck, lint, tests; rebuild, restart the server, snapshot again, `text_diff.py` must say
+   `0 view parts differ` (or only intended changes). Pin what the snapshot can't reach in a
+   test (`components/TodayText.test.tsx` is the model). Prove a test catches a slip by breaking
+   one English string.
+5. Dev preview for Kai: `JAT_API_URL=http://127.0.0.1:88xx pnpm exec vite --port 5174
+   --strictPort` from `frontend/` (background); http://127.0.0.1:5174 and `?lang=pseudo`.
+   Screenshot pseudo to check nothing in the area is still plain English.
+6. Docs: CONTRIBUTING (what's moved), RFC Status + Learned, CHANGELOG `## 1.x.y`; bump. PR,
+   reviewer (tell it to check exact text equivalence for every string), fixes, wait for Kai.
 
 Several features can be in flight at once (one worktree each): ExitWorktree keep, then
 EnterWorktree the other. Merge main into a branch before its PR when main moved; the usual
@@ -533,6 +609,19 @@ conflict is the last lines of `docs/ROADMAP.yaml` (keep both, in merge order).
 - **Promotion:** Claude drafts posts; Kai posts them. Posts say it's built with Claude Code.
 - **Search:** every word must match, accent- and case-insensitive.
 
+- **i18n:** the frontend does all translating; the backend sends codes and ids next to its
+  English (§4 of the RFC). One namespace per area; keys say what text is for; English as
+  `.ts` `as const` (typed keys and placeholder names), other languages JSON. Every converted
+  file goes in `TRANSLATED`. Your data (stage names, companies, notes) is never translated.
+  Saved text stays English until `i18n-events`; no backfill of old events. Each i18n PR is a
+  patch with its own release (the switch was minor). Cut over directly with the before/after
+  text snapshot (shadow mode was for the first steps). Typed id-to-key maps hold bare keys.
+  A language is added in four steps (CONTRIBUTING "Adding a language"), `LANGUAGES` last.
+- **Language switch:** English plus a greyed *Coming soon!*; pseudo in dev only, never saved;
+  languages by their own names (`LANGUAGE_NAMES`), not translated.
+- **Docker:** shelved; the plan is `docs/rfc/docker.md` (minor bump, bind-mounted data folder,
+  user id and git identity passed in, Podman-compatible, Compose, published image later).
+
 ### 8. Gotchas already learned
 
 - **Harness refusals.** Bash it can't prove stays in the entered worktree is refused:
@@ -607,6 +696,23 @@ conflict is the last lines of `docs/ROADMAP.yaml` (keep both, in merge order).
 - **Data-touching features** (rewriting applications from another edit) get a reviewer told
   to focus on data safety; #92's first version flipped routes and was reworked before merge.
 
+- **i18n gotchas** (more in the RFC's "Learned so far"):
+  - `t()` from `useTranslation("x")` refuses keys prefixed with any namespace, its own
+    included; use bare keys, or `useTranslation(["x", "common"])` for another namespace.
+  - `<Trans>` tags named after HTML void elements (`<link>`, `<br>`) render empty.
+  - The pseudo-language is `en-XA` (an unknown tag takes the machine's plural rules).
+  - A component rendered alone in a test needs `src/i18n` loaded (the test setup does it).
+  - The lint plugin compiles word filters without the `u` flag: no `\p{L}`; it anchors them.
+    Prove the rule still bites by putting a hard-coded label back.
+  - Intl's en-GB writes "Sept"; dayjs writes "Sep": all dates go through dayjs patterns.
+  - A Mantine `Tooltip` inside `Menu.Target` steals the menu's ARIA: put the Tooltip outside.
+  - jsdom can't type into a Mantine searchable Select (`fireEvent.change` doesn't stick):
+    check those in a real browser (Playwright) until `user-event` arrives.
+  - Mantine menu items and options render hidden: query with `hidden: true`.
+  - `mouseenter` doesn't bubble: hover a Tooltip's own target element in tests.
+- **Bash refusals in a worktree** also hit `cd ..` before git and `python3 - <<EOF` scripts that
+  mention git: use `git -C <worktree>`, and write scripts to the tmp dir first.
+
 ### 8a. How Kai works
 
 - Uses the tracker for a real job search and reports gaps as they hit them, often several in
@@ -615,6 +721,10 @@ conflict is the last lines of `docs/ROADMAP.yaml` (keep both, in merge order).
 - Asks short questions ("how do i run thius?"): answer plainly with the exact command.
 - Values findability, honesty about state, docs and images that match the code, a tidy repo,
   and the project being discoverable on GitHub.
+- Thinks out loud in questions first ("how will…", "what did you mean…"): answer plainly, and
+  record the answers in the RFC when Kai says "commit the plan".
+- Checks each step in the dev preview and spots gaps (calendar, date order, role lines):
+  fold the fix into the open PR if it's small and in scope, else say which planned PR owns it.
 - Refines visual things in quick rounds (the Sankeys took #84–#86): show a demo URL with each
   round, fold follow-ups into the open PR, and expect "merge it once ready and update local
   main" at the end.
@@ -627,8 +737,9 @@ palettes; the earlier versions of this doc.
 
 ### 10. End the summary with
 
-The resume steps below, then: "Next action: wait for Kai's next request; if none, check the
-tracker answers and report."
+The resume steps below, then: "Next action: Kai wants to continue the i18n work: start
+`i18n-applications` (section 5, next in P8) with the cutover loop (section 6), give Kai the dev
+preview, and stop for Kai's approval before merging and releasing v1.2.1."
 
 ---
 
