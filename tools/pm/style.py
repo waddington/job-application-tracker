@@ -72,8 +72,43 @@ vertical-align:top}th{color:var(--ink-3);font-weight:500;font-size:12px}
 .filters{margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap}
 .filters a{padding:2px 10px;border:1px solid var(--line-2);border-radius:12px;color:var(--ink-2)}
 .filters a.active{background:var(--accent);color:var(--on-pill);border-color:var(--accent)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr));gap:1px;background:var(--line);
+border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:16px}
+.kpi{background:var(--panel);padding:12px 16px;min-width:0}.kpi .label{color:var(--ink-2);font-size:12px}
+.kpi b{display:block;font-size:24px;letter-spacing:-.02em}
+.kpi b small{font-size:12px;font-weight:400;color:var(--ink-2)}
+.kpi .note{color:var(--ink-3);font-size:12px}
+.spark{display:flex;align-items:flex-end;gap:1px;height:20px;margin:4px 0}
+.spark i{flex:1;min-height:1px;background:var(--building)}.spark i.none{background:var(--line-2)}
+.ov-grid{display:grid;gap:16px;grid-template-columns:minmax(0,2fr) minmax(0,1fr);margin-bottom:16px;align-items:start}
+.ov-main{display:grid;gap:16px;min-width:0}
+.phase-row{display:grid;grid-template-columns:44px minmax(90px,200px) minmax(60px,1fr) 44px 130px;gap:10px;
+align-items:center;padding:4px 0}
+.phase-row .name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.phase-row .num{text-align:right}.now{color:var(--accent);font-size:11px;font-weight:400}
+.segs{display:flex;height:8px;background:var(--line-2);border-radius:2px;overflow:hidden}
+.segs i{display:block}.segs .done{background:var(--done)}.segs .review{background:var(--review)}
+.segs .building{background:var(--building)}
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px;font-size:12px;color:var(--ink-2)}
+.legend i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px}
+.legend .planned{background:var(--line-2)}.legend .building{background:var(--building)}
+.legend .review{background:var(--review)}.legend .done{background:var(--done)}
+.stage{text-align:center}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--line-2)}
+.dot.past{background:var(--ink-3)}.dot.building{background:var(--building)}.dot.review{background:var(--review)}
+.dot.done{background:var(--done)}.dot.at{box-shadow:0 0 0 3px color-mix(in srgb,currentColor 25%,transparent)}
+ol.feed{list-style:none;margin:0;padding:0;max-height:760px;overflow-y:auto}
+ol.feed li{display:grid;grid-template-columns:52px 14px minmax(0,1fr);gap:6px;padding:7px 0;
+border-top:1px solid var(--line)}
+ol.feed li:first-child{border-top:0}.feed .time{color:var(--ink-3);font-size:11px;padding-top:2px}
+.feed .what,.feed .about{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.feed .about{color:var(--ink-3);font-size:12px}.feed .dot{margin-top:5px}
+details>summary{cursor:pointer;font-weight:600}.gap{margin-bottom:16px}
+.clip{display:block;max-width:440px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+@media (max-width:1000px){.ov-grid{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:700px){.top{position:static;padding:0 16px}main{padding:16px}
-.board{grid-template-columns:repeat(6,85vw)}}
+.board{grid-template-columns:repeat(6,85vw)}.phase-row{grid-template-columns:36px minmax(0,1fr) 40px}
+.phase-row .segs{grid-column:1/-1;order:1}.phase-row .dates{display:none}}
 """
 
 # Runs before the first paint, so a saved theme never flashes the other one.

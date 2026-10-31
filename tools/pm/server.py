@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, urlencode, urlparse
 
 from . import render
 from .live import Collector
@@ -26,8 +26,12 @@ class Dashboard:
         return apply_live(roadmap, snapshot.live), snapshot
 
     def handle(self, path: str, query: dict[str, list[str]]) -> tuple[int, str, str]:
-        refresh = query.get("refresh", ["0"])[0] == "1"
-        roadmap, snapshot = self.state(refresh)
+        if query.get("refresh", ["0"])[0] == "1":
+            # Refresh once, then drop it from the address, or the page's auto-reload would repeat it.
+            self.collector.get(force=True)
+            rest = urlencode({k: v for k, v in query.items() if k != "refresh"}, doseq=True)
+            return 303, "text/plain", f"{path}?{rest}" if rest else path
+        roadmap, snapshot = self.state()
         if path == "/":
             return 200, "text/html", render.page("Overview", "/", render.overview(roadmap, snapshot), roadmap, snapshot)
         if path == "/board":
@@ -52,6 +56,8 @@ def make_handler(dashboard: Dashboard):
                 status, ctype, body = 500, "text/plain", f"error: {exc}"
             data = body.encode()
             self.send_response(status)
+            if status == 303:
+                self.send_header("Location", body)
             self.send_header("Content-Type", f"{ctype}; charset=utf-8")
             self.send_header("Content-Length", str(len(data)))
             self.send_header("Cache-Control", "no-store")
