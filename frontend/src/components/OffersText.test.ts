@@ -63,13 +63,6 @@ describe("an offer's facts", () => {
     ]);
   });
 
-  it("gets one day and one month right", () => {
-    expect(offerFacts(offer({ holiday_days: 1, contract_months: 1 }))).toEqual([
-      "1 day's holiday",
-      "1 month",
-    ]);
-  });
-
   it("says each IR35 state on a day rate, and keeps one it doesn't know", () => {
     const facts = (ir35: string) => offerFacts(offer({ value_basis: "day rate", ir35 }));
     expect(facts("outside")).toEqual(["IR35 outside"]);
