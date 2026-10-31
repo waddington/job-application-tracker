@@ -76,6 +76,9 @@ const TRANSLATED = [
   "src/components/InsightStats.tsx",
   "src/components/Scorecard.tsx",
   "src/components/WholePicture.tsx",
+  // i18n-insights-reviews
+  "src/components/Conversations.tsx",
+  "src/components/DocumentPerformance.tsx",
 ];
 
 export default tseslint.config(

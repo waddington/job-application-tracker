@@ -1,5 +1,5 @@
-// Insights: the page and its tabs, stage and route tables, the scorecard, weekly activity and
-// The whole picture (docs/rfc/i18n.md §15). Stage, company and people's names are your data.
+// Insights: the page and its tabs, stage and route tables, the scorecard, weekly activity,
+// The whole picture, Recruiter conversations and CV performance (docs/rfc/i18n.md §15). Stage, company and people's names are your data.
 export default {
   title: "Insights",
   percent: "{{percent}}%",
@@ -93,6 +93,157 @@ export default {
     countCalls_other: "{{count}} calls",
     countPitched_one: "{{count}} role pitched",
     countPitched_other: "{{count}} roles pitched",
+  },
+  conversations: {
+    title: "Recruiter conversations",
+    loadFailed: "Couldn't load recruiter conversations.",
+    intro:
+      "A lot happens before an application: calls with people, and the roles they pitch. Calls count by when they happen, roles by when you added them.",
+    stats: {
+      callsHeld: "Calls held",
+      booked: "{{booked}} booked ahead",
+      people: "People",
+      peopleHint: "talked to or pitched by",
+      pitched: "Roles pitched",
+      applied: "Applied",
+      appliedHint: "{{percent}} of roles decided",
+      passed: "Passed",
+      deciding: "Still deciding",
+      interviews: "Interviews",
+      interviewsHint: "pitched roles that got one",
+      offers: "Offers",
+      offersHint: "from pitched roles",
+      time: "Time to decide",
+      timeHint: "median, to apply or pass",
+      ghosted: "Ghosted",
+      ghostedHint: "applications from pitches",
+    },
+    flow: "Where pitched roles go",
+    noPitched:
+      "No roles pitched in this period. On someone's page, <b>Add roles from this call</b> for each role they mention.",
+    who: {
+      title: "Who you talk to",
+      intro:
+        "Calls held and the roles each one pitched: how many you applied for, passed on or are still deciding about, and where the applications went. Apply rate is of the roles you've decided on.",
+      by: "Conversations by",
+      people: "People",
+      agencies: "Agencies",
+      noPeople:
+        "No calls or pitched roles in this period. Log a call on someone's page, or add the roles they mention.",
+      noAgencies: "No one from an agency in this period.",
+      person: "Person",
+      agency: "Agency",
+      calls: "Calls",
+      lastCall: "Last call",
+      pitched: "Pitched",
+      applied: "Applied",
+      passed: "Passed",
+      deciding: "Deciding",
+      applyRate: "Apply rate",
+      interviews: "Interviews",
+      applications: "Applications",
+      peopleCount_one: "{{count}} person",
+      peopleCount_other: "{{count}} people",
+      ghosted: "Ghosted",
+      notInterested: "Not interested",
+      independent: "Independent",
+    },
+    // Where applied roles went. English says "2 offer" here, as it always has.
+    outcomes: {
+      inProgress_one: "{{count}} in progress",
+      inProgress_other: "{{count}} in progress",
+      offer_one: "{{count}} offer",
+      offer_other: "{{count}} offer",
+      closed_one: "{{count}} closed",
+      closed_other: "{{count}} closed",
+      ghosted_one: "{{count}} ghosted",
+      ghosted_other: "{{count}} ghosted",
+    },
+    passed: {
+      title: "Why you passed",
+      intro: "The reasons you gave for passing on pitched roles, newest first.",
+      company: "{{company}}",
+      companyFrom: "{{company}} · from {{person}}",
+      companyDate: "{{company}} · {{date}}",
+      companyFromDate: "{{company}} · from {{person}} · {{date}}",
+    },
+  },
+  documents: {
+    loadFailed: "Couldn't load how your CVs are doing.",
+    kinds: {
+      cv: "CVs",
+      cover_letter: "Cover letters",
+      other: "Other documents",
+    },
+    best: {
+      cv: "Which CV works best",
+      cover_letter: "Which cover letter works best",
+      other: "Which document works best",
+    },
+    none: {
+      cv: "No CV recorded",
+      cover_letter: "No cover letter recorded",
+    },
+    kind: "Kind of document",
+    version: "{{document}} · {{version}}",
+    toSort_one:
+      "{{count}} CV file you've attached isn't a version yet, so it isn't compared here. <place>Sort them out on Documents</place>.",
+    toSort_other:
+      "{{count}} CV files you've attached aren't a version yet, so they aren't compared here. <place>Sort them out on Documents</place>.",
+    intro_one:
+      "Your {{count}} sent application (by the date they were added), by which version went with each. <b>Screen or interview</b> is the one to watch: it's what gets you through the door.",
+    intro_other:
+      "Your {{count}} sent applications (by the date they were added), by which version went with each. <b>Screen or interview</b> is the one to watch: it's what gets you through the door.",
+    nothing:
+      "Nothing to compare yet. Add your CVs on <place>Documents</place> (a new version each time you change one), then on each application say which one you sent (its <card>Documents sent</card> card). They'll be compared here.",
+    explain:
+      "<b>Heard back</b>: any reply after applying, a rejection included (closing it yourself, or marking it ghosted, isn't; logged calls and messages count either way). <b>Screen or interview</b>: got past Applied, or has an interview round. <b>How sure</b>: the dot is the screen or interview rate, the bar where it likely really is (a 95% range); with few applications it's wide. Other things vary too (the roles, the route, the market), so compare like with like: pick a route, and change one thing at a time.",
+    range: "Likely between {{low}}% and {{high}}% (95% range)",
+    rangeShort: "Likely between {{low}}% and {{high}}%",
+    table: {
+      sent: "Sent",
+      heardBack: "Heard back",
+      interviewed: "Screen or interview",
+      sure: "How sure",
+      offers: "Offers",
+      outcomes: "Open · ghosted · closed",
+      reply: "Typical reply",
+    },
+    compare: {
+      onlyOne: "Only one so far: send another version (or record applications without one) to compare.",
+      pickTwo: "Pick two different ones to compare.",
+      compare: "Compare",
+      with: "With",
+      measure: "Measure",
+      measures: {
+        heard_back: "Heard back",
+        interviewed: "Screen or interview",
+        offers: "Offer",
+      },
+      // One side of a comparison, per measure.
+      say: {
+        heard_back: "{{name}}: {{hits}} of {{sent}} heard back ({{percent}})",
+        interviewed: "{{name}}: {{hits}} of {{sent}} got a screen or interview ({{percent}})",
+        offers: "{{name}}: {{hits}} of {{sent}} got an offer ({{percent}})",
+      },
+      verdict: {
+        tooFew:
+          "Too few to tell yet: send each to at least {{min}} applications (10 or more is better) before reading anything into it. So far {{first}} and {{second}}.",
+        same: "No real difference so far: {{first}} and {{second}} could easily be chance. Keep sending both, or try a bigger change.",
+        hint: "A hint, not proof yet: {{first}} and {{second}}. Keep sending both and see if it holds.",
+        likely: "Likely a real difference: {{first}} and {{second}}.",
+      },
+      titles: {
+        tooFew: "Too few to tell",
+        likely: "Likely real",
+        hint: "A hint",
+        same: "Could be chance",
+      },
+      fisher:
+        "Fisher's exact test: p = {{p}}. That's how often a gap this big would turn up by chance if both did equally well.",
+      fisherSmall:
+        "Fisher's exact test: p = < 0.001. That's how often a gap this big would turn up by chance if both did equally well.",
+    },
   },
   scorecard: {
     title: "Recruiter scorecard",

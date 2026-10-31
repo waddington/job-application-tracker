@@ -15,6 +15,7 @@ import {
 import { Link } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 
 import {
   useConversations,
@@ -22,19 +23,16 @@ import {
   type ConversationPerson,
   type Conversations,
 } from "../api/insightHooks";
+import { i18n } from "../i18n";
 import { PersonName } from "./GhostMark";
 import { formatDate } from "../utils/time";
 import { SankeyChart } from "./SankeyChart";
+import { daysText } from "./Scorecard";
 
 type Tally = Conversations["total"];
 
-const percent = (rate: number | null | undefined) => (rate == null ? "—" : `${Math.round(rate * 100)}%`);
-
-function days(n: number | null | undefined) {
-  if (n == null) return "—";
-  if (n < 1) return "same day";
-  return `${n % 1 === 0 ? n : n.toFixed(1)} day${n === 1 ? "" : "s"}`;
-}
+const percent = (rate: number | null | undefined) =>
+  rate == null ? "—" : i18n.t("insights:percent", { percent: Math.round(rate * 100) });
 
 function Stat({ label, value, hint }: { label: string; value: string | number; hint?: string }) {
   return (
@@ -55,20 +53,26 @@ function Stat({ label, value, hint }: { label: string; value: string | number; h
 }
 
 /** Where applied roles went, as small badges. */
-function Outcomes({ t }: { t: Tally }) {
-  const parts: [number, string, string][] = [
-    [t.in_progress, "in progress", "cyan"],
-    [t.offers, "offer", "green"],
-    [t.closed, "closed", "red"],
-    [t.ghosted, "ghosted", "dark"],
+function Outcomes({ tally }: { tally: Tally }) {
+  const { t } = useTranslation("insights");
+  const parts: [string, number, string, string][] = [
+    [
+      "progress",
+      tally.in_progress,
+      t("conversations.outcomes.inProgress", { count: tally.in_progress }),
+      "cyan",
+    ],
+    ["offer", tally.offers, t("conversations.outcomes.offer", { count: tally.offers }), "green"],
+    ["closed", tally.closed, t("conversations.outcomes.closed", { count: tally.closed }), "red"],
+    ["ghosted", tally.ghosted, t("conversations.outcomes.ghosted", { count: tally.ghosted }), "dark"],
   ];
-  const shown = parts.filter(([n]) => n > 0);
+  const shown = parts.filter(([, n]) => n > 0);
   if (!shown.length) return <Text size="sm">—</Text>;
   return (
     <Group gap={4}>
-      {shown.map(([n, label, color]) => (
-        <Badge key={label} size="sm" variant="light" color={color}>
-          {n} {label}
+      {shown.map(([key, , text, color]) => (
+        <Badge key={key} size="sm" variant="light" color={color}>
+          {text}
         </Badge>
       ))}
     </Group>
@@ -78,50 +82,50 @@ function Outcomes({ t }: { t: Tally }) {
 type View = "people" | "agencies";
 
 function WhoTable({ data }: { data: Conversations }) {
+  const { t } = useTranslation("insights");
   const [view, setView] = useState<View>("people");
   const rows: (ConversationPerson | ConversationAgency)[] = view === "people" ? data.people : data.agencies;
   return (
     <Card withBorder>
       <Group justify="space-between" wrap="wrap" mb="sm">
         <div>
-          <Title order={4}>Who you talk to</Title>
+          <Title order={4}>{t("conversations.who.title")}</Title>
           <Text size="sm" c="dimmed">
-            Calls held and the roles each one pitched: how many you applied for, passed on or are still
-            deciding about, and where the applications went. Apply rate is of the roles you've decided on.
+            {t("conversations.who.intro")}
           </Text>
         </div>
         <SegmentedControl
-          aria-label="Conversations by"
+          aria-label={t("conversations.who.by")}
           size="xs"
           value={view}
           onChange={(v) => setView(v as View)}
           data={[
-            { value: "people", label: "People" },
-            { value: "agencies", label: "Agencies" },
+            { value: "people", label: t("conversations.who.people") },
+            { value: "agencies", label: t("conversations.who.agencies") },
           ]}
         />
       </Group>
       {!rows.length ? (
         <Text size="sm" c="dimmed">
-          {view === "people"
-            ? "No calls or pitched roles in this period. Log a call on someone's page, or add the roles they mention."
-            : "No one from an agency in this period."}
+          {view === "people" ? t("conversations.who.noPeople") : t("conversations.who.noAgencies")}
         </Text>
       ) : (
         <Table.ScrollContainer minWidth={760}>
           <Table striped highlightOnHover verticalSpacing="xs">
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>{view === "people" ? "Person" : "Agency"}</Table.Th>
-                <Table.Th ta="right">Calls</Table.Th>
-                <Table.Th>Last call</Table.Th>
-                <Table.Th ta="right">Pitched</Table.Th>
-                <Table.Th ta="right">Applied</Table.Th>
-                <Table.Th ta="right">Passed</Table.Th>
-                <Table.Th ta="right">Deciding</Table.Th>
-                <Table.Th ta="right">Apply rate</Table.Th>
-                <Table.Th ta="right">Interviews</Table.Th>
-                <Table.Th>Applications</Table.Th>
+                <Table.Th>
+                  {view === "people" ? t("conversations.who.person") : t("conversations.who.agency")}
+                </Table.Th>
+                <Table.Th ta="right">{t("conversations.who.calls")}</Table.Th>
+                <Table.Th>{t("conversations.who.lastCall")}</Table.Th>
+                <Table.Th ta="right">{t("conversations.who.pitched")}</Table.Th>
+                <Table.Th ta="right">{t("conversations.who.applied")}</Table.Th>
+                <Table.Th ta="right">{t("conversations.who.passed")}</Table.Th>
+                <Table.Th ta="right">{t("conversations.who.deciding")}</Table.Th>
+                <Table.Th ta="right">{t("conversations.who.applyRate")}</Table.Th>
+                <Table.Th ta="right">{t("conversations.who.interviews")}</Table.Th>
+                <Table.Th>{t("conversations.who.applications")}</Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
@@ -134,7 +138,7 @@ function WhoTable({ data }: { data: Conversations }) {
                           {r.name}
                         </Anchor>
                         <Text size="xs" c="dimmed">
-                          {r.people} {r.people === 1 ? "person" : "people"}
+                          {t("conversations.who.peopleCount", { count: r.people })}
                         </Text>
                       </>
                     ) : (
@@ -149,12 +153,14 @@ function WhoTable({ data }: { data: Conversations }) {
                               variant="light"
                               color={r.closed_as === "ghosted" ? "dark" : "gray"}
                             >
-                              {r.closed_as === "ghosted" ? "Ghosted" : "Not interested"}
+                              {r.closed_as === "ghosted"
+                                ? t("conversations.who.ghosted")
+                                : t("conversations.who.notInterested")}
                             </Badge>
                           )}
                         </Group>
                         <Text size="xs" c="dimmed">
-                          {r.agency_name ?? r.company_name ?? "Independent"}
+                          {r.agency_name ?? r.company_name ?? t("conversations.who.independent")}
                         </Text>
                       </>
                     )}
@@ -172,7 +178,7 @@ function WhoTable({ data }: { data: Conversations }) {
                   <Table.Td ta="right">{percent(r.apply_rate)}</Table.Td>
                   <Table.Td ta="right">{r.interviewed}</Table.Td>
                   <Table.Td>
-                    <Outcomes t={r} />
+                    <Outcomes tally={r} />
                   </Table.Td>
                 </Table.Tr>
               ))}
@@ -185,31 +191,41 @@ function WhoTable({ data }: { data: Conversations }) {
 }
 
 function PassReasons({ data }: { data: Conversations }) {
+  const { t } = useTranslation("insights");
   if (!data.pass_reasons.length) return null;
   return (
     <Card withBorder>
-      <Title order={4}>Why you passed</Title>
+      <Title order={4}>{t("conversations.passed.title")}</Title>
       <Text size="sm" c="dimmed" mb="sm">
-        The reasons you gave for passing on pitched roles, newest first.
+        {t("conversations.passed.intro")}
       </Text>
       <Stack gap="xs">
-        {data.pass_reasons.map((r) => (
-          <div key={r.role_id}>
-            <Group gap={6} wrap="wrap">
-              <Anchor component={Link} to={`/roles/${r.role_id}`} size="sm" fw={600}>
-                {r.role_title}
-              </Anchor>
-              <Text size="sm" c="dimmed">
-                {r.company_name}
-                {r.person_name ? ` · from ${r.person_name}` : ""}
-                {r.decided_on ? ` · ${formatDate(r.decided_on)}` : ""}
+        {data.pass_reasons.map((r) => {
+          const company = r.company_name;
+          const person = r.person_name;
+          const date = r.decided_on ? formatDate(r.decided_on) : null;
+          return (
+            <div key={r.role_id}>
+              <Group gap={6} wrap="wrap">
+                <Anchor component={Link} to={`/roles/${r.role_id}`} size="sm" fw={600}>
+                  {r.role_title}
+                </Anchor>
+                <Text size="sm" c="dimmed">
+                  {person && date
+                    ? t("conversations.passed.companyFromDate", { company, person, date })
+                    : person
+                      ? t("conversations.passed.companyFrom", { company, person })
+                      : date
+                        ? t("conversations.passed.companyDate", { company, date })
+                        : t("conversations.passed.company", { company })}
+                </Text>
+              </Group>
+              <Text size="sm" style={{ overflowWrap: "anywhere" }}>
+                {r.reason}
               </Text>
-            </Group>
-            <Text size="sm" style={{ overflowWrap: "anywhere" }}>
-              {r.reason}
-            </Text>
-          </div>
-        ))}
+            </div>
+          );
+        })}
       </Stack>
     </Card>
   );
@@ -220,43 +236,68 @@ function PassReasons({ data }: { data: Conversations }) {
  * they pitched, which you applied for or passed on, and how the applications went.
  */
 export function ConversationsSection({ since }: { since?: string }) {
+  const { t } = useTranslation("insights");
   const { data, isLoading, isError } = useConversations(since);
   if (isLoading) return <Loader />;
-  if (isError || !data) return <Text c="red">Couldn't load recruiter conversations.</Text>;
-  const t = data.total;
+  if (isError || !data) return <Text c="red">{t("conversations.loadFailed")}</Text>;
+  const total = data.total;
   return (
     <Stack>
       <Card withBorder>
-        <Title order={4}>Recruiter conversations</Title>
+        <Title order={4}>{t("conversations.title")}</Title>
         <Text size="sm" c="dimmed" mb="md">
-          A lot happens before an application: calls with people, and the roles they pitch. Calls count by
-          when they happen, roles by when you added them.
+          {t("conversations.intro")}
         </Text>
         <SimpleGrid cols={{ base: 2, sm: 3, md: 5 }} spacing="sm">
           <Stat
-            label="Calls held"
-            value={t.calls_held}
-            hint={t.calls_booked ? `${t.calls_booked} booked ahead` : undefined}
+            label={t("conversations.stats.callsHeld")}
+            value={total.calls_held}
+            hint={
+              total.calls_booked ? t("conversations.stats.booked", { booked: total.calls_booked }) : undefined
+            }
           />
-          <Stat label="People" value={data.people_talked_to} hint="talked to or pitched by" />
-          <Stat label="Roles pitched" value={t.pitched} />
-          <Stat label="Applied" value={t.applied} hint={`${percent(t.apply_rate)} of roles decided`} />
-          <Stat label="Passed" value={t.passed} />
-          <Stat label="Still deciding" value={t.deciding} />
-          <Stat label="Interviews" value={t.interviewed} hint="pitched roles that got one" />
-          <Stat label="Offers" value={t.offers} hint="from pitched roles" />
-          <Stat label="Time to decide" value={days(t.median_decide_days)} hint="median, to apply or pass" />
-          <Stat label="Ghosted" value={t.ghosted} hint="applications from pitches" />
+          <Stat
+            label={t("conversations.stats.people")}
+            value={data.people_talked_to}
+            hint={t("conversations.stats.peopleHint")}
+          />
+          <Stat label={t("conversations.stats.pitched")} value={total.pitched} />
+          <Stat
+            label={t("conversations.stats.applied")}
+            value={total.applied}
+            hint={t("conversations.stats.appliedHint", { percent: percent(total.apply_rate) })}
+          />
+          <Stat label={t("conversations.stats.passed")} value={total.passed} />
+          <Stat label={t("conversations.stats.deciding")} value={total.deciding} />
+          <Stat
+            label={t("conversations.stats.interviews")}
+            value={total.interviewed}
+            hint={t("conversations.stats.interviewsHint")}
+          />
+          <Stat
+            label={t("conversations.stats.offers")}
+            value={total.offers}
+            hint={t("conversations.stats.offersHint")}
+          />
+          <Stat
+            label={t("conversations.stats.time")}
+            value={daysText(total.median_decide_days)}
+            hint={t("conversations.stats.timeHint")}
+          />
+          <Stat
+            label={t("conversations.stats.ghosted")}
+            value={total.ghosted}
+            hint={t("conversations.stats.ghostedHint")}
+          />
         </SimpleGrid>
         <Title order={5} mt="lg" mb={4}>
-          Where pitched roles go
+          {t("conversations.flow")}
         </Title>
-        {t.pitched ? (
+        {total.pitched ? (
           <SankeyChart flow={data.flow} unit="role" />
         ) : (
           <Text size="sm" c="dimmed">
-            No roles pitched in this period. On someone's page, <b>Add roles from this call</b> for each role
-            they mention.
+            <Trans t={t} i18nKey="conversations.noPitched" components={{ b: <b /> }} />
           </Text>
         )}
       </Card>
