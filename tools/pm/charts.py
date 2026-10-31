@@ -29,7 +29,7 @@ def timeline_html(roadmap: Roadmap, now: datetime) -> str:
     marks = []
     mark = t.start
     while mark < t.end:
-        marks.append(f'<span class="mark" style="left:{_at(mark, t.start, t.end):.2f}%">{day(mark)}</span>')
+        marks.append(f'<span class="tl-mark" style="left:{_at(mark, t.start, t.end):.2f}%">{day(mark)}</span>')
         mark += timedelta(days=step)
     today = f'<i class="today" style="left:{_at(t.now, t.start, t.end):.2f}%"></i>'
     rows = []
@@ -153,7 +153,7 @@ def status_table(roadmap: Roadmap) -> str:
         rows.append(
             f'<tr><td><code class="muted">{escape(p.id)}</code> {escape(p.name)}</td>{cells}'
             f'<td class="num">{p.done_h:g} / {p.estimate_h:g}</td><td class="num">{pct}%</td>'
-            f'<td class="small muted">{when}</td></tr>'
+            f'<td class="small muted num">{when}</td></tr>'
         )
     heads = "".join(
         f'<th class="num">{h}</th>'

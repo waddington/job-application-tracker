@@ -6,6 +6,7 @@ from unittest import mock
 from tools.pm import charts, derive, render
 from tools.pm.live import Snapshot, collect, count_scope, keep_last_good
 from tools.pm.roadmap import Live, PullRequest, apply_live, from_data
+from tools.pm.style import CSS
 
 NOW = datetime(2026, 10, 31, 12, 0).astimezone()
 
@@ -174,6 +175,10 @@ class StatusTableTests(unittest.TestCase):
 
 
 class PageTests(unittest.TestCase):
+    def test_no_style_of_the_charts_clashes_with_the_logo(self):
+        self.assertIn(".mark{width:15px", CSS)
+        self.assertEqual(CSS.count(".mark{"), 1)
+
     def test_the_page_opens_with_the_charts_and_only_the_current_phase_unfolded(self):
         html = render.roadmap_page(road([merged(1, "worktree-a", 10)]), Snapshot(live=Live()), NOW)
         self.assertLess(html.index("Timeline"), html.index("<details"))
