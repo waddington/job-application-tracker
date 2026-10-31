@@ -1,15 +1,11 @@
-import { notifications } from "@mantine/notifications";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api, unwrap, type Schemas } from "./client";
 import { invalidateApplicationViews } from "./hooks";
+import { notifyError } from "./notifyError";
 
 export type LinkItem = Schemas["LinkOut"];
 export type EntityType = Schemas["LinkIn"]["entity_type"];
-
-function notifyError(error: Error) {
-  notifications.show({ color: "red", title: "That didn't work", message: error.message });
-}
 
 export function useLinks(entityType: EntityType, entityId: string) {
   return useQuery({

@@ -219,6 +219,8 @@ describe("the app's text", () => {
 
   it("has no English keys that no code uses", () => {
     expect(Object.keys(sources).length).toBeGreaterThan(50); // the scan really read the app
-    expect(unusedKeys(en, Object.values(sources), DEFAULT_NS)).toEqual([]);
+    // An error's text is looked up by the code the API sends, and the type check ties those to ErrorCode.
+    const unused = unusedKeys(en, Object.values(sources), DEFAULT_NS);
+    expect(unused.filter((key) => !key.startsWith("errors:codes."))).toEqual([]);
   });
 });

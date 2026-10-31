@@ -2400,6 +2400,21 @@ export interface components {
             /** Subject */
             subject: string;
         };
+        /**
+         * ErrorOut
+         * @description An error's body. Only `detail` is always there: `code` and `params` come with coded errors.
+         *     `detail` is English text, or for the framework's own 422 a list of problems.
+         */
+        ErrorOut: {
+            /** Code */
+            code?: ("backup_add_failed" | "backup_commit_failed" | "backup_detached_head" | "backup_git_timeout" | "backup_git_unavailable" | "backup_lock_failed" | "backup_mid_rebase" | "backup_no_remote" | "backup_not_a_repo" | "backup_push_failed" | "backup_shut_down" | "backup_snapshot_failed" | "backup_snapshots_off" | "todo_text_required") | null;
+            /** Detail */
+            detail: string | components["schemas"]["ValidationIssue"][];
+            /** Params */
+            params?: {
+                [key: string]: string | number;
+            } | null;
+        };
         /** EventOut */
         EventOut: {
             /** Application Id */
@@ -2481,11 +2496,6 @@ export interface components {
             links: components["schemas"]["FlowLink"][];
             /** Nodes */
             nodes: components["schemas"]["FlowNode"][];
-        };
-        /** HTTPValidationError */
-        HTTPValidationError: {
-            /** Detail */
-            detail?: components["schemas"]["ValidationError"][];
         };
         /**
          * InterviewIn
@@ -3746,17 +3756,16 @@ export interface components {
             /** Text */
             text?: string | null;
         };
-        /** ValidationError */
-        ValidationError: {
-            /** Context */
-            ctx?: Record<string, never>;
-            /** Input */
-            input?: unknown;
-            /** Location */
+        /**
+         * ValidationIssue
+         * @description One problem in the framework's own 422.
+         */
+        ValidationIssue: {
+            /** Loc */
             loc: (string | number)[];
-            /** Message */
+            /** Msg */
             msg: string;
-            /** Error Type */
+            /** Type */
             type: string;
         };
         /** VersionOut */
@@ -3836,13 +3845,13 @@ export interface operations {
                     "application/json": components["schemas"]["AgencyOut"][];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -3869,13 +3878,13 @@ export interface operations {
                     "application/json": components["schemas"]["AgencyOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -3900,13 +3909,13 @@ export interface operations {
                     "application/json": components["schemas"]["AgencySummary"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -3931,13 +3940,13 @@ export interface operations {
                     "application/json": components["schemas"]["AgencyOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -3960,13 +3969,13 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -3995,13 +4004,13 @@ export interface operations {
                     "application/json": components["schemas"]["AgencyOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -4036,13 +4045,13 @@ export interface operations {
                     "application/json": components["schemas"]["ApplicationRow"][];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -4069,13 +4078,13 @@ export interface operations {
                     "application/json": components["schemas"]["ApplicationDetail"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -4102,13 +4111,13 @@ export interface operations {
                     "application/json": components["schemas"]["DuplicateOut"][];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -4135,13 +4144,13 @@ export interface operations {
                     "application/json": components["schemas"]["ApplicationDetail"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -4166,13 +4175,13 @@ export interface operations {
                     "application/json": components["schemas"]["ApplicationDetail"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -4195,13 +4204,13 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -4230,13 +4239,13 @@ export interface operations {
                     "application/json": components["schemas"]["ApplicationDetail"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -4265,13 +4274,13 @@ export interface operations {
                     "application/json": components["schemas"]["EventOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -4300,13 +4309,13 @@ export interface operations {
                     "application/json": components["schemas"]["ApplicationContactOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -4330,13 +4339,13 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -4365,13 +4374,13 @@ export interface operations {
                     "application/json": components["schemas"]["SentDocumentOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -4395,13 +4404,13 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -4426,13 +4435,13 @@ export interface operations {
                     "application/json": components["schemas"]["EventOut"][];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -4461,13 +4470,13 @@ export interface operations {
                     "application/json": components["schemas"]["InterviewOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -4496,13 +4505,13 @@ export interface operations {
                     "application/json": components["schemas"]["ApplicationDetail"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -4531,13 +4540,13 @@ export interface operations {
                     "application/json": components["schemas"]["OfferOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -4562,13 +4571,13 @@ export interface operations {
                     "application/json": components["schemas"]["ApplicationDetail"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -4595,13 +4604,13 @@ export interface operations {
                     "application/json": components["schemas"]["AttachmentOut"][];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -4628,13 +4637,13 @@ export interface operations {
                     "application/json": components["schemas"]["AttachmentOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -4659,13 +4668,13 @@ export interface operations {
                     "application/json": components["schemas"]["AttachmentOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -4688,13 +4697,13 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -4723,13 +4732,13 @@ export interface operations {
                     "application/json": components["schemas"]["AttachmentOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -4752,13 +4761,13 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -4781,6 +4790,15 @@ export interface operations {
                     "application/json": components["schemas"]["BackupStatus"];
                 };
             };
+            /** @description An error, with a code when people can see it */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
         };
     };
     download_archive_api_v1_backup_archive_get: {
@@ -4799,6 +4817,15 @@ export interface operations {
                 };
                 content: {
                     "application/zip": unknown;
+                };
+            };
+            /** @description An error, with a code when people can see it */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -4821,6 +4848,15 @@ export interface operations {
                     "application/json": components["schemas"]["PushResult"];
                 };
             };
+            /** @description An error, with a code when people can see it */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
         };
     };
     snapshot_api_v1_backup_snapshot_post: {
@@ -4839,6 +4875,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SnapshotResult"];
+                };
+            };
+            /** @description An error, with a code when people can see it */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -4865,13 +4910,13 @@ export interface operations {
                     "application/json": components["schemas"]["CompanyOut"][];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -4898,13 +4943,13 @@ export interface operations {
                     "application/json": components["schemas"]["CompanyOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -4929,13 +4974,13 @@ export interface operations {
                     "application/json": components["schemas"]["CompanySummary"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -4960,13 +5005,13 @@ export interface operations {
                     "application/json": components["schemas"]["CompanyOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -4989,13 +5034,13 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -5024,13 +5069,13 @@ export interface operations {
                     "application/json": components["schemas"]["CompanyOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -5056,13 +5101,13 @@ export interface operations {
                     "application/json": components["schemas"]["ContactOut"][];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -5089,13 +5134,13 @@ export interface operations {
                     "application/json": components["schemas"]["ContactOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -5120,13 +5165,13 @@ export interface operations {
                     "application/json": components["schemas"]["ContactOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -5149,13 +5194,13 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -5184,13 +5229,13 @@ export interface operations {
                     "application/json": components["schemas"]["ContactOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -5219,13 +5264,13 @@ export interface operations {
                     "application/json": components["schemas"]["ContactOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -5250,13 +5295,13 @@ export interface operations {
                     "application/json": components["schemas"]["ContactSummary"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -5277,6 +5322,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CvFile"][];
+                };
+            };
+            /** @description An error, with a code when people can see it */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -5303,13 +5357,13 @@ export interface operations {
                     "application/json": components["schemas"]["CvFileAdopted"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -5330,6 +5384,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DocumentOut"][];
+                };
+            };
+            /** @description An error, with a code when people can see it */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -5356,13 +5419,13 @@ export interface operations {
                     "application/json": components["schemas"]["DocumentOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -5385,13 +5448,13 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -5420,13 +5483,13 @@ export interface operations {
                     "application/json": components["schemas"]["VersionOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -5451,13 +5514,13 @@ export interface operations {
                     "application/json": components["schemas"]["DocumentDetail"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -5480,13 +5543,13 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -5515,13 +5578,13 @@ export interface operations {
                     "application/json": components["schemas"]["DocumentOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -5550,13 +5613,13 @@ export interface operations {
                     "application/json": components["schemas"]["VersionOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -5583,13 +5646,13 @@ export interface operations {
                     "application/json": components["schemas"]["WeekOut"][];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -5615,13 +5678,13 @@ export interface operations {
                     "application/json": components["schemas"]["ConversationsOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -5648,13 +5711,13 @@ export interface operations {
                     "application/json": components["schemas"]["DocumentsOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -5681,13 +5744,13 @@ export interface operations {
                     "application/json": components["schemas"]["FlowOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -5713,13 +5776,13 @@ export interface operations {
                     "application/json": components["schemas"]["ScorecardOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -5745,13 +5808,13 @@ export interface operations {
                     "application/json": components["schemas"]["StatsOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -5777,13 +5840,13 @@ export interface operations {
                     "application/json": components["schemas"]["FlowOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -5811,13 +5874,13 @@ export interface operations {
                     "application/json": components["schemas"]["InterviewOut"][];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -5838,6 +5901,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": string[];
+                };
+            };
+            /** @description An error, with a code when people can see it */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -5862,13 +5934,13 @@ export interface operations {
                     "application/json": components["schemas"]["InterviewOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -5891,13 +5963,13 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -5926,13 +5998,13 @@ export interface operations {
                     "application/json": components["schemas"]["InterviewOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -5958,13 +6030,13 @@ export interface operations {
                     "application/json": components["schemas"]["LinkOut"][];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -5991,13 +6063,13 @@ export interface operations {
                     "application/json": components["schemas"]["LinkOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -6020,13 +6092,13 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -6055,13 +6127,13 @@ export interface operations {
                     "application/json": components["schemas"]["LinkOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -6092,13 +6164,13 @@ export interface operations {
                     "application/json": components["schemas"]["MeetingOut"][];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -6125,13 +6197,13 @@ export interface operations {
                     "application/json": components["schemas"]["MeetingOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -6156,13 +6228,13 @@ export interface operations {
                     "application/json": components["schemas"]["MeetingOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -6185,13 +6257,13 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -6220,13 +6292,13 @@ export interface operations {
                     "application/json": components["schemas"]["MeetingOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -6252,13 +6324,13 @@ export interface operations {
                     "application/json": components["schemas"]["NextActions"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -6284,13 +6356,13 @@ export interface operations {
                     "application/json": components["schemas"]["NoteSummary"][];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -6317,13 +6389,13 @@ export interface operations {
                     "application/json": components["schemas"]["NoteOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -6348,13 +6420,13 @@ export interface operations {
                     "application/json": components["schemas"]["NoteOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -6377,13 +6449,13 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -6412,13 +6484,13 @@ export interface operations {
                     "application/json": components["schemas"]["NoteOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -6445,13 +6517,13 @@ export interface operations {
                     "application/json": components["schemas"]["OfferOut"][];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -6476,13 +6548,13 @@ export interface operations {
                     "application/json": components["schemas"]["OfferOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -6505,13 +6577,13 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -6540,13 +6612,13 @@ export interface operations {
                     "application/json": components["schemas"]["OfferOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -6574,13 +6646,13 @@ export interface operations {
                     "application/json": components["schemas"]["RoleSummary"][];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -6605,13 +6677,13 @@ export interface operations {
                     "application/json": components["schemas"]["RoleSummary"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -6638,13 +6710,13 @@ export interface operations {
                     "application/json": components["schemas"]["RoleOut"][];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -6671,13 +6743,13 @@ export interface operations {
                     "application/json": components["schemas"]["RoleOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -6702,13 +6774,13 @@ export interface operations {
                     "application/json": components["schemas"]["RoleOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -6731,13 +6803,13 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -6766,13 +6838,13 @@ export interface operations {
                     "application/json": components["schemas"]["RoleOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -6798,13 +6870,13 @@ export interface operations {
                     "application/json": components["schemas"]["SearchHit"][];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -6835,13 +6907,13 @@ export interface operations {
                     "application/json": components["schemas"]["Timeline"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -6869,13 +6941,13 @@ export interface operations {
                     "application/json": components["schemas"]["TodoOut"][];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -6902,13 +6974,13 @@ export interface operations {
                     "application/json": components["schemas"]["TodoOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -6931,13 +7003,13 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -6966,13 +7038,13 @@ export interface operations {
                     "application/json": components["schemas"]["TodoOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description An error, with a code when people can see it */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -6995,6 +7067,15 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+            /** @description An error, with a code when people can see it */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };

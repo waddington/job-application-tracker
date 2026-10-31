@@ -1,7 +1,7 @@
-import { notifications } from "@mantine/notifications";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api, unwrap, type Schemas } from "./client";
+import { notifyError } from "./notifyError";
 
 export type Meeting = Schemas["MeetingOut"];
 export type MeetingKind = Schemas["MeetingIn"]["kind"];
@@ -17,10 +17,6 @@ export interface MeetingFilters {
   agency_id?: string;
   company_id?: string;
   application_id?: string;
-}
-
-function notifyError(error: Error) {
-  notifications.show({ color: "red", title: "That didn't work", message: error.message });
 }
 
 /** Calls and meetings, soonest first. */

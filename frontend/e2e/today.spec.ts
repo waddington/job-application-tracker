@@ -324,6 +324,26 @@ test.describe("to-dos", () => {
     await expect(section(page, "To-dos").getByRole("button", { name: "Add", exact: true })).toBeDisabled();
   });
 
+  // The form stops an empty to-do, so the refusal is sent by hand. The detail differs from the text
+  // on purpose: the toast must show the text for the code, and the detail only without one.
+  for (const [body, shown] of [
+    [{ detail: "The API's English", code: "todo_text_required", params: {} }, "text: say what needs doing"],
+    [{ detail: "The API's English" }, "The API's English"],
+    [{ detail: "The API's English", code: "from_a_newer_server", params: {} }, "The API's English"],
+  ] as const) {
+    test(`a refusal shows "${shown}" for ${JSON.stringify(body)}`, async ({ page, problems }) => {
+      problems.allow(/422.*\/api\/v1\/todos/);
+      await page.route("**/api/v1/todos", (route) =>
+        route.request().method() === "POST" ? route.fulfill({ status: 422, json: body }) : route.fallback(),
+      );
+      const todos = section(page, "To-dos");
+      await todos.getByLabel("New to-do").fill("Refused to-do");
+      await todos.getByRole("button", { name: "Add", exact: true }).click();
+      await expect(page.getByText("That didn't work")).toBeVisible();
+      await expect(page.getByText(shown, { exact: true })).toBeVisible();
+    });
+  }
+
   test("adding one shows it, and it's still there after a reload", async ({ page }) => {
     await add(page, "Update my CV headline");
     await page.reload();

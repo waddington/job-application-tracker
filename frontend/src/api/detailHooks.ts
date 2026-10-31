@@ -1,12 +1,8 @@
-import { notifications } from "@mantine/notifications";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api, unwrap, type Schemas } from "./client";
 import { invalidateApplicationViews, keys } from "./hooks";
-
-function notifyError(error: Error) {
-  notifications.show({ color: "red", title: "That didn't work", message: error.message });
-}
+import { notifyError } from "./notifyError";
 
 export function useCompanySummary(id: string) {
   return useQuery({

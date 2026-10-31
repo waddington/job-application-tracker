@@ -1,10 +1,10 @@
-import { notifications } from "@mantine/notifications";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { i18n } from "../i18n";
 import { formatMoney } from "../utils/format";
 import { api, unwrap, type Schemas } from "./client";
 import { invalidateApplicationViews } from "./hooks";
+import { notifyError } from "./notifyError";
 
 export type Offer = Schemas["OfferOut"];
 export type OfferBody = Schemas["OfferIn"];
@@ -21,10 +21,6 @@ export interface OfferFilters {
   application_id?: string;
   status?: OfferStatus;
   latest?: boolean;
-}
-
-function notifyError(error: Error) {
-  notifications.show({ color: "red", title: "That didn't work", message: error.message });
 }
 
 export function useOffers(filters: OfferFilters) {

@@ -3632,6 +3632,78 @@
         "title": "EmailUnknownSenderParams",
         "type": "object"
       },
+      "ErrorOut": {
+        "description": "An error's body. Only `detail` is always there: `code` and `params` come with coded errors.\n`detail` is English text, or for the framework's own 422 a list of problems.",
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "enum": [
+                  "backup_add_failed",
+                  "backup_commit_failed",
+                  "backup_detached_head",
+                  "backup_git_timeout",
+                  "backup_git_unavailable",
+                  "backup_lock_failed",
+                  "backup_mid_rebase",
+                  "backup_no_remote",
+                  "backup_not_a_repo",
+                  "backup_push_failed",
+                  "backup_shut_down",
+                  "backup_snapshot_failed",
+                  "backup_snapshots_off",
+                  "todo_text_required"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ValidationIssue"
+                },
+                "type": "array"
+              }
+            ],
+            "title": "Detail"
+          },
+          "params": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "integer"
+                    }
+                  ]
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Params"
+          }
+        },
+        "required": [
+          "detail"
+        ],
+        "title": "ErrorOut",
+        "type": "object"
+      },
       "EventOut": {
         "properties": {
           "application_id": {
@@ -3926,19 +3998,6 @@
           "links"
         ],
         "title": "FlowOut",
-        "type": "object"
-      },
-      "HTTPValidationError": {
-        "properties": {
-          "detail": {
-            "items": {
-              "$ref": "#/components/schemas/ValidationError"
-            },
-            "title": "Detail",
-            "type": "array"
-          }
-        },
-        "title": "HTTPValidationError",
         "type": "object"
       },
       "InterviewIn": {
@@ -8734,15 +8793,9 @@
         "title": "TodoPatch",
         "type": "object"
       },
-      "ValidationError": {
+      "ValidationIssue": {
+        "description": "One problem in the framework's own 422.",
         "properties": {
-          "ctx": {
-            "title": "Context",
-            "type": "object"
-          },
-          "input": {
-            "title": "Input"
-          },
           "loc": {
             "items": {
               "anyOf": [
@@ -8754,15 +8807,15 @@
                 }
               ]
             },
-            "title": "Location",
+            "title": "Loc",
             "type": "array"
           },
           "msg": {
-            "title": "Message",
+            "title": "Msg",
             "type": "string"
           },
           "type": {
-            "title": "Error Type",
+            "title": "Type",
             "type": "string"
           }
         },
@@ -8771,7 +8824,7 @@
           "msg",
           "type"
         ],
-        "title": "ValidationError",
+        "title": "ValidationIssue",
         "type": "object"
       },
       "VersionOut": {
@@ -8912,7 +8965,7 @@
   },
   "info": {
     "title": "Job Application Tracker",
-    "version": "1.2.31"
+    "version": "1.2.32"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -8972,15 +9025,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "List Items",
@@ -9011,15 +9064,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Create Item",
@@ -9053,15 +9106,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Agency Summary",
@@ -9088,15 +9141,15 @@
           "204": {
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Delete Item",
@@ -9128,15 +9181,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Get Item",
@@ -9178,15 +9231,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Update Item",
@@ -9395,15 +9448,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "List Applications",
@@ -9434,15 +9487,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Create App ",
@@ -9516,15 +9569,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Find Duplicates",
@@ -9558,15 +9611,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Quick Create",
@@ -9593,15 +9646,15 @@
           "204": {
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Delete App",
@@ -9633,15 +9686,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Get App",
@@ -9683,15 +9736,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Update App",
@@ -9735,15 +9788,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Add Activity",
@@ -9787,15 +9840,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Link Contact",
@@ -9831,15 +9884,15 @@
           "204": {
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Unlink Contact",
@@ -9883,15 +9936,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Send Document",
@@ -9927,15 +9980,15 @@
           "204": {
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Unsend Document",
@@ -9973,15 +10026,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "App Events",
@@ -10025,15 +10078,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Create Interview",
@@ -10077,15 +10130,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Move App",
@@ -10129,15 +10182,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Create Offer",
@@ -10171,15 +10224,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Undo App",
@@ -10251,15 +10304,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "List Attachments",
@@ -10290,15 +10343,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Upload Attachment",
@@ -10325,15 +10378,15 @@
           "204": {
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Delete Attachment",
@@ -10365,15 +10418,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Get Attachment",
@@ -10415,15 +10468,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Update Attachment",
@@ -10450,15 +10503,15 @@
           "200": {
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Download Attachment",
@@ -10480,6 +10533,16 @@
               }
             },
             "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Backup Status",
@@ -10498,6 +10561,16 @@
               "application/zip": {}
             },
             "description": "The data directory as a zip"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Download Archive",
@@ -10519,6 +10592,16 @@
               }
             },
             "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Push",
@@ -10540,6 +10623,16 @@
               }
             },
             "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Snapshot",
@@ -10604,15 +10697,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "List Items",
@@ -10643,15 +10736,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Create Item",
@@ -10685,15 +10778,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Company Summary",
@@ -10720,15 +10813,15 @@
           "204": {
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Delete Item",
@@ -10760,15 +10853,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Get Item",
@@ -10810,15 +10903,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Update Item",
@@ -10879,15 +10972,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "List Contacts",
@@ -10918,15 +11011,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Create Contact",
@@ -10953,15 +11046,15 @@
           "204": {
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Delete Contact",
@@ -10993,15 +11086,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Get Contact",
@@ -11043,15 +11136,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Update Contact",
@@ -11096,15 +11189,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Merge Contact",
@@ -11139,15 +11232,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Contact Summary",
@@ -11174,6 +11267,16 @@
               }
             },
             "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Cv Files",
@@ -11207,15 +11310,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Adopt Cv File",
@@ -11241,6 +11344,16 @@
               }
             },
             "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "List Documents",
@@ -11271,15 +11384,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Create Document",
@@ -11306,15 +11419,15 @@
           "204": {
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Delete Version",
@@ -11356,15 +11469,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Update Version",
@@ -11391,15 +11504,15 @@
           "204": {
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Delete Document",
@@ -11431,15 +11544,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Get Document",
@@ -11481,15 +11594,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Update Document",
@@ -11534,15 +11647,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Add Version",
@@ -11611,15 +11724,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Weekly Activity",
@@ -11679,15 +11792,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Recruiter Conversations",
@@ -11768,15 +11881,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Document Performance",
@@ -11857,15 +11970,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Stage Flow",
@@ -11925,15 +12038,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Recruiter Scorecard",
@@ -11993,15 +12106,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Search Stats",
@@ -12061,15 +12174,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Whole Flow",
@@ -12163,15 +12276,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "List Interviews",
@@ -12198,6 +12311,16 @@
               }
             },
             "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Interview Titles",
@@ -12224,15 +12347,15 @@
           "204": {
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Delete Interview",
@@ -12264,15 +12387,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Get Interview",
@@ -12314,15 +12437,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Update Interview",
@@ -12378,15 +12501,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "List Links",
@@ -12417,15 +12540,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Create Link",
@@ -12452,15 +12575,15 @@
           "204": {
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Delete Link",
@@ -12502,15 +12625,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Update Link",
@@ -12652,15 +12775,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "List Meetings",
@@ -12691,15 +12814,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Create Meeting",
@@ -12726,15 +12849,15 @@
           "204": {
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Delete Meeting",
@@ -12766,15 +12889,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Get Meeting",
@@ -12816,15 +12939,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Update Meeting",
@@ -12884,15 +13007,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Next Actions",
@@ -12954,15 +13077,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "List Notes",
@@ -12993,15 +13116,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Create Note",
@@ -13028,15 +13151,15 @@
           "204": {
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Delete Note",
@@ -13068,15 +13191,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Get Note",
@@ -13118,15 +13241,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Update Note",
@@ -13204,15 +13327,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "List Offers",
@@ -13239,15 +13362,15 @@
           "204": {
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Delete Offer",
@@ -13279,15 +13402,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Get Offer",
@@ -13329,15 +13452,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Update Offer",
@@ -13438,15 +13561,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Role Summaries",
@@ -13481,15 +13604,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Role Summary",
@@ -13554,15 +13677,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "List Items",
@@ -13593,15 +13716,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Create Item",
@@ -13628,15 +13751,15 @@
           "204": {
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Delete Item",
@@ -13668,15 +13791,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Get Item",
@@ -13718,15 +13841,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Update Item",
@@ -13779,15 +13902,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Search",
@@ -13943,15 +14066,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Timeline",
@@ -14052,15 +14175,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "List Todos",
@@ -14091,15 +14214,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Create Todo",
@@ -14126,15 +14249,15 @@
           "204": {
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Delete Todo",
@@ -14176,15 +14299,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Update Todo",
@@ -14208,6 +14331,16 @@
               }
             },
             "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Get Workflow Config",
