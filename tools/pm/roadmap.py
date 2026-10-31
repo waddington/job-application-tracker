@@ -25,6 +25,7 @@ class PullRequest:
     merged_at: str = ""
     additions: int = 0
     deletions: int = 0
+    merge_commit: str = ""
 
 
 @dataclass

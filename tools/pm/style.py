@@ -146,6 +146,9 @@ padding:3px 0}
 .lane{position:absolute;top:6px;height:14px;border-radius:2px;background:var(--planned);display:block}
 .lane.done{background:var(--done)}.lane.building{background:var(--building)}
 .legend .closed{background:var(--planned)}
+.facts{display:grid;grid-template-columns:minmax(90px,130px) minmax(0,1fr);gap:6px 12px;margin:0}
+.facts dt{color:var(--ink-3)}.facts dd{margin:0;overflow-wrap:anywhere}
+.track{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));max-width:560px}
 .rm-grid svg.chart .axis{font-size:18px}
 @media (max-width:700px){svg.chart.wide{min-width:640px}svg.chart.wide .axis{font-size:26px}
 .rm-grid svg.chart .axis{font-size:24px}}

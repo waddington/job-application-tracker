@@ -5,10 +5,10 @@ from __future__ import annotations
 import json
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import parse_qs, urlencode, urlparse
+from urllib.parse import parse_qs, unquote, urlencode, urlparse
 
-from . import activity, agents, render
-from .live import Collector
+from . import activity, agents, render, task_page
+from .live import Collector, task_evidence
 from .roadmap import apply_live, load
 
 
@@ -47,6 +47,14 @@ class Dashboard:
         if path == "/agents":
             body = agents.agents_page(roadmap, snapshot)
             return 200, "text/html", render.page("Agents", "/agents", body, roadmap, snapshot)
+        if path.startswith("/task/"):
+            task = roadmap.task(unquote(path.removeprefix("/task/")))
+            if task is None:
+                body = '<div class="panel"><p style="margin:0">No such task on the roadmap.</p></div>'
+                return 404, "text/html", render.page("Not found", "/roadmap", body, roadmap, snapshot)
+            evidence = task_evidence(self.root, task.branch_name, task.pr)
+            body = task_page.task_page(task, roadmap, evidence)
+            return 200, "text/html", render.page(task.id, "/roadmap", body, roadmap, snapshot)
         if path == "/api/roadmap.json":
             return 200, "application/json", json.dumps(render.as_json(roadmap, snapshot), indent=2)
         return 404, "text/plain", "not found"

@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from html import escape
 from pathlib import PurePosixPath
+from urllib.parse import quote
 
 from .charts import _at, day
 from .derive import parse_time
@@ -130,7 +131,8 @@ def working_table(rows: list[AgentRow], now: datetime) -> str:
         tree = r.tree
         pr = r.pr
         task = (
-            f'<span class="clip" title="{escape(r.task.name)}">{escape(r.task.name)}</span>'
+            f'<a class="clip" href="/task/{quote(r.task.id, safe="")}" title="{escape(r.task.name)}">'
+            f"{escape(r.task.name)}</a>"
             if r.task
             else '<span class="muted">Not on the roadmap</span>'
         )

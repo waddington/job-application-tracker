@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from html import escape
+from urllib.parse import quote
 
 from . import charts, derive
 from .charts import day
@@ -77,6 +78,10 @@ def repo_link(roadmap: Roadmap, path: str, label: str) -> str:
     return f'<a href="https://github.com/{escape(roadmap.repo)}/blob/main/{escape(path)}">{escape(label)}</a>'
 
 
+def task_link(task_id: str) -> str:
+    return f'<a href="/task/{quote(task_id, safe="")}"><code>{escape(task_id)}</code></a>'
+
+
 def bug_tag(task: Task) -> str:
     """BUG and its severity, on a bug wherever it is, even once a fix has moved it along."""
     if task.type != "bug":
@@ -110,7 +115,7 @@ def task_line(roadmap: Roadmap, task: Task, show_status: bool = True) -> str:
     detail = f'<br><span class="small">{escape(task.detail)}</span>' if task.detail else ""
     return (
         f"<li>{status}{bug_tag(task)}<b>{escape(task.name)}</b>{owner}{detail}<br>"
-        f'<span class="small muted"><code>{escape(task.id)}</code> · {escape(task.phase)} · {task.estimate_h:g} h'
+        f'<span class="small muted">{task_link(task.id)} · {escape(task.phase)} · {task.estimate_h:g} h'
         f"{' · ' + links if links else ''}</span></li>"
     )
 
@@ -217,7 +222,7 @@ def pipeline_table(roadmap: Roadmap, snapshot: Snapshot) -> str:
         rows.append(
             f'<tr><td><span class="sr">{escape(t.status)}: </span>{bug_tag(t)}'
             f'<span class="clip" title="{escape(t.name)}">{escape(t.name)}</span>'
-            f'<span class="small muted"><code>{escape(t.id)}</code> · {task_links(roadmap, t)}</span></td>{cells}'
+            f'<span class="small muted">{task_link(t.id)} · {task_links(roadmap, t)}</span></td>{cells}'
             f'<td class="small muted">{size}</td></tr>'
         )
     if not rows:
@@ -328,7 +333,7 @@ def board(roadmap: Roadmap, snapshot: Snapshot, phase: str | None = None) -> str
             cards.append(
                 f'<div class="card {status}">{bug_tag(t)}<b>{escape(t.name)}</b>'
                 f"{f'<div class=small>{escape(t.detail)}</div>' if t.detail else ''}"
-                f'<div class="small muted"><code>{escape(t.id)}</code> · {escape(t.phase)} · {t.estimate_h:g} h'
+                f'<div class="small muted">{task_link(t.id)} · {escape(t.phase)} · {t.estimate_h:g} h'
                 f"{' · Kai' if t.owner == 'kai' else ''}</div>{extra}"
                 f"{f'<div class=small>{links}</div>' if links else ''}</div>"
             )
@@ -364,7 +369,7 @@ Each phase from its first PR to its latest. Fill shows tasks done, a tick is a t
             rows.append(
                 f"<tr><td>{pill(t.status)}</td><td>{bug_tag(t)}<b>{escape(t.name)}</b>"
                 f"{f'<br><span class=small>{escape(t.detail)}</span>' if t.detail else ''}<br>"
-                f'<code class="muted">{escape(t.id)}</code></td><td>{t.estimate_h:g} h</td>'
+                f"{task_link(t.id)}</td><td>{t.estimate_h:g} h</td>"
                 f'<td class="small">{deps}</td><td class="small">{escape(t.owner)}</td>'
                 f'<td class="small">{task_links(roadmap, t)}<br>'
                 f'<span class="muted">{escape(t.status_source)}</span></td></tr>'
