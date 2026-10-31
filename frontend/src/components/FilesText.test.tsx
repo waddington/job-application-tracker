@@ -38,6 +38,10 @@ afterEach(() => {
 describe("a file's size", () => {
   it("picks its unit", () => {
     expect(humanSize(500)).toBe("500 B");
+    expect(humanSize(1023)).toBe("1023 B");
+    expect(humanSize(1024)).toBe("1 KB");
+    expect(humanSize(1048575)).toBe("1024 KB");
+    expect(humanSize(1048576)).toBe("1.0 MB");
     expect(humanSize(2048)).toBe("2 KB");
     expect(humanSize(3 * 1048576)).toBe("3.0 MB");
   });
