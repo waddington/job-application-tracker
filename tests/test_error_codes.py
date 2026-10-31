@@ -7,6 +7,7 @@ import re
 from pathlib import Path
 from typing import get_args
 
+import pytest
 from fastapi.testclient import TestClient
 
 from jat.api.errors import ErrorCode, ErrorOut
@@ -15,6 +16,8 @@ from jat.datadir import CODE_ROOT, init_data_dir
 from jat.db import db_path, migrate
 from jat.openapi import build_schema
 from jat.snapshot.git import SnapshotError
+from jat.storage.files import FileError, FileStore
+from jat.storage.notes import ENTITY_TYPES, NoteError, check_link
 
 from .factories import post
 
@@ -53,7 +56,7 @@ def test_every_code_has_english_text():
 
 def test_every_code_raised_is_declared_and_every_declared_code_is_raised():
     # Python doesn't check a Literal when it runs, so a misspelt code would reach the API.
-    position = {"CodedError": 2, "SnapshotError": 1}
+    position = {"CodedError": 2, "SnapshotError": 1, "FileError": 1, "TooLarge": 1, "NoteError": 1}
     raised = set()
     quoted = set()
     for path in SOURCE.rglob("*.py"):
@@ -102,7 +105,7 @@ def test_a_validation_error_fits_the_declared_body(client, seeded):
 
 def test_no_param_is_named_like_an_i18next_option():
     # The frontend passes params to t() as its options, so `lng` would change the language shown.
-    position = {"CodedError": 3, "SnapshotError": 2}
+    position = {"CodedError": 3, "SnapshotError": 2, "FileError": 2, "TooLarge": 2, "NoteError": 2}
     seen = 0
     for path in SOURCE.rglob("*.py"):
         for node in ast.walk(ast.parse(path.read_text())):
@@ -165,3 +168,127 @@ def test_snapshot_errors_keep_values_as_params():
     error = SnapshotError("git push failed: denied", "backup_push_failed", {"reason": "denied"})
     assert str(error) == "git push failed: denied"
     assert (error.code, error.params) == ("backup_push_failed", {"reason": "denied"})
+
+
+def _coded(response, status: int, detail: str, code: str, params: dict) -> None:
+    assert (response.status_code, response.json()) == (status, {"detail": detail, "code": code, "params": params})
+
+
+def _version(client) -> tuple[dict, dict]:
+    doc = post(client, "/api/v1/documents", {"kind": "cv", "name": "Coded CV"})
+    version = client.post(
+        f"/api/v1/documents/{doc['id']}/versions",
+        data={"label": "it's v1"},
+        files={"file": ("coded-v1.pdf", b"made up", "application/pdf")},
+    ).json()
+    return doc, version
+
+
+def test_document_errors_carry_codes(client, seeded):
+    doc, version = _version(client)
+    app_id = post(client, "/api/v1/applications", {"role_id": seeded["role"]["id"], "route": "direct"})["id"]
+    link = {"document_version_id": version["id"]}
+    assert client.post(f"/api/v1/applications/{app_id}/documents", json=link).status_code == 201
+
+    tail = "was sent with 1 application(s); remove it from them first."
+    _coded(
+        client.delete(f"/api/v1/documents/{doc['id']}"),
+        409,
+        f"A version of this document {tail}",
+        "document_sent",
+        {"count": 1},
+    )
+    _coded(
+        client.delete(f"/api/v1/documents/versions/{version['id']}"),
+        409,
+        f"This version {tail}",
+        "version_sent",
+        {"count": 1},
+    )
+    _coded(
+        client.post(f"/api/v1/applications/{app_id}/documents", json=link),
+        409,
+        "That version is already recorded for this application.",
+        "version_already_sent",
+        {},
+    )
+    _coded(
+        client.post(f"/api/v1/applications/{app_id}/documents", json={"document_version_id": "nope"}),
+        422,
+        "document_version_id: nope not found",
+        "document_version_not_found",
+        {"id": "nope"},
+    )
+    _coded(
+        client.post(f"/api/v1/documents/{doc['id']}/versions", data={"label": "  "}),
+        422,
+        "label: give the version a name, e.g. v3 (fintech)",
+        "version_label_required",
+        {},
+    )
+    _coded(
+        client.post("/api/v1/cv-files/adopt", json={"sha256": "0" * 64}),
+        404,
+        "No CV file like that among your attachments (or it's all recorded already).",
+        "cv_file_not_found",
+        {},
+    )
+
+
+def test_attachment_errors_carry_codes(client, seeded, monkeypatch):
+    _, version = _version(client)
+    # Python's quoting of a label with an apostrophe stays in the English, and the raw label comes too.
+    _coded(
+        client.delete(f"/api/v1/attachments/{version['file']['id']}"),
+        409,
+        'This is the file of version "it\'s v1"; delete that version instead.',
+        "attachment_is_version_file",
+        {"label": "it's v1", "quoted_label": '"it\'s v1"'},
+    )
+    monkeypatch.setattr(FileStore.__init__, "__defaults__", (1024 * 1024,))
+    big = b"x" * (1024 * 1024 + 1)
+    _coded(
+        client.post("/api/v1/attachments", files={"file": ("big.bin", big)}),
+        413,
+        "files can be up to 1 MB",
+        "file_too_large",
+        {"count": 1},
+    )
+
+
+def test_note_errors_carry_codes(client, seeded):
+    _coded(client.get("/api/v1/notes/nope"), 404, "Note nope not found", "note_not_found", {"id": "nope"})
+    note = post(client, "/api/v1/notes", {"title": "Coded note", "body": "made up"})
+    _coded(
+        client.patch(f"/api/v1/notes/{note['id']}", json={"body": "x", "base_updated_at": "2000-01-01T00:00:00Z"}),
+        409,
+        "This note changed since you opened it (maybe in another editor). Reload it first.",
+        "note_changed",
+        {},
+    )
+
+
+@pytest.mark.parametrize("kind", ENTITY_TYPES)
+def test_a_link_to_nothing_has_a_code_for_its_kind(client, seeded, kind):
+    _coded(
+        client.post("/api/v1/notes", json={"title": "Linked", "body": "x", "links": [f"{kind}:nope"]}),
+        422,
+        f"links: {kind} nope not found",
+        f"note_link_{kind}_not_found",
+        {"id": "nope"},
+    )
+
+
+def test_domain_errors_keep_values_as_params(tmp_path):
+    with pytest.raises(FileError) as outside:
+        FileStore(tmp_path).resolve("../x.pdf")
+    assert str(outside.value) == "../x.pdf isn't under files/"
+    assert (outside.value.code, outside.value.params) == ("file_outside_files", {"path": "../x.pdf"})
+    with pytest.raises(NoteError) as link:
+        check_link("nope")
+    kinds = "application, company, role, agency, contact, interview, document"
+    assert str(link.value) == f"links: 'nope' should look like 'application:<id>' ({kinds})"
+    assert (link.value.code, link.value.params) == (
+        "note_link_invalid",
+        {"link": "nope", "quoted_link": "'nope'", "kinds": kinds},
+    )

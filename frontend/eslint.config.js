@@ -8,6 +8,8 @@ import tseslint from "typescript-eslint";
 // adds its files here, so hard-coded English can't creep back in; i18n-finish turns it on
 // everywhere.
 const TRANSLATED = [
+  "src/api/attachmentHooks.ts",
+  "src/api/noteHooks.ts",
   "src/api/notifyError.ts",
   "src/components/Layout.tsx",
   "src/components/HeaderSearch.tsx",

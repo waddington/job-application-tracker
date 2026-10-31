@@ -1,6 +1,7 @@
 import { notifications } from "@mantine/notifications";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { uploadFiles } from "../api/attachmentHooks";
 import { ApiError, errorMessage, unwrap, type ErrorCode } from "../api/client";
 import { errorText, notifyError } from "../api/notifyError";
 import { i18n } from "../i18n";
@@ -16,6 +17,11 @@ const coded = (code: ErrorCode, params: Record<string, string | number> = {}) =>
 
 // Keyed by code, so a code with no row fails the type check.
 const TEXT: Record<ErrorCode, [Record<string, string | number>, string]> = {
+  attachment_file_missing: [{ name: "brief.pdf" }, "brief.pdf is missing from files/"],
+  attachment_is_version_file: [
+    { label: "v3", quoted_label: "'v3'" },
+    "This is the file of version 'v3'; delete that version instead.",
+  ],
   backup_add_failed: [{ reason: "denied" }, "git add failed: denied"],
   backup_commit_failed: [{ reason: "denied" }, "git commit failed: denied"],
   backup_detached_head: [
@@ -32,7 +38,37 @@ const TEXT: Record<ErrorCode, [Record<string, string | number>, string]> = {
   backup_shut_down: [{}, "snapshots are shut down"],
   backup_snapshot_failed: [{ reason: "disk full" }, "snapshot failed: disk full"],
   backup_snapshots_off: [{}, "The data directory isn't a git repo, so snapshots are off."],
+  cv_file_applications_invalid: [{}, "application_ids: only applications this file counts for."],
+  cv_file_document_required: [{}, "Pick a document to add it to, or name a new one."],
+  cv_file_missing: [{ name: "cv.pdf" }, "cv.pdf is missing from your data folder."],
+  cv_file_not_found: [{}, "No CV file like that among your attachments (or it's all recorded already)."],
+  document_sent: [
+    { count: 1 },
+    "A version of this document was sent with 1 application(s); remove it from them first.",
+  ],
+  document_version_not_found: [{ id: "abc" }, "document_version_id: abc not found"],
+  file_is_symlink: [{ path: "2026/10/x.pdf" }, "2026/10/x.pdf is a symlink"],
+  file_outside_files: [{ path: "../x.pdf" }, "../x.pdf isn't under files/"],
+  file_too_large: [{ count: 50 }, "files can be up to 50 MB"],
+  note_changed: [{}, "This note changed since you opened it (maybe in another editor). Reload it first."],
+  note_link_agency_not_found: [{ id: "x1" }, "links: agency x1 not found"],
+  note_link_application_not_found: [{ id: "x1" }, "links: application x1 not found"],
+  note_link_company_not_found: [{ id: "x1" }, "links: company x1 not found"],
+  note_link_contact_not_found: [{ id: "x1" }, "links: contact x1 not found"],
+  note_link_document_not_found: [{ id: "x1" }, "links: document x1 not found"],
+  note_link_interview_not_found: [{ id: "x1" }, "links: interview x1 not found"],
+  note_link_invalid: [
+    { link: "nope", quoted_link: "'nope'", kinds: "application, company" },
+    "links: 'nope' should look like 'application:<id>' (application, company)",
+  ],
+  note_link_role_not_found: [{ id: "x1" }, "links: role x1 not found"],
+  note_not_found: [{ id: "abc" }, "Note abc not found"],
+  note_path_invalid: [{ path: "x.txt" }, "x.txt isn't a note under notes/"],
+  note_unreadable: [{ id: "abc", reason: "denied" }, "Note abc can't be read: denied"],
   todo_text_required: [{}, "text: say what needs doing"],
+  version_already_sent: [{}, "That version is already recorded for this application."],
+  version_label_required: [{}, "label: give the version a name, e.g. v3 (fintech)"],
+  version_sent: [{ count: 1 }, "This version was sent with 1 application(s); remove it from them first."],
 };
 
 describe("an error with a code", () => {
@@ -52,6 +88,50 @@ describe("an error with a code", () => {
   it("shows the API's English for a code this build doesn't know", () => {
     const newer = new ApiError({ detail: "From a newer server", code: "not_a_code_yet", params: {} });
     expect(errorText(newer)).toBe("From a newer server");
+  });
+});
+
+describe("counts and sizes", () => {
+  it.each([
+    [
+      "document_sent",
+      2,
+      "A version of this document was sent with 2 application(s); remove it from them first.",
+    ],
+    ["version_sent", 2, "This version was sent with 2 application(s); remove it from them first."],
+    ["file_too_large", 1, "files can be up to 1 MB"],
+  ] as [ErrorCode, number, string][])("%s with %i", (code, count, english) => {
+    expect(errorText(coded(code, { count }))).toBe(english);
+  });
+});
+
+describe("the hooks' own text", () => {
+  const files = [new File(["a"], "a.pdf"), new File(["b"], "b.pdf"), new File(["c"], "c.pdf")];
+  const reply = (status: number, body: unknown) =>
+    new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
+
+  it("lists each file that failed, with its reason, in the old words", async () => {
+    vi.spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(
+        reply(413, { detail: "the API's English", code: "file_too_large", params: { count: 50 } }),
+      )
+      .mockResolvedValueOnce(reply(201, {}))
+      .mockResolvedValueOnce(reply(422, { detail: "Plain reason" }));
+    await expect(uploadFiles(files, "role", "r1")).rejects.toThrow(
+      new Error("a.pdf: files can be up to 50 MB; c.pdf: Plain reason"),
+    );
+  });
+
+  it("says something went wrong when a failed upload's body isn't JSON", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(new Response("oops", { status: 500 }));
+    await expect(uploadFiles(files.slice(0, 1), "role", "r1")).rejects.toThrow(
+      new Error("a.pdf: Something went wrong"),
+    );
+  });
+
+  it("has the delete failures' fixed text", () => {
+    expect(i18n.t("errors:deleteFileFailed")).toBe("Couldn't delete the file");
+    expect(i18n.t("errors:deleteNoteFailed")).toBe("Couldn't delete the note");
   });
 });
 

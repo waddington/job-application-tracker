@@ -15,6 +15,8 @@ from pydantic import BaseModel
 
 # Underscores, not dots: a dot would split the key in the frontend's text files.
 ErrorCode = Literal[
+    "attachment_file_missing",
+    "attachment_is_version_file",
     "backup_add_failed",
     "backup_commit_failed",
     "backup_detached_head",
@@ -28,7 +30,31 @@ ErrorCode = Literal[
     "backup_shut_down",
     "backup_snapshot_failed",
     "backup_snapshots_off",
+    "cv_file_applications_invalid",
+    "cv_file_document_required",
+    "cv_file_missing",
+    "cv_file_not_found",
+    "document_sent",
+    "document_version_not_found",
+    "file_is_symlink",
+    "file_outside_files",
+    "file_too_large",
+    "note_changed",
+    "note_link_agency_not_found",
+    "note_link_application_not_found",
+    "note_link_company_not_found",
+    "note_link_contact_not_found",
+    "note_link_document_not_found",
+    "note_link_interview_not_found",
+    "note_link_invalid",
+    "note_link_role_not_found",
+    "note_not_found",
+    "note_path_invalid",
+    "note_unreadable",
     "todo_text_required",
+    "version_already_sent",
+    "version_label_required",
+    "version_sent",
 ]
 
 ErrorParams = dict[str, str | int]

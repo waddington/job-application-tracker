@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 import threading
 
-from fastapi import APIRouter, HTTPException, Request, Response
+from fastapi import APIRouter, Request, Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -14,6 +14,7 @@ from ..domain import applications as svc
 from ..storage.notes import Note, NoteError, NoteStore
 from . import schemas as S
 from .deps import ENTITY_MODELS, SessionDep
+from .errors import CodedError, ErrorCode
 
 router = APIRouter(prefix="/notes", tags=["notes"])
 
@@ -22,6 +23,16 @@ router = APIRouter(prefix="/notes", tags=["notes"])
 # both notice a new file can't insert the same index row.
 _INDEX_LOCK = threading.Lock()
 _UNREADABLE = (OSError, UnicodeDecodeError, NoteError)
+# One whole sentence per kind, so no word is dropped into a translation.
+_LINK_NOT_FOUND: dict[str, ErrorCode] = {
+    "application": "note_link_application_not_found",
+    "company": "note_link_company_not_found",
+    "role": "note_link_role_not_found",
+    "agency": "note_link_agency_not_found",
+    "contact": "note_link_contact_not_found",
+    "interview": "note_link_interview_not_found",
+    "document": "note_link_document_not_found",
+}
 
 
 def _store(request: Request) -> NoteStore:
@@ -78,7 +89,7 @@ def _check_links(session: Session, links: list[str]) -> list[str]:
     for link in unique:
         kind, _, target = link.partition(":")
         if session.get(ENTITY_MODELS[kind], target) is None:
-            raise HTTPException(422, f"links: {kind} {target} not found")
+            raise CodedError(422, f"links: {kind} {target} not found", _LINK_NOT_FOUND[kind], {"id": target})
     return unique
 
 
@@ -86,11 +97,13 @@ def _load(request: Request, session: Session, note_id: str) -> tuple[NoteStore, 
     store = _sync(request)
     row = session.get(NoteIndex, note_id)
     if row is None:
-        raise HTTPException(404, f"Note {note_id} not found")
+        raise CodedError(404, f"Note {note_id} not found", "note_not_found", {"id": note_id})
     try:
         note = store.read(row.path)
     except _UNREADABLE as exc:
-        raise HTTPException(404, f"Note {note_id} can't be read: {exc}") from exc
+        raise CodedError(
+            404, f"Note {note_id} can't be read: {exc}", "note_unreadable", {"id": note_id, "reason": str(exc)}
+        ) from exc
     note.id = row.id  # the index decides ids for copied or hand-written files
     return store, note
 
@@ -141,7 +154,7 @@ def create_note(body: S.NoteIn, request: Request, session: SessionDep):
     try:
         note = store.create(body.title, body.body, links)
     except NoteError as exc:
-        raise HTTPException(422, str(exc)) from exc
+        raise CodedError(422, str(exc), exc.code, exc.params) from exc
     _index(request, store, note)
     session.commit()  # end this read so the timeline write below sees the index write (SQLite snapshot)
     _log(session, note, links)
@@ -159,7 +172,9 @@ def update_note(note_id: str, body: S.NotePatch, request: Request, session: Sess
     data = body.model_dump(exclude_unset=True)
     base = data.pop("base_updated_at", None)
     if base is not None and abs((note.updated_at - base).total_seconds()) >= 1:
-        raise HTTPException(409, "This note changed since you opened it (maybe in another editor). Reload it first.")
+        raise CodedError(
+            409, "This note changed since you opened it (maybe in another editor). Reload it first.", "note_changed"
+        )
     before = set(note.links)
     if "links" in data:
         # Only new links must exist: an attached application deleted since shouldn't block saving.
@@ -170,7 +185,7 @@ def update_note(note_id: str, body: S.NotePatch, request: Request, session: Sess
     try:
         store.save(note)
     except NoteError as exc:
-        raise HTTPException(422, str(exc)) from exc
+        raise CodedError(422, str(exc), exc.code, exc.params) from exc
     _index(request, store, note)
     session.commit()  # end this read so the timeline write below sees the index write (SQLite snapshot)
     _log(session, note, [link for link in note.links if link not in before])

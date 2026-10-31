@@ -35,6 +35,7 @@ from . import schemas as S
 from .attachments import _out as attachment_out
 from .crud import values
 from .deps import SessionDep, WorkflowDep, get_or_404
+from .errors import CodedError, ErrorCode
 
 router = APIRouter(tags=["documents"])
 
@@ -191,7 +192,7 @@ def update_document(document_id: str, body: S.DocumentPatch, session: SessionDep
     return _doc_out(doc, _versions(session, [doc.id]).get(doc.id, []))
 
 
-def _refuse_if_sent(session: Session, where, what: str) -> None:
+def _refuse_if_sent(session: Session, where, what: str, code: ErrorCode) -> None:
     sent = session.scalar(
         select(func.count())
         .select_from(ApplicationDocument)
@@ -199,7 +200,8 @@ def _refuse_if_sent(session: Session, where, what: str) -> None:
         .where(where)
     )
     if sent:
-        raise HTTPException(409, f"{what} was sent with {sent} application(s); remove it from them first.")
+        detail = f"{what} was sent with {sent} application(s); remove it from them first."
+        raise CodedError(409, detail, code, {"count": sent})
 
 
 def _delete_version_files(session: Session, versions: list[DocumentVersion]) -> list[str]:
@@ -216,7 +218,7 @@ def _delete_version_files(session: Session, versions: list[DocumentVersion]) -> 
 @router.delete("/documents/{document_id}", status_code=204)
 def delete_document(document_id: str, request: Request, session: SessionDep):
     doc = get_or_404(session, Document, document_id)
-    _refuse_if_sent(session, DocumentVersion.document_id == doc.id, "A version of this document")
+    _refuse_if_sent(session, DocumentVersion.document_id == doc.id, "A version of this document", "document_sent")
     store = FileStore(request.app.state.jat.data_dir)
     versions = list(session.scalars(select(DocumentVersion).where(DocumentVersion.document_id == doc.id)))
     paths = _delete_version_files(session, versions)
@@ -243,7 +245,7 @@ def add_version(
     """A new version, usually with its file (the PDF you send). Sending it is recorded separately."""
     doc = get_or_404(session, Document, document_id)
     if not label.strip():
-        raise HTTPException(422, "label: give the version a name, e.g. v3 (fintech)")
+        raise CodedError(422, "label: give the version a name, e.g. v3 (fintech)", "version_label_required")
     store = FileStore(request.app.state.jat.data_dir)
     stored = None
     if file is not None and file.filename:
@@ -251,9 +253,9 @@ def add_version(
         try:
             stored = store.save(file.file, name)
         except TooLarge as exc:
-            raise HTTPException(413, str(exc)) from exc
+            raise CodedError(413, str(exc), exc.code, exc.params) from exc
         except FileError as exc:
-            raise HTTPException(422, str(exc)) from exc
+            raise CodedError(422, str(exc), exc.code, exc.params) from exc
     try:
         att = None
         if stored is not None:
@@ -297,7 +299,7 @@ def update_version(version_id: str, body: S.VersionPatch, session: SessionDep):
 @router.delete("/documents/versions/{version_id}", status_code=204)
 def delete_version(version_id: str, request: Request, session: SessionDep):
     version = get_or_404(session, DocumentVersion, version_id)
-    _refuse_if_sent(session, DocumentVersion.id == version.id, "This version")
+    _refuse_if_sent(session, DocumentVersion.id == version.id, "This version", "version_sent")
     store = FileStore(request.app.state.jat.data_dir)
     paths = _delete_version_files(session, [version])
     session.delete(version)
@@ -316,14 +318,17 @@ def send_document(app_id: str, body: S.SentDocumentIn, session: SessionDep):
     app = get_or_404(session, Application, app_id)
     version = session.get(DocumentVersion, body.document_version_id)
     if version is None:
-        raise HTTPException(422, f"document_version_id: {body.document_version_id} not found")
+        version_id = body.document_version_id
+        raise CodedError(
+            422, f"document_version_id: {version_id} not found", "document_version_not_found", {"id": version_id}
+        )
     exists = session.scalar(
         select(ApplicationDocument).where(
             ApplicationDocument.application_id == app.id, ApplicationDocument.document_version_id == version.id
         )
     )
     if exists is not None:
-        raise HTTPException(409, "That version is already recorded for this application.")
+        raise CodedError(409, "That version is already recorded for this application.", "version_already_sent")
     doc = session.get(Document, version.document_id)
     session.add(ApplicationDocument(application_id=app.id, document_version_id=version.id, sent_on=body.sent_on))
     session.flush()
@@ -490,11 +495,15 @@ def adopt_cv_file(body: S.CvFileAdopt, request: Request, session: SessionDep):
     the file already is a version, `document_id`, `document_name` and `label` are ignored."""
     found = next((f for f in _cv_files(session) if f.sha256 == body.sha256), None)
     if found is None:
-        raise HTTPException(404, "No CV file like that among your attachments (or it's all recorded already).")
+        raise CodedError(
+            404, "No CV file like that among your attachments (or it's all recorded already).", "cv_file_not_found"
+        )
     if body.application_ids is not None:
         unknown = set(body.application_ids) - {a.id for a in found.applications}
         if unknown:
-            raise HTTPException(422, "application_ids: only applications this file counts for.")
+            raise CodedError(
+                422, "application_ids: only applications this file counts for.", "cv_file_applications_invalid"
+            )
     chosen = [a for a in found.applications if body.application_ids is None or a.id in body.application_ids]
     store = FileStore(request.app.state.jat.data_dir)
     stored = None
@@ -510,7 +519,7 @@ def adopt_cv_file(body: S.CvFileAdopt, request: Request, session: SessionDep):
                 session.add(doc)
                 session.flush()
             else:
-                raise HTTPException(422, "Pick a document to add it to, or name a new one.")
+                raise CodedError(422, "Pick a document to add it to, or name a new one.", "cv_file_document_required")
             src = session.scalar(
                 select(Attachment)
                 .where(
@@ -524,7 +533,10 @@ def adopt_cv_file(body: S.CvFileAdopt, request: Request, session: SessionDep):
                 with store.resolve(src.path).open("rb") as f:
                     stored = store.save(f, src.original_name)
             except (FileError, OSError) as exc:
-                raise HTTPException(409, f"{src.original_name} is missing from your data folder.") from exc
+                name = src.original_name
+                raise CodedError(
+                    409, f"{name} is missing from your data folder.", "cv_file_missing", {"name": name}
+                ) from exc
             att = Attachment(
                 id=stored.id,
                 entity_type="document",
