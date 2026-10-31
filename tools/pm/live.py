@@ -72,7 +72,9 @@ class Snapshot:
 
 
 def _run(args: list[str], cwd: Path, timeout: float = 15) -> str:
-    result = subprocess.run(args, cwd=cwd, capture_output=True, text=True, timeout=timeout, check=True)
+    result = subprocess.run(
+        args, cwd=cwd, capture_output=True, text=True, errors="replace", timeout=timeout, check=True
+    )
     return result.stdout
 
 
@@ -103,6 +105,7 @@ def parse_prs(output: str) -> list[PullRequest]:
                 merged_at=raw.get("mergedAt") or "",
                 additions=int(raw.get("additions") or 0),
                 deletions=int(raw.get("deletions") or 0),
+                merge_commit=(raw.get("mergeCommit") or {}).get("oid", ""),
             )
         )
     return prs
@@ -179,6 +182,95 @@ def scope_history(root: Path, main: str) -> list[tuple[str, int]]:
             _scope_seen[sha] = count_scope(_run(["git", "show", f"{sha}:{ROADMAP_PATH}"], root))
         history.append((when, _scope_seen[sha]))
     return history
+
+
+@dataclass
+class TaskEvidence:
+    """What git says about one task's work, read when its page is opened."""
+
+    source: str = ""  # merged | branch | "" when neither exists
+    ahead: int | None = None
+    behind: int | None = None
+    added: int = 0  # source lines, generated files left out
+    removed: int = 0
+    tests: int = 0  # tests added
+    last_sha: str = ""
+    last_subject: str = ""
+    last_when: str = ""
+    unreadable: bool = False
+
+
+def parse_diff(text: str) -> tuple[int, int, int]:
+    """Source lines added and removed and tests added, from `git diff -U0`. Only hunks count, so a line
+    of code that looks like a file header doesn't confuse it."""
+    added = removed = tests = 0
+    name = ""
+    in_header = False
+    for line in text.splitlines():
+        if line.startswith("diff --git "):
+            in_header, name = True, ""
+        elif line.startswith("@@"):
+            in_header = False
+        elif in_header:
+            if line.startswith("--- a/") and not name or line.startswith("+++ b/"):
+                name = line[6:].rstrip("\t")  # git ends a path with spaces in it with a tab
+        elif name:
+            path = Path(name)
+            if path.suffix not in SOURCE_SUFFIXES or path.name in GENERATED:
+                continue
+            if line.startswith("+"):
+                added += 1
+                if path.suffix == ".py":
+                    tests += bool(PY_TEST.match(line[1:]))
+                elif ".test." in path.name or ".spec." in path.name:
+                    tests += bool(JS_TEST.match(line[1:]))
+            elif line.startswith("-"):
+                removed += 1
+    return added, removed, tests
+
+
+_merged_seen: dict[str, TaskEvidence] = {}  # a merge never changes
+GIT_DIFF = ("git", "-c", "core.quotepath=off", "diff", "-U0")
+
+
+def _read_last(root: Path, ref: str, evidence: TaskEvidence) -> None:
+    parts = _run(["git", "log", "-1", f"--format=%h{SEP}%s{SEP}%cI", ref], root).strip().split(SEP)
+    if len(parts) == 3:
+        evidence.last_sha, evidence.last_subject, evidence.last_when = parts
+
+
+def task_evidence(root: Path, branch: str, pr: PullRequest | None) -> TaskEvidence:
+    """The diff, ahead and behind and last commit: from the merge if it merged, else from its branch."""
+    try:
+        if pr and pr.state == "MERGED":
+            sha = pr.merge_commit
+            if not sha:  # nothing recorded to read, and its branch's diff against main would now be empty
+                return TaskEvidence()
+            if sha not in _merged_seen:
+                found = TaskEvidence("merged")
+                diff = _run([*GIT_DIFF, f"{sha}^1", sha], root, timeout=30)
+                found.added, found.removed, found.tests = parse_diff(diff)
+                try:
+                    _read_last(root, f"{sha}^2", found)  # the branch's own last commit
+                except subprocess.CalledProcessError:  # a squash has one parent
+                    _read_last(root, sha, found)
+                _merged_seen[sha] = found
+            return _merged_seen[sha]
+        main = _main_ref(root)
+        for ref in (branch, f"origin/{branch}"):
+            try:
+                _run(["git", "rev-parse", "--verify", "--quiet", ref], root)
+            except subprocess.CalledProcessError:  # git answered: no such branch. Any other failure isn't that
+                continue
+            found = TaskEvidence("branch")
+            found.ahead = int(_run(["git", "rev-list", "--count", f"{main}..{ref}"], root).strip())
+            found.behind = int(_run(["git", "rev-list", "--count", f"{ref}..{main}"], root).strip())
+            found.added, found.removed, found.tests = parse_diff(_run([*GIT_DIFF, f"{main}...{ref}"], root, timeout=30))
+            _read_last(root, ref, found)
+            return found
+        return TaskEvidence()
+    except (subprocess.SubprocessError, OSError, ValueError):
+        return TaskEvidence(unreadable=True)
 
 
 def parse_status(output: str) -> list[str]:
@@ -271,7 +363,7 @@ def collect(root: Path, repo: str) -> Snapshot:
             "--limit",
             str(PR_LIMIT),
             "--json",
-            "number,title,state,headRefName,url,isDraft,updatedAt,createdAt,mergedAt,additions,deletions",
+            "number,title,state,headRefName,url,isDraft,updatedAt,createdAt,mergedAt,additions,deletions,mergeCommit",
         ]
         if repo:
             args += ["--repo", repo]
