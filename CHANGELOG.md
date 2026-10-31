@@ -7,7 +7,7 @@ Numbers in brackets are pull requests.
 
 ## 1.2.32 (2026-10-31)
 
-- **Developers:** ERRORPLACEHOLDER read their text from the translation files, ready for other languages. The English is unchanged (#169).
+- **Developers:** API errors can carry a `code` and `params` beside the unchanged English `detail`, starting with backup and to-do errors, and the app's error toasts read their text from the translation files, ready for other languages. Responses are the same as before except for those new fields; in `openapi.json`, every `/api/v1` route now declares one `ErrorOut` default response in place of the generated 422, so a regenerated client loses the `HTTPValidationError` type name (#169).
 
 ## 1.2.31 (2026-10-31)
 
