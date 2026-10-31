@@ -47,6 +47,11 @@ class Commit:
 class Worktree:
     path: str
     branch: str
+    ahead: int = 0  # commits not on main yet
+    dirty: int = 0  # files with unsaved changes
+    last_commit: str = ""  # the latest commit of its own, not main's
+    last_edit: float = 0.0  # when an unsaved file last changed
+    unreadable: bool = False
 
 
 @dataclass
@@ -173,6 +178,26 @@ def scope_history(root: Path, main: str) -> list[tuple[str, int]]:
     return history
 
 
+def read_activity(tree: Worktree, main: str) -> None:
+    """Fill in what a worktree is up to. One that can't be read is marked, and the rest carry on."""
+    path = Path(tree.path)
+    try:
+        tree.ahead = int(_run(["git", "rev-list", "--count", f"{main}..HEAD"], path).strip())
+        # With nothing of its own, its latest commit is main's, which says nothing about this worktree.
+        tree.last_commit = _run(["git", "log", "-1", "--format=%cI"], path).strip() if tree.ahead else ""
+        changed = _run(["git", "status", "--porcelain"], path).splitlines()
+    except (subprocess.SubprocessError, OSError, ValueError):
+        tree.unreadable = True
+        return
+    tree.dirty = len(changed)
+    for line in changed:
+        name = line[3:].split(" -> ")[-1].strip('"')
+        try:
+            tree.last_edit = max(tree.last_edit, (path / name).stat().st_mtime)
+        except OSError:  # deleted: nothing to date it by
+            continue
+
+
 def _main_ref(root: Path) -> str:
     for ref in ("origin/main", "main"):
         try:
@@ -209,6 +234,9 @@ def collect(root: Path, repo: str) -> Snapshot:
         if len(snapshot.commits) >= COMMIT_LIMIT:
             live.warnings.append(f"git: only the latest {COMMIT_LIMIT} commits are read, so older activity is missing")
         snapshot.worktrees = parse_worktrees(_run(["git", "worktree", "list", "--porcelain"], root))
+        for tree in snapshot.worktrees:
+            if tree.branch != "main":
+                read_activity(tree, main)
         snapshot.areas = code_by_area(root, _run(["git", "ls-files"], root).splitlines())
         snapshot.lines = sum(n[0] for n in snapshot.areas.values())
         snapshot.tests = sum(n[1] for n in snapshot.areas.values())
