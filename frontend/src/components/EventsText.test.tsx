@@ -80,6 +80,34 @@ describe("the application timeline", () => {
   });
 });
 
+describe("a round's or offer's message in another language", () => {
+  it("builds the round's name in that language, keeping your description", async () => {
+    await i18n.changeLanguage(PSEUDO);
+    const params = { round: 2, title: null, kind: "final" };
+    const label = i18n.t("interviews:label", { round: 2, what: i18n.t("interviews:kindNames.final") });
+    expect(eventText({ summary: "x", msg: { key: "event.roundDone", params } })).toBe(
+      i18n.t("events:roundDone", { label }),
+    );
+    expect(label).not.toContain("Final");
+    const named = eventText({
+      summary: "x",
+      msg: { key: "event.roundDone", params: { ...params, title: "Coffee chat" } },
+    });
+    expect(named).toContain("Coffee chat");
+    expect(named).not.toContain("Round 2");
+  });
+
+  it("builds the money with the offer's own currency", async () => {
+    await i18n.changeLanguage(PSEUDO);
+    const shown = eventText({
+      summary: "x",
+      msg: { key: "event.offerDeclinedDay", params: { amount: 1200, currency: "CHF" } },
+    });
+    expect(shown).toBe(i18n.t("events:offerDeclinedDay", { money: "1,200 CHF" }));
+    expect(shown).not.toBe("Offer declined: 1,200 CHF a day");
+  });
+});
+
 describe("event messages", () => {
   it.each(cases.map((c) => [c.summary, c] as const))("shows %s", (summary, c) => {
     expect(eventText({ summary: "something else", msg: msgOf(c) })).toBe(summary);

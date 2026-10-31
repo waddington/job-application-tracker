@@ -1,6 +1,7 @@
 """New events save their text as data (`data.msg`) beside the English `summary` (docs/rfc/i18n.md)."""
 
 import json
+import re
 from datetime import UTC, datetime
 from pathlib import Path
 from types import SimpleNamespace
@@ -9,8 +10,9 @@ from typing import get_args
 import pytest
 
 from jat.api import schemas as S
-from jat.db.models import Event
+from jat.db.models import Event, Interview, Offer
 from jat.domain import applications as svc
+from jat.domain import offers
 from jat.snapshot import export_data_dir, restore_data_dir
 
 from .factories import post
@@ -257,3 +259,147 @@ def test_export_and_restore_keep_the_message(client, seeded, app, tmp_path):
     export_data_dir(fresh)
     after = (fresh / "export" / "events.jsonl").read_text(encoding="utf-8").splitlines()
     assert after == lines
+
+
+ROUND_CASES = [c for c in CASES if c["key"].startswith("event.round")]
+OFFER_CASES = [c for c in CASES if c["key"].startswith("event.offer")]
+THEN = "2030-01-07T10:00:00Z"
+LATER = "2030-01-08T10:00:00Z"
+# How a round reaches each message: its status when made, then what changes it (None: nothing, or removal).
+ROUND_STEPS = {
+    "event.roundScheduled": ("scheduled", None),
+    "event.roundAdded": ("done", None),
+    "event.roundCancelled": ("cancelled", None),
+    "event.roundBackOn": ("cancelled", {"status": "scheduled"}),
+    "event.roundDone": ("scheduled", {"status": "done"}),
+    "event.roundRemoved": ("scheduled", None),
+    "event.roundRescheduled": ("scheduled", {"starts_at": LATER}),
+    "event.roundRescheduledReason": ("scheduled", {"starts_at": LATER}),
+}
+# The same for an offer: its status when made, then the status it changes to.
+OFFER_STEPS = {
+    "Received": ("pending", None),
+    "Back": ("accepted", "pending"),
+    "Accepted": ("pending", "accepted"),
+    "Declined": ("pending", "declined"),
+    "Withdrawn": ("pending", "withdrawn"),
+    "Removed": ("pending", None),
+}
+
+
+def _stored(app, model, row_id, **values):
+    """Values the API refuses but old or hand-edited data can hold."""
+    with app.state.sessions.begin() as session:
+        for name, value in values.items():
+            setattr(session.get(model, row_id), name, value)
+
+
+@pytest.mark.parametrize("case", ROUND_CASES, ids=lambda c: c["summary"])
+def test_a_round_writes_its_message(client, seeded, app, case):
+    app_id = _app(client, seeded)
+    params = case["params"]
+    status, change = ROUND_STEPS[case["key"]]
+    body = {"title": params["title"], "kind": params["kind"], "status": status, "starts_at": THEN}
+    made = post(client, f"/api/v1/applications/{app_id}/interviews", {**body, "round": params["round"] or 1})
+    if params["round"] is None:
+        _stored(app, Interview, made["id"], round=None)
+    url = f"/api/v1/interviews/{made['id']}"
+    if case["key"] == "event.roundRemoved":
+        assert client.delete(url).status_code == 204
+    elif change:
+        # Spaces around and inside the reason collapse, in the summary and the message alike.
+        reason = {"reschedule_reason": f"  {params['reason'].replace(' ', '  ')}\n"} if "reason" in params else {}
+        r = client.patch(url, json={**change, **reason})
+        assert r.status_code == 200, r.text
+    _assert_written(_last(client, app_id), case)
+
+
+def test_a_round_keeps_its_timeline_data_beside_the_message(client, seeded):
+    app_id = _app(client, seeded)
+    made = post(client, f"/api/v1/applications/{app_id}/interviews", {"title": "Pairing session", "kind": "pairing"})
+    data = _last(client, app_id)["data"]
+    assert (data["interview_id"], data["round"], data["status"]) == (made["id"], 1, "scheduled")
+
+
+def test_a_cancelled_round_says_so_when_changed_too(client, seeded):
+    app_id = _app(client, seeded)
+    made = post(client, f"/api/v1/applications/{app_id}/interviews", {"kind": "technical"})
+    assert client.patch(f"/api/v1/interviews/{made['id']}", json={"status": "cancelled"}).status_code == 200
+    event = _last(client, app_id)
+    assert event["summary"] == "Round 1 · Technical cancelled"
+    assert event["msg"]["key"] == "event.roundCancelled"
+
+
+@pytest.mark.parametrize("case", OFFER_CASES, ids=lambda c: c["summary"])
+def test_an_offer_writes_its_message(client, seeded, app, case):
+    app_id = _app(client, seeded)
+    what, per = re.fullmatch(r"event\.offer(.+?)(Year|Day|NoFigures)", case["key"]).groups()
+    params = case["params"]
+    made_as, changes_to = OFFER_STEPS[what]
+    body = {"status": made_as, "currency": (params.get("currency") or "").upper() or None}
+    if per == "Year":
+        body["salary"] = params["amount"]
+    elif per == "Day":
+        body |= {"employment_type": "contract", "day_rate": params["amount"]}
+    made = post(client, f"/api/v1/applications/{app_id}/offers", body)
+    url = f"/api/v1/offers/{made['id']}"
+    if what == "Removed":
+        if params.get("currency"):  # a lower-case currency from before they were made upper-case
+            _stored(app, Offer, made["id"], currency=params["currency"])
+        assert client.delete(url).status_code == 204
+    elif changes_to:
+        assert client.patch(url, json={"status": changes_to}).status_code == 200
+    _assert_written(_last(client, app_id), case)
+    assert _last(client, app_id)["data"]["status"] == (changes_to or made_as)
+
+
+@pytest.mark.parametrize(
+    ("body", "key", "params", "summary"),
+    [
+        (
+            {"status": "accepted", "salary": 90_000},
+            "event.offerAcceptedYear",
+            {"amount": 90_000, "currency": None},
+            "90,000",
+        ),
+        (
+            {"day_rate": 700, "currency": "GBP"},
+            "event.offerReceivedDay",
+            {"amount": 700, "currency": "GBP"},
+            "£700 a day",
+        ),
+        ({"salary": 1, "day_rate": 700}, "event.offerReceivedYear", {"amount": 1, "currency": None}, "1 a year"),
+        ({"employment_type": "contract", "salary": 90_000}, "event.offerReceivedNoFigures", {}, "no figures yet"),
+        ({"employment_type": "permanent", "day_rate": 700}, "event.offerReceivedNoFigures", {}, "no figures yet"),
+        ({"salary": 0, "currency": "GBP"}, "event.offerReceivedNoFigures", {}, "no figures yet"),
+    ],
+    ids=[
+        "made accepted",
+        "day rate, no kind",
+        "salary wins, no kind",
+        "contract, no rate",
+        "permanent, no pay",
+        "zero",
+    ],
+)
+def test_an_offer_saves_the_figure_its_summary_shows(client, seeded, body, key, params, summary):
+    app_id = _app(client, seeded)
+    post(client, f"/api/v1/applications/{app_id}/offers", body)
+    event = _last(client, app_id)
+    assert summary in event["summary"]
+    assert event["msg"] == {"key": key, "params": params}
+
+
+def test_every_offer_status_has_its_messages():
+    whats = {"received", "back under consideration", "removed"} | set(get_args(S.OfferStatus)) - {"pending"}
+    assert {what for what, _ in offers._MESSAGES} == whats
+    assert set(offers._MESSAGES.values()) == {k for k in KEYS if k.startswith("event.offer")}
+
+
+@pytest.mark.parametrize("amount", [2**53, 2**53 + 1], ids=str)
+def test_an_amount_a_browser_cant_read_exactly_stays_english(client, seeded, amount):
+    app_id = _app(client, seeded)
+    post(client, f"/api/v1/applications/{app_id}/offers", {"salary": amount, "currency": "GBP"})
+    event = _last(client, app_id)
+    assert event["summary"] == f"Offer received: £{amount:,} a year"
+    assert event["msg"] is None and "msg" not in event["data"]
