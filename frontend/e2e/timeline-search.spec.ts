@@ -5,13 +5,6 @@ import { expect, test } from "./fixtures";
 // The Timeline (filters, the address, lanes) and search (finding each kind of thing, and keeping up
 // with changes). Each test uses its own names and looks for those.
 
-interface Item {
-  id: string;
-  title: string;
-  category: string;
-  at: string;
-}
-
 const API = "/api/v1";
 const post = async <T>(request: APIRequestContext, path: string, data: object) => {
   const made = await request.post(`${API}/${path}`, { data });
@@ -42,6 +35,12 @@ const call = (request: APIRequestContext, contactId: string, title: string, days
     status: days < 0 ? "done" : "scheduled",
     ...extra,
   });
+const yesterdayNoon = () => {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  d.setHours(12, 0, 0, 0);
+  return d.toISOString();
+};
 const theDialog = (page: Page) => page.locator(".mantine-Modal-content");
 const menu = (page: Page, name: string) =>
   page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name, exact: true });
@@ -74,15 +73,24 @@ const hit = (page: Page, title: string | RegExp) => page.getByRole("link", { nam
 test.describe("Timeline: what's listed", () => {
   test("a call in the past, one ahead, and where each goes", async ({ page, request }) => {
     const who = await person(request, { name: "Listed Person" });
-    await call(request, who.id, "Past chat");
+    await post(request, "meetings", {
+      contact_id: who.id,
+      title: "Past chat",
+      starts_at: yesterdayNoon(),
+      status: "done",
+    });
     await call(request, who.id, "Future chat", 3);
     await openTimeline(page);
-    await expect(page.getByText("Call with Listed Person: Past chat")).toBeVisible();
+    const yesterday = page
+      .locator("div")
+      .filter({ has: page.getByRole("heading", { name: /^Yesterday · /, level: 3 }) })
+      .last();
+    await expect(yesterday.getByText("Call with Listed Person: Past chat")).toBeVisible();
     const ahead = page
       .locator(".mantine-Card-root")
       .filter({ has: page.getByRole("heading", { name: "Coming up" }) });
     await expect(ahead.getByText(/Future chat/)).toBeVisible();
-    await expect(page.getByRole("heading", { name: /^Yesterday · /, level: 3 })).toBeVisible();
+    await expect(ahead.getByText(/Past chat/)).toBeHidden();
     await expect(ahead.getByRole("link", { name: "Listed Person" })).toHaveAttribute(
       "href",
       `/people/${who.id}`,
@@ -97,6 +105,15 @@ test.describe("Timeline: what's listed", () => {
     await openTimeline(page);
     const links = page.getByRole("link", { name: "Timeline Move Role at Timeline Move Co" });
     await expect(links.first()).toHaveAttribute("href", `/applications/${app.id}`);
+    const titles = await page
+      .locator(".mantine-Group-root")
+      .filter({ has: links })
+      .filter({ hasText: /Interested → Applied|Added at Interested/ })
+      .allInnerTexts();
+    const moved = titles.findIndex((t) => t.includes("Interested → Applied"));
+    const added = titles.findIndex((t) => t.includes("Added at Interested"));
+    expect(moved).toBeGreaterThanOrEqual(0);
+    expect(added).toBeGreaterThan(moved);
   });
 
   test("an archived application stays, marked", async ({ page, request }) => {
@@ -112,7 +129,9 @@ test.describe("Timeline: what's listed", () => {
 
   test("keeps up: a call logged on someone's page is here without a reload", async ({ page, request }) => {
     const who = await person(request, { name: "Live Call Person" });
+    await page.clock.setFixedTime(new Date());
     await openTimeline(page);
+    await expect(page.getByRole("heading", { level: 3 }).first()).toBeVisible();
     await expect(page.getByText(/Live Call Person/)).toBeHidden();
     await page.evaluate((to) => {
       window.history.pushState({}, "", to);
@@ -206,6 +225,7 @@ test.describe("Timeline: filters", () => {
     await expect(page).toHaveURL(new RegExp(`about=contact(%3A|:)${one.id}`));
     await page.reload();
     await expect(page.getByLabel("About", { exact: true }).first()).toHaveValue("About One Person");
+    await expect(page.getByText(/One chat/)).toBeVisible();
     await expect(page.getByText(/Two chat/)).toBeHidden();
     await page.locator(".mantine-InputClearButton-root").click();
     await expect(page.getByText(/Two chat/)).toBeVisible();
@@ -329,34 +349,34 @@ test.describe("Timeline: lanes", () => {
   });
 
   test("more than thirty rows are cut down, and can be shown", async ({ page, request }) => {
-    await Promise.all(
-      Array.from({ length: 32 }, (_, i) =>
-        request.post(`${API}/contacts`, { data: { name: `Lane Crowd ${i}` } }).then(async (made) => {
-          const { id } = (await made.json()) as { id: string };
-          await request.post(`${API}/meetings`, {
-            data: { contact_id: id, title: "Crowd", starts_at: inDays(-2), status: "done" },
-          });
-        }),
-      ),
-    ).catch(() => undefined);
-    const all = (await (await request.get(`${API}/contacts`)).json()) as { name: string; id: string }[];
-    for (const who of all.filter((p) => p.name.startsWith("Lane Crowd"))) {
-      const held = (await (await request.get(`${API}/meetings?contact_id=${who.id}`)).json()) as Item[];
-      if (!held.length) await call(request, who.id, "Crowd", -2);
-    }
-    for (let i = all.filter((p) => p.name.startsWith("Lane Crowd")).length; i < 32; i++) {
-      const who = await person(request, { name: `Lane Crowd extra ${i}` });
+    for (let i = 0; i < 32; i++) {
+      const who = await person(request, { name: `Lane Crowd ${i}` });
       await call(request, who.id, "Crowd", -2);
     }
     await openTimeline(page, "?view=lanes");
     await rowsBy(page, "Person");
+    const lanes = page.locator("ul[aria-label]");
+    await expect(lanes).toHaveCount(30);
     const more = page.getByRole("button", { name: /^Show all \d+ rows$/ });
-    await expect(more).toBeVisible();
-    const lanes = page.getByRole("list");
-    const before = await lanes.count();
+    const all = Number(/\d+/.exec((await more.innerText()) ?? "")?.[0]);
+    expect(all).toBeGreaterThanOrEqual(32);
     await more.click();
-    await expect(page.getByRole("button", { name: "Show the 30 most recent" })).toBeVisible();
-    await expect.poll(() => lanes.count()).toBeGreaterThan(before);
+    await expect(lanes).toHaveCount(all);
+    await page.getByRole("button", { name: "Show the 30 most recent" }).click();
+    await expect(lanes).toHaveCount(30);
+  });
+
+  // KNOWN BUG (fix-timeline-load-error-silent on the roadmap): expected to fail until it is fixed.
+  test.fail("if it can't load, it says so rather than that there's nothing", async ({ page, problems }) => {
+    problems.allow(/500.*\/api\/v1\/timeline/);
+    await page.route(/\/api\/v1\/timeline/, (route) =>
+      route.fulfill({ status: 500, json: { detail: "Failed for the test" } }),
+    );
+    await openTimeline(page);
+    await expect(page.getByText(/could(n.t| not) load|didn.t work/i).first()).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(page.getByText("Nothing here yet")).toBeHidden();
   });
 });
 
@@ -425,10 +445,33 @@ test.describe("search: finding things", () => {
   test.fail("a very long search gets an honest answer", async ({ page, problems }) => {
     problems.allow(/422.*\/api\/v1\/search/);
     await page.goto("/search");
-    await search(page, "x".repeat(201));
-    await expect(page.getByText(/Nothing matches|too long|shorter/i).first()).toBeVisible({
-      timeout: 15_000,
-    });
+    await box(page).fill("x".repeat(201));
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(9_000); // its retries are over by now
+    await expect(page.getByText("Is the tracker running?")).toHaveCount(0);
+  });
+
+  test("a search that's all digits works, typed or in the address", async ({ page, request }) => {
+    await company(request, "Numbered 20261 Co");
+    await page.goto("/search?q=20261");
+    await expect(page.getByRole("heading", { name: "Results for “20261”", level: 2 })).toBeVisible();
+    await expect(hit(page, "Numbered 20261 Co")).toBeVisible();
+    await expect(box(page)).toHaveValue("20261");
+    await page.reload();
+    await expect(hit(page, "Numbered 20261 Co")).toBeVisible();
+  });
+
+  // KNOWN BUG (fix-search-note-dead-link on the roadmap): expected to fail until it is fixed.
+  test.fail("a note on a company since deleted opens something real", async ({ page, request, problems }) => {
+    problems.allow(/404.*\/api\/v1\/companies/);
+    const gone = await company(request, "Dead Link Co");
+    await post(request, "notes", { title: "Deadlinkword note", body: "", links: [`company:${gone.id}`] });
+    expect((await request.delete(`${API}/companies/${gone.id}`)).ok()).toBe(true);
+    await page.goto("/search");
+    await search(page, "Deadlinkword");
+    await hit(page, "Deadlinkword note").click();
+    await page.waitForTimeout(9_000); // its retries are over by now
+    await expect(page.getByText(/Couldn.t load this company|Page not found/)).toHaveCount(0);
   });
 
   test("each kind of thing is found, and goes to the right place", async ({ page, request }) => {
@@ -456,10 +499,8 @@ test.describe("search: finding things", () => {
     await page.goto("/search");
 
     await search(page, "Zircon Finds Co");
-    await expect(hit(page, "Zircon Finds Co").first()).toHaveAttribute(
-      "href",
-      /\/(companies|applications|roles)\//,
-    );
+    await expect(page.locator(`a[href="/companies/${coId}"]`).first()).toBeVisible();
+    await expect(page.locator(`a[href="/applications/${app.id}"]`).first()).toBeVisible();
     await search(page, "Zircon Agency");
     await expect(hit(page, "Zircon Agency")).toHaveAttribute("href", `/agencies/${firm.id}`);
     await search(page, "zircon.mail@example.com");
@@ -495,17 +536,20 @@ test.describe("search: finding things", () => {
   });
 
   test("an archived application is marked, and comes after one that isn't", async ({ page, request }) => {
+    const live = await quick(request, "Ranked Live Co", "Rankword New Role");
     const old = await quick(request, "Ranked Archive Co", "Rankword Old Role");
+    // Archived last, so it's the newest of the two and only being archived can put it after.
     await request.patch(`${API}/applications/${old.id}`, { data: { archived: true } });
-    await quick(request, "Ranked Live Co", "Rankword New Role");
+    const hits = (await (await request.get(`${API}/search?q=Rankword`)).json()) as {
+      kind: string;
+      id: string;
+      archived: boolean;
+    }[];
+    const apps = hits.filter((h) => h.kind === "application");
+    expect(apps.map((h) => h.id)).toEqual([live.id, old.id]);
     await page.goto("/search");
     await search(page, "Rankword");
-    const titles = await page.locator(".mantine-Card-root a").allInnerTexts();
-    const live = titles.findIndex((t) => t.includes("Ranked Live Co") || t.includes("Rankword New"));
-    const archived = titles.findIndex((t) => t.includes("Ranked Archive Co") || t.includes("Rankword Old"));
-    expect(live).toBeGreaterThanOrEqual(0);
-    expect(archived).toBeGreaterThan(live);
-    await expect(page.getByText("Archived", { exact: true }).first()).toBeVisible();
+    await expect(page.getByText("Archived", { exact: true })).toHaveCount(1);
   });
 });
 
@@ -540,6 +584,7 @@ test.describe("search: keeping up", () => {
 
   test("something deleted goes from results seen before", async ({ page, request, problems }) => {
     problems.allow(/404.*\/api\/v1\/companies/);
+    await page.clock.setFixedTime(new Date());
     const at = await company(request, "Goneword Search Co");
     await page.goto("/search");
     await search(page, "Goneword");
