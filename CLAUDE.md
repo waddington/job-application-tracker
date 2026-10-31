@@ -46,13 +46,13 @@ roadmap is `docs/ROADMAP.yaml`, shown by the PM dashboard (see "Project manageme
 - **Commit and push small, frequent, logical units.**
 - **Open a draft PR early.** As soon as work is going to become a PR, push a first commit, however
   minimal (the roadmap task set to `building` will do), and open it with
-  `gh pr create --draft --title … --body-file …`. The PM dashboard then shows the work straight away.
-  Keep pushing to it as work continues. Run `gh pr ready` when it's time for review, then follow the
+  `gh pr create --draft --title … --body-file …`. The PM dashboard then shows a task already on main's
+  roadmap (a task added only on the branch appears once it merges; see `pm-draft-building`). Keep pushing to it as work continues. Run `gh pr ready` when it's time for review, then follow the
   review-fix cycle below.
 - **Keep PRs small.** Aim for about 500 changed lines, and treat 1,000 as a strong target to stay
   below. Go over only when a change can't sensibly be split, and say why in the PR. `uv.lock`,
   `pnpm-lock.yaml`, `frontend/openapi.json` and `frontend/src/api/schema.d.ts` don't count. When a
-  roadmap task won't fit, split it into tasks with their own ids, branches and patch versions before
+  roadmap task won't fit, split it into tasks with their own ids, branches and versions before
   starting. Land each part only when it works by itself: nothing half-converted or half-wired.
 - **Edit files directly in the worktree** with the editor tools (Kai, 2026-10-31). No patch scripts
   for changes you could make by hand; a script is only for a truly mechanical bulk change, such as
