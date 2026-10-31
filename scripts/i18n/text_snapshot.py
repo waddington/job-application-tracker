@@ -197,7 +197,7 @@ with sync_playwright() as p:
     )
     page.keyboard.press("Escape")
     time.sleep(0.4)
-    for n, row in enumerate(page.locator("tbody tr").all()[:3]):
+    for n in range(min(3, page.locator("tbody tr").count())):
         visit(page, "/companies")
         page.locator("tbody tr").nth(n).click(timeout=3000)
         page.wait_for_load_state("networkidle")
