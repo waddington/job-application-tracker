@@ -97,9 +97,7 @@ function InterviewItem({
             <RescheduledBadge interview={interview} size="xs" />
           </Group>
           <Text size="sm" c="dimmed">
-            {people.length
-              ? t("card.whenWith", { when: whenText, people: people.join(", ") })
-              : whenText}
+            {people.length ? t("card.whenWith", { when: whenText, people: people.join(", ") }) : whenText}
           </Text>
           {interview.meeting_url && (
             <Anchor href={interview.meeting_url} target="_blank" rel="noreferrer" size="sm">

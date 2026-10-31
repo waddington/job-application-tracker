@@ -40,7 +40,10 @@ const STAGE = { id: "applied", name: "Applied", stale_after_days: 10 } as Workfl
 const round = (overrides: Record<string, unknown>) =>
   ({
     id: "i1",
-    round: 2, title: "System design", kind: "technical", label: "Round 2 · System design",
+    round: 2,
+    title: "System design",
+    kind: "technical",
+    label: "Round 2 · System design",
     status: "scheduled",
     starts_at: null,
     deadline_at: null,
