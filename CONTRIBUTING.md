@@ -119,7 +119,9 @@ The app is being made translatable, English only for now; the plan and its order
 - Files and links: the Files and Links cards;
 - Notes and search: notes, the note editor, the Notes page and the search results page;
 - Insights: the page, stage and route tables, the scorecard, weekly activity, The whole picture,
-  Recruiter conversations, CVs and cover letters and the Sankey.
+  Recruiter conversations, CVs and cover letters and the Sankey;
+- Errors: the shared "That didn't work" toast, and the errors that have a code so far (backup and
+  to-dos).
 
 The files are listed in `TRANSLATED` in `frontend/eslint.config.js`. Until an area has moved,
 keep writing its text as before. Once it has:
@@ -167,6 +169,19 @@ keep writing its text as before. Once it has:
   `placeholder`, `aria-label`, `title`, `description`, `error`, `hint`, `empty`, `confirm`…).
   Strings in plain code, like a form's error messages, still need care. A prop that carries
   prose and isn't on the list goes on it.
+- **Adding an error code,** for an error people can see (the backend never translates):
+  1. add the code to `ErrorCode` in `src/jat/api/errors.py`, with underscores and no ending like a
+     plural form (`_one`, `_other`);
+  2. add its line to `codes` in `frontend/src/locales/en/errors.ts`, with values as `{{placeholders}}`;
+     a code with a `count` also goes in `PluralCode` there, with `_one` and `_other` lines;
+  3. raise it, with `detail` the same English as before and the values as params:
+     `raise CodedError(409, f"{name} is taken", "company_name_taken", {"name": name})`, and pass
+     `responses=coded(409)` to the route;
+  4. run `uv run python -m jat.openapi` and `pnpm --dir frontend gen:api`, and add a row to
+     `components/ErrorsText.test.tsx`.
+
+  The type check fails if a code has no text, or text has no code. Errors people never see can stay
+  plain `HTTPException`s.
 - **Adding a language** (once its translation is reviewed; the `multi-language` task does the
   first):
   1. its text in `frontend/src/locales/<code>/`, one JSON file per namespace (the tests

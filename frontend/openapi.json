@@ -3443,6 +3443,68 @@
         "title": "DuplicateOut",
         "type": "object"
       },
+      "ErrorOut": {
+        "description": "An error's body. Only `detail` is always there: `code` and `params` come with coded errors.",
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "enum": [
+                  "backup_add_failed",
+                  "backup_commit_failed",
+                  "backup_detached_head",
+                  "backup_git_timeout",
+                  "backup_git_unavailable",
+                  "backup_lock_failed",
+                  "backup_mid_rebase",
+                  "backup_no_remote",
+                  "backup_not_a_repo",
+                  "backup_push_failed",
+                  "backup_shut_down",
+                  "backup_snapshot_failed",
+                  "backup_snapshots_off",
+                  "todo_text_required"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code"
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "params": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "integer"
+                    }
+                  ]
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Params"
+          }
+        },
+        "required": [
+          "detail"
+        ],
+        "title": "ErrorOut",
+        "type": "object"
+      },
       "EventOut": {
         "properties": {
           "application_id": {
@@ -10188,6 +10250,16 @@
               }
             },
             "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Push",
@@ -10209,6 +10281,16 @@
               }
             },
             "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Snapshot",
@@ -13764,11 +13846,18 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ErrorOut"
+                    },
+                    {
+                      "$ref": "#/components/schemas/HTTPValidationError"
+                    }
+                  ]
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Create Todo",
@@ -13849,11 +13938,18 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ErrorOut"
+                    },
+                    {
+                      "$ref": "#/components/schemas/HTTPValidationError"
+                    }
+                  ]
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "An error, with a code when people can see it"
           }
         },
         "summary": "Update Todo",

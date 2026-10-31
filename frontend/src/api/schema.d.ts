@@ -2312,6 +2312,20 @@ export interface components {
              */
             updated_at: string;
         };
+        /**
+         * ErrorOut
+         * @description An error's body. Only `detail` is always there: `code` and `params` come with coded errors.
+         */
+        ErrorOut: {
+            /** Code */
+            code?: ("backup_add_failed" | "backup_commit_failed" | "backup_detached_head" | "backup_git_timeout" | "backup_git_unavailable" | "backup_lock_failed" | "backup_mid_rebase" | "backup_no_remote" | "backup_not_a_repo" | "backup_push_failed" | "backup_shut_down" | "backup_snapshot_failed" | "backup_snapshots_off" | "todo_text_required") | null;
+            /** Detail */
+            detail: string;
+            /** Params */
+            params?: {
+                [key: string]: string | number;
+            } | null;
+        };
         /** EventOut */
         EventOut: {
             /** Application Id */
@@ -4692,6 +4706,15 @@ export interface operations {
                     "application/json": components["schemas"]["PushResult"];
                 };
             };
+            /** @description An error, with a code when people can see it */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
         };
     };
     snapshot_api_v1_backup_snapshot_post: {
@@ -4710,6 +4733,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SnapshotResult"];
+                };
+            };
+            /** @description An error, with a code when people can see it */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };
@@ -6773,13 +6805,13 @@ export interface operations {
                     "application/json": components["schemas"]["TodoOut"];
                 };
             };
-            /** @description Validation Error */
+            /** @description An error, with a code when people can see it */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"] | components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -6837,13 +6869,13 @@ export interface operations {
                     "application/json": components["schemas"]["TodoOut"];
                 };
             };
-            /** @description Validation Error */
+            /** @description An error, with a code when people can see it */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorOut"] | components["schemas"]["HTTPValidationError"];
                 };
             };
         };
