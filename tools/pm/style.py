@@ -143,6 +143,8 @@ padding:3px 0}
 .heat{display:grid;grid-template-columns:44px repeat(24,minmax(0,1fr));gap:2px;align-items:center;font-size:11px}
 .heat i{display:block;height:14px;border-radius:2px;background:var(--line)}.heat i.on{background:var(--building)}
 .hm-day,.hm-h{color:var(--ink-3);white-space:nowrap}
+.rm-grid svg.chart .axis{font-size:18px}
+@media (max-width:700px){svg.chart.wide .axis{font-size:44px}.rm-grid svg.chart .axis{font-size:24px}}
 @media (max-width:700px){.tl-row{grid-template-columns:90px minmax(0,1fr);gap:8px}
 svg.chart .axis{font-size:26px}.tl-mark:nth-child(even){display:none}}
 @media (max-width:1000px){.ov-grid{grid-template-columns:minmax(0,1fr)}}

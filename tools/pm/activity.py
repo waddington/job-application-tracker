@@ -21,7 +21,8 @@ HEATMAP_DAYS = 14
 BIG_PR = 1000  # CLAUDE.md's PR size limit
 
 WIDTH, HEIGHT = 800, 240
-LEFT, RIGHT, TOP, BOTTOM = 48, 12, 16, 28
+LEFT, RIGHT, TOP, BOTTOM = 72, 12, 16, 32
+WIDE = 1400  # the full-width chart's canvas, so its text comes out the same size as the others'
 
 
 def commit_kind(subject: str) -> tuple[str, str | None]:
@@ -98,9 +99,9 @@ def section(key: str, title: str, note: str, body: str) -> str:
     )
 
 
-def _axis(tallest: int, y) -> str:
+def _axis(tallest: int, y, width: int = WIDTH) -> str:
     return "".join(
-        f'<line class="grid" x1="{LEFT}" x2="{WIDTH - RIGHT}" y1="{y(v):.1f}" y2="{y(v):.1f}"/>'
+        f'<line class="grid" x1="{LEFT}" x2="{width - RIGHT}" y1="{y(v):.1f}" y2="{y(v):.1f}"/>'
         f'<text class="axis" x="{LEFT - 6}" y="{y(v) + 4:.1f}" text-anchor="end">{v:,}</text>'
         for v in sorted({0, tallest // 2, tallest})
     )
@@ -109,7 +110,7 @@ def _axis(tallest: int, y) -> str:
 def commits_chart(bars: CommitBars) -> str:
     totals = [sum(bars.series[k][i] for k in TYPES) for i in range(len(bars.starts))]
     tallest = max(totals, default=0) or 1
-    inner = WIDTH - LEFT - RIGHT
+    inner = WIDE - LEFT - RIGHT
     each = inner / max(len(bars.starts), 1)
 
     def y(value: float) -> float:
@@ -127,13 +128,14 @@ def commits_chart(bars: CommitBars) -> str:
                     f"<title>{day(start)}: {n} {kind}</title></rect>"
                 )
                 below += n
-        if i % max(len(bars.starts) // 5, 1) == 0:
+        if i % max(len(bars.starts) // 5, 1) == 0 and i <= 0.85 * len(bars.starts):  # none hangs off the end
             labels.append(f'<text class="axis" x="{LEFT + i * each:.1f}" y="{HEIGHT - 8}">{day(start)}</text>')
     legend = "".join(f'<span><i class="k-{k}"></i>{k}</span>' for k in TYPES if any(bars.series[k]))
     total = sum(totals)
     return (
-        f'<svg class="chart" viewBox="0 0 {WIDTH} {HEIGHT}" role="img" aria-label="{total} commits by type over time">'
-        f'{_axis(tallest, y)}{"".join(rects)}{"".join(labels)}</svg><div class="legend">{legend}</div>'
+        f'<svg class="chart wide" viewBox="0 0 {WIDE} {HEIGHT}" role="img" '
+        f'aria-label="{total} commits by type over time">'
+        f'{_axis(tallest, y, WIDE)}{"".join(rects)}{"".join(labels)}</svg><div class="legend">{legend}</div>'
     )
 
 
