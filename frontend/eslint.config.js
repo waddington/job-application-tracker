@@ -40,6 +40,16 @@ const TRANSLATED = [
   "src/components/Roles.tsx",
   "src/pages/RolesPage.tsx",
   "src/pages/RolePage.tsx",
+  // i18n-people
+  "src/pages/RecruitersPage.tsx",
+  "src/pages/PersonPage.tsx",
+  "src/pages/CompaniesPage.tsx",
+  "src/pages/CompanyPage.tsx",
+  "src/pages/AgencyPage.tsx",
+  "src/components/ContactFormModal.tsx",
+  "src/components/ContactCard.tsx",
+  "src/components/MergePerson.tsx",
+  "src/components/TimelineButton.tsx",
 ];
 
 export default tseslint.config(

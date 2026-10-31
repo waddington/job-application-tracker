@@ -3,6 +3,7 @@ import { useForm } from "@mantine/form";
 import { randomId } from "@mantine/hooks";
 import { IconPlus, IconTrash } from "@tabler/icons-react";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 import type { Contact, Schemas } from "../api/client";
 import { useCreateCompany } from "../api/detailHooks";
@@ -28,13 +29,8 @@ interface Values {
   details: DetailRow[];
 }
 
-const KINDS: { value: Kind; label: string }[] = [
-  { value: "email", label: "Email" },
-  { value: "phone", label: "Phone" },
-  { value: "linkedin", label: "LinkedIn" },
-  { value: "url", label: "Link" },
-  { value: "other", label: "Other" },
-];
+const EMAIL = /^\S+@\S+\.\S+$/;
+const WEB_LINK = /^https?:\/\//;
 
 function fromContact(
   contact: Contact | null | undefined,
@@ -73,6 +69,14 @@ export function ContactFormModal({
   /** Called with the saved person, e.g. to link them to an application straight away. */
   onSaved?: (contact: Contact) => void;
 }) {
+  const { t } = useTranslation(["people", "common"]);
+  const kinds: { value: Kind; label: string }[] = [
+    { value: "email", label: t("form.kinds.email") },
+    { value: "phone", label: t("form.kinds.phone") },
+    { value: "linkedin", label: t("form.kinds.linkedin") },
+    { value: "url", label: t("form.kinds.url") },
+    { value: "other", label: t("form.kinds.other") },
+  ];
   const { data: agencies } = useAgencies();
   const { data: companies } = useCompanies();
   const save = useSaveContact();
@@ -81,15 +85,14 @@ export function ContactFormModal({
   const form = useForm<Values>({
     initialValues: fromContact(contact, defaultAgencyId, defaultCompanyId),
     validate: {
-      name: (v) => (v.trim() ? null : "Who is it?"),
+      name: (v) => (v.trim() ? null : t("form.errors.who")),
       details: {
         value: (v, values, path) => {
           const index = Number(path.split(".")[1]);
           const kind = values.details[index]?.kind;
           if (!v.trim()) return null; // empty rows are dropped
-          if (kind === "email" && !/^\S+@\S+\.\S+$/.test(v)) return "That doesn't look like an email address";
-          if ((kind === "linkedin" || kind === "url") && !/^https?:\/\//.test(v))
-            return "Links start with https://";
+          if (kind === "email" && !EMAIL.test(v)) return t("form.errors.email");
+          if ((kind === "linkedin" || kind === "url") && !WEB_LINK.test(v)) return t("form.errors.link");
           return null;
         },
       },
@@ -132,20 +135,24 @@ export function ContactFormModal({
     <Modal
       opened={opened}
       onClose={onClose}
-      title={contact ? `Edit ${contact.name}` : "New person"}
+      title={contact ? t("form.editTitle", { name: contact.name }) : t("form.newTitle")}
       size="lg"
     >
       <form onSubmit={submit}>
         <Stack>
           <Group grow align="flex-start">
-            <TextInput label="Name" data-autofocus {...form.getInputProps("name")} />
-            <TextInput label="Job title" placeholder="Senior Consultant" {...form.getInputProps("title")} />
+            <TextInput label={t("form.name")} data-autofocus {...form.getInputProps("name")} />
+            <TextInput
+              label={t("form.jobTitle")}
+              placeholder={t("form.jobTitlePlaceholder")}
+              {...form.getInputProps("title")}
+            />
           </Group>
           <Group grow align="flex-start">
             <CreatableSelect
-              label="Agency"
-              description="For agency recruiters"
-              placeholder="None (type to add one)"
+              label={t("form.agency")}
+              description={t("form.agencyHint")}
+              placeholder={t("form.nonePlaceholder")}
               clearable
               items={(agencies ?? []).map((a) => ({ value: a.id, label: a.name }))}
               value={form.values.agencyId}
@@ -154,9 +161,9 @@ export function ContactFormModal({
               creating={createAgency.isPending}
             />
             <CreatableSelect
-              label="Company"
-              description="Where they work, if not at an agency"
-              placeholder="None (type to add one)"
+              label={t("form.company")}
+              description={t("form.companyHint")}
+              placeholder={t("form.nonePlaceholder")}
               clearable
               items={(companies ?? []).map((c) => ({ value: c.id, label: c.name }))}
               value={form.values.companyId}
@@ -166,34 +173,34 @@ export function ContactFormModal({
             />
           </Group>
           <Text size="sm" fw={500}>
-            Contact details
+            {t("form.details")}
           </Text>
           {form.values.details.map((row, index) => (
             <Group key={row.key} align="flex-start" wrap="nowrap">
               <Select
-                data={KINDS}
+                data={kinds}
                 allowDeselect={false}
                 w={130}
-                aria-label="Kind"
+                aria-label={t("form.kind")}
                 {...form.getInputProps(`details.${index}.kind`)}
               />
               <TextInput
-                placeholder="Value"
+                placeholder={t("form.value")}
                 style={{ flex: 1 }}
-                aria-label="Value"
+                aria-label={t("form.value")}
                 {...form.getInputProps(`details.${index}.value`)}
               />
               <TextInput
-                placeholder="Label (work, mobile…)"
+                placeholder={t("form.labelPlaceholder")}
                 w={170}
-                aria-label="Label"
+                aria-label={t("form.label")}
                 {...form.getInputProps(`details.${index}.label`)}
               />
               <ActionIcon
                 variant="subtle"
                 color="gray"
                 mt={6}
-                aria-label="Remove detail"
+                aria-label={t("form.removeDetail")}
                 onClick={() => form.removeListItem("details", index)}
               >
                 <IconTrash size={16} />
@@ -208,14 +215,14 @@ export function ContactFormModal({
             }
             w="fit-content"
           >
-            Add a detail
+            {t("form.addDetail")}
           </Button>
           <Group justify="flex-end">
             <Button variant="default" onClick={onClose}>
-              Cancel
+              {t("common:actions.cancel")}
             </Button>
             <Button type="submit" loading={save.isPending}>
-              {contact ? "Save" : "Add person"}
+              {contact ? t("common:actions.save") : t("form.add")}
             </Button>
           </Group>
         </Stack>

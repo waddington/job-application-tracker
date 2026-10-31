@@ -16,22 +16,27 @@ import { useForm } from "@mantine/form";
 import { IconBuilding, IconPlus, IconSearch } from "@tabler/icons-react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 
 import { useCreateCompany } from "../api/detailHooks";
 import { useApplications, useCompanies } from "../api/hooks";
 
+const companyPath = (id: string) => `/companies/${id}`;
+const WEB_LINK = /^https?:\/\//;
+
 function NewCompanyModal({ opened, onClose }: { opened: boolean; onClose: () => void }) {
+  const { t } = useTranslation(["people", "common"]);
   const create = useCreateCompany();
   const navigate = useNavigate();
   const form = useForm({
     initialValues: { name: "", website: "" },
     validate: {
-      name: (v) => (v.trim() ? null : "Name the company"),
-      website: (v) => (!v || /^https?:\/\//.test(v) ? null : "Links start with http:// or https://"),
+      name: (v) => (v.trim() ? null : t("companies.nameIt")),
+      website: (v) => (!v || WEB_LINK.test(v) ? null : t("places.linkStart")),
     },
   });
   return (
-    <Modal opened={opened} onClose={onClose} title="New company">
+    <Modal opened={opened} onClose={onClose} title={t("companies.new")}>
       <form
         onSubmit={form.onSubmit((values) =>
           create.mutate(
@@ -47,11 +52,15 @@ function NewCompanyModal({ opened, onClose }: { opened: boolean; onClose: () => 
         )}
       >
         <Stack>
-          <TextInput label="Name" data-autofocus {...form.getInputProps("name")} />
-          <TextInput label="Website" placeholder="https://…" {...form.getInputProps("website")} />
+          <TextInput label={t("common:editName.name")} data-autofocus {...form.getInputProps("name")} />
+          <TextInput
+            label={t("common:editName.website")}
+            placeholder={t("common:editName.websitePlaceholder")}
+            {...form.getInputProps("website")}
+          />
           <Group justify="flex-end">
             <Button type="submit" loading={create.isPending}>
-              Add company
+              {t("companies.add")}
             </Button>
           </Group>
         </Stack>
@@ -61,6 +70,7 @@ function NewCompanyModal({ opened, onClose }: { opened: boolean; onClose: () => 
 }
 
 export function CompaniesPage() {
+  const { t } = useTranslation("people");
   const { data: companies, isLoading } = useCompanies();
   const { data: apps } = useApplications({});
   const [q, setQ] = useState("");
@@ -82,7 +92,7 @@ export function CompaniesPage() {
       <Group justify="space-between">
         <Group gap="sm">
           <IconBuilding size={26} stroke={1.6} />
-          <Title order={2}>Companies</Title>
+          <Title order={2}>{t("companies.title")}</Title>
           {companies && (
             <Badge variant="light" color="gray">
               {companies.length}
@@ -90,41 +100,39 @@ export function CompaniesPage() {
           )}
         </Group>
         <Button leftSection={<IconPlus size={16} />} onClick={() => setCreating(true)}>
-          New company
+          {t("companies.new")}
         </Button>
       </Group>
       <TextInput
-        placeholder="Search companies"
+        placeholder={t("companies.search")}
         leftSection={<IconSearch size={16} />}
         value={q}
         onChange={(e) => setQ(e.currentTarget.value)}
         w={300}
-        aria-label="Search companies"
+        aria-label={t("companies.search")}
       />
       {isLoading ? (
         <Loader />
       ) : !shown.length ? (
         <Card withBorder p="xl">
           <Text ta="center" c="dimmed">
-            {companies?.length
-              ? "No companies match."
-              : "No companies yet. They're added with applications too."}
+            {companies?.length ? t("companies.noMatch") : t("companies.none")}
           </Text>
         </Card>
       ) : (
         <Table highlightOnHover verticalSpacing="sm">
           <Table.Thead>
             <Table.Tr>
-              <Table.Th>Company</Table.Th>
-              <Table.Th>Applications</Table.Th>
-              <Table.Th>In progress</Table.Th>
-              <Table.Th>Website</Table.Th>
+              <Table.Th>{t("companies.company")}</Table.Th>
+              <Table.Th>{t("companies.applications")}</Table.Th>
+              <Table.Th>{t("companies.inProgress")}</Table.Th>
+              <Table.Th>{t("companies.website")}</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
             {shown.map((c) => {
               const s = stats.get(c.id);
-              const open = () => void navigate({ to: `/companies/${c.id}` });
+              const open = () => void navigate({ to: companyPath(c.id) });
               return (
                 <Table.Tr
                   key={c.id}
@@ -132,7 +140,7 @@ export function CompaniesPage() {
                   onKeyDown={(e) => e.key === "Enter" && open()}
                   tabIndex={0}
                   style={{ cursor: "pointer" }}
-                  aria-label={`Open ${c.name}`}
+                  aria-label={t("companies.open", { name: c.name })}
                 >
                   <Table.Td fw={600}>{c.name}</Table.Td>
                   <Table.Td>{s?.total ?? 0}</Table.Td>
@@ -140,7 +148,7 @@ export function CompaniesPage() {
                     {s?.active ?? 0}
                     {s?.stale ? (
                       <Text span c="red" size="xs" ml={6}>
-                        {s.stale} to chase
+                        {t("companies.toChase", { count: s.stale })}
                       </Text>
                     ) : null}
                   </Table.Td>
@@ -165,10 +173,11 @@ export function CompaniesPage() {
       )}
       <NewCompanyModal opened={creating} onClose={() => setCreating(false)} />
       <Text size="xs" c="dimmed">
-        <Anchor component={Link} to="/applications">
-          Applications
-        </Anchor>{" "}
-        create companies as you add them.
+        <Trans
+          t={t}
+          i18nKey="companies.footer"
+          components={{ apps: <Anchor component={Link} to="/applications" /> }}
+        />
       </Text>
     </Stack>
   );
