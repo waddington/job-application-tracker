@@ -432,6 +432,9 @@ Before trusting anything here, re-read `docs/ROADMAP.yaml` and run `gh pr list`.
 - Not started, waiting on Kai: `deps-*` and `security-alerts` (the Dependabot fixes, below), P10.
 
 **Kai's latest word on how to work:**
+- "if you have followed and completed the iterative review-fix cycle then it can auto merge and make a release as
+  appropriate, but it needs my explicit permission each time to make a major release". This replaces the per-PR approvals
+  in section 1 for merging and releasing (CLAUDE.md *Git*). It doesn't change what to start: Kai still scopes that.
 - "I want smaller PRs, PRs created as drafts as early as possible, work directly on the files in the worktree dont use
   patch scripts": the rules are in CLAUDE.md *Git*.
 - "all deletes should have a confirmation dialog/modal". Recorded as `fix-deletes-no-confirm` and
@@ -613,7 +616,7 @@ hiding empty columns on phones (`.col.empty`).
 9. Release: `git tag -a vX.Y.Z <merge sha> -m vX.Y.Z`, `git push origin vX.Y.Z`,
    `gh release create vX.Y.Z --title vX.Y.Z --notes-file <that changelog section>
    --verify-tag` (notes extracted with a script into the tmp dir; make relative links
-   absolute). Needs Kai's approval in the current message (section 1).
+   absolute). Follows the review-fix cycle without asking; a major needs Kai's explicit yes each time.
 
 **An i18n area's cutover** (since #113; CONTRIBUTING "Text in the UI"):
 1. Worktree `worktree-i18n-<area>`; set its P8 task `building`.

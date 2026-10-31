@@ -12,8 +12,8 @@ roadmap is `docs/ROADMAP.yaml`, shown by the PM dashboard (see "Project manageme
 
 ## Ownership
 - Kai is hands-off on this repo. **Claude manages all PRs, merges and local state**, and Kai
-  interacts only through Claude. Claude may merge its own PRs here once checks pass. This
-  overrides the generic "never merge" default for this repo only.
+  interacts only through Claude. Claude may merge its own PRs here after the review-fix cycle (see
+  "Git"). This overrides the generic "never merge" default for this repo only.
 - Remote: `git@github.com:waddington/job-application-tracker.git` (**public**). The default
   branch is `main`.
 - License: Apache-2.0 (`LICENSE`) with a `NOTICE` crediting Kai. Keep both intact, and keep
@@ -61,8 +61,12 @@ roadmap is `docs/ROADMAP.yaml`, shown by the PM dashboard (see "Project manageme
   `frontend/` `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test` and `pnpm e2e`. Never
   merge on a failure. Merging main into the branch makes a new commit, so run them again. A PR that
   only touches docs and planning files can skip these, and the PR says so.
-- **Merging:** the rule under "Ownership" stands, and Kai's latest instruction about what to merge or
-  release wins. Never leave a PR that's ready and approved sitting open.
+- **Merging and releasing:** once a PR has been through the iterative review-fix cycle, Claude merges
+  it and makes the release if it has a version bump, without asking (Kai, 2026-10-31). The cycle: a
+  reviewer pass (a plain reviewer subagent or `/code-review`), fix the findings, and review again until
+  no `must_fix` is left, then the checks above. **A major release needs Kai's explicit permission each
+  time** (see "Versions and releases"). This doesn't widen what to work on: start only what Kai or the
+  loop has picked, and if Kai says not to merge something, don't. Never leave a finished PR sitting open.
 - The main checkout (`/home/kai/Documents/Projects/job-application-tracker`) is where Kai's
   IntelliJ is open. After merging, fast-forward it:
   `git -C ~/Documents/Projects/job-application-tracker pull --ff-only`.
