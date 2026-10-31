@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.2.28 (2026-10-31)
+
+- **Developers:** Recruiter conversations and CV performance read their text from the translation files, ready for other languages. The English is unchanged (#163).
+
 ## 1.2.27 (2026-10-31)
 
 - **Developers:** The Insights page, its tables, the scorecard and weekly activity read their text from the translation files, ready for other languages. The English is unchanged (#162).
