@@ -5,6 +5,7 @@ import calls from "./calls";
 import common from "./common";
 import documents from "./documents";
 import errors from "./errors";
+import events from "./events";
 import files from "./files";
 import insights from "./insights";
 import interviews from "./interviews";
@@ -13,6 +14,7 @@ import notes from "./notes";
 import people from "./people";
 import roles from "./roles";
 import selftest from "./selftest";
+import timeline from "./timeline";
 import today from "./today";
 import todos from "./todos";
 
@@ -26,9 +28,11 @@ const en = {
   calls,
   offers,
   documents,
+  events,
   files,
   notes,
   insights,
+  timeline,
   todos,
   errors,
   selftest,

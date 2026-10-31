@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import date, datetime
 from typing import Annotated, Any, ClassVar, Literal
 
-from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, HttpUrl, model_validator
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, HttpUrl, TypeAdapter, ValidationError, model_validator
 
 WorkMode = Literal["remote", "hybrid", "office"]
 EmploymentType = Literal["permanent", "contract", "fixed_term"]
@@ -681,7 +681,106 @@ class ActivityIn(In):
     kind: ActivityKind
     summary: str | None = None
     occurred_at: AwareDatetime | None = None
-    data: dict[str, Any] = {}
+    data: dict[str, Any] = Field(
+        default={}, description="Saved with the event, except a `msg`, which is ignored: only the app writes messages."
+    )
+
+
+class TitleParams(BaseModel):
+    title: str
+
+
+class FileNameParams(BaseModel):
+    name: str
+
+
+class EmailParams(BaseModel):
+    subject: str
+    sender: str
+
+
+class EmailNoSubjectParams(BaseModel):
+    sender: str
+
+
+class EmailUnknownSenderParams(BaseModel):
+    subject: str
+
+
+class NoParams(BaseModel):
+    pass
+
+
+class DocumentSentParams(BaseModel):
+    name: str
+    label: str
+
+
+class LinkAddedMsg(BaseModel):
+    key: Literal["event.linkAdded"]
+    params: TitleParams
+
+
+class NoteAddedMsg(BaseModel):
+    key: Literal["event.noteAdded"]
+    params: TitleParams
+
+
+class FileAddedMsg(BaseModel):
+    key: Literal["event.fileAdded"]
+    params: FileNameParams
+
+
+class EmailMsg(BaseModel):
+    key: Literal["event.email"]
+    params: EmailParams
+
+
+class EmailNoSubjectMsg(BaseModel):
+    key: Literal["event.emailNoSubject"]
+    params: EmailNoSubjectParams
+
+
+class EmailUnknownSenderMsg(BaseModel):
+    key: Literal["event.emailUnknownSender"]
+    params: EmailUnknownSenderParams
+
+
+class EmailNoSubjectUnknownSenderMsg(BaseModel):
+    key: Literal["event.emailNoSubjectUnknownSender"]
+    params: NoParams
+
+
+class CvSentMsg(BaseModel):
+    key: Literal["event.cvSent"]
+    params: DocumentSentParams
+
+
+class CoverLetterSentMsg(BaseModel):
+    key: Literal["event.coverLetterSent"]
+    params: DocumentSentParams
+
+
+class DocumentSentMsg(BaseModel):
+    key: Literal["event.documentSent"]
+    params: DocumentSentParams
+
+
+# A saved event's text as data (`data.msg`): a new key here without text in the frontend fails `pnpm typecheck`.
+EventMsg = Annotated[
+    LinkAddedMsg
+    | NoteAddedMsg
+    | FileAddedMsg
+    | EmailMsg
+    | EmailNoSubjectMsg
+    | EmailUnknownSenderMsg
+    | EmailNoSubjectUnknownSenderMsg
+    | CvSentMsg
+    | CoverLetterSentMsg
+    | DocumentSentMsg,
+    Field(discriminator="key"),
+]
+_EVENT_MSG: TypeAdapter[Any] = TypeAdapter(EventMsg)
 
 
 class EventOut(Out):
@@ -694,6 +793,16 @@ class EventOut(Out):
     summary: str | None
     data: dict[str, Any]
     created_at: datetime
+    msg: EventMsg | None = None
+
+    @model_validator(mode="after")
+    def _read_msg(self) -> EventOut:
+        """Saved data may not match (hand-edited, or from a newer version): that's null, never a 500."""
+        try:
+            self.msg = _EVENT_MSG.validate_python(self.data["msg"]) if "msg" in self.data else None
+        except ValidationError:
+            self.msg = None
+        return self
 
 
 class ApplicationContactIn(In):

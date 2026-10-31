@@ -82,6 +82,10 @@ const TRANSLATED = [
   "src/components/DocumentPerformance.tsx",
   // i18n-sankey
   "src/components/SankeyChart.tsx",
+  // i18n-events-setup
+  "src/components/eventText.ts",
+  // i18n-timeline-page
+  "src/pages/TimelinePage.tsx",
 ];
 
 export default tseslint.config(

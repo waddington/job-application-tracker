@@ -1,0 +1,89 @@
+// The Timeline page: its filters, list, lanes and kinds of thing, and the rows Today's recent list
+// shares (docs/rfc/i18n.md §15). An entry's title and detail still come from the API in English
+// (i18n-timeline-titles, i18n-timeline-records). Names of roles, companies and people are your data.
+export default {
+  title: "Timeline",
+  description:
+    "Everything that happened: calls, roles pitched, applications, interviews and offers. Lanes show one row per role, from the pitch to the outcome.",
+  views: {
+    label: "View",
+    list: "List",
+    lanes: "Lanes",
+  },
+  period: {
+    label: "Period",
+    days30: "Last 30 days",
+    days90: "Last 3 months",
+    days365: "Last year",
+    all: "All time",
+  },
+  about: {
+    label: "About",
+    placeholder: "Everyone and everything",
+    companies: "Companies",
+    agencies: "Agencies",
+    people: "People",
+  },
+  show: {
+    label: "Show",
+    everything: "Everything",
+    usual: "Usual",
+    none: "None",
+  },
+  // "label" names the kind in the filters and the lanes' key; "one" is the badge on a single entry.
+  categories: {
+    stage: { label: "Stage moves", one: "Stage" },
+    message: { label: "Messages", one: "Message" },
+    meeting: { label: "Calls and meetings", one: "Call" },
+    interview: { label: "Interviews", one: "Interview" },
+    offer: { label: "Offers", one: "Offer" },
+    role: { label: "Roles pitched or passed", one: "Role" },
+    note: { label: "Notes", one: "Note" },
+    document: { label: "Documents sent", one: "Document" },
+    file: { label: "Files", one: "File" },
+    added: { label: "Companies, agencies and people added", one: "Added" },
+    other: { label: "Other", one: "Other" },
+  },
+  allDay: "All day",
+  dateTime: "{{date}} {{time}}",
+  day: {
+    today: "Today · {{date}}",
+    yesterday: "Yesterday · {{date}}",
+    tomorrow: "Tomorrow · {{date}}",
+  },
+  comingUp: "Coming up",
+  context: {
+    roleAt: "{{role}} at {{company}}",
+    via: "via {{agency}}",
+    archived: "Archived",
+  },
+  lanes: {
+    rowPer: "One row per",
+    by: {
+      role: "Role",
+      person: "Person",
+      company: "Company",
+      agency: "Agency",
+    },
+    empty: {
+      role: "Nothing here is linked to a role.",
+      person: "Nothing here is linked to a person.",
+      company: "Nothing here is linked to a company.",
+      agency: "Nothing here is linked to an agency.",
+    },
+    roleRow: "{{company}} · {{role}}",
+    dot: "{{when}} · {{kind}}: {{title}}",
+    dotHover: "{{when}} · {{title}}",
+    showRecent_one: "Show the {{count}} most recent",
+    showRecent_other: "Show the {{count}} most recent",
+    showAll_one: "Show all {{count}} rows",
+    showAll_other: "Show all {{count}} rows",
+    legend: "Hollow dots are ahead; the dashed line is now.",
+  },
+  empty: {
+    nothingTicked: "Tick at least one kind of thing to show.",
+    title: "Nothing here yet",
+    filtered: "Try a longer period, tick more kinds, or clear a filter.",
+    start: "Add an application, or log a call with someone, and it shows up here.",
+  },
+} as const;

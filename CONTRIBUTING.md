@@ -122,6 +122,8 @@ The app is being made translatable, English only for now; the plan and its order
   Recruiter conversations, CVs and cover letters and the Sankey;
 - Errors: the shared "That didn't work" toast, and the errors that have a code so far (backup and
   to-dos).
+- Timeline: the page's own text, filters, kinds of thing and lanes (an entry's title and detail still
+  come from the API in English).
 
 The files are listed in `TRANSLATED` in `frontend/eslint.config.js`. Until an area has moved,
 keep writing its text as before. Once it has:
@@ -139,8 +141,11 @@ keep writing its text as before. Once it has:
   **Text from another namespace too:** `useTranslation(["todos", "common"])`, then
   `t("common:actions.cancel")`. A `t()` from `useTranslation("todos")` refuses another
   namespace's keys, and its own namespace's keys with a prefix.
-- **Text the app saves** (an event's summary, a stage move's note) stays English for now:
-  it's your data, and it moves with `i18n-events`.
+- **Text the app saves** (an event's summary, a stage move's note) stays English: it's what's
+  exported and searched. Links, notes, files, emails and documents sent also save a message with
+  `svc.log_message`. A new message needs its key in `EventMsg` (`api/schemas.py`), its text in
+  `locales/en/events.ts` and `eventText.ts`, and a case in `eventMessages.cases.json`. The rest
+  move with `i18n-events`.
 - **Values** go in `{{placeholders}}`, never glued on with `+` or a template string, so a
   translation can put them anywhere in the sentence.
 - **Plurals** are `_one` / `_other` keys used with `count`, never `n === 1 ? … : …`. So no
