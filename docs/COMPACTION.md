@@ -82,7 +82,7 @@ next action.
   (*Versions and releases*): bump in each PR, release each version, ask before any major.
   Released: v1.0.0, v1.1.0, v1.1.1–v1.1.4, v1.2.0–v1.2.8. Kai: "yes add release for each change"
   (each i18n PR is its own patch release; the switcher was minor). Only internal planning
-  files (`CLAUDE.md`, `docs/ROADMAP.yaml`, `docs/COMPACTION.md`, `docs/IDEAS.md`, `docs/rfc/` plans) skip
+  files (`CLAUDE.md`, `docs/ROADMAP.yaml`, `docs/COMPACTION.md`, `docs/IDEAS.md`, `docs/rfc/` plans) and the PM dashboard skip
   the bump.
 - **Privacy.** Kai's data never enters this repo. Tests, fixtures, seed data and screenshots use
   fictional names (Contoso, Fabrikam, Litware, Northwind Talent, Northwind Pay, Blue Yonder
@@ -414,8 +414,8 @@ next action.
 
 Keep this whole section word for word in the summary: it is the live plan.
 
-**Versions and main.** Released up to v1.2.20 (#145); no PRs are open and nothing is in flight. All 15 `e2e-*` tasks in
-P9 are done (v1.2.9 to v1.2.19), `i18n-people` in P8 (v1.2.20), and all six tasks in P10 (#148 to #153, no releases).
+**Versions and main.** Released up to v1.2.20 (#145); no PRs are open and nothing is in flight. All 17 `e2e-*` tasks in
+P9 are done (v1.2.3 to v1.2.19), `i18n-people` in P8 (v1.2.20), and all six tasks in P10 (#148 to #153, no releases).
 The whole browser suite is 645 tests and passes; pytest is 508. Before trusting anything here, re-read
 `docs/ROADMAP.yaml` and run `gh pr list`.
 
@@ -466,8 +466,7 @@ Told to Kai but unconfirmed, not recorded: the backup hint says `jat init` where
 **Settled:** two people can share a name. Kai: "yes there can be 2 people with the same name". Keep that test pinned; it
 isn't a bug.
 
-**The running tracker** on 8770 is still on 1.2.10's backend, serving the rebuilt frontend. Nothing behaves differently
-(only a docstring and the version changed in the backend), and I offered to restart it; it may be in Kai's terminal.
+**The running tracker** on 8770 is on 1.2.20, the latest. P10 didn't touch the app, so it needs no restart. Leave it alone.
 
 **The loop for the next i18n area** (`i18n-interviews-offers`, then `i18n-files-notes`, `i18n-insights`, `i18n-timeline`,
 `i18n-errors`, `i18n-events`, `i18n-finish`; one per go-ahead):
@@ -489,9 +488,9 @@ isn't a bug.
 one spec), `deps/merge_main.sh` (merge main; a roadmap conflict keeps both sides, then `deps/roadmap_dedupe.py` leaves one
 line per id, the longer), `deps/merge.sh`, `deps/ship.sh`, `deps/finish.py` (tests-only PRs), `deps/pm_checks.sh` (every
 check in CLAUDE.md *Git* on the current commit, printing PASS or FAIL for each and the commit it ran on; about 6 minutes,
-so run it in the background and restart it after any new commit), `pm_shot.py <base url> <prefix> <path>[@light][@375][@full]`
-(screenshots, run with `uv run --with playwright python`). If they're gone, rewrite them from this description. `e2e.sh`'s
-`tail -1` hides a failure: read `tail -2` or the whole output.
+so run it in the background and restart it after any new commit), `<tmp>/pm_shot.py <base url> <prefix> <path>[@light][@375][@full]`
+(screenshots, run with `uv run --with playwright python`; not the older `deps/pm_shot.py`). If they're gone, rewrite them from this description. `e2e.sh`'s
+output is cut short, so read the whole of it before trusting a pass.
 
 **Dependabot, already reviewed (31 alerts: 27 open, 4 auto-dismissed; no PRs made). Three PRs, one per lockfile:**
 - `deps-python`, `uv.lock`: certifi to 2026.10.18 (critical advisory; only pulled in by httpx, a dev dependency, despite
@@ -512,12 +511,12 @@ is that stopped process, not a fault. To preview a branch, serve it on a spare p
   `/task/<id>`. `Collector` serves the last snapshot and refreshes in the background; a failed source keeps its last data
   with a red light, and one that never answered shows "unknown", never a false 0. Folds are kept in localStorage.
 - **Modules:** `live.py` (git and `gh`), `derive.py` (Overview and Roadmap numbers), `charts.py`, `activity.py`,
-  `agents.py`, `task_page.py`, `render.py`, `style.py`. Standard library only, and nothing loads from the web.
+  `agents.py`, `task_page.py`, `render.py`, `style.py`, `roadmap.py` (status from evidence), `server.py`. Standard library only, and nothing loads from the web.
 - **Decided, and told to Kai:** no plan line on the burn-up, because the roadmap has no planned dates (a labelled forecast
   instead); a swimlane bar is a PR, not an agent, because this project keeps no workflow journals.
 - **Known gaps, left:** drafts show as In review and a task only on its branch doesn't appear until it merges
   (`pm-draft-building`); with GitHub down since startup, a task page reads as if it has no PR; "Tests added" counts a test
-  moved between files; chart text is small on tablet widths; hiding empty Board columns on phones (`.col.empty`).
+  moved between files; chart text is small on tablet widths; empty Board columns still show on phones (from the #129 review).
 
 **Other things said lately:**
 - Kai asked for links twice while I was working, and text sent mid-turn didn't always reach them: when asked for
@@ -527,7 +526,7 @@ is that stopped process, not a fault. To preview a branch, serve it on a spare p
   them to check what a page claims, not just the code. Look at real pages too: a screenshot, not a test, found the broken
   logo in #150.
 - Formatting rewraps lines, so an Edit written from memory can miss: read the lines first, and check an edit applied
-  before committing (a missed one pushed a failing test in #149). Don't push before the tests pass.
+  before committing (a missed one pushed a failing test). Don't push before the tests pass.
 - `pkill -f` matches its own command line if the pattern appears literally there, and kills that shell: anchor it as above.
 
 **Browser test facts:**
