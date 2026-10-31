@@ -44,6 +44,25 @@ roadmap is `docs/ROADMAP.yaml`, shown by the PM dashboard (see "Project manageme
   a PR per change set, merge commits (`gh pr merge N --merge --delete-branch`), and
   Conventional Commits.
 - **Commit and push small, frequent, logical units.**
+- **Open a draft PR early.** As soon as work is going to become a PR, push a first commit, however
+  minimal (the roadmap task set to `building` will do), and open it with `gh pr create --draft`. The
+  PM dashboard then shows the work straight away. Keep pushing to it as work continues. Run
+  `gh pr ready` when it's time for review, then repeat review and fix until it's clean before merging.
+- **Keep PRs small.** Aim for about 500 changed lines, and treat 1,000 as a strong target to stay
+  below. Go over only when a change can't sensibly be split, and say why in the PR. `uv.lock`,
+  `pnpm-lock.yaml`, `frontend/openapi.json` and `frontend/src/api/schema.d.ts` don't count. When a
+  roadmap task won't fit, split it into tasks with their own ids, branches and patch versions before
+  starting. Land each part only when it works by itself: nothing half-converted or half-wired.
+- **Edit files directly in the worktree** with the editor tools (Kai, 2026-10-31). No patch scripts
+  for changes you could make by hand; a script is only for a truly mechanical bulk change, such as
+  the version bump.
+- **Checks run locally; only the website has a CI build.** On the exact commit being merged, in the
+  worktree, these must pass: `uv run pytest -q`, `uv run ruff check src tests scripts`, and in
+  `frontend/` `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test` and `pnpm e2e`. Never
+  merge on a failure. Merging main into the branch makes a new commit, so run them again. A PR that
+  only touches docs and planning files can skip these, and the PR says so.
+- **Merging:** the rule under "Ownership" stands, and Kai's latest instruction about what to merge or
+  release wins. Never leave a PR that's ready and approved sitting open.
 - The main checkout (`/home/kai/Documents/Projects/job-application-tracker`) is where Kai's
   IntelliJ is open. After merging, fast-forward it:
   `git -C ~/Documents/Projects/job-application-tracker pull --ff-only`.
@@ -51,8 +70,8 @@ roadmap is `docs/ROADMAP.yaml`, shown by the PM dashboard (see "Project manageme
 ## Versions and releases
 The app follows [semantic versioning](https://semver.org/), from 1.0.0. **Every PR that changes
 what people get (the app, the website, the README or the guide) bumps the version in that
-PR.** PRs that only touch internal planning files (`docs/ROADMAP.yaml`, `docs/COMPACTION.md`,
-`docs/IDEAS.md`, `var/`) don't.
+PR.** PRs that only touch internal planning files (`CLAUDE.md`, `docs/ROADMAP.yaml`,
+`docs/COMPACTION.md`, `docs/IDEAS.md`, `var/`) don't.
 
 - **Patch (1.0.0 → 1.0.1): most PRs.** Fixes, wording, docs, screenshots, refactors, tests,
   tooling, small tweaks to something that already exists.
