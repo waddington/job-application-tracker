@@ -142,7 +142,7 @@ keep writing its text as before. Once it has:
   `t("common:actions.cancel")`. A `t()` from `useTranslation("todos")` refuses another
   namespace's keys, and its own namespace's keys with a prefix.
 - **Text the app saves** (an event's summary, a stage move's note) stays English: it's what's
-  exported and searched. Links, notes, files, emails and documents sent also save a message with
+  exported and searched. Links, notes, files, emails, documents sent, rounds and offers also save a message with
   `svc.log_message`. A new message needs its key in `EventMsg` (`api/schemas.py`), its text in
   `locales/en/events.ts` and `eventText.ts`, and a case in `eventMessages.cases.json`. The rest
   move with `i18n-events`.

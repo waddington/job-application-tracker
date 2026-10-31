@@ -716,6 +716,21 @@ class DocumentSentParams(BaseModel):
     label: str
 
 
+class RoundParams(BaseModel):
+    round: int | None
+    title: str | None
+    kind: str
+
+
+class RoundReasonParams(RoundParams):
+    reason: str
+
+
+class MoneyParams(BaseModel):
+    amount: int
+    currency: str | None
+
+
 class LinkAddedMsg(BaseModel):
     key: Literal["event.linkAdded"]
     params: TitleParams
@@ -766,6 +781,136 @@ class DocumentSentMsg(BaseModel):
     params: DocumentSentParams
 
 
+class RoundScheduledMsg(BaseModel):
+    key: Literal["event.roundScheduled"]
+    params: RoundParams
+
+
+class RoundAddedMsg(BaseModel):
+    key: Literal["event.roundAdded"]
+    params: RoundParams
+
+
+class RoundCancelledMsg(BaseModel):
+    key: Literal["event.roundCancelled"]
+    params: RoundParams
+
+
+class RoundBackOnMsg(BaseModel):
+    key: Literal["event.roundBackOn"]
+    params: RoundParams
+
+
+class RoundDoneMsg(BaseModel):
+    key: Literal["event.roundDone"]
+    params: RoundParams
+
+
+class RoundRemovedMsg(BaseModel):
+    key: Literal["event.roundRemoved"]
+    params: RoundParams
+
+
+class RoundRescheduledMsg(BaseModel):
+    key: Literal["event.roundRescheduled"]
+    params: RoundParams
+
+
+class RoundRescheduledReasonMsg(BaseModel):
+    key: Literal["event.roundRescheduledReason"]
+    params: RoundReasonParams
+
+
+class OfferReceivedYearMsg(BaseModel):
+    key: Literal["event.offerReceivedYear"]
+    params: MoneyParams
+
+
+class OfferReceivedDayMsg(BaseModel):
+    key: Literal["event.offerReceivedDay"]
+    params: MoneyParams
+
+
+class OfferReceivedNoFiguresMsg(BaseModel):
+    key: Literal["event.offerReceivedNoFigures"]
+    params: NoParams
+
+
+class OfferBackYearMsg(BaseModel):
+    key: Literal["event.offerBackYear"]
+    params: MoneyParams
+
+
+class OfferBackDayMsg(BaseModel):
+    key: Literal["event.offerBackDay"]
+    params: MoneyParams
+
+
+class OfferBackNoFiguresMsg(BaseModel):
+    key: Literal["event.offerBackNoFigures"]
+    params: NoParams
+
+
+class OfferAcceptedYearMsg(BaseModel):
+    key: Literal["event.offerAcceptedYear"]
+    params: MoneyParams
+
+
+class OfferAcceptedDayMsg(BaseModel):
+    key: Literal["event.offerAcceptedDay"]
+    params: MoneyParams
+
+
+class OfferAcceptedNoFiguresMsg(BaseModel):
+    key: Literal["event.offerAcceptedNoFigures"]
+    params: NoParams
+
+
+class OfferDeclinedYearMsg(BaseModel):
+    key: Literal["event.offerDeclinedYear"]
+    params: MoneyParams
+
+
+class OfferDeclinedDayMsg(BaseModel):
+    key: Literal["event.offerDeclinedDay"]
+    params: MoneyParams
+
+
+class OfferDeclinedNoFiguresMsg(BaseModel):
+    key: Literal["event.offerDeclinedNoFigures"]
+    params: NoParams
+
+
+class OfferWithdrawnYearMsg(BaseModel):
+    key: Literal["event.offerWithdrawnYear"]
+    params: MoneyParams
+
+
+class OfferWithdrawnDayMsg(BaseModel):
+    key: Literal["event.offerWithdrawnDay"]
+    params: MoneyParams
+
+
+class OfferWithdrawnNoFiguresMsg(BaseModel):
+    key: Literal["event.offerWithdrawnNoFigures"]
+    params: NoParams
+
+
+class OfferRemovedYearMsg(BaseModel):
+    key: Literal["event.offerRemovedYear"]
+    params: MoneyParams
+
+
+class OfferRemovedDayMsg(BaseModel):
+    key: Literal["event.offerRemovedDay"]
+    params: MoneyParams
+
+
+class OfferRemovedNoFiguresMsg(BaseModel):
+    key: Literal["event.offerRemovedNoFigures"]
+    params: NoParams
+
+
 # A saved event's text as data (`data.msg`): a new key here without text in the frontend fails `pnpm typecheck`.
 EventMsg = Annotated[
     LinkAddedMsg
@@ -777,7 +922,33 @@ EventMsg = Annotated[
     | EmailNoSubjectUnknownSenderMsg
     | CvSentMsg
     | CoverLetterSentMsg
-    | DocumentSentMsg,
+    | DocumentSentMsg
+    | RoundScheduledMsg
+    | RoundAddedMsg
+    | RoundCancelledMsg
+    | RoundBackOnMsg
+    | RoundDoneMsg
+    | RoundRemovedMsg
+    | RoundRescheduledMsg
+    | RoundRescheduledReasonMsg
+    | OfferReceivedYearMsg
+    | OfferReceivedDayMsg
+    | OfferReceivedNoFiguresMsg
+    | OfferBackYearMsg
+    | OfferBackDayMsg
+    | OfferBackNoFiguresMsg
+    | OfferAcceptedYearMsg
+    | OfferAcceptedDayMsg
+    | OfferAcceptedNoFiguresMsg
+    | OfferDeclinedYearMsg
+    | OfferDeclinedDayMsg
+    | OfferDeclinedNoFiguresMsg
+    | OfferWithdrawnYearMsg
+    | OfferWithdrawnDayMsg
+    | OfferWithdrawnNoFiguresMsg
+    | OfferRemovedYearMsg
+    | OfferRemovedDayMsg
+    | OfferRemovedNoFiguresMsg,
     Field(discriminator="key"),
 ]
 _EVENT_MSG: TypeAdapter[Any] = TypeAdapter(EventMsg)

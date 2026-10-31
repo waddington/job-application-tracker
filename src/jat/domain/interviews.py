@@ -87,12 +87,36 @@ def current_rounds(session: Session, application_ids: Iterable[str]) -> dict[str
     return out
 
 
-def record(session: Session, app: Application, interview: Interview, what: str) -> None:
-    """Put an interview change on the application's timeline ("Round 2 · System design test scheduled")."""
-    svc.log_activity(
+_MESSAGES: dict[str, svc.EventMsgKey] = {
+    "scheduled": "event.roundScheduled",
+    "added": "event.roundAdded",
+    "cancelled": "event.roundCancelled",
+    "back on": "event.roundBackOn",
+    "done": "event.roundDone",
+    "removed": "event.roundRemoved",
+    "rescheduled": "event.roundRescheduled",
+}
+
+
+def record(session: Session, app: Application, interview: Interview, what: str, reason: str = "") -> None:
+    """Put an interview change on the application's timeline ("Round 2 · System design test scheduled").
+
+    The message saves the label's raw parts, not the English label, so a language can build its own
+    (`roundLabel` in the frontend's utils/rounds.ts matches `label` above).
+    """
+    params: dict[str, str | int | None] = {"round": interview.round, "title": interview.title, "kind": interview.kind}
+    key = _MESSAGES[what]
+    summary = f"{label(interview)} {what}"
+    if reason:
+        key = "event.roundRescheduledReason"
+        params["reason"] = reason
+        summary = f"{summary}: {reason}"
+    svc.log_message(
         session,
         app,
         "interview",
-        summary=f"{label(interview)} {what}",
+        key=key,
+        params=params,
+        summary=summary,
         data={"interview_id": interview.id, "round": interview.round, "status": interview.status},
     )
