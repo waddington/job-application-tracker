@@ -276,8 +276,8 @@ with sync_playwright() as p:
     page.keyboard.press("Escape")
     time.sleep(0.4)
 
-    # Offers: the page with the closed switch on (the demo has none closed), an application's card, and the form for each
-    # kind with its currency error. Each closed unsaved.
+    # Offers: the page with the closed switch on (the demo has none closed), an application's
+    # card, and the form for each kind with its currency error. Each closed unsaved.
     visit(page, "/offers")
     step("offers+closed", lambda: page.get_by_label("Show declined and withdrawn").click(timeout=3000))
     offer_links = page.evaluate(LINKS, "/applications/")
