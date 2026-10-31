@@ -7,7 +7,7 @@ Numbers in brackets are pull requests.
 
 ## 1.2.31 (2026-10-31)
 
-- **Developers:** saved events: links, notes, files and documents sent read their text from the translation files, ready for other languages. The English is unchanged (#168).
+- **Developers:** new events for links, notes, files and documents sent also save their message as a key and values (`data.msg`, so it appears in `export/events.jsonl`), and the application timeline shows it from the translation files, ready for other languages. The saved English and old events are unchanged (#168).
 
 ## 1.2.30 (2026-10-31)
 
