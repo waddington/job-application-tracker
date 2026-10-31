@@ -8,7 +8,7 @@ and how to carry on afterwards, so the work continues as if nothing happened.
 After compaction, the session follows [Resuming](#resuming-after-compaction), and
 [Re-expanding](#re-expanding-what-the-summary-dropped) when it needs a detail back.
 
-Sections 3, 4 and 5 are a snapshot (2026-10-30, after PR #115), and 4a is the live plan, updated during #164 (P8 items 8 to 10);
+Sections 3, 4 and 5 are a snapshot (2026-10-30, after PR #115; section 5's i18n list is current), and 4a is the live plan, updated during #164 (P8 items 8 to 10);
 refresh them before each
 compaction in a small docs PR. This repo is public: nothing here may contain Kai's job-search
 data (no real companies, people, salaries or notes).
@@ -419,7 +419,7 @@ still open, finish its review-fix cycle, merge and release it first. All 17 `e2e
 v1.2.19), P8 through `i18n-people` (v1.2.20), and all six tasks in P10 (#148 to #153, no releases). This batch: #155
 `i18n-interviews`, #156 `i18n-calls`, #157 `i18n-offers`, #158 the roadmap split, #159 `i18n-documents`, #160
 `i18n-attachments-links`, #161 `i18n-notes-search`, #162 `i18n-insights-tabs`, #163 `i18n-insights-reviews`, #164
-`i18n-sankey` (v1.2.21 to v1.2.29). The whole browser suite is 645 tests and passes; pytest is 510; unit tests 437. Before
+`i18n-sankey` (v1.2.21 to v1.2.29). The whole browser suite is 645 tests and passes; pytest is 510; unit tests 439. Before
 trusting anything here, re-read `docs/ROADMAP.yaml` and run `gh pr list`.
 
 **Once #164 is out, nothing is running: wait for Kai.** The "keep going" loop does not apply right now. Kai scopes each step:
@@ -450,7 +450,7 @@ trusting anything here, re-read `docs/ROADMAP.yaml` and run `gh pr list`.
   branches and PRs, so push the branch as soon as work starts, not after it's done.
 - "the pm dashboard isnt showing the currently in progress item as being in progress": it reads main's roadmap, so a task
   split only on its branch doesn't show. Land a roadmap split in its own small PR before the code starts (#158 did). An open
-  draft still shows as In review until `pm-draft-building`; Kai hasn't asked for that yet, and I told them so.
+  draft still shows as In review until `pm-draft-building`; Kai hasn't asked for that yet, and I told Kai so.
 - "how tf is pr 131 still open??????" and "was antyhing done in the last 90 minutes…": never leave a ready PR unmerged
   once the cycle is complete, and never report and stop while approved work remains. A subagent's report isn't the end of
   the job: check for open PRs before going quiet.
@@ -483,9 +483,10 @@ names stay in their English (#161, #164), which looks the same. Leave it alone.
 - **English stays exactly the same.** If a move would fix a recorded bug, keep the bug and leave the fix to its task: Kai
   said "none yet". `fix-offer-plurals` keeps "1 months", with `_one` forms repeating the plural; its `test.fail` would have
   gone green otherwise (#157).
-- **Check what the API sends as English.** Round names, call names, search titles and Sankey names all were. Add the raw
-  parts to the response, additively, keep the English field, and build the words in the frontend with a fallback for an
-  older server (`roundLabel`, `callLabel`, `hitTitle`, `nodeName`). Say in the report if Kai must restart.
+- **Check what the API sends as English.** Round names, call names, search titles and Sankey names all were. Build the words
+  in the frontend from raw parts, adding those to the response if it lacks them (rounds had them), and keep the English
+  field. Fall back to it for an older server (`hitTitle`, `nodeName` do; #156's role page drops its text instead, so don't
+  copy that). Say in the report if Kai must restart.
 - **Whole sentences, one per state:** no word dropped into a placeholder, no count glued on. A count always gets `_one` and
   `_other` keys, even when English repeats itself, or the catalog test can't protect it. `today.ts` `numbers.active` and
   `people.ts` `toChase` still have that hole, for `i18n-finish`. Keys in a map outside a component are whole (`"ns:key"`), or
@@ -579,7 +580,7 @@ is that stopped process, not a fault. To preview a branch, serve it on a spare p
 - **In flight:** none (after this doc's PR merges).
 - **Next: what's left of the i18n work, P8, in this order** (when Kai says; the areas before these are done, see 4a):
   1. `i18n-timeline`: titles built in the frontend from kind and fields, including a round's and a call's title
-     (`timeline.py`), which Today's recent list also shows.
+     (`api/timeline.py`), which Today's recent list also shows.
   2. `i18n-errors`: error codes (Literal) + `errors` namespace, and the "That didn't work" toasts in `api/*Hooks`.
   3. `i18n-events`: `data.msg` on new events, a typed `msg` in the API; "Followed up", "No reply" and the rounds' saved
      summaries (saved English today) move here. No backfill.
