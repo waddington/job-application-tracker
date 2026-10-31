@@ -249,7 +249,7 @@ class OverviewTests(unittest.TestCase):
             "tests defined",
         ):
             self.assertNotIn(false, html)
-        self.assertIn("GitHub hasn&#x27;t answered".replace("&#x27;", "'"), html)
+        self.assertIn("GitHub hasn't answered", html)
         self.assertIn("unknown", html)
 
     def test_a_phase_done_without_prs_doesnt_say_not_started(self):
