@@ -141,6 +141,7 @@
     "title": "$t(common:actions.cancel) $& <b>{{person}}</b>: not interested"
   },
   { "kind": "note", "note_title": "About Contoso", "title": "Note: About Contoso" },
+  { "kind": "note", "note_title": "", "title": "Note: " },
   {
     "kind": "note",
     "note_title": "$t(common:actions.cancel) $& <b>{{note}}</b>",

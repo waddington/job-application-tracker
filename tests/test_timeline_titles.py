@@ -103,7 +103,10 @@ def _entry(data_dir, client, case):
         body = case["seed"] | {"respond_by": str(date.today() + timedelta(days=5))}
         return post(client, f"/api/v1/applications/{_application(client)}/offers", body)["id"]
     if kind == "note":
-        return post(client, "/api/v1/notes", {"title": case["note_title"]})["id"]
+        note = post(client, "/api/v1/notes", {"title": case["note_title"] or "Placeholder"})["id"]
+        if not case["note_title"]:  # the API refuses an empty title, and a note's file falls back on its name
+            _sql(data_dir, "UPDATE note_index SET title = '' WHERE id = :id", id=note)
+        return note
     if kind == "contact-closed":
         cid = post(client, "/api/v1/contacts", {"name": case["person"]})["id"]
         assert client.patch(f"/api/v1/contacts/{cid}", json={"closed_as": case["closed_as"]}).status_code == 200

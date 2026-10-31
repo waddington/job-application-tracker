@@ -321,7 +321,7 @@ def timeline(
         newest.setdefault(o.application_id, o)
     for o in newest.values():
         if o.status == "pending" and o.respond_by is not None and o.application_id in apps:
-            per, amount = offers_svc._figure(o)
+            per, amount = offers_svc.figure(o)
             items.append(
                 on_app(
                     o.application_id,
