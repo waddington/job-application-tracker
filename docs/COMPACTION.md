@@ -8,7 +8,7 @@ and how to carry on afterwards, so the work continues as if nothing happened.
 After compaction, the session follows [Resuming](#resuming-after-compaction), and
 [Re-expanding](#re-expanding-what-the-summary-dropped) when it needs a detail back.
 
-Sections 3, 4 and 5 are a snapshot (2026-10-30, after PR #115), and 4a is the live plan, updated after #145 (v1.2.20);
+Sections 3, 4 and 5 are a snapshot (2026-10-30, after PR #115), and 4a is the live plan, updated after #153 (P10 done);
 refresh them before each
 compaction in a small docs PR. This repo is public: nothing here may contain Kai's job-search
 data (no real companies, people, salaries or notes).
@@ -171,8 +171,7 @@ next action.
     a frontend-only change needs only `pnpm build` on main and a page refresh. Check it with
     `curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8770/api/v1/health`; if it's down,
     say so and offer to start it as a background job from the main checkout.
-  - PM dashboard: `python3 -m tools.pm` → http://127.0.0.1:8767 (`/board`, `/roadmap`; the home
-    page lists only tasks ready to start). Kai asked for it on 2026-10-25 and it runs as a
+  - PM dashboard: `python3 -m tools.pm` → http://127.0.0.1:8767 (pages in section 4a). Kai asked for it on 2026-10-25 and it runs as a
     background job of this session from the main checkout; restart it if it's gone.
 - **Commands.**
   - Backend: `uv run pytest -q`, `uv run ruff check src tests scripts`, `uv run ruff format -q src tests`.
@@ -416,18 +415,25 @@ next action.
 Keep this whole section word for word in the summary: it is the live plan.
 
 **Versions and main.** Released up to v1.2.20 (#145); no PRs are open and nothing is in flight. All 15 `e2e-*` tasks in
-P9 are done (v1.2.9 to v1.2.19), and `i18n-people` in P8 (v1.2.20). The whole browser suite is 645 tests and passes.
-Before trusting anything here, re-read `docs/ROADMAP.yaml` and run `gh pr list`.
+P9 are done (v1.2.9 to v1.2.19), `i18n-people` in P8 (v1.2.20), and all six tasks in P10 (#148 to #153, no releases).
+The whole browser suite is 645 tests and passes; pytest is 508. Before trusting anything here, re-read
+`docs/ROADMAP.yaml` and run `gh pr list`.
 
 **Nothing is running: wait for Kai.** The "keep going" loop does not apply right now. Kai scopes each step:
 - P9: "continue with the P9 E2e test tasks but do not make the security fixes or bug fixes" (finished).
 - P8: "do the next single p8 i18n item, and clean up that real names issue in the same PR. it will be another patch. you
-  have my approval to merge and relase after completing tyhe review-fix iteratrive cycle" (finished). That approval was
-  for that one item. Next up when Kai says go: `i18n-interviews-offers`.
+  have my approval to merge and relase after completing tyhe review-fix iteratrive cycle" (finished). That was for that
+  one item. Next up when Kai says go: `i18n-interviews-offers`, which will probably split into interviews and offers.
+- P10: "start p10, the pm dashboard upgrades. do 3 items from it for now", "feel free to start PM activityt and also pm
+  agents", "keep going, finish p10 then stop" (finished).
 - Bugs: asked which to fix and when, Kai said "none yet". Recording them is still required.
-- Not started, waiting on Kai: `deps-*` and `security-alerts` (the Dependabot fixes, below), P10.
+- Not started, waiting on Kai: `deps-*` and `security-alerts` (the Dependabot fixes, below), `pm-draft-building` (P7).
 
 **Kai's latest word on how to work:**
+- PM dashboard work gets no version bump or release. Asked "should these be releases?" with "i think yes because were
+  making changes, but also no because theyre not part of the actual tracker", I said no and Kai said "sounds good to me".
+- On the dashboard: "you dont have to match the styling, but hype pie dashboard has many features this dashboard doesnt
+  hav". Features matter, not matching the look. And "on roadmap i want to be able to collapse sections".
 - "if you have followed and completed the iterative review-fix cycle then it can auto merge and make a release as
   appropriate, but it needs my explicit permission each time to make a major release" (section 1, CLAUDE.md *Git*). It
   doesn't change what to start: Kai still scopes that.
@@ -481,8 +487,11 @@ isn't a bug.
 
 **The loop's scripts,** in `<tmp>` = `/home/kai/.claude/jobs/cf5328f4/tmp`: `deps/e2e.sh <spec>` (format, typecheck, lint,
 one spec), `deps/merge_main.sh` (merge main; a roadmap conflict keeps both sides, then `deps/roadmap_dedupe.py` leaves one
-line per id, the longer), `deps/merge.sh`, `deps/ship.sh`, `deps/finish.py` (tests-only PRs). If they're gone, rewrite them
-from this description. `e2e.sh`'s `tail -1` hides a failure: read `tail -2` or the whole output.
+line per id, the longer), `deps/merge.sh`, `deps/ship.sh`, `deps/finish.py` (tests-only PRs), `deps/pm_checks.sh` (every
+check in CLAUDE.md *Git* on the current commit, printing PASS or FAIL for each and the commit it ran on; about 6 minutes,
+so run it in the background and restart it after any new commit), `pm_shot.py <base url> <prefix> <path>[@light][@375][@full]`
+(screenshots, run with `uv run --with playwright python`). If they're gone, rewrite them from this description. `e2e.sh`'s
+`tail -1` hides a failure: read `tail -2` or the whole output.
 
 **Dependabot, already reviewed (31 alerts: 27 open, 4 auto-dismissed; no PRs made). Three PRs, one per lockfile:**
 - `deps-python`, `uv.lock`: certifi to 2026.10.18 (critical advisory; only pulled in by httpx, a dev dependency, despite
@@ -495,13 +504,31 @@ from this description. `e2e.sh`'s `tail -1` hides a failure: read `tail -2` or t
 
 **PM dashboard.** http://127.0.0.1:8767 runs from the main checkout as a background job of this session (`python3 -m
 tools.pm`). It reads the main checkout's roadmap, so **pull main after every merge, roadmap-only ones too**, or Kai's
-dashboard is stale (Kai noticed once). Restart it after a change to `tools/pm`. From the #129 review, not done yet:
-hiding empty columns on phones (`.col.empty`).
+dashboard is stale (Kai noticed once). It doesn't reload code, so restart it after a change to `tools/pm`:
+`pkill -f '^python3 -m tools[.]pm$'`, then start it again as a background job. The "failed, exit 143" notice that follows
+is that stopped process, not a fault. To preview a branch, serve it on a spare port from the worktree:
+`python3 -m tools.pm --port 8768 --root <main checkout>`.
+- **Pages:** Overview `/`, Board `/board`, Roadmap `/roadmap`, Activity `/activity`, Agents `/agents`, a task
+  `/task/<id>`. `Collector` serves the last snapshot and refreshes in the background; a failed source keeps its last data
+  with a red light, and one that never answered shows "unknown", never a false 0. Folds are kept in localStorage.
+- **Modules:** `live.py` (git and `gh`), `derive.py` (Overview and Roadmap numbers), `charts.py`, `activity.py`,
+  `agents.py`, `task_page.py`, `render.py`, `style.py`. Standard library only, and nothing loads from the web.
+- **Decided, and told to Kai:** no plan line on the burn-up, because the roadmap has no planned dates (a labelled forecast
+  instead); a swimlane bar is a PR, not an agent, because this project keeps no workflow journals.
+- **Known gaps, left:** drafts show as In review and a task only on its branch doesn't appear until it merges
+  (`pm-draft-building`); with GitHub down since startup, a task page reads as if it has no PR; "Tests added" counts a test
+  moved between files; chart text is small on tablet widths; hiding empty Board columns on phones (`.col.empty`).
 
 **Other things said lately:**
 - Kai asked for links twice while I was working, and text sent mid-turn didn't always reach them: when asked for
   links or status, give them in a clean final message.
 - `uv.lock`, `openapi.json` and five version files change in every bump; finish.py handles them.
+- Reviewers kept finding real bugs in code that passed its tests, usually false statements when a source fails, so ask
+  them to check what a page claims, not just the code. Look at real pages too: a screenshot, not a test, found the broken
+  logo in #150.
+- Formatting rewraps lines, so an Edit written from memory can miss: read the lines first, and check an edit applied
+  before committing (a missed one pushed a failing test in #149). Don't push before the tests pass.
+- `pkill -f` matches its own command line if the pattern appears literally there, and kills that shell: anchor it as above.
 
 **Browser test facts:**
 - `pnpm --dir frontend e2e` builds and runs everything; `pnpm exec playwright test e2e/<file>` runs one (a bare word
