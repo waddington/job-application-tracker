@@ -188,7 +188,9 @@ keep writing its text as before. Once it has:
 
   The type check fails if a code has no text or no row, or text has no code. Every route under
   `/api/v1` already declares `ErrorOut`, so a route needs nothing. Errors people never see can stay
-  plain `HTTPException`s.
+  plain `HTTPException`s. A domain exception that carries a code (`WorkflowError`, `SnapshotError`…)
+  takes it at the raise, and goes in `CODED_EXCEPTIONS` in `tests/test_error_codes.py`. Something
+  not found gets its code from `NOT_FOUND` or `REQUIRED_NOT_FOUND` in `api/deps.py`.
 - **Adding a language** (once its translation is reviewed; the `multi-language` task does the
   first):
   1. its text in `frontend/src/locales/<code>/`, one JSON file per namespace (the tests

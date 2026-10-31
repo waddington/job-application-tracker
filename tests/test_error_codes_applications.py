@@ -183,6 +183,21 @@ def test_a_reference_deleted_elsewhere(client, seeded):
     link = {"entity_type": "company", "entity_id": "nope", "url": "https://example.com/a"}
     detail = "entity_id: company nope not found"
     _coded(client.post("/api/v1/links", json=link), 422, detail, "link_company_not_found", gone)
+    role_url = f"/api/v1/roles/{role}"
+    company = {"company_id": "nope"}
+    _coded(client.patch(role_url, json=company), 422, "company_id: Company nope not found", "company_id_not_found", gone)
+    contact = {"contact_id": "nope"}
+    _coded(client.patch(role_url, json=contact), 422, "contact_id: Contact nope not found", "contact_id_not_found", gone)
+    call = {"meeting_id": "nope"}
+    _coded(client.patch(role_url, json=call), 422, "meeting_id: Meeting nope not found", "meeting_id_not_found", gone)
+    who = seeded["recruiter"]["id"]
+    meeting = {"contact_id": who, "kind": "call", "starts_at": "2026-10-02T10:00:00Z", "application_id": "nope"}
+    detail = "application_id: Application nope not found"
+    _coded(client.post("/api/v1/meetings", json=meeting), 422, detail, "application_id_not_found", gone)
+    interview = {"interviewer_ids": ["nope"]}
+    url = f"/api/v1/applications/{_application(client, seeded)['id']}/interviews"
+    detail = "interviewer_ids: Contact nope not found"
+    _coded(client.post(url, json=interview), 422, detail, "interviewer_not_found", gone)
 
 
 def test_a_call_that_ends_before_it_starts(client, seeded):
