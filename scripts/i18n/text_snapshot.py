@@ -322,8 +322,8 @@ with sync_playwright() as p:
     page.keyboard.press("Escape")
     time.sleep(0.4)
 
-    # Notes: General only, a note opened, the editor with its error and preview. Search: no words,
-    # words that find things (a round, a call), and words that don't. None saved.
+    # Notes: General only, the editor with its error and preview. Search: no words,
+    # words that find things (a round, a call, a done to-do), and words that don't. None saved.
     visit(page, "/notes")
     step("notes+general", lambda: page.get_by_text("General only", exact=True).click(timeout=3000))
     visit(page, "/notes")
@@ -333,7 +333,7 @@ with sync_playwright() as p:
     step("notes+new-preview", lambda: dialog.get_by_role("tab", name="Preview").click(timeout=3000))
     page.keyboard.press("Escape")
     time.sleep(0.4)
-    for path in ["/search", "/search?q=round", "/search?q=call", "/search?q=done", "/search?q=zzzzzz"]:
+    for path in ["/search", "/search?q=round", "/search?q=call", "/search?q=portfolio", "/search?q=zzzzzz"]:
         visit(page, path)
         snap[path] = grab(page)
     browser.close()

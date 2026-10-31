@@ -60,6 +60,12 @@ const CALL_KINDS = {
   in_person: "notes:search.hit.callKinds.in_person",
 } as const;
 
+const CALL_ABOUT = {
+  call: "notes:search.hit.callAbout.call",
+  video: "notes:search.hit.callAbout.video",
+  in_person: "notes:search.hit.callAbout.in_person",
+} as const;
+
 /** The title in your language, from the parts the API sends. Anything it can't build (a kind the
  * app doesn't know, an older server) stays as the API's own. Matches domain/search.py's wording,
  * which isn't quite a round's name elsewhere: no "Round 2" without a description. */
@@ -76,8 +82,8 @@ export function hitTitle(hit: SearchHit): string {
     }
   }
   if (hit.kind === "meeting" && hit.subkind && Object.hasOwn(CALL_KINDS, hit.subkind)) {
-    const kind = i18n.t(CALL_KINDS[hit.subkind as keyof typeof CALL_KINDS]);
-    return hit.own_title ? i18n.t("notes:search.hit.callAbout", { kind, about: hit.own_title }) : kind;
+    const kind = hit.subkind as keyof typeof CALL_KINDS;
+    return hit.own_title ? i18n.t(CALL_ABOUT[kind], { about: hit.own_title }) : i18n.t(CALL_KINDS[kind]);
   }
   return hit.title;
 }

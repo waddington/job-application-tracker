@@ -98,7 +98,11 @@ export default {
         video: "Video call",
         in_person: "Meeting",
       },
-      callAbout: "{{kind}}: {{about}}",
+      callAbout: {
+        call: "Call: {{about}}",
+        video: "Video call: {{about}}",
+        in_person: "Meeting: {{about}}",
+      },
     },
   },
 } as const;
