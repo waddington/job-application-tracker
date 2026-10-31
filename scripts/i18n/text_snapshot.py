@@ -303,7 +303,7 @@ with sync_playwright() as p:
     time.sleep(0.4)
 
     # Documents: where a document was used, and the new document and new version forms with their
-    # errors. Each closed unsaved.
+    # errors. None saved.
     visit(page, "/documents")
     step("documents+used", lambda: page.get_by_role("button", name="Where it was used").first.click(timeout=3000))
     step("documents+new", lambda: page.get_by_role("button", name="New document").click(timeout=3000))
