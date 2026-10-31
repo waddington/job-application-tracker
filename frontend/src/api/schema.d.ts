@@ -2435,7 +2435,7 @@ export interface components {
             /** Kind */
             kind: string;
             /** Msg */
-            msg?: (components["schemas"]["LinkAddedMsg"] | components["schemas"]["NoteAddedMsg"] | components["schemas"]["FileAddedMsg"] | components["schemas"]["EmailMsg"] | components["schemas"]["EmailNoSubjectMsg"] | components["schemas"]["EmailUnknownSenderMsg"] | components["schemas"]["EmailNoSubjectUnknownSenderMsg"] | components["schemas"]["CvSentMsg"] | components["schemas"]["CoverLetterSentMsg"] | components["schemas"]["DocumentSentMsg"]) | null;
+            msg?: (components["schemas"]["LinkAddedMsg"] | components["schemas"]["NoteAddedMsg"] | components["schemas"]["FileAddedMsg"] | components["schemas"]["EmailMsg"] | components["schemas"]["EmailNoSubjectMsg"] | components["schemas"]["EmailUnknownSenderMsg"] | components["schemas"]["EmailNoSubjectUnknownSenderMsg"] | components["schemas"]["CvSentMsg"] | components["schemas"]["CoverLetterSentMsg"] | components["schemas"]["DocumentSentMsg"] | components["schemas"]["RoundScheduledMsg"] | components["schemas"]["RoundAddedMsg"] | components["schemas"]["RoundCancelledMsg"] | components["schemas"]["RoundBackOnMsg"] | components["schemas"]["RoundDoneMsg"] | components["schemas"]["RoundRemovedMsg"] | components["schemas"]["RoundRescheduledMsg"] | components["schemas"]["RoundRescheduledReasonMsg"] | components["schemas"]["OfferReceivedYearMsg"] | components["schemas"]["OfferReceivedDayMsg"] | components["schemas"]["OfferReceivedNoFiguresMsg"] | components["schemas"]["OfferBackYearMsg"] | components["schemas"]["OfferBackDayMsg"] | components["schemas"]["OfferBackNoFiguresMsg"] | components["schemas"]["OfferAcceptedYearMsg"] | components["schemas"]["OfferAcceptedDayMsg"] | components["schemas"]["OfferAcceptedNoFiguresMsg"] | components["schemas"]["OfferDeclinedYearMsg"] | components["schemas"]["OfferDeclinedDayMsg"] | components["schemas"]["OfferDeclinedNoFiguresMsg"] | components["schemas"]["OfferWithdrawnYearMsg"] | components["schemas"]["OfferWithdrawnDayMsg"] | components["schemas"]["OfferWithdrawnNoFiguresMsg"] | components["schemas"]["OfferRemovedYearMsg"] | components["schemas"]["OfferRemovedDayMsg"] | components["schemas"]["OfferRemovedNoFiguresMsg"]) | null;
             /**
              * Occurred At
              * Format: date-time
@@ -2823,6 +2823,13 @@ export interface components {
             /** From Id */
             from_id: string;
         };
+        /** MoneyParams */
+        MoneyParams: {
+            /** Amount */
+            amount: number;
+            /** Currency */
+            currency: string | null;
+        };
         /** MoveIn */
         MoveIn: {
             /** Note */
@@ -2981,6 +2988,87 @@ export interface components {
              */
             updated_at: string;
         };
+        /** OfferAcceptedDayMsg */
+        OfferAcceptedDayMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.offerAcceptedDay";
+            params: components["schemas"]["MoneyParams"];
+        };
+        /** OfferAcceptedNoFiguresMsg */
+        OfferAcceptedNoFiguresMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.offerAcceptedNoFigures";
+            params: components["schemas"]["NoParams"];
+        };
+        /** OfferAcceptedYearMsg */
+        OfferAcceptedYearMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.offerAcceptedYear";
+            params: components["schemas"]["MoneyParams"];
+        };
+        /** OfferBackDayMsg */
+        OfferBackDayMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.offerBackDay";
+            params: components["schemas"]["MoneyParams"];
+        };
+        /** OfferBackNoFiguresMsg */
+        OfferBackNoFiguresMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.offerBackNoFigures";
+            params: components["schemas"]["NoParams"];
+        };
+        /** OfferBackYearMsg */
+        OfferBackYearMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.offerBackYear";
+            params: components["schemas"]["MoneyParams"];
+        };
+        /** OfferDeclinedDayMsg */
+        OfferDeclinedDayMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.offerDeclinedDay";
+            params: components["schemas"]["MoneyParams"];
+        };
+        /** OfferDeclinedNoFiguresMsg */
+        OfferDeclinedNoFiguresMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.offerDeclinedNoFigures";
+            params: components["schemas"]["NoParams"];
+        };
+        /** OfferDeclinedYearMsg */
+        OfferDeclinedYearMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.offerDeclinedYear";
+            params: components["schemas"]["MoneyParams"];
+        };
         /**
          * OfferIn
          * @description An offer on an application. Money is whole units of `currency` a year, except `day_rate`.
@@ -3125,6 +3213,87 @@ export interface components {
             start_on?: string | null;
             /** Status */
             status?: ("pending" | "accepted" | "declined" | "withdrawn") | null;
+        };
+        /** OfferReceivedDayMsg */
+        OfferReceivedDayMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.offerReceivedDay";
+            params: components["schemas"]["MoneyParams"];
+        };
+        /** OfferReceivedNoFiguresMsg */
+        OfferReceivedNoFiguresMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.offerReceivedNoFigures";
+            params: components["schemas"]["NoParams"];
+        };
+        /** OfferReceivedYearMsg */
+        OfferReceivedYearMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.offerReceivedYear";
+            params: components["schemas"]["MoneyParams"];
+        };
+        /** OfferRemovedDayMsg */
+        OfferRemovedDayMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.offerRemovedDay";
+            params: components["schemas"]["MoneyParams"];
+        };
+        /** OfferRemovedNoFiguresMsg */
+        OfferRemovedNoFiguresMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.offerRemovedNoFigures";
+            params: components["schemas"]["NoParams"];
+        };
+        /** OfferRemovedYearMsg */
+        OfferRemovedYearMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.offerRemovedYear";
+            params: components["schemas"]["MoneyParams"];
+        };
+        /** OfferWithdrawnDayMsg */
+        OfferWithdrawnDayMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.offerWithdrawnDay";
+            params: components["schemas"]["MoneyParams"];
+        };
+        /** OfferWithdrawnNoFiguresMsg */
+        OfferWithdrawnNoFiguresMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.offerWithdrawnNoFigures";
+            params: components["schemas"]["NoParams"];
+        };
+        /** OfferWithdrawnYearMsg */
+        OfferWithdrawnYearMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.offerWithdrawnYear";
+            params: components["schemas"]["MoneyParams"];
         };
         /** PassReasonOut */
         PassReasonOut: {
@@ -3448,6 +3617,98 @@ export interface components {
             url: string | null;
             /** Work Mode */
             work_mode: string | null;
+        };
+        /** RoundAddedMsg */
+        RoundAddedMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.roundAdded";
+            params: components["schemas"]["RoundParams"];
+        };
+        /** RoundBackOnMsg */
+        RoundBackOnMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.roundBackOn";
+            params: components["schemas"]["RoundParams"];
+        };
+        /** RoundCancelledMsg */
+        RoundCancelledMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.roundCancelled";
+            params: components["schemas"]["RoundParams"];
+        };
+        /** RoundDoneMsg */
+        RoundDoneMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.roundDone";
+            params: components["schemas"]["RoundParams"];
+        };
+        /** RoundParams */
+        RoundParams: {
+            /** Kind */
+            kind: string;
+            /** Round */
+            round: number | null;
+            /** Title */
+            title: string | null;
+        };
+        /** RoundReasonParams */
+        RoundReasonParams: {
+            /** Kind */
+            kind: string;
+            /** Reason */
+            reason: string;
+            /** Round */
+            round: number | null;
+            /** Title */
+            title: string | null;
+        };
+        /** RoundRemovedMsg */
+        RoundRemovedMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.roundRemoved";
+            params: components["schemas"]["RoundParams"];
+        };
+        /** RoundRescheduledMsg */
+        RoundRescheduledMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.roundRescheduled";
+            params: components["schemas"]["RoundParams"];
+        };
+        /** RoundRescheduledReasonMsg */
+        RoundRescheduledReasonMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.roundRescheduledReason";
+            params: components["schemas"]["RoundReasonParams"];
+        };
+        /** RoundScheduledMsg */
+        RoundScheduledMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.roundScheduled";
+            params: components["schemas"]["RoundParams"];
         };
         /**
          * RoundSummary

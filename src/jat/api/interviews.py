@@ -164,7 +164,7 @@ def update_interview(interview_id: str, body: S.InterviewPatch, session: Session
         if "ends_at" not in data and before[2] is not None:  # it lasts as long as before
             interview.ends_at = before[2] + (interview.starts_at - before[1])
         session.flush()
-        svc.record(session, app, interview, f"rescheduled: {reason}" if reason else "rescheduled")
+        svc.record(session, app, interview, "rescheduled", reason=reason)
     return _out(session, interview.id)
 
 

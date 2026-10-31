@@ -3753,7 +3753,33 @@
                     "event.emailUnknownSender": "#/components/schemas/EmailUnknownSenderMsg",
                     "event.fileAdded": "#/components/schemas/FileAddedMsg",
                     "event.linkAdded": "#/components/schemas/LinkAddedMsg",
-                    "event.noteAdded": "#/components/schemas/NoteAddedMsg"
+                    "event.noteAdded": "#/components/schemas/NoteAddedMsg",
+                    "event.offerAcceptedDay": "#/components/schemas/OfferAcceptedDayMsg",
+                    "event.offerAcceptedNoFigures": "#/components/schemas/OfferAcceptedNoFiguresMsg",
+                    "event.offerAcceptedYear": "#/components/schemas/OfferAcceptedYearMsg",
+                    "event.offerBackDay": "#/components/schemas/OfferBackDayMsg",
+                    "event.offerBackNoFigures": "#/components/schemas/OfferBackNoFiguresMsg",
+                    "event.offerBackYear": "#/components/schemas/OfferBackYearMsg",
+                    "event.offerDeclinedDay": "#/components/schemas/OfferDeclinedDayMsg",
+                    "event.offerDeclinedNoFigures": "#/components/schemas/OfferDeclinedNoFiguresMsg",
+                    "event.offerDeclinedYear": "#/components/schemas/OfferDeclinedYearMsg",
+                    "event.offerReceivedDay": "#/components/schemas/OfferReceivedDayMsg",
+                    "event.offerReceivedNoFigures": "#/components/schemas/OfferReceivedNoFiguresMsg",
+                    "event.offerReceivedYear": "#/components/schemas/OfferReceivedYearMsg",
+                    "event.offerRemovedDay": "#/components/schemas/OfferRemovedDayMsg",
+                    "event.offerRemovedNoFigures": "#/components/schemas/OfferRemovedNoFiguresMsg",
+                    "event.offerRemovedYear": "#/components/schemas/OfferRemovedYearMsg",
+                    "event.offerWithdrawnDay": "#/components/schemas/OfferWithdrawnDayMsg",
+                    "event.offerWithdrawnNoFigures": "#/components/schemas/OfferWithdrawnNoFiguresMsg",
+                    "event.offerWithdrawnYear": "#/components/schemas/OfferWithdrawnYearMsg",
+                    "event.roundAdded": "#/components/schemas/RoundAddedMsg",
+                    "event.roundBackOn": "#/components/schemas/RoundBackOnMsg",
+                    "event.roundCancelled": "#/components/schemas/RoundCancelledMsg",
+                    "event.roundDone": "#/components/schemas/RoundDoneMsg",
+                    "event.roundRemoved": "#/components/schemas/RoundRemovedMsg",
+                    "event.roundRescheduled": "#/components/schemas/RoundRescheduledMsg",
+                    "event.roundRescheduledReason": "#/components/schemas/RoundRescheduledReasonMsg",
+                    "event.roundScheduled": "#/components/schemas/RoundScheduledMsg"
                   },
                   "propertyName": "key"
                 },
@@ -3787,6 +3813,84 @@
                   },
                   {
                     "$ref": "#/components/schemas/DocumentSentMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundScheduledMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundAddedMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundCancelledMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundBackOnMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundDoneMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundRemovedMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundRescheduledMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundRescheduledReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferReceivedYearMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferReceivedDayMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferReceivedNoFiguresMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferBackYearMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferBackDayMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferBackNoFiguresMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferAcceptedYearMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferAcceptedDayMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferAcceptedNoFiguresMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferDeclinedYearMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferDeclinedDayMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferDeclinedNoFiguresMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferWithdrawnYearMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferWithdrawnDayMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferWithdrawnNoFiguresMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferRemovedYearMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferRemovedDayMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferRemovedNoFiguresMsg"
                   }
                 ]
               },
@@ -5322,6 +5426,31 @@
         "title": "MergeIn",
         "type": "object"
       },
+      "MoneyParams": {
+        "properties": {
+          "amount": {
+            "title": "Amount",
+            "type": "integer"
+          },
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency"
+          }
+        },
+        "required": [
+          "amount",
+          "currency"
+        ],
+        "title": "MoneyParams",
+        "type": "object"
+      },
       "MoveIn": {
         "additionalProperties": false,
         "properties": {
@@ -5694,6 +5823,168 @@
           "updated_at"
         ],
         "title": "NoteSummary",
+        "type": "object"
+      },
+      "OfferAcceptedDayMsg": {
+        "properties": {
+          "key": {
+            "const": "event.offerAcceptedDay",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/MoneyParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "OfferAcceptedDayMsg",
+        "type": "object"
+      },
+      "OfferAcceptedNoFiguresMsg": {
+        "properties": {
+          "key": {
+            "const": "event.offerAcceptedNoFigures",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/NoParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "OfferAcceptedNoFiguresMsg",
+        "type": "object"
+      },
+      "OfferAcceptedYearMsg": {
+        "properties": {
+          "key": {
+            "const": "event.offerAcceptedYear",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/MoneyParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "OfferAcceptedYearMsg",
+        "type": "object"
+      },
+      "OfferBackDayMsg": {
+        "properties": {
+          "key": {
+            "const": "event.offerBackDay",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/MoneyParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "OfferBackDayMsg",
+        "type": "object"
+      },
+      "OfferBackNoFiguresMsg": {
+        "properties": {
+          "key": {
+            "const": "event.offerBackNoFigures",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/NoParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "OfferBackNoFiguresMsg",
+        "type": "object"
+      },
+      "OfferBackYearMsg": {
+        "properties": {
+          "key": {
+            "const": "event.offerBackYear",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/MoneyParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "OfferBackYearMsg",
+        "type": "object"
+      },
+      "OfferDeclinedDayMsg": {
+        "properties": {
+          "key": {
+            "const": "event.offerDeclinedDay",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/MoneyParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "OfferDeclinedDayMsg",
+        "type": "object"
+      },
+      "OfferDeclinedNoFiguresMsg": {
+        "properties": {
+          "key": {
+            "const": "event.offerDeclinedNoFigures",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/NoParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "OfferDeclinedNoFiguresMsg",
+        "type": "object"
+      },
+      "OfferDeclinedYearMsg": {
+        "properties": {
+          "key": {
+            "const": "event.offerDeclinedYear",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/MoneyParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "OfferDeclinedYearMsg",
         "type": "object"
       },
       "OfferIn": {
@@ -6416,6 +6707,168 @@
           }
         },
         "title": "OfferPatch",
+        "type": "object"
+      },
+      "OfferReceivedDayMsg": {
+        "properties": {
+          "key": {
+            "const": "event.offerReceivedDay",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/MoneyParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "OfferReceivedDayMsg",
+        "type": "object"
+      },
+      "OfferReceivedNoFiguresMsg": {
+        "properties": {
+          "key": {
+            "const": "event.offerReceivedNoFigures",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/NoParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "OfferReceivedNoFiguresMsg",
+        "type": "object"
+      },
+      "OfferReceivedYearMsg": {
+        "properties": {
+          "key": {
+            "const": "event.offerReceivedYear",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/MoneyParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "OfferReceivedYearMsg",
+        "type": "object"
+      },
+      "OfferRemovedDayMsg": {
+        "properties": {
+          "key": {
+            "const": "event.offerRemovedDay",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/MoneyParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "OfferRemovedDayMsg",
+        "type": "object"
+      },
+      "OfferRemovedNoFiguresMsg": {
+        "properties": {
+          "key": {
+            "const": "event.offerRemovedNoFigures",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/NoParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "OfferRemovedNoFiguresMsg",
+        "type": "object"
+      },
+      "OfferRemovedYearMsg": {
+        "properties": {
+          "key": {
+            "const": "event.offerRemovedYear",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/MoneyParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "OfferRemovedYearMsg",
+        "type": "object"
+      },
+      "OfferWithdrawnDayMsg": {
+        "properties": {
+          "key": {
+            "const": "event.offerWithdrawnDay",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/MoneyParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "OfferWithdrawnDayMsg",
+        "type": "object"
+      },
+      "OfferWithdrawnNoFiguresMsg": {
+        "properties": {
+          "key": {
+            "const": "event.offerWithdrawnNoFigures",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/NoParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "OfferWithdrawnNoFiguresMsg",
+        "type": "object"
+      },
+      "OfferWithdrawnYearMsg": {
+        "properties": {
+          "key": {
+            "const": "event.offerWithdrawnYear",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/MoneyParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "OfferWithdrawnYearMsg",
         "type": "object"
       },
       "PassReasonOut": {
@@ -7796,6 +8249,229 @@
         "title": "RoleSummary",
         "type": "object"
       },
+      "RoundAddedMsg": {
+        "properties": {
+          "key": {
+            "const": "event.roundAdded",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/RoundParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "RoundAddedMsg",
+        "type": "object"
+      },
+      "RoundBackOnMsg": {
+        "properties": {
+          "key": {
+            "const": "event.roundBackOn",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/RoundParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "RoundBackOnMsg",
+        "type": "object"
+      },
+      "RoundCancelledMsg": {
+        "properties": {
+          "key": {
+            "const": "event.roundCancelled",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/RoundParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "RoundCancelledMsg",
+        "type": "object"
+      },
+      "RoundDoneMsg": {
+        "properties": {
+          "key": {
+            "const": "event.roundDone",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/RoundParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "RoundDoneMsg",
+        "type": "object"
+      },
+      "RoundParams": {
+        "properties": {
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "round": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Round"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "required": [
+          "round",
+          "title",
+          "kind"
+        ],
+        "title": "RoundParams",
+        "type": "object"
+      },
+      "RoundReasonParams": {
+        "properties": {
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "round": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Round"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "required": [
+          "round",
+          "title",
+          "kind",
+          "reason"
+        ],
+        "title": "RoundReasonParams",
+        "type": "object"
+      },
+      "RoundRemovedMsg": {
+        "properties": {
+          "key": {
+            "const": "event.roundRemoved",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/RoundParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "RoundRemovedMsg",
+        "type": "object"
+      },
+      "RoundRescheduledMsg": {
+        "properties": {
+          "key": {
+            "const": "event.roundRescheduled",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/RoundParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "RoundRescheduledMsg",
+        "type": "object"
+      },
+      "RoundRescheduledReasonMsg": {
+        "properties": {
+          "key": {
+            "const": "event.roundRescheduledReason",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/RoundReasonParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "RoundRescheduledReasonMsg",
+        "type": "object"
+      },
+      "RoundScheduledMsg": {
+        "properties": {
+          "key": {
+            "const": "event.roundScheduled",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/RoundParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "RoundScheduledMsg",
+        "type": "object"
+      },
       "RoundSummary": {
         "description": "The round an application is at, for the board and list: \"Round 2 \u00b7 System design test\".",
         "properties": {
@@ -8988,7 +9664,7 @@
   },
   "info": {
     "title": "Job Application Tracker",
-    "version": "1.2.33"
+    "version": "1.2.34"
   },
   "openapi": "3.1.0",
   "paths": {
