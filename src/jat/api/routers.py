@@ -31,8 +31,9 @@ from . import schemas as S
 from .crud import crud_router, values
 from .deps import SessionDep, WorkflowDep, get_or_404, get_workflow, require
 from .documents import sent_documents
+from .errors import ERROR_RESPONSES
 
-router = APIRouter(prefix="/api/v1")
+router = APIRouter(prefix="/api/v1", responses=ERROR_RESPONSES)
 
 
 # --- simple entities -------------------------------------------------------------------------
@@ -833,7 +834,9 @@ def app_events(app_id: str, session: SessionDep):
 @apps.post("/{app_id}/activities", response_model=S.EventOut, status_code=201)
 def add_activity(app_id: str, body: S.ActivityIn, session: SessionDep):
     app = get_or_404(session, Application, app_id)
-    return svc.log_activity(session, app, body.kind, summary=body.summary, occurred_at=body.occurred_at, data=body.data)
+    # What you log is your own words, shown as typed: only the app writes a message (svc.log_message).
+    data = {k: v for k, v in body.data.items() if k != "msg"}
+    return svc.log_activity(session, app, body.kind, summary=body.summary, occurred_at=body.occurred_at, data=data)
 
 
 @apps.post("/{app_id}/contacts", response_model=S.ApplicationContactOut, status_code=201)

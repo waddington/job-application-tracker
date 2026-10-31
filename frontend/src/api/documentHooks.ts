@@ -1,9 +1,9 @@
-import { notifications } from "@mantine/notifications";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { i18n } from "../i18n";
-import { api, errorMessage, unwrap, type Schemas } from "./client";
+import { api, ApiError, unwrap, type Schemas } from "./client";
 import { invalidateApplicationViews } from "./hooks";
+import { notifyError } from "./notifyError";
 
 export type DocumentItem = Schemas["DocumentOut"];
 export type DocumentVersion = Schemas["VersionOut"];
@@ -15,10 +15,6 @@ export function documentKind(kind: string): string {
   if (kind === "cover_letter") return i18n.t("documents:kinds.cover_letter");
   if (kind === "other") return i18n.t("documents:kinds.other");
   return kind;
-}
-
-function notifyError(error: Error) {
-  notifications.show({ color: "red", title: "That didn't work", message: error.message });
 }
 
 export function useDocuments() {
@@ -64,7 +60,7 @@ export function useDeleteDocument() {
       const { error } = await api.DELETE("/api/v1/documents/{document_id}", {
         params: { path: { document_id: id } },
       });
-      if (error) throw new Error(errorMessage(error));
+      if (error) throw new ApiError(error);
     },
     onSuccess: refresh,
     onError: notifyError,
@@ -83,7 +79,7 @@ export function useAddVersion(documentId: string) {
       const url = new URL(`/api/v1/documents/${documentId}/versions`, globalThis.location?.origin);
       const response = await globalThis.fetch(url, { method: "POST", body: form });
       const body: unknown = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(errorMessage(body));
+      if (!response.ok) throw new ApiError(body);
       return body as DocumentVersion;
     },
     onSuccess: refresh,
@@ -98,7 +94,7 @@ export function useDeleteVersion() {
       const { error } = await api.DELETE("/api/v1/documents/versions/{version_id}", {
         params: { path: { version_id: id } },
       });
-      if (error) throw new Error(errorMessage(error));
+      if (error) throw new ApiError(error);
     },
     onSuccess: refresh,
     onError: notifyError,
@@ -127,7 +123,7 @@ export function useUnsendDocument(appId: string) {
       const { error } = await api.DELETE("/api/v1/applications/{app_id}/documents/{link_id}", {
         params: { path: { app_id: appId, link_id: linkId } },
       });
-      if (error) throw new Error(errorMessage(error));
+      if (error) throw new ApiError(error);
     },
     onSuccess: refresh,
     onError: notifyError,

@@ -8,6 +8,7 @@ import tseslint from "typescript-eslint";
 // adds its files here, so hard-coded English can't creep back in; i18n-finish turns it on
 // everywhere.
 const TRANSLATED = [
+  "src/api/notifyError.ts",
   "src/components/Layout.tsx",
   "src/components/HeaderSearch.tsx",
   "src/components/ApiStatus.tsx",
@@ -81,6 +82,8 @@ const TRANSLATED = [
   "src/components/DocumentPerformance.tsx",
   // i18n-sankey
   "src/components/SankeyChart.tsx",
+  // i18n-events-setup
+  "src/components/eventText.ts",
   // i18n-timeline-page
   "src/pages/TimelinePage.tsx",
   // i18n-timeline-titles

@@ -1,7 +1,7 @@
-import { notifications } from "@mantine/notifications";
 import { type QueryClient, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api, unwrap, type ApplicationDetail, type ApplicationRow, type Schemas } from "./client";
+import { notifyError } from "./notifyError";
 
 export interface WorkflowStage {
   id: string;
@@ -144,10 +144,6 @@ export function useDuplicates(args: { companyId?: string; companyName: string; r
 
 export function useRoles() {
   return useQuery({ queryKey: keys.roles, queryFn: async () => unwrap(await api.GET("/api/v1/roles")) });
-}
-
-function notifyError(error: Error) {
-  notifications.show({ color: "red", title: "That didn't work", message: error.message });
 }
 
 /** After any application change, refresh lists and the changed application. */

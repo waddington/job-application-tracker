@@ -1,8 +1,8 @@
-import { notifications } from "@mantine/notifications";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api, unwrap, type Schemas } from "./client";
 import { invalidateApplicationViews } from "./hooks";
+import { notifyError } from "./notifyError";
 
 export type Interview = Schemas["InterviewOut"];
 export type InterviewKind = Schemas["InterviewIn"]["kind"];
@@ -25,10 +25,6 @@ export interface InterviewFilters {
   status?: "scheduled" | "done" | "cancelled";
   upcoming?: boolean;
   since?: string;
-}
-
-function notifyError(error: Error) {
-  notifications.show({ color: "red", title: "That didn't work", message: error.message });
 }
 
 export function useInterviews(filters: InterviewFilters) {

@@ -1,15 +1,11 @@
-import { notifications } from "@mantine/notifications";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api, unwrap, type Schemas } from "./client";
 import { invalidateApplicationViews } from "./hooks";
+import { notifyError } from "./notifyError";
 
 export type NoteSummary = Schemas["NoteSummary"];
 export type Note = Schemas["NoteOut"];
-
-function notifyError(error: Error) {
-  notifications.show({ color: "red", title: "That didn't work", message: error.message });
-}
 
 /** Notes, newest first. `entity` is "application:<id>", "company:<id>"…, or "none" for general notes. */
 export function useNotes(filters: { entity?: string; q?: string }) {

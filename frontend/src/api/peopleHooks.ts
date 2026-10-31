@@ -1,13 +1,9 @@
-import { notifications } from "@mantine/notifications";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { i18n } from "../i18n";
 import { api, unwrap, type Schemas } from "./client";
 import { keys } from "./hooks";
-
-function notifyError(error: Error) {
-  notifications.show({ color: "red", title: "That didn't work", message: error.message });
-}
+import { notifyError } from "./notifyError";
 
 /** After any contact or agency change, refresh everything that shows people. */
 function useRefreshPeople() {

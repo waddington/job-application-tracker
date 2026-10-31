@@ -31,6 +31,7 @@ import { Trans, useTranslation } from "react-i18next";
 
 import { PersonMarks } from "./GhostMark";
 import type { ApiEvent, ApplicationDetail } from "../api/client";
+import { eventText } from "./eventText";
 import {
   stageLookup,
   useApplication,
@@ -255,6 +256,7 @@ export function ApplicationSummary({ app }: { app: ApplicationDetail }) {
 }
 
 export function ApplicationTimeline({ app }: { app: ApplicationDetail }) {
+  useTranslation("events"); // eventText reads i18n directly: this redraws it when the language changes
   const { data: workflow } = useWorkflow();
   const names = new Map((workflow?.stages ?? []).map((s) => [s.id, s.name]));
   return (
@@ -263,7 +265,7 @@ export function ApplicationTimeline({ app }: { app: ApplicationDetail }) {
         const Icon = ACTIVITY_ICONS[event.kind] ?? IconNote;
         return (
           <Timeline.Item key={event.id} bullet={<Icon size={12} />} title={eventTitle(event, names)}>
-            {event.summary && event.kind !== "stage_change" && <Text size="sm">{event.summary}</Text>}
+            {event.summary && event.kind !== "stage_change" && <Text size="sm">{eventText(event)}</Text>}
             {event.summary && event.kind === "stage_change" && event.from_stage && (
               <Text size="sm" c="dimmed">
                 {event.summary}

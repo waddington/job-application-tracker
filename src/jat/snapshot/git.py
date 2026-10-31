@@ -26,11 +26,15 @@ from collections.abc import Iterator
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Engine
 
 from ..datadir import is_git_repo
 from .export import export_db
+
+if TYPE_CHECKING:
+    from ..api.errors import ErrorCode, ErrorParams
 
 TRACKED = ("export", "notes", "files", "config.toml", ".gitignore")
 DEFAULT_DEBOUNCE = 60.0
@@ -43,7 +47,12 @@ NO_PROMPT_ENV = {
 
 
 class SnapshotError(RuntimeError):
-    pass
+    """The message is English, for the CLI and logs. The API sends the code and params beside it."""
+
+    def __init__(self, message: str, code: ErrorCode, params: ErrorParams | None = None) -> None:
+        super().__init__(message)
+        self.code: ErrorCode = code
+        self.params = params
 
 
 @dataclass
@@ -86,9 +95,14 @@ def _git(data_dir: Path, *args: str, timeout: float = 30) -> subprocess.Complete
             env={**os.environ, **NO_PROMPT_ENV},
         )
     except subprocess.TimeoutExpired as exc:
-        raise SnapshotError(f"git {args[0]} timed out after {timeout:.0f}s") from exc
+        seconds = f"{timeout:.0f}"
+        raise SnapshotError(
+            f"git {args[0]} timed out after {seconds}s",
+            "backup_git_timeout",
+            {"command": args[0], "seconds": seconds},
+        ) from exc
     except OSError as exc:
-        raise SnapshotError(f"couldn't run git: {exc}") from exc
+        raise SnapshotError(f"couldn't run git: {exc}", "backup_git_unavailable", {"reason": str(exc)}) from exc
 
 
 def _now() -> str:
@@ -160,7 +174,11 @@ class SnapshotService:
                 try:
                     fcntl.flock(fh, fcntl.LOCK_EX)  # wait for the other snapshot to finish
                 except OSError as exc:
-                    raise SnapshotError(f"couldn't lock {lock_path}: {exc}") from exc
+                    raise SnapshotError(
+                        f"couldn't lock {lock_path}: {exc}",
+                        "backup_lock_failed",
+                        {"path": str(lock_path), "reason": str(exc)},
+                    ) from exc
             try:
                 yield
             finally:
@@ -179,19 +197,25 @@ class SnapshotService:
     def _check_repo_state(self) -> None:
         head = _git(self.data_dir, "symbolic-ref", "-q", "HEAD")
         if head.returncode != 0:
-            raise SnapshotError("The data repo is on a detached HEAD; check out a branch so snapshots aren't lost.")
+            raise SnapshotError(
+                "The data repo is on a detached HEAD; check out a branch so snapshots aren't lost.",
+                "backup_detached_head",
+            )
         git_dir = Path(_git(self.data_dir, "rev-parse", "--absolute-git-dir").stdout.strip() or self.data_dir / ".git")
         for marker in ("rebase-merge", "rebase-apply", "MERGE_HEAD", "CHERRY_PICK_HEAD"):
             if (git_dir / marker).exists():
-                raise SnapshotError("The data repo is mid-rebase/merge; finish it and snapshots will resume.")
+                raise SnapshotError(
+                    "The data repo is mid-rebase/merge; finish it and snapshots will resume.",
+                    "backup_mid_rebase",
+                )
 
     def snapshot_now(self, message: str | None = None, *, _force: bool = False) -> str | None:
         """Export and commit now. Returns the new commit sha, or None if nothing changed."""
         if not self.enabled:
-            raise SnapshotError("The data directory isn't a git repo, so snapshots are off.")
+            raise SnapshotError("The data directory isn't a git repo, so snapshots are off.", "backup_snapshots_off")
         with self._state:
             if self._closed and not _force:
-                raise SnapshotError("snapshots are shut down")
+                raise SnapshotError("snapshots are shut down", "backup_shut_down")
             if self._timer is not None:
                 self._timer.cancel()
                 self._timer = None
@@ -203,7 +227,8 @@ class SnapshotService:
                 paths = [p for p in TRACKED if (self.data_dir / p).exists()]
                 add = _git(self.data_dir, "add", "--all", "--", *paths)
                 if add.returncode != 0:
-                    raise SnapshotError(f"git add failed: {add.stderr.strip()}")
+                    reason = add.stderr.strip()
+                    raise SnapshotError(f"git add failed: {reason}", "backup_add_failed", {"reason": reason})
                 staged = _git(self.data_dir, "diff", "--cached", "--name-only", "--", *paths)
                 files = [f for f in staged.stdout.splitlines() if f]
                 if not files:
@@ -212,7 +237,8 @@ class SnapshotService:
                 # Commit exactly the staged snapshot files (a path git doesn't know would fail the pathspec).
                 commit = _git(self.data_dir, "commit", "-q", "-m", message or _message(files), "--", *files)
                 if commit.returncode != 0:
-                    raise SnapshotError(f"git commit failed: {commit.stderr.strip() or commit.stdout.strip()}")
+                    reason = commit.stderr.strip() or commit.stdout.strip()
+                    raise SnapshotError(f"git commit failed: {reason}", "backup_commit_failed", {"reason": reason})
                 sha = _git(self.data_dir, "rev-parse", "--short", "HEAD").stdout.strip()
                 self._last_commit, self._last_snapshot_at, self._last_error = sha, _now(), None
                 return sha
@@ -222,7 +248,7 @@ class SnapshotService:
             self._last_error = str(exc) if isinstance(exc, SnapshotError) else f"snapshot failed: {exc}"
             if isinstance(exc, SnapshotError):
                 raise
-            raise SnapshotError(self._last_error) from exc
+            raise SnapshotError(self._last_error, "backup_snapshot_failed", {"reason": str(exc)}) from exc
 
     # --- push -------------------------------------------------------------------------------
 
@@ -242,10 +268,13 @@ class SnapshotService:
     def push(self) -> str:
         """Snapshot any pending changes, then `git push` (never forced, never prompts)."""
         if not self.enabled:
-            raise SnapshotError("The data directory isn't a git repo.")
+            raise SnapshotError("The data directory isn't a git repo.", "backup_not_a_repo")
         remote = self._remote()
         if not remote:
-            raise SnapshotError("The data repo has no remote to push to. Add one with `git remote add origin ...`.")
+            raise SnapshotError(
+                "The data repo has no remote to push to. Add one with `git remote add origin ...`.",
+                "backup_no_remote",
+            )
         with self._state:
             dirty = self._dirty
         if dirty:
@@ -254,8 +283,9 @@ class SnapshotService:
         args = ["push"] if has_upstream else ["push", "-u", remote, "HEAD"]
         result = _git(self.data_dir, *args, timeout=120)
         if result.returncode != 0:
-            self._last_error = f"git push failed: {result.stderr.strip()}"
-            raise SnapshotError(self._last_error)
+            reason = result.stderr.strip()
+            self._last_error = f"git push failed: {reason}"
+            raise SnapshotError(self._last_error, "backup_push_failed", {"reason": reason})
         self._last_push_at = _now()
         return (result.stderr or result.stdout).strip()
 

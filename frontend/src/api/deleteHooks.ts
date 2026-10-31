@@ -1,7 +1,7 @@
 import { notifications } from "@mantine/notifications";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { api, errorMessage } from "./client";
+import { api, ApiError } from "./client";
 import { invalidateApplicationViews, keys } from "./hooks";
 
 export type Deletable = "application" | "company" | "agency" | "contact" | "role";
@@ -18,7 +18,7 @@ async function remove(kind: Deletable, id: string) {
             ? await api.DELETE("/api/v1/agencies/{item_id}", { params: { path: { item_id: id } } })
             : await api.DELETE("/api/v1/roles/{item_id}", { params: { path: { item_id: id } } });
   // A refusal says why ("Contoso has 2 applications. Delete them first…").
-  if (error !== undefined) throw new Error(errorMessage(error));
+  if (error !== undefined) throw new ApiError(error);
 }
 
 /** Delete an application, company, agency, person or role, then refresh everything that shows them. */

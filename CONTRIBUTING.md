@@ -123,6 +123,8 @@ The app is being made translatable, English only for now; the plan and its order
 - Timeline: the page's own text, filters, kinds of thing and lanes, and the titles of entries about
   roles, companies, agencies and people, also in Today's recent list (other titles, and every detail,
   still come from the API in English).
+- Errors: the shared "That didn't work" toast, and the errors that have a code so far (backup and
+  to-dos).
 
 The files are listed in `TRANSLATED` in `frontend/eslint.config.js`. Until an area has moved,
 keep writing its text as before. Once it has:
@@ -140,8 +142,11 @@ keep writing its text as before. Once it has:
   **Text from another namespace too:** `useTranslation(["todos", "common"])`, then
   `t("common:actions.cancel")`. A `t()` from `useTranslation("todos")` refuses another
   namespace's keys, and its own namespace's keys with a prefix.
-- **Text the app saves** (an event's summary, a stage move's note) stays English for now:
-  it's your data, and it moves with `i18n-events`.
+- **Text the app saves** (an event's summary, a stage move's note) stays English: it's what's
+  exported and searched. Links, notes, files, emails and documents sent also save a message with
+  `svc.log_message`. A new message needs its key in `EventMsg` (`api/schemas.py`), its text in
+  `locales/en/events.ts` and `eventText.ts`, and a case in `eventMessages.cases.json`. The rest
+  move with `i18n-events`.
 - **Values** go in `{{placeholders}}`, never glued on with `+` or a template string, so a
   translation can put them anywhere in the sentence.
 - **Plurals** are `_one` / `_other` keys used with `count`, never `n === 1 ? … : …`. So no
@@ -170,6 +175,21 @@ keep writing its text as before. Once it has:
   `placeholder`, `aria-label`, `title`, `description`, `error`, `hint`, `empty`, `confirm`…).
   Strings in plain code, like a form's error messages, still need care. A prop that carries
   prose and isn't on the list goes on it.
+- **Adding an error code,** for an error people can see (the backend never translates):
+  1. add the code to `ErrorCode` in `src/jat/api/errors.py`, with underscores and no ending like a
+     plural form (`_one`, `_other`);
+  2. add its line to `codes` in `frontend/src/locales/en/errors.ts`, with values as `{{placeholders}}`;
+     a code with a `count` also goes in `PluralCode` there, with `_one` and `_other` lines;
+  3. raise it, with `detail` the same English as before and the values as params:
+     `raise CodedError(409, f"{name} is taken", "company_name_taken", {"name": name})`. Write params
+     as a dict there, and don't name one after an i18next option (`lng`, `ns`, `context`…): a test
+     checks both;
+  4. run `uv run python -m jat.openapi` and `pnpm --dir frontend gen:api`, and add its row to `TEXT`
+     in `components/ErrorsText.test.tsx`.
+
+  The type check fails if a code has no text or no row, or text has no code. Every route under
+  `/api/v1` already declares `ErrorOut`, so a route needs nothing. Errors people never see can stay
+  plain `HTTPException`s.
 - **Adding a language** (once its translation is reviewed; the `multi-language` task does the
   first):
   1. its text in `frontend/src/locales/<code>/`, one JSON file per namespace (the tests
