@@ -8468,6 +8468,28 @@
             "title": "Id",
             "type": "string"
           },
+          "kind": {
+            "enum": [
+              "stage-event",
+              "other-event",
+              "interview",
+              "offer-reply",
+              "meeting",
+              "role",
+              "role-added",
+              "role-passed",
+              "company",
+              "agency",
+              "contact",
+              "contact-waiting",
+              "contact-chased",
+              "contact-closed",
+              "contact-to-read",
+              "note"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
           "people": {
             "default": [],
             "items": {
@@ -8521,6 +8543,7 @@
           "at",
           "all_day",
           "category",
+          "kind",
           "title"
         ],
         "title": "TimelineItem",
@@ -8965,7 +8988,7 @@
   },
   "info": {
     "title": "Job Application Tracker",
-    "version": "1.2.32"
+    "version": "1.2.33"
   },
   "openapi": "3.1.0",
   "paths": {

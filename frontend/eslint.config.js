@@ -86,6 +86,8 @@ const TRANSLATED = [
   "src/components/eventText.ts",
   // i18n-timeline-page
   "src/pages/TimelinePage.tsx",
+  // i18n-timeline-titles
+  "src/components/timelineTitle.ts",
 ];
 
 export default tseslint.config(
