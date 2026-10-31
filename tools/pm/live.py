@@ -15,6 +15,7 @@ from .roadmap import BRANCH_PREFIX, Live, PullRequest
 
 SEP = "\x1f"
 PR_LIMIT = 1000
+DETACHED = "(detached)"
 COMMIT_LIMIT = 5000
 AREAS = (
     ("frontend/e2e/", "Browser tests"),
@@ -154,6 +155,8 @@ def parse_worktrees(output: str) -> list[Worktree]:
             path = line.removeprefix("worktree ")
         elif line.startswith("branch ") and path:
             trees.append(Worktree(path, line.removeprefix("branch refs/heads/")))
+        elif line == "detached" and path:  # mid-rebase, say: it's still being worked in
+            trees.append(Worktree(path, DETACHED))
     return trees
 
 
@@ -178,6 +181,19 @@ def scope_history(root: Path, main: str) -> list[tuple[str, int]]:
     return history
 
 
+def parse_status(output: str) -> list[str]:
+    """The changed files from `git status --porcelain -z`. A rename's second entry is its old name."""
+    names = []
+    entries = iter(output.split("\0"))
+    for entry in entries:
+        if not entry:
+            continue
+        names.append(entry[3:])
+        if entry[0] in "RC":
+            next(entries, None)
+    return names
+
+
 def read_activity(tree: Worktree, main: str) -> None:
     """Fill in what a worktree is up to. One that can't be read is marked, and the rest carry on."""
     path = Path(tree.path)
@@ -185,13 +201,14 @@ def read_activity(tree: Worktree, main: str) -> None:
         tree.ahead = int(_run(["git", "rev-list", "--count", f"{main}..HEAD"], path).strip())
         # With nothing of its own, its latest commit is main's, which says nothing about this worktree.
         tree.last_commit = _run(["git", "log", "-1", "--format=%cI"], path).strip() if tree.ahead else ""
-        changed = _run(["git", "status", "--porcelain"], path).splitlines()
+        # No optional locks: this runs in the background, where an agent may be committing.
+        status = ["git", "--no-optional-locks", "status", "--porcelain", "-z", "--untracked-files=all"]
+        changed = parse_status(_run(status, path))
     except (subprocess.SubprocessError, OSError, ValueError):
         tree.unreadable = True
         return
     tree.dirty = len(changed)
-    for line in changed:
-        name = line[3:].split(" -> ")[-1].strip('"')
+    for name in changed:
         try:
             tree.last_edit = max(tree.last_edit, (path / name).stat().st_mtime)
         except OSError:  # deleted: nothing to date it by

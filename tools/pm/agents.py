@@ -60,6 +60,7 @@ class AgentRow:
     task: Task | None
     state: str
     last: datetime | None
+    pr: PullRequest | None = None
 
 
 def agent_rows(roadmap: Roadmap, snapshot: Snapshot, now: datetime) -> list[AgentRow]:
@@ -70,7 +71,8 @@ def agent_rows(roadmap: Roadmap, snapshot: Snapshot, now: datetime) -> list[Agen
             continue
         last = last_active(tree)
         task = roadmap.task(tree.branch.removeprefix(BRANCH_PREFIX))
-        rows.append(AgentRow(tree, PurePosixPath(tree.path).name, task, state_of(last, now), last))
+        pr = snapshot.live.pr_for(tree.branch)
+        rows.append(AgentRow(tree, PurePosixPath(tree.path).name, task, state_of(last, now), last, pr))
     earliest = datetime.min.replace(tzinfo=now.tzinfo)
     return sorted(rows, key=lambda r: (STATE_ORDER[r.state], -(r.last or earliest).timestamp()))
 
@@ -107,6 +109,14 @@ def most_at_once(all_lanes: list[Lane]) -> int:
     return most
 
 
+def peak_in_window(prs: list[PullRequest], shown: list[Lane], now: datetime) -> int:
+    """The most at once over the period shown, counting older PRs still running in it, which have no bar."""
+    if not shown:
+        return 0
+    start = min(lane.start for lane in shown)
+    return most_at_once([lane for lane in lanes(prs, now, limit=len(prs)) if lane.end >= start])
+
+
 # ---- the page
 
 
@@ -116,7 +126,7 @@ def working_table(rows: list[AgentRow], now: datetime) -> str:
     out = []
     for r in rows:
         tree = r.tree
-        pr = r.task.pr if r.task else None
+        pr = r.pr
         task = (
             f'<span class="clip" title="{escape(r.task.name)}">{escape(r.task.name)}</span>'
             if r.task
@@ -208,9 +218,10 @@ def agents_page(roadmap: Roadmap, snapshot: Snapshot, now: datetime | None = Non
         working_table(rows, now) if known_git else '<p class="muted">git hasn\'t answered yet.</p>',
     )
     note = (
-        f"The latest {len(found)} PRs from opened to merged, as a sign of when each piece of work ran. "
-        f"At most {most_at_once(found)} ran at once. Since PRs open as drafts when work starts, recent bars are "
-        "closest to the truth."
+        f"The latest {len(found)} PRs from opened to merged. A bar is a PR, not an agent: it's a sign of when work "
+        f"ran, and subagents such as reviewers don't appear. Over this period at most "
+        f"{peak_in_window(snapshot.live.prs, found, now)} ran at once. Since PRs open as drafts when work starts, "
+        "recent bars are closest to the truth."
         if found
         else ""
     )

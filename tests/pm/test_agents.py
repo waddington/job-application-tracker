@@ -1,4 +1,5 @@
 import os
+import subprocess
 import unittest
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -6,7 +7,7 @@ from tempfile import TemporaryDirectory
 from unittest import mock
 
 from tools.pm import agents
-from tools.pm.live import Snapshot, Worktree, read_activity
+from tools.pm.live import Snapshot, Worktree, parse_worktrees, read_activity
 from tools.pm.roadmap import Live, PullRequest, apply_live, from_data
 
 NOW = datetime(2026, 10, 31, 12, 0).astimezone()
@@ -121,8 +122,44 @@ class ReadActivityTests(unittest.TestCase):
             (Path(tmp) / "b c.py").write_text("x")
             os.utime(Path(tmp) / "a.py", (1000, 1000))
             os.utime(Path(tmp) / "b c.py", (2000, 2000))
-            found = self.run_with(tmp, status=' M a.py\n?? "b c.py"\n D gone.py\nR  x.py -> a.py\n')
-        self.assertEqual((found.dirty, found.last_edit), (4, 2000.0))
+            (Path(tmp) / "new.py").write_text("x")
+            os.utime(Path(tmp) / "new.py", (3000, 3000))
+            found = self.run_with(tmp, status=" M a.py\0?? b c.py\0 D gone.py\0R  new.py\0old.py\0")
+        self.assertEqual((found.dirty, found.last_edit), (4, 3000.0))  # the rename's new name is dated
+
+    def test_against_real_git(self):
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+
+            def git(*args):
+                env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
+                identity = ["-c", "user.name=T", "-c", "user.email=t@example.com"]
+                subprocess.run(["git", *identity, *args], cwd=root, check=True, capture_output=True, env=env)
+
+            git("init", "-q", "-b", "main")
+            (root / "old.py").write_text("x")
+            (root / "kept.py").write_text("x")
+            git("add", "-A")
+            git("commit", "-qm", "first")
+            git("branch", "base")
+            (root / "kept.py").write_text("changed")
+            git("add", "-A")
+            git("commit", "-qm", "second")
+            git("mv", "old.py", "renamed.py")
+            (root / "new dir").mkdir()
+            (root / "new dir" / "café.py").write_text("x")
+            (root / "new dir" / "two.py").write_text("x")
+            newest = root / "new dir" / "café.py"
+            os.utime(newest, (4_000_000_000, 4_000_000_000))
+
+            env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
+            found = Worktree(tmp, "worktree-a")
+            with mock.patch.dict(os.environ, env, clear=True):
+                read_activity(found, "base")
+        self.assertFalse(found.unreadable)
+        self.assertEqual(found.ahead, 1)
+        self.assertEqual(found.dirty, 3)  # the rename, and each file in the new folder
+        self.assertEqual(found.last_edit, 4_000_000_000.0)  # the folder's own time would hide this
 
     def test_one_that_cant_be_read_is_marked(self):
         found = Worktree("/nowhere", "worktree-a")
@@ -150,6 +187,20 @@ class LaneTests(unittest.TestCase):
         no_end = PullRequest(2, "T", "CLOSED", "b", "u", created_at=before(hours=1).isoformat())
         lane = agents.lanes([no_end], NOW)[0]
         self.assertEqual(lane.end, lane.start)
+
+    def test_the_peak_counts_an_older_pr_still_running_in_the_period(self):
+        prs = [pr(1, 20, 5), pr(2, 8, 6), pr(3, 3, 2)]  # 1 is too old for a bar, but overlaps 2
+        shown = agents.lanes(prs, NOW, limit=2)
+        self.assertEqual([lane.pr.number for lane in shown], [3, 2])
+        self.assertEqual(agents.most_at_once(shown), 1)
+        self.assertEqual(agents.peak_in_window(prs, shown, NOW), 2)
+        self.assertEqual(agents.peak_in_window([], [], NOW), 0)
+
+    def test_a_detached_worktree_stays_on_the_page(self):
+        trees = parse_worktrees("worktree /r\nHEAD abc\nbranch refs/heads/main\n\nworktree /r/w\nHEAD abc\ndetached\n")
+        self.assertEqual([t.branch for t in trees], ["main", "(detached)"])
+        rows = agents.agent_rows(road(), Snapshot(live=Live(), worktrees=trees), NOW)
+        self.assertEqual([r.name for r in rows], ["w"])
 
     def test_the_most_at_once(self):
         self.assertEqual(agents.most_at_once(agents.lanes([pr(1, 9, 5), pr(2, 8, 6), pr(3, 3, 2)], NOW)), 2)
