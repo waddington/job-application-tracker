@@ -7,7 +7,7 @@ Numbers in brackets are pull requests.
 
 ## 1.2.36 (2026-10-31)
 
-- **Developers:** FILESPLACEHOLDER read their text from the translation files, ready for other languages. The English is unchanged (#174).
+- **Developers:** the API's errors about documents, attachments and notes gain a `code` and `params` beside the unchanged English `detail`, and those errors and the remaining file and note toasts read their text from the translation files, ready for other languages (#174).
 
 ## 1.2.35 (2026-10-31)
 
