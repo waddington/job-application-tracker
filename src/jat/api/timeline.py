@@ -78,6 +78,34 @@ class TimelineRole(BaseModel):
     company_name: str | None
 
 
+# The raw parts of a title, one object per kind that needs several: flat, a round's `title`, `kind` and
+# `status` would clash with the entry's own. A status stays a plain string: an odd value in the database
+# shows the English `title` instead of failing the whole Timeline.
+class TimelineStageMove(BaseModel):
+    from_name: str | None  # None: it started here ("Added at …")
+    to_name: str
+
+
+class TimelineRound(BaseModel):
+    round: int | None
+    title: str | None
+    kind: str
+    status: str  # booked, due or done
+
+
+class TimelineOfferFigure(BaseModel):
+    per: Literal["year", "day", "none"]  # which figure counts, which salary and day rate alone can't say
+    amount: int | None
+    currency: str | None
+
+
+class TimelineCall(BaseModel):
+    kind: str
+    title: str | None
+    status: str  # booked or done
+    contact_name: str  # who it's with: not always first in `people`
+
+
 class TimelineItem(BaseModel):
     id: str  # "<source>:<id>", unique within the response
     seq: int = 0  # breaks ties between events logged at the same moment
@@ -97,6 +125,12 @@ class TimelineItem(BaseModel):
     agency_name: str | None = None
     people: list[TimelinePerson] = []
     archived: bool = False  # on an archived application
+    stage_move: TimelineStageMove | None = None
+    round: TimelineRound | None = None
+    offer: TimelineOfferFigure | None = None
+    call: TimelineCall | None = None
+    note_title: str | None = None
+    closed_as: str | None = None
 
 
 class Timeline(BaseModel):
@@ -138,6 +172,17 @@ def _event_title(event: Event, stage_names: dict[str, str]) -> str:
     if event.summary:
         return event.summary.splitlines()[0]
     return {"call": "Call", "email": "Email"}.get(event.kind, event.kind.replace("_", " ").capitalize())
+
+
+def _stage_move(event: Event, stage_names: dict[str, str]) -> TimelineStageMove | None:
+    """The names `_event_title` words a stage move with; None when it falls back on the summary."""
+    if event.kind != STAGE_CHANGE or not event.to_stage:
+        return None
+    moved = event.from_stage and not is_implied(event)
+    return TimelineStageMove(
+        from_name=stage_names.get(event.from_stage, event.from_stage) if moved else None,
+        to_name=stage_names.get(event.to_stage, event.to_stage),
+    )
 
 
 def _detail(event: Event) -> str | None:
@@ -239,6 +284,7 @@ def timeline(
                     kind="stage-event" if e.kind == STAGE_CHANGE else "other-event",
                     title=_event_title(e, stage_names),
                     detail=_detail(e),
+                    stage_move=_stage_move(e, stage_names),
                 )
             )
 
@@ -265,6 +311,7 @@ def timeline(
                 kind="interview",
                 title=f"{interviews_svc.label(i)} ({status})",
                 people=panel,
+                round=TimelineRound(round=i.round, title=i.title, kind=i.kind, status=status),
             )
         )
 
@@ -274,6 +321,7 @@ def timeline(
         newest.setdefault(o.application_id, o)
     for o in newest.values():
         if o.status == "pending" and o.respond_by is not None and o.application_id in apps:
+            per, amount = offers_svc._figure(o)
             items.append(
                 on_app(
                     o.application_id,
@@ -283,6 +331,7 @@ def timeline(
                     category="offer",
                     kind="offer-reply",
                     title=f"Reply due on the offer: {offers_svc.headline(o)}",
+                    offer=TimelineOfferFigure(per=per, amount=amount, currency=o.currency),
                 )
             )
 
@@ -296,15 +345,17 @@ def timeline(
         c = contacts.get(m.contact_id)
         if c is None:
             continue
+        status = "booked" if m.status == "scheduled" else m.status
         fields = dict(
             id=f"meeting:{m.id}",
             at=m.starts_at,
             all_day=False,
             category="meeting",
             kind="meeting",
-            title=f"{meeting_label(m, c.name)} ({'booked' if m.status == 'scheduled' else m.status})",
+            title=f"{meeting_label(m, c.name)} ({status})",
             detail=m.notes or m.agenda,
             roles=from_call[m.id],
+            call=TimelineCall(kind=m.kind, title=m.title, status=status, contact_name=c.name),
         )
         if m.application_id in apps:
             item = on_app(m.application_id, **fields)
@@ -443,6 +494,7 @@ def timeline(
                     category="other",
                     kind="contact-closed",
                     title=f"{c.name}: {'ghosted' if c.closed_as == 'ghosted' else 'not interested'}",
+                    closed_as=c.closed_as,
                 )
             )
         if c.reply_to_read_since:
@@ -489,6 +541,7 @@ def timeline(
                 category="note",
                 kind="note",
                 title=f"Note: {n.title}",
+                note_title=n.title,
                 role_id=role.id if role else None,
                 role_title=role.title if role else None,
                 company_id=co.id if co else None,

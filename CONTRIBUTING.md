@@ -120,9 +120,8 @@ The app is being made translatable, English only for now; the plan and its order
 - Notes and search: notes, the note editor, the Notes page and the search results page;
 - Insights: the page, stage and route tables, the scorecard, weekly activity, The whole picture,
   Recruiter conversations, CVs and cover letters and the Sankey;
-- Timeline: the page's own text, filters, kinds of thing and lanes, and the titles of entries about
-  roles, companies, agencies and people, also in Today's recent list (other titles, and every detail,
-  still come from the API in English).
+- Timeline: the page's own text, filters, kinds of thing and lanes, and entries' titles, also in
+  Today's recent list (only other events' titles, and every detail, still come from the API in English).
 - Errors: the shared "That didn't work" toast, and the errors that have a code so far (backup and
   to-dos).
 

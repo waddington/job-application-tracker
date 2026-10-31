@@ -8365,6 +8365,41 @@
         "title": "Timeline",
         "type": "object"
       },
+      "TimelineCall": {
+        "properties": {
+          "contact_name": {
+            "title": "Contact Name",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "required": [
+          "kind",
+          "title",
+          "status",
+          "contact_name"
+        ],
+        "title": "TimelineCall",
+        "type": "object"
+      },
       "TimelineItem": {
         "properties": {
           "agency_id": {
@@ -8414,6 +8449,16 @@
             "title": "At",
             "type": "string"
           },
+          "call": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TimelineCall"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "category": {
             "enum": [
               "stage",
@@ -8430,6 +8475,17 @@
             ],
             "title": "Category",
             "type": "string"
+          },
+          "closed_as": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed As"
           },
           "company_id": {
             "anyOf": [
@@ -8490,6 +8546,27 @@
             "title": "Kind",
             "type": "string"
           },
+          "note_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note Title"
+          },
+          "offer": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TimelineOfferFigure"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "people": {
             "default": [],
             "items": {
@@ -8528,10 +8605,30 @@
             "title": "Roles",
             "type": "array"
           },
+          "round": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TimelineRound"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "seq": {
             "default": 0,
             "title": "Seq",
             "type": "integer"
+          },
+          "stage_move": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TimelineStageMove"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "title": {
             "title": "Title",
@@ -8547,6 +8644,48 @@
           "title"
         ],
         "title": "TimelineItem",
+        "type": "object"
+      },
+      "TimelineOfferFigure": {
+        "properties": {
+          "amount": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount"
+          },
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency"
+          },
+          "per": {
+            "enum": [
+              "year",
+              "day",
+              "none"
+            ],
+            "title": "Per",
+            "type": "string"
+          }
+        },
+        "required": [
+          "per",
+          "amount",
+          "currency"
+        ],
+        "title": "TimelineOfferFigure",
         "type": "object"
       },
       "TimelinePerson": {
@@ -8595,6 +8734,73 @@
           "company_name"
         ],
         "title": "TimelineRole",
+        "type": "object"
+      },
+      "TimelineRound": {
+        "properties": {
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "round": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Round"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "required": [
+          "round",
+          "title",
+          "kind",
+          "status"
+        ],
+        "title": "TimelineRound",
+        "type": "object"
+      },
+      "TimelineStageMove": {
+        "properties": {
+          "from_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Name"
+          },
+          "to_name": {
+            "title": "To Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "from_name",
+          "to_name"
+        ],
+        "title": "TimelineStageMove",
         "type": "object"
       },
       "TitleParams": {

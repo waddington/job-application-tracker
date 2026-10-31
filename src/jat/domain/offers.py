@@ -36,6 +36,13 @@ def annual_value(offer: Offer) -> tuple[int | None, str | None]:
     return None, None
 
 
+def _figure(offer: Offer) -> tuple[str, int | None]:
+    """Which figure the headline shows: ("year", salary), ("day", day rate) or ("none", None)."""
+    if _by_day_rate(offer):
+        return ("day", offer.day_rate) if offer.day_rate else ("none", None)
+    return ("year", offer.salary) if offer.salary else ("none", None)
+
+
 def headline(offer: Offer) -> str:
     """The headline figure for the timeline: "£85,000 a year" or "£650 a day"."""
     symbol = {"GBP": "£", "USD": "$", "EUR": "€"}.get((offer.currency or "").upper())
