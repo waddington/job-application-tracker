@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { i18n } from "../i18n";
 import { api, unwrap, type Schemas } from "./client";
 import { invalidateApplicationViews } from "./hooks";
 import { notifyError } from "./notifyError";
@@ -85,7 +86,7 @@ export function useDeleteInterview() {
       const { error } = await api.DELETE("/api/v1/interviews/{interview_id}", {
         params: { path: { interview_id: id } },
       });
-      if (error) throw new Error("Couldn't delete the interview");
+      if (error) throw new Error(i18n.t("errors:own.deleteInterview"));
     },
     onSuccess: refresh,
     onError: notifyError,

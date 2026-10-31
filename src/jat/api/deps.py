@@ -14,8 +14,34 @@ from sqlalchemy.orm import Session
 
 from ..db.models import ENTITY_MODELS  # noqa: F401  (re-exported for the routers)
 from ..domain.workflow import Workflow, WorkflowError, load_workflow
+from .errors import CodedError, ErrorCode
 
 log = logging.getLogger(__name__)
+
+# What the app can ask for after someone deleted it in another tab, or with the CLI. Whole sentences,
+# so a code per kind of thing. A model or field not here is one nobody sees, and stays English.
+NOT_FOUND: dict[str, ErrorCode] = {
+    "Agency": "agency_not_found",
+    "Application": "application_not_found",
+    "ApplicationContact": "application_contact_not_found",
+    "Company": "company_not_found",
+    "Contact": "contact_not_found",
+    "Interview": "interview_not_found",
+    "Link": "link_not_found",
+    "Meeting": "meeting_not_found",
+    "Offer": "offer_not_found",
+    "Role": "role_not_found",
+    "Todo": "todo_not_found",
+}
+REQUIRED_NOT_FOUND: dict[str, ErrorCode] = {
+    "agency_id": "agency_id_not_found",
+    "application_id": "application_id_not_found",
+    "company_id": "company_id_not_found",
+    "contact_id": "contact_id_not_found",
+    "meeting_id": "meeting_id_not_found",
+    "recruiter_id": "recruiter_id_not_found",
+    "role_id": "role_id_not_found",
+}
 
 
 class WriteNotifier:
@@ -65,7 +91,8 @@ def get_session(request: Request) -> Iterator[Session]:
             request.app.state.writes.notify()
     except IntegrityError as exc:
         session.rollback()
-        raise HTTPException(status_code=409, detail=f"conflicts with existing data: {exc.orig}") from exc
+        reason = str(exc.orig)  # SQLite's own words
+        raise CodedError(409, f"conflicts with existing data: {reason}", "data_conflict", {"reason": reason}) from exc
     except Exception:
         session.rollback()
         raise
@@ -77,7 +104,9 @@ def get_workflow(request: Request) -> Workflow:
     try:
         return request.app.state.workflow.get()
     except WorkflowError as exc:
-        raise HTTPException(status_code=500, detail=f"invalid workflow in config.toml: {exc}") from exc
+        # The problem is the config check's English, about config.toml's own keys.
+        detail = f"invalid workflow in config.toml: {exc}"
+        raise CodedError(500, detail, "workflow_invalid", {"problem": str(exc)}) from exc
 
 
 # scope="function": the commit runs before the response is sent (FastAPI >= 0.121), so a
@@ -89,11 +118,17 @@ WorkflowDep = Annotated[Workflow, Depends(get_workflow)]
 def get_or_404(session: Session, model, obj_id: str):
     obj = session.get(model, obj_id)
     if obj is None:
-        raise HTTPException(status_code=404, detail=f"{model.__name__} {obj_id} not found")
+        detail = f"{model.__name__} {obj_id} not found"
+        if code := NOT_FOUND.get(model.__name__):
+            raise CodedError(404, detail, code, {"id": obj_id})
+        raise HTTPException(status_code=404, detail=detail)
     return obj
 
 
 def require(session: Session, model, obj_id: str | None, field: str) -> None:
     """422 if a referenced id doesn't exist (clearer than a foreign-key error)."""
     if obj_id is not None and session.get(model, obj_id) is None:
-        raise HTTPException(status_code=422, detail=f"{field}: {model.__name__} {obj_id} not found")
+        detail = f"{field}: {model.__name__} {obj_id} not found"
+        if code := REQUIRED_NOT_FOUND.get(field):
+            raise CodedError(422, detail, code, {"id": obj_id})
+        raise HTTPException(status_code=422, detail=detail)

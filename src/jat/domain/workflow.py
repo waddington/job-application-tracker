@@ -34,13 +34,23 @@ from __future__ import annotations
 import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ..api.errors import ErrorCode, ErrorParams
 
 KINDS = ("active", "success", "closed")
 TRANSITIONS = ("any", "configured")
 
 
 class WorkflowError(ValueError):
-    pass
+    """The message is English, for the CLI and logs. One people can meet in the app has a code and
+    params, which the API sends beside it; a problem in config.toml has neither."""
+
+    def __init__(self, message: str, code: ErrorCode | None = None, params: ErrorParams | None = None) -> None:
+        super().__init__(message)
+        self.code = code
+        self.params = params
 
 
 @dataclass(frozen=True)
@@ -89,7 +99,7 @@ class Workflow:
         try:
             return self.stages[self._index[stage_id]]
         except KeyError:
-            raise WorkflowError(f"unknown stage {stage_id!r}") from None
+            raise WorkflowError(f"unknown stage {stage_id!r}", "stage_unknown", {"stage": stage_id}) from None
 
     def has(self, stage_id: str) -> bool:
         return stage_id in self._index

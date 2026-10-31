@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { i18n } from "../i18n";
 import { api, unwrap, type Schemas } from "./client";
 import { invalidateApplicationViews, keys } from "./hooks";
 import { notifyError } from "./notifyError";
@@ -80,7 +81,7 @@ export function useUnlinkContact() {
       const { error } = await api.DELETE("/api/v1/applications/{app_id}/contacts/{link_id}", {
         params: { path: { app_id: args.appId, link_id: args.linkId } },
       });
-      if (error) throw new Error("Couldn't remove that contact");
+      if (error) throw new Error(i18n.t("errors:own.removeContact"));
     },
     onSuccess: (_d, args) => {
       void qc.invalidateQueries({ queryKey: keys.application(args.appId) });

@@ -14,6 +14,7 @@ from ..domain import interviews as svc
 from . import schemas as S
 from .crud import values
 from .deps import SessionDep, get_or_404
+from .errors import CodedError
 
 router = APIRouter(tags=["interviews"])
 
@@ -65,7 +66,8 @@ def _set_interviewers(session: Session, interview: Interview, contact_ids: list[
     known = set(session.scalars(select(Contact.id).where(Contact.id.in_(unique)))) if unique else set()
     missing = [c for c in unique if c not in known]
     if missing:
-        raise HTTPException(status_code=422, detail=f"interviewer_ids: Contact {missing[0]} not found")
+        detail = f"interviewer_ids: Contact {missing[0]} not found"
+        raise CodedError(422, detail, "interviewer_not_found", {"id": missing[0]})
     session.execute(delete(InterviewContact).where(InterviewContact.interview_id == interview.id))
     session.add_all(InterviewContact(interview_id=interview.id, contact_id=c) for c in unique)
 

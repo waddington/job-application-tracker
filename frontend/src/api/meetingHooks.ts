@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { i18n } from "../i18n";
 import { api, unwrap, type Schemas } from "./client";
 import { notifyError } from "./notifyError";
 
@@ -62,7 +63,7 @@ export function useDeleteMeeting() {
       const { error } = await api.DELETE("/api/v1/meetings/{meeting_id}", {
         params: { path: { meeting_id: id } },
       });
-      if (error) throw new Error("Couldn't delete the call");
+      if (error) throw new Error(i18n.t("errors:own.deleteCall"));
     },
     onSuccess: refresh,
     onError: notifyError,

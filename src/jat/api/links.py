@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from urllib.parse import urlsplit
 
-from fastapi import APIRouter, HTTPException, Query, Response
+from fastapi import APIRouter, Query, Response
 from sqlalchemy import select
 
 from ..db.models import Link
@@ -12,8 +12,19 @@ from ..domain import applications as svc
 from . import schemas as S
 from .crud import values
 from .deps import ENTITY_MODELS, SessionDep, get_or_404
+from .errors import CodedError, ErrorCode
 
 router = APIRouter(prefix="/links", tags=["links"])
+
+_TARGET_NOT_FOUND: dict[str, ErrorCode] = {
+    "agency": "link_agency_not_found",
+    "application": "link_application_not_found",
+    "company": "link_company_not_found",
+    "contact": "link_contact_not_found",
+    "document": "link_document_not_found",
+    "interview": "link_interview_not_found",
+    "role": "link_role_not_found",
+}
 
 _GOOGLE = {"document": "google_doc", "spreadsheets": "google_sheet", "presentation": "google_slides"}
 _KIND_NAMES = {
@@ -79,7 +90,8 @@ def list_links(
 def create_link(body: S.LinkIn, session: SessionDep):
     target = session.get(ENTITY_MODELS[body.entity_type], body.entity_id)
     if target is None:
-        raise HTTPException(422, f"entity_id: {body.entity_type} {body.entity_id} not found")
+        detail = f"entity_id: {body.entity_type} {body.entity_id} not found"
+        raise CodedError(422, detail, _TARGET_NOT_FOUND[body.entity_type], {"id": body.entity_id})
     data = values(body, partial=False)
     data["title"] = (data.get("title") or "").strip() or default_title(data["url"])
     link = Link(**data)

@@ -122,10 +122,15 @@ def move(
     try:
         allowed_move = workflow.can_move(app.stage, to_stage)
     except WorkflowError as exc:  # e.g. a stage removed from config.toml
-        raise TransitionError(str(exc)) from exc
+        raise TransitionError(str(exc), exc.code, exc.params) from exc
     if not allowed_move:
-        allowed = ", ".join(workflow.allowed_next(app.stage)) or "none"
-        raise TransitionError(f"can't move from {app.stage!r} to {to_stage!r} (allowed: {allowed})")
+        allowed = ", ".join(workflow.allowed_next(app.stage))
+        message = f"can't move from {app.stage!r} to {to_stage!r} (allowed: {allowed or 'none'})"
+        if not allowed:
+            raise TransitionError(message, "move_not_allowed_none", {"from_stage": app.stage, "to_stage": to_stage})
+        raise TransitionError(
+            message, "move_not_allowed", {"from_stage": app.stage, "to_stage": to_stage, "allowed": allowed}
+        )
     when = occurred_at or utcnow()
     event = Event(
         application_id=app.id,
@@ -202,10 +207,14 @@ def undo_last_move(session: Session, app: Application, *, note: str | None = Non
     """Revert the most recently recorded stage move by appending a correcting event."""
     moves = _undoable(session, app)
     if not moves:
-        raise TransitionError("nothing to undo")
+        raise TransitionError("nothing to undo", "undo_nothing")
     last = moves[-1]
     if last.to_stage != app.stage:
-        raise TransitionError(f"history is inconsistent: last move went to {last.to_stage!r}, stage is {app.stage!r}")
+        raise TransitionError(
+            f"history is inconsistent: last move went to {last.to_stage!r}, stage is {app.stage!r}",
+            "undo_inconsistent",
+            {"to_stage": last.to_stage, "stage": app.stage},
+        )
     assert last.from_stage is not None
     event = Event(
         application_id=app.id,

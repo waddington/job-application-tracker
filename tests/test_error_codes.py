@@ -20,6 +20,8 @@ from .factories import post
 
 SOURCE = Path(__file__).parent.parent / "src" / "jat"
 CODES = set(get_args(ErrorCode))
+# Every exception that carries a code, with where its code argument is; its params come next.
+CODED_EXCEPTIONS = {"CodedError": 2, "SnapshotError": 1, "TransitionError": 1, "WorkflowError": 1}
 # `count` isn't here: it picks the plural form, as it should.
 I18NEXT_OPTIONS = {
     "context",
@@ -51,9 +53,22 @@ def test_every_code_has_english_text():
     assert english_keys() == CODES
 
 
+def coded_argument(node: ast.AST, offset: int, keyword: str) -> ast.expr | None:
+    """In a call to an exception with a code, its code (offset 0) or params (offset 1), if given.
+    `errors.CodedError(...)` counts as much as `CodedError(...)`."""
+    if not isinstance(node, ast.Call):
+        return None
+    name = node.func.attr if isinstance(node.func, ast.Attribute) else getattr(node.func, "id", None)
+    if name not in CODED_EXCEPTIONS:
+        return None
+    index = CODED_EXCEPTIONS[name] + offset
+    if len(node.args) > index:
+        return node.args[index]
+    return next((k.value for k in node.keywords if k.arg == keyword), None)
+
+
 def test_every_code_raised_is_declared_and_every_declared_code_is_raised():
     # Python doesn't check a Literal when it runs, so a misspelt code would reach the API.
-    position = {"CodedError": 2, "SnapshotError": 1}
     raised = set()
     quoted = set()
     for path in SOURCE.rglob("*.py"):
@@ -62,11 +77,11 @@ def test_every_code_raised_is_declared_and_every_declared_code_is_raised():
         for node in ast.walk(ast.parse(path.read_text())):
             if isinstance(node, ast.Constant) and isinstance(node.value, str):
                 quoted.add(node.value)
-            if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id in position:
-                code = node.args[position[node.func.id]]
-                if isinstance(code, ast.Constant):
-                    raised.add(code.value)
+            code = coded_argument(node, 0, "code")
+            if isinstance(code, ast.Constant):
+                raised.add(code.value)
     assert raised, "the scan found the raises"
+    assert {"stage_unknown", "undo_nothing", "backup_shut_down", "call_ends_before_start"} <= raised
     assert raised - CODES == set()
     assert CODES - quoted == set()
 
@@ -102,16 +117,12 @@ def test_a_validation_error_fits_the_declared_body(client, seeded):
 
 def test_no_param_is_named_like_an_i18next_option():
     # The frontend passes params to t() as its options, so `lng` would change the language shown.
-    position = {"CodedError": 3, "SnapshotError": 2}
     seen = 0
     for path in SOURCE.rglob("*.py"):
         for node in ast.walk(ast.parse(path.read_text())):
-            if not (isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id in position):
-                continue
-            index = position[node.func.id]
-            keyword = next((k.value for k in node.keywords if k.arg == "params"), None)
-            params = node.args[index] if len(node.args) > index else keyword
-            if params is None or isinstance(params, ast.Attribute):  # none, or passing on exc.params
+            params = coded_argument(node, 1, "params")
+            none = params is None or (isinstance(params, ast.Constant) and params.value is None)
+            if none or isinstance(params, ast.Attribute):  # none, or passing on exc.params
                 continue
             assert isinstance(params, ast.Dict), (
                 f"{path}:{node.lineno}: write params as a dict here, so they're checked"
@@ -133,9 +144,9 @@ def test_a_coded_error_keeps_its_english_detail(client, seeded):
 
 
 def test_a_plain_error_keeps_its_body(client, seeded):
-    response = client.patch("/api/v1/todos/nope", json={"done": True})
-    assert response.status_code == 404
-    assert response.json() == {"detail": "Todo nope not found"}
+    response = client.get("/api/v1/applications/duplicates", params={"role_title": "Engineer"})
+    assert response.status_code == 422
+    assert response.json() == {"detail": "Give company_id or company_name."}
     missing = {"text": "x", "entity_type": "company", "entity_id": "nope"}
     assert client.post("/api/v1/todos", json=missing).json() == {"detail": "entity_id: company nope not found"}
 

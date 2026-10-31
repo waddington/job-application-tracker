@@ -31,6 +31,7 @@ import { Trans, useTranslation } from "react-i18next";
 
 import { PersonMarks } from "./GhostMark";
 import type { ApiEvent, ApplicationDetail } from "../api/client";
+import { errorText } from "../api/notifyError";
 import { eventText } from "./eventText";
 import {
   stageLookup,
@@ -285,7 +286,7 @@ export function ApplicationLoadError({ error }: { error: unknown }) {
   const { t } = useTranslation("applications");
   return (
     <Alert color="red" title={t("summary.loadFailed")}>
-      {error instanceof Error ? error.message : t("summary.somethingWrong")}
+      {error instanceof Error ? errorText(error) : t("summary.somethingWrong")}
     </Alert>
   );
 }
