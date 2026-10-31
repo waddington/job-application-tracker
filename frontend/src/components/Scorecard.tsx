@@ -13,7 +13,8 @@ type View = "recruiters" | "agencies";
 const percent = (n: number, of: number) =>
   of ? i18n.t("insights:percent", { percent: Math.round((100 * n) / of) }) : "—";
 
-function firstUpdate(days: number | null | undefined) {
+/** "2.5 days", "same day", or a dash with no figure. */
+export function daysText(days: number | null | undefined) {
   if (days == null) return "—";
   if (days < 1) return i18n.t("insights:scorecard.sameDay");
   return i18n.t("insights:scorecard.days", {
@@ -132,7 +133,7 @@ export function ScorecardCard({ since }: { since?: string }) {
                     <Table.Td>
                       <Outcomes s={s} />
                     </Table.Td>
-                    <Table.Td>{firstUpdate(s.median_first_update_days)}</Table.Td>
+                    <Table.Td>{daysText(s.median_first_update_days)}</Table.Td>
                     <Table.Td>{lastContact(s.last_contact)}</Table.Td>
                   </Table.Tr>
                 );

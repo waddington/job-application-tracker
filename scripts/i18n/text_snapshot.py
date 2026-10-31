@@ -350,6 +350,25 @@ with sync_playwright() as p:
     step("insights+days30", lambda: page.get_by_text("Last 30 days", exact=True).click(timeout=3000))
     step("insights+conversations", lambda: page.get_by_role("tab", name="Recruiter conversations").click(timeout=3000))
     step("insights+documents", lambda: page.get_by_role("tab", name="CVs and cover letters").click(timeout=3000))
+    # With every application again: the conversations' agencies, and comparing CVs by each measure.
+    visit(page, "/insights")
+    step(
+        "insights+conversations-agencies",
+        lambda: page.get_by_role("tab", name="Recruiter conversations").click(timeout=3000),
+        lambda: page.get_by_text("Agencies", exact=True).click(timeout=3000),
+    )
+    step(
+        "insights+documents-all",
+        lambda: page.get_by_role("tab", name="CVs and cover letters").click(timeout=3000),
+    )
+    for measure in ["Heard back", "Offer"]:
+        step(
+            f"insights+documents-{measure.lower().replace(' ', '-')}",
+            lambda measure=measure: page.get_by_label("Measure")
+            .locator("label", has_text=measure)
+            .first.click(timeout=3000),
+        )
+    step("insights+documents-letters", lambda: page.get_by_text("Cover letters", exact=True).click(timeout=3000))
     browser.close()
 
 with open(OUT, "w") as f:
