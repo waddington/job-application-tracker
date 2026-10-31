@@ -336,6 +336,20 @@ with sync_playwright() as p:
     for path in ["/search", "/search?q=round", "/search?q=call", "/search?q=portfolio", "/search?q=zzzzzz"]:
         visit(page, path)
         snap[path] = grab(page)
+
+    # Insights: every tab, a date range that changes things, each route and the agencies'
+    # scorecard. Only views change here.
+    visit(page, "/insights")
+    step("insights+applications", lambda: page.get_by_role("tab", name="Applications").click(timeout=3000))
+    step("insights+agencies", lambda: page.get_by_text("Agencies", exact=True).click(timeout=3000))
+    step(
+        "insights+route",
+        lambda: page.get_by_label("Route", exact=True).first.click(timeout=3000),
+    )
+    step("insights+route-referral", lambda: page.get_by_role("option", name="Referral").click(timeout=3000))
+    step("insights+days30", lambda: page.get_by_text("Last 30 days", exact=True).click(timeout=3000))
+    step("insights+conversations", lambda: page.get_by_role("tab", name="Recruiter conversations").click(timeout=3000))
+    step("insights+documents", lambda: page.get_by_role("tab", name="CVs and cover letters").click(timeout=3000))
     browser.close()
 
 with open(OUT, "w") as f:

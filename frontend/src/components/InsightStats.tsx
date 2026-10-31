@@ -1,41 +1,45 @@
 import { Badge, Box, Card, Group, Loader, Progress, Stack, Table, Text, Title, Tooltip } from "@mantine/core";
 import dayjs from "dayjs";
+import { useTranslation } from "react-i18next";
 
 import { useActivity, type Stats, type Week } from "../api/insightHooks";
+import { i18n } from "../i18n";
+import { formatDay } from "../utils/format";
 
-const ROUTE_LABELS: Record<string, string> = {
-  direct: "Direct",
-  agency: "Via an agency",
-  referral: "Referral",
-};
+function routeLabel(route: string) {
+  if (route === "direct") return i18n.t("insights:routes.direct");
+  if (route === "agency") return i18n.t("insights:routes.agency");
+  if (route === "referral") return i18n.t("insights:routes.referral");
+  return route;
+}
 
-const percent = (x: number) => `${Math.round(100 * x)}%`;
+const percent = (x: number) => i18n.t("insights:percent", { percent: Math.round(100 * x) });
 
 function days(d: number | null | undefined) {
   if (d == null) return "—";
-  if (d < 1) return "under a day";
-  return `${d % 1 === 0 ? d : d.toFixed(1)} day${d === 1 ? "" : "s"}`;
+  if (d < 1) return i18n.t("insights:stages.underADay");
+  return i18n.t("insights:stages.days", { count: d, value: d % 1 === 0 ? d : d.toFixed(1) });
 }
 
 /** Per stage: how many got there, how many went on, and how long they usually stayed. */
 export function StageTable({ stats }: { stats: Stats }) {
+  const { t } = useTranslation("insights");
   const rows = stats.stages.filter((s) => s.reached > 0);
   return (
     <Card withBorder>
-      <Title order={4}>Stage by stage</Title>
+      <Title order={4}>{t("stages.title")}</Title>
       <Text size="sm" c="dimmed" mb="sm">
-        "Moved on" means reaching a later stage that isn't a closed one. Time in stage counts every finished
-        stay, including ones before a move back.
+        {t("stages.intro")}
       </Text>
       <Table.ScrollContainer minWidth={560}>
         <Table>
           <Table.Thead>
             <Table.Tr>
-              <Table.Th>Stage</Table.Th>
-              <Table.Th>Reached</Table.Th>
-              <Table.Th>Moved on</Table.Th>
-              <Table.Th w={180}>Conversion</Table.Th>
-              <Table.Th>Median time in stage</Table.Th>
+              <Table.Th>{t("stages.stage")}</Table.Th>
+              <Table.Th>{t("stages.reached")}</Table.Th>
+              <Table.Th>{t("stages.movedOn")}</Table.Th>
+              <Table.Th w={180}>{t("stages.conversion")}</Table.Th>
+              <Table.Th>{t("stages.median")}</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
@@ -64,7 +68,7 @@ export function StageTable({ stats }: { stats: Stats }) {
                   <Text size="sm">{days(s.median_days)}</Text>
                   {s.stays > 0 && (
                     <Text size="xs" c="dimmed">
-                      from {s.stays} stay{s.stays === 1 ? "" : "s"}
+                      {t("stages.from", { count: s.stays })}
                     </Text>
                   )}
                 </Table.Td>
@@ -79,25 +83,26 @@ export function StageTable({ stats }: { stats: Stats }) {
 
 /** Direct vs recruiter vs referral: what share of each route got to each stage. */
 export function RouteTable({ stats }: { stats: Stats }) {
+  const { t } = useTranslation("insights");
   // Stages past the first that aren't closed: the ones that mean progress.
   const stages = stats.stages.filter((s) => s.kind !== "closed" && s.kind !== "unknown").slice(1);
   return (
     <Card withBorder>
-      <Title order={4}>Direct vs recruiter</Title>
+      <Title order={4}>{t("routeTable.title")}</Title>
       <Text size="sm" c="dimmed" mb="sm">
-        The share of each route's applications that got at least as far as each stage.
+        {t("routeTable.intro")}
       </Text>
       {stats.routes.length < 2 ? (
         <Text size="sm" c="dimmed">
-          Every application so far came the same way. Nothing to compare yet.
+          {t("routeTable.same")}
         </Text>
       ) : (
         <Table.ScrollContainer minWidth={480}>
           <Table>
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>Route</Table.Th>
-                <Table.Th>Applications</Table.Th>
+                <Table.Th>{t("routeTable.route")}</Table.Th>
+                <Table.Th>{t("routeTable.applications")}</Table.Th>
                 {stages.map((s) => (
                   <Table.Th key={s.id}>{s.name}</Table.Th>
                 ))}
@@ -106,7 +111,7 @@ export function RouteTable({ stats }: { stats: Stats }) {
             <Table.Tbody>
               {stats.routes.map((r) => (
                 <Table.Tr key={r.route}>
-                  <Table.Td>{ROUTE_LABELS[r.route] ?? r.route}</Table.Td>
+                  <Table.Td>{routeLabel(r.route)}</Table.Td>
                   <Table.Td>{r.applications}</Table.Td>
                   {stages.map((s) => {
                     const n = r.reached[s.id] ?? 0;
@@ -133,24 +138,44 @@ export function RouteTable({ stats }: { stats: Stats }) {
 
 const SERIES: {
   key: keyof Omit<Week, "start">;
-  label: string;
+  label: () => string;
   count: (n: number) => string;
   color: string;
 }[] = [
-  { key: "added", label: "Added", count: (n) => `${n} added`, color: "gray" },
-  { key: "applied", label: "Applied", count: (n) => `${n} applied`, color: "blue" },
-  { key: "moves", label: "Stage moves", count: (n) => `${n} stage move${n === 1 ? "" : "s"}`, color: "teal" },
+  {
+    key: "added",
+    label: () => i18n.t("insights:weekly.added"),
+    count: (count) => i18n.t("insights:weekly.countAdded", { count }),
+    color: "gray",
+  },
+  {
+    key: "applied",
+    label: () => i18n.t("insights:weekly.applied"),
+    count: (count) => i18n.t("insights:weekly.countApplied", { count }),
+    color: "blue",
+  },
+  {
+    key: "moves",
+    label: () => i18n.t("insights:weekly.moves"),
+    count: (count) => i18n.t("insights:weekly.countMoves", { count }),
+    color: "teal",
+  },
   {
     key: "interviews",
-    label: "Interviews",
-    count: (n) => `${n} interview${n === 1 ? "" : "s"}`,
+    label: () => i18n.t("insights:weekly.interviews"),
+    count: (count) => i18n.t("insights:weekly.countInterviews", { count }),
     color: "violet",
   },
-  { key: "calls", label: "Calls", count: (n) => `${n} call${n === 1 ? "" : "s"}`, color: "orange" },
+  {
+    key: "calls",
+    label: () => i18n.t("insights:weekly.calls"),
+    count: (count) => i18n.t("insights:weekly.countCalls", { count }),
+    color: "orange",
+  },
   {
     key: "pitched",
-    label: "Roles pitched",
-    count: (n) => `${n} role${n === 1 ? "" : "s"} pitched`,
+    label: () => i18n.t("insights:weekly.pitched"),
+    count: (count) => i18n.t("insights:weekly.countPitched", { count }),
     color: "grape",
   },
 ];
@@ -166,6 +191,10 @@ export function activityStart(now = dayjs()) {
 
 /** Twelve weeks of activity as grouped bars. */
 export function WeeklyActivity() {
+  const {
+    t,
+    i18n: { language },
+  } = useTranslation("insights");
   const start = activityStart();
   // The server works out local midnights itself, so weeks with a clock change come out right.
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
@@ -174,12 +203,12 @@ export function WeeklyActivity() {
   return (
     <Card withBorder>
       <Group justify="space-between" mb="sm" wrap="wrap">
-        <Title order={4}>Weekly activity</Title>
+        <Title order={4}>{t("weekly.title")}</Title>
         <Group gap="md">
           {SERIES.map((s) => (
             <Group key={s.key} gap={6}>
               <Box w={10} h={10} bg={`${s.color}.6`} style={{ borderRadius: 2 }} />
-              <Text size="xs">{s.label}</Text>
+              <Text size="xs">{s.label()}</Text>
             </Group>
           ))}
         </Group>
@@ -194,10 +223,13 @@ export function WeeklyActivity() {
             wrap="nowrap"
             h={BAR_HEIGHT}
             role="list"
-            aria-label="Weekly activity"
+            aria-label={t("weekly.title")}
           >
             {weeks.map((w) => {
-              const label = `Week of ${dayjs(w.start).format("D MMM")}: ${SERIES.map((s) => s.count(w[s.key])).join(", ")}`;
+              const label = t("weekly.week", {
+                date: formatDay(w.start, "dayMonth", language),
+                counts: SERIES.map((s) => s.count(w[s.key])).join(", "),
+              });
               return (
                 <Tooltip key={w.start} label={label} withinPortal>
                   <Group
@@ -229,7 +261,7 @@ export function WeeklyActivity() {
           <Group gap={0} wrap="nowrap">
             {weeks.map((w, i) => (
               <Text key={w.start} size="xs" c="dimmed" ta="center" style={{ flex: 1 }}>
-                {(WEEKS - 1 - i) % 2 === 0 ? dayjs(w.start).format("D MMM") : ""}
+                {(WEEKS - 1 - i) % 2 === 0 ? formatDay(w.start, "dayMonth", language) : ""}
               </Text>
             ))}
           </Group>

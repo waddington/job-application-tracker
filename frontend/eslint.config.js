@@ -71,6 +71,11 @@ const TRANSLATED = [
   "src/pages/SearchPage.tsx",
   "src/components/Notes.tsx",
   "src/components/NoteEditorModal.tsx",
+  // i18n-insights-tabs
+  "src/pages/InsightsPage.tsx",
+  "src/components/InsightStats.tsx",
+  "src/components/Scorecard.tsx",
+  "src/components/WholePicture.tsx",
 ];
 
 export default tseslint.config(
