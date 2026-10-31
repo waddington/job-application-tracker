@@ -1285,6 +1285,7 @@ export interface components {
         ActivityIn: {
             /**
              * Data
+             * @description Saved with the event, except a `msg`, which is ignored: only the app writes messages.
              * @default {}
              */
             data: {
@@ -1960,6 +1961,15 @@ export interface components {
             people_talked_to: number;
             total: components["schemas"]["ConversationTally"];
         };
+        /** CoverLetterSentMsg */
+        CoverLetterSentMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.coverLetterSent";
+            params: components["schemas"]["DocumentSentParams"];
+        };
         /**
          * CvFile
          * @description A file that looks like a CV, attached to applications, roles or people: one per distinct
@@ -2045,6 +2055,15 @@ export interface components {
             id: string;
             /** Label */
             label: string;
+        };
+        /** CvSentMsg */
+        CvSentMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.cvSent";
+            params: components["schemas"]["DocumentSentParams"];
         };
         /** DocumentDetail */
         DocumentDetail: {
@@ -2148,6 +2167,22 @@ export interface components {
             sent: number;
             /** Versions */
             versions: components["schemas"]["DocumentVersionPerformance"][];
+        };
+        /** DocumentSentMsg */
+        DocumentSentMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.documentSent";
+            params: components["schemas"]["DocumentSentParams"];
+        };
+        /** DocumentSentParams */
+        DocumentSentParams: {
+            /** Label */
+            label: string;
+            /** Name */
+            name: string;
         };
         /** DocumentTally */
         DocumentTally: {
@@ -2312,6 +2347,59 @@ export interface components {
              */
             updated_at: string;
         };
+        /** EmailMsg */
+        EmailMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.email";
+            params: components["schemas"]["EmailParams"];
+        };
+        /** EmailNoSubjectMsg */
+        EmailNoSubjectMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.emailNoSubject";
+            params: components["schemas"]["EmailNoSubjectParams"];
+        };
+        /** EmailNoSubjectParams */
+        EmailNoSubjectParams: {
+            /** Sender */
+            sender: string;
+        };
+        /** EmailNoSubjectUnknownSenderMsg */
+        EmailNoSubjectUnknownSenderMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.emailNoSubjectUnknownSender";
+            params: components["schemas"]["NoParams"];
+        };
+        /** EmailParams */
+        EmailParams: {
+            /** Sender */
+            sender: string;
+            /** Subject */
+            subject: string;
+        };
+        /** EmailUnknownSenderMsg */
+        EmailUnknownSenderMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.emailUnknownSender";
+            params: components["schemas"]["EmailUnknownSenderParams"];
+        };
+        /** EmailUnknownSenderParams */
+        EmailUnknownSenderParams: {
+            /** Subject */
+            subject: string;
+        };
         /** EventOut */
         EventOut: {
             /** Application Id */
@@ -2331,6 +2419,8 @@ export interface components {
             id: string;
             /** Kind */
             kind: string;
+            /** Msg */
+            msg?: (components["schemas"]["LinkAddedMsg"] | components["schemas"]["NoteAddedMsg"] | components["schemas"]["FileAddedMsg"] | components["schemas"]["EmailMsg"] | components["schemas"]["EmailNoSubjectMsg"] | components["schemas"]["EmailUnknownSenderMsg"] | components["schemas"]["EmailNoSubjectUnknownSenderMsg"] | components["schemas"]["CvSentMsg"] | components["schemas"]["CoverLetterSentMsg"] | components["schemas"]["DocumentSentMsg"]) | null;
             /**
              * Occurred At
              * Format: date-time
@@ -2340,6 +2430,20 @@ export interface components {
             summary: string | null;
             /** To Stage */
             to_stage: string | null;
+        };
+        /** FileAddedMsg */
+        FileAddedMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.fileAdded";
+            params: components["schemas"]["FileNameParams"];
+        };
+        /** FileNameParams */
+        FileNameParams: {
+            /** Name */
+            name: string;
         };
         /** FlowLink */
         FlowLink: {
@@ -2527,6 +2631,15 @@ export interface components {
             task_repo_url?: string | null;
             /** Title */
             title?: string | null;
+        };
+        /** LinkAddedMsg */
+        LinkAddedMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.linkAdded";
+            params: components["schemas"]["TitleParams"];
         };
         /**
          * LinkIn
@@ -2769,6 +2882,17 @@ export interface components {
              * @default []
              */
             waiting_people: components["schemas"]["ContactOut"][];
+        };
+        /** NoParams */
+        NoParams: Record<string, never>;
+        /** NoteAddedMsg */
+        NoteAddedMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.noteAdded";
+            params: components["schemas"]["TitleParams"];
         };
         /**
          * NoteIn
@@ -3558,6 +3682,11 @@ export interface components {
             company_name: string | null;
             /** Id */
             id: string;
+            /** Title */
+            title: string;
+        };
+        /** TitleParams */
+        TitleParams: {
             /** Title */
             title: string;
         };

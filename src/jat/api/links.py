@@ -86,7 +86,15 @@ def create_link(body: S.LinkIn, session: SessionDep):
     session.add(link)
     session.flush()
     if body.entity_type == "application":
-        svc.log_activity(session, target, "manual", summary=f"Link added: {link.title}", data={"url": link.url})
+        svc.log_message(
+            session,
+            target,
+            "manual",
+            key="event.linkAdded",
+            params={"title": link.title},
+            summary=f"Link added: {link.title}",
+            data={"url": link.url},
+        )
     return _out(link)
 
 

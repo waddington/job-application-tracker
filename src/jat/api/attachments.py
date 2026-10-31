@@ -47,6 +47,18 @@ def _out(att: Attachment) -> S.AttachmentOut:
     )
 
 
+def _email_message(meta: dict) -> dict:
+    """An email's timeline message: one sentence for each part it can be missing."""
+    subject, senders = meta.get("subject"), meta.get("from")
+    if subject and senders:
+        return {"key": "event.email", "params": {"subject": subject, "sender": senders[0]}}
+    if senders:
+        return {"key": "event.emailNoSubject", "params": {"sender": senders[0]}}
+    if subject:
+        return {"key": "event.emailUnknownSender", "params": {"subject": subject}}
+    return {"key": "event.emailNoSubjectUnknownSender", "params": {}}
+
+
 def _check_entity(session: Session, entity_type: str | None, entity_id: str | None):
     if (entity_type is None) != (entity_id is None):
         raise HTTPException(422, "Give both entity_type and entity_id, or neither")
@@ -126,16 +138,25 @@ def upload_attachment(
             if meta.get("email"):
                 # An exported email goes on the timeline when it was sent, as an email.
                 sender = (meta.get("from") or ["unknown sender"])[0]
-                svc.log_activity(
+                svc.log_message(
                     session,
                     target,
                     "email",
+                    **_email_message(meta),
                     summary=f"{meta.get('subject') or '(no subject)'} (from {sender})",
                     occurred_at=eml.sent_at(meta),
                     data={"attachment_id": att.id, "from": meta.get("from"), "to": meta.get("to")},
                 )
             else:
-                svc.log_activity(session, target, "file", summary=f"File added: {name}", data={"attachment_id": att.id})
+                svc.log_message(
+                    session,
+                    target,
+                    "file",
+                    key="event.fileAdded",
+                    params={"name": name},
+                    summary=f"File added: {name}",
+                    data={"attachment_id": att.id},
+                )
         session.commit()  # now, so a failed save can take its file with it
     except BaseException:
         session.rollback()

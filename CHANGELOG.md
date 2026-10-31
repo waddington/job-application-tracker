@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.2.31 (2026-10-31)
+
+- **Developers:** new events for links, notes, files and documents sent also save their message as a key and values (`data.msg`, so it appears in `export/events.jsonl`), and the application timeline shows it from the translation files, ready for other languages. The saved English and old events are unchanged (#168).
+
 ## 1.2.30 (2026-10-31)
 
 - **Developers:** the Timeline page's filters, lanes and hover text read their text from the translation files, ready for other languages. The English is unchanged (#167).

@@ -139,8 +139,11 @@ keep writing its text as before. Once it has:
   **Text from another namespace too:** `useTranslation(["todos", "common"])`, then
   `t("common:actions.cancel")`. A `t()` from `useTranslation("todos")` refuses another
   namespace's keys, and its own namespace's keys with a prefix.
-- **Text the app saves** (an event's summary, a stage move's note) stays English for now:
-  it's your data, and it moves with `i18n-events`.
+- **Text the app saves** (an event's summary, a stage move's note) stays English: it's what's
+  exported and searched. Links, notes, files, emails and documents sent also save a message with
+  `svc.log_message`. A new message needs its key in `EventMsg` (`api/schemas.py`), its text in
+  `locales/en/events.ts` and `eventText.ts`, and a case in `eventMessages.cases.json`. The rest
+  move with `i18n-events`.
 - **Values** go in `{{placeholders}}`, never glued on with `+` or a template string, so a
   translation can put them anywhere in the sentence.
 - **Plurals** are `_one` / `_other` keys used with `count`, never `n === 1 ? … : …`. So no
