@@ -14,7 +14,7 @@ from ..db.models import Agency, Application, Company, Contact, Role, Todo
 from ..db.types import utcnow
 from . import schemas as S
 from .crud import values
-from .deps import ENTITY_MODELS, SessionDep, get_or_404
+from .deps import ENTITY_MODELS, ENTITY_NOT_FOUND, SessionDep, get_or_404
 from .errors import CodedError
 
 router = APIRouter(prefix="/todos", tags=["to-dos"])
@@ -94,7 +94,8 @@ def list_todos(
 @router.post("", response_model=S.TodoOut, status_code=201)
 def create_todo(body: S.TodoIn, session: SessionDep):
     if body.entity_type is not None and session.get(ENTITY_MODELS[body.entity_type], body.entity_id) is None:
-        raise HTTPException(422, f"entity_id: {body.entity_type} {body.entity_id} not found")
+        detail = f"entity_id: {body.entity_type} {body.entity_id} not found"
+        raise CodedError(422, detail, ENTITY_NOT_FOUND[body.entity_type], {"id": body.entity_id})
     data = values(body, partial=False)
     data["text"] = data["text"].strip()
     if not data["text"]:

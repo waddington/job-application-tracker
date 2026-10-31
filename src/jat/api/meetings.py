@@ -13,6 +13,7 @@ from ..db.models import Agency, Application, Company, Contact, Meeting, Role
 from . import schemas as S
 from .crud import values
 from .deps import SessionDep, get_or_404, require
+from .errors import CodedError
 
 router = APIRouter(tags=["meetings"])
 
@@ -70,7 +71,7 @@ def _check(session: Session, data: dict) -> None:
         require(session, Application, data["application_id"], "application_id")
     starts, ends = data.get("starts_at"), data.get("ends_at")
     if starts and ends and ends < starts:
-        raise HTTPException(status_code=422, detail="ends_at: can't be before starts_at")
+        raise CodedError(422, "ends_at: can't be before starts_at", "call_ends_before_start")
 
 
 @router.get("/meetings", response_model=list[S.MeetingOut])
