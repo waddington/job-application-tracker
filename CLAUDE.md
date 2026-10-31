@@ -45,9 +45,10 @@ roadmap is `docs/ROADMAP.yaml`, shown by the PM dashboard (see "Project manageme
   Conventional Commits.
 - **Commit and push small, frequent, logical units.**
 - **Open a draft PR early.** As soon as work is going to become a PR, push a first commit, however
-  minimal (the roadmap task set to `building` will do), and open it with `gh pr create --draft`. The
-  PM dashboard then shows the work straight away. Keep pushing to it as work continues. Run
-  `gh pr ready` when it's time for review, then repeat review and fix until it's clean before merging.
+  minimal (the roadmap task set to `building` will do), and open it with
+  `gh pr create --draft --title … --body-file …`. The PM dashboard then shows the work straight away.
+  Keep pushing to it as work continues. Run `gh pr ready` when it's time for review, then follow the
+  review-fix cycle below.
 - **Keep PRs small.** Aim for about 500 changed lines, and treat 1,000 as a strong target to stay
   below. Go over only when a change can't sensibly be split, and say why in the PR. `uv.lock`,
   `pnpm-lock.yaml`, `frontend/openapi.json` and `frontend/src/api/schema.d.ts` don't count. When a
@@ -60,13 +61,15 @@ roadmap is `docs/ROADMAP.yaml`, shown by the PM dashboard (see "Project manageme
   worktree, these must pass: `uv run pytest -q`, `uv run ruff check src tests scripts`, and in
   `frontend/` `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test` and `pnpm e2e`. Never
   merge on a failure. Merging main into the branch makes a new commit, so run them again. A PR that
-  only touches docs and planning files can skip these, and the PR says so.
+  only touches docs and planning files can skip these, and the PR says so; if it touches
+  `docs/ROADMAP.yaml`, run `uv run pytest -q tests/pm`.
 - **Merging and releasing:** once a PR has been through the iterative review-fix cycle, Claude merges
   it and makes the release if it has a version bump, without asking (Kai, 2026-10-31). The cycle: a
   reviewer pass (a plain reviewer subagent or `/code-review`), fix the findings, and review again until
-  no `must_fix` is left, then the checks above. **A major release needs Kai's explicit permission each
-  time** (see "Versions and releases"). This doesn't widen what to work on: start only what Kai or the
-  loop has picked, and if Kai says not to merge something, don't. Never leave a finished PR sitting open.
+  no `must_fix` is left, then the checks above. Every PR goes through it, docs-only ones too. **A major
+  release needs Kai's explicit permission each time** (see "Versions and releases"). If Kai says to hold
+  a PR, or asks to preview it, wait for that. If a permission check blocks a merge or release, ask Kai;
+  never work around it. This doesn't widen what to start. Never leave a finished PR sitting open.
 - The main checkout (`/home/kai/Documents/Projects/job-application-tracker`) is where Kai's
   IntelliJ is open. After merging, fast-forward it:
   `git -C ~/Documents/Projects/job-application-tracker pull --ff-only`.
@@ -153,7 +156,7 @@ PR.** PRs that only touch internal planning files (`CLAUDE.md`, `docs/ROADMAP.ya
   restart `jat serve`.
 - Once they exist, start with `docs/OVERVIEW.md` (the map: processes, data flow, state) and
   then `docs/ARCHITECTURE.md` (module contracts).
-- Tests and lint must pass before merging.
+- Tests and lint must pass before merging (the list and its one exception are under "Git").
 - **`.gitignore` follows the stack** (Kai, 2026-09-30): whenever a technology, language, framework
   or tool comes into the repo, append the matching template from
   https://github.com/github/gitignore (e.g. `Python.gitignore`, `Node.gitignore`,
@@ -168,7 +171,8 @@ PR.** PRs that only touch internal planning files (`CLAUDE.md`, `docs/ROADMAP.ya
 ## Keep going: the continuous delivery loop
 **Never stop because a piece of work is finished.** After every merge, pick the next item and
 start it in the same session. Stop only for a hard stop (below), a rate limit (wait 30 minutes
-and retry, repeatedly) or when Kai says so. When Kai asks how it's going, give a short status
+and retry, repeatedly) or when Kai says so. **When Kai has scoped the work to specific items, Kai's
+scope wins:** finish those, report, and wait instead of picking the next one. When Kai asks how it's going, give a short status
 update and carry on. Don't pause the loop for a question that has a sensible default: make
 the call, note the assumption in the PR, and keep going.
 
@@ -183,9 +187,8 @@ the call, note the assumption in the PR, and keep going.
 ### Delivering an item
 - Big or unclear items get a PRD and an RFC first (`docs/prd`, `docs/rfc`), linked from the
   roadmap task.
-- Worktree and PR per change set. Name the branch `worktree-<roadmap task id>`. Every PR gets a
-  review pass (a plain reviewer subagent or `/code-review`), and `must_fix` findings are
-  fixed before merging.
+- Worktree and PR per change set. Name the branch `worktree-<roadmap task id>`. Every PR goes
+  through the review-fix cycle (see "Git").
 - **Every PR updates the docs it affects, in the same PR.** A reviewer treats a missing doc
   update as `must_fix`. Put this requirement in every agent prompt.
 - The lead session merges (subagents can't). Then fast-forward main, restart anything running
