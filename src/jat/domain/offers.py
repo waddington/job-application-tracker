@@ -36,7 +36,7 @@ def annual_value(offer: Offer) -> tuple[int | None, str | None]:
     return None, None
 
 
-def _figure(offer: Offer) -> tuple[str, int | None]:
+def figure(offer: Offer) -> tuple[str, int | None]:
     """Which figure the headline shows: ("year", salary), ("day", day rate) or ("none", None)."""
     if _by_day_rate(offer):
         return ("day", offer.day_rate) if offer.day_rate else ("none", None)
@@ -45,7 +45,7 @@ def _figure(offer: Offer) -> tuple[str, int | None]:
 
 def headline(offer: Offer) -> str:
     """The headline figure for the timeline: "£85,000 a year" or "£650 a day"."""
-    per, amount = _figure(offer)
+    per, amount = figure(offer)
     if amount is None:
         return "no figures yet"
     symbol = {"GBP": "£", "USD": "$", "EUR": "€"}.get((offer.currency or "").upper())
@@ -86,7 +86,7 @@ def record(session: Session, app: Application, offer: Offer, what: str) -> None:
     """
     summary = f"Offer {what}: {headline(offer)}"
     data = {"offer_id": offer.id, "status": offer.status}
-    per, amount = _figure(offer)
+    per, amount = figure(offer)
     if amount is not None and amount > _LARGEST_EXACT_IN_BROWSER:
         svc.log_activity(session, app, "manual", summary=summary, data=data)
         return

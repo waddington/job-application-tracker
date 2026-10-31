@@ -133,6 +133,81 @@ describe("a row", () => {
     expect(await screen.findByText(english)).toBeTruthy();
   });
 
+  describe.each<{ what: string; over: Partial<TimelineItem>; english: string }>([
+    {
+      what: "a stage move",
+      over: { kind: "stage-event", stage_move: { from_name: "Applied", to_name: "Screen" } },
+      english: "Applied → Screen",
+    },
+    {
+      what: "a first stage",
+      over: { kind: "stage-event", stage_move: { from_name: null, to_name: "Applied" } },
+      english: "Added at Applied",
+    },
+    {
+      what: "a round",
+      over: { kind: "interview", round: { round: 2, title: null, kind: "final", status: "done" } },
+      english: "Round 2 · Final (done)",
+    },
+    {
+      what: "an offer reply",
+      over: { kind: "offer-reply", offer: { per: "year", amount: 85000, currency: "GBP" } },
+      english: "Reply due on the offer: £85,000 a year",
+    },
+    {
+      what: "a call",
+      over: {
+        kind: "meeting",
+        call: { kind: "video", title: null, status: "booked", contact_name: "Sam Sample" },
+      },
+      english: "Video call with Sam Sample (booked)",
+    },
+    {
+      what: "a note",
+      over: { kind: "note", note_title: "About Contoso" },
+      english: "Note: About Contoso",
+    },
+    {
+      what: "a closed person",
+      over: {
+        kind: "contact-closed",
+        closed_as: "not_interested",
+        people: [{ id: "p", name: "Sam Sample" }],
+      },
+      english: "Sam Sample: not interested",
+    },
+  ])("for $what", ({ over, english }) => {
+    it("words the title again when the language changes", async () => {
+      await wrapped(<TimelineRow item={item(over)} />);
+      expect(await screen.findByText(english)).toBeTruthy();
+      try {
+        await act(() => i18n.changeLanguage(PSEUDO));
+        await waitFor(() => expect(screen.queryByText(english)).toBeNull());
+        expect(screen.queryByText("the API's title")).toBeNull();
+      } finally {
+        await act(() => i18n.changeLanguage("en"));
+      }
+      expect(await screen.findByText(english)).toBeTruthy();
+    });
+
+    it("shows the API's title from an older server, without the raw field", async () => {
+      await wrapped(
+        <TimelineRow
+          item={item({
+            ...over,
+            stage_move: undefined,
+            round: undefined,
+            offer: undefined,
+            call: undefined,
+            note_title: undefined,
+            closed_as: undefined,
+          })}
+        />,
+      );
+      expect(await screen.findByText("the API's title")).toBeTruthy();
+    });
+  });
+
   it("leaves the API's title and detail as they came", async () => {
     await wrapped(<TimelineRow item={item({ title: "Moved to <Screen>", detail: "{{not}} a value" })} />);
     expect(await screen.findByText("Moved to <Screen>")).toBeTruthy();
