@@ -37,23 +37,19 @@ next action.
   older commits say "(1M context)") and every PR body with
   `🤖 Generated with [Claude Code](https://claude.com/claude-code)`.
 - **PRs.** One worktree and PR per task, branch `worktree-<name>`. Claude merges its own PRs
-  with `gh pr merge N --merge --delete-branch` after a reviewer pass, fixing every `must_fix`,
-  the reasonable `should_fix` and the cheap nits. Docs-only PRs may skip review; a large docs
-  change gets a fact-check reviewer. Kai: "merge once ready and update local main".
-- **Approval to merge and release (since #99).** Kai: "dont merge until ive approved" (for the
-  Today page), then "i approve, ship/merge, update local main" and "i approve the release, do
-  it". The auto-mode permission check blocks `gh pr merge` and tag/`gh release create` unless
-  Kai's latest message clearly approves *that* action ("ship that" about a look wasn't
-  enough). For a feature PR Kai is previewing, finish it, then ask for an explicit "merge N";
-  ask separately for the release if it isn't covered. Roadmap-only PRs (#100, #101) merged
-  without asking. Never work around a refusal; ask, and give the `!` command as a fallback.
-- **Approval, i18n era (#110–#114).** Kai approves per PR in the message, e.g. "merge 110 and
-  release v1.1.1 then do the next item (shadow calls), you can also merge that and release once
-  ready, i approve", "looks good, merge and release, then start the next one", "you can merge
-  and release once ready". **And then stops:** "stop after merge and release, dont start the
-  next one"; "then stop once thats done, dont start the next". So: one i18n area per go-ahead;
-  after merge and release, report and wait. Kai previews each feature PR first: "i want to
-  check the dev version before merging" → a dev preview (section 6) before asking.
+  with `gh pr merge N --merge --delete-branch` after the review-fix cycle (CLAUDE.md *Git*), fixing
+  every `must_fix`, the reasonable `should_fix` and the cheap nits, and reviewing again until no
+  `must_fix` is left. Every PR goes through it, docs-only ones too; a large docs change gets a
+  fact-check reviewer. Kai: "merge once ready and update local main".
+- **Approval to merge and release (since 2026-10-31).** Kai: "if you have followed and completed the
+  iterative review-fix cycle then it can auto merge and make a release as appropriate, but it needs
+  my explicit permission each time to make a major release". So don't ask per PR, except for a major,
+  or when Kai has said to hold that PR. The auto-mode permission check may still block `gh pr merge`
+  and tag/`gh release create`: never work around a refusal; ask, and give the `!` command as a fallback.
+- **What to start.** Kai scopes the work: "stop after merge and release, dont start the next one";
+  "then stop once thats done, dont start the next". So: one i18n area per go-ahead; after merge and
+  release, report and wait. A dev preview (section 6) before merging only when Kai asks for one on
+  that work: "i want to check the dev version before merging".
 - **Plan before building when asked.** "lets plan it firtst and dont start building until i say
   so" (Docker); "dont build yet, just commit the plan"; "noooo noo no no, dont buikld antyhing
   eyt … undo all of that. i want to know what each PR would be". When Kai asks for a plan,
@@ -73,8 +69,8 @@ next action.
   frame), retake it. The website (`website/`) copies the screenshots, so it follows.
 - **Show before applying.** "i want to see the new gif(s) before you apply them"; "i want to be
   able to have it running asap so i can follow the progretss/chagnes in a browser with
-  hotreloading". For visual or generated things (GIFs, the website, colour schemes), give Kai
-  a preview first: a local server they can open, or files to look at, with options to choose.
+  hotreloading". GIFs stay a standing ask: show them before applying. For other visual things
+  (the website, colour schemes), preview when Kai asks: a local server, or files to look at.
 - **Visibility.** After each merge: fast-forward main, rebuild the frontend on main, and say in
   a line what's now live. If the backend changed (a migration, a new or changed API), Kai must
   Ctrl+C and rerun `uv run jat serve` in their terminal; a frontend-only change needs a page
@@ -86,7 +82,7 @@ next action.
   (*Versions and releases*): bump in each PR, release each version, ask before any major.
   Released: v1.0.0, v1.1.0, v1.1.1–v1.1.4, v1.2.0–v1.2.8. Kai: "yes add release for each change"
   (each i18n PR is its own patch release; the switcher was minor). Only internal planning
-  files (`docs/ROADMAP.yaml`, `docs/COMPACTION.md`, `docs/IDEAS.md`, `docs/rfc/` plans) skip
+  files (`CLAUDE.md`, `docs/ROADMAP.yaml`, `docs/COMPACTION.md`, `docs/IDEAS.md`, `docs/rfc/` plans) skip
   the bump.
 - **Privacy.** Kai's data never enters this repo. Tests, fixtures, seed data and screenshots use
   fictional names (Contoso, Fabrikam, Litware, Northwind Talent, Northwind Pay, Blue Yonder
@@ -432,6 +428,11 @@ Before trusting anything here, re-read `docs/ROADMAP.yaml` and run `gh pr list`.
 - Not started, waiting on Kai: `deps-*` and `security-alerts` (the Dependabot fixes, below), P10.
 
 **Kai's latest word on how to work:**
+- "if you have followed and completed the iterative review-fix cycle then it can auto merge and make a release as
+  appropriate, but it needs my explicit permission each time to make a major release" (section 1, CLAUDE.md *Git*). It
+  doesn't change what to start: Kai still scopes that.
+- "I want smaller PRs, PRs created as drafts as early as possible, work directly on the files in the worktree dont use
+  patch scripts": the rules are in CLAUDE.md *Git*.
 - "all deletes should have a confirmation dialog/modal". Recorded as `fix-deletes-no-confirm` and
   `fix-call-delete-no-confirm`; not fixed.
 - "why are you making changes via tmp files and not working in the worktree directly": edit worktree files directly
@@ -439,7 +440,7 @@ Before trusting anything here, re-read `docs/ROADMAP.yaml` and run `gh pr list`.
 - "have you started yet? the pm dashboard doesnt show anything in progress?": the dashboard reads `worktree-<id>`
   branches and PRs, so push the branch as soon as work starts, not after it's done.
 - "how tf is pr 131 still open??????" and "was antyhing done in the last 90 minutes…": never leave a ready PR unmerged
-  when approval covers it, and never report and stop while approved work remains. A subagent's report isn't the end of
+  once the cycle is complete, and never report and stop while approved work remains. A subagent's report isn't the end of
   the job: check for open PRs before going quiet.
 - Mid-turn "sitrep" questions get a short honest answer straight away, then carry on.
 
@@ -464,7 +465,9 @@ isn't a bug.
 
 **The loop for the next i18n area** (`i18n-interviews-offers`, then `i18n-files-notes`, `i18n-insights`, `i18n-timeline`,
 `i18n-errors`, `i18n-events`, `i18n-finish`; one per go-ahead):
-- Read the area and the last entry in `docs/rfc/i18n.md`. Worktree `worktree-<id>`; push early.
+- Read the area and the last entry in `docs/rfc/i18n.md`. If it won't fit in about 500 changed lines (1,000 at most,
+  CLAUDE.md *Git*), split its roadmap task first; `i18n-people` was 898, so expect `i18n-interviews-offers` to split into
+  interviews and offers. Worktree `worktree-<id>`; set the task `building`, push, and open a draft PR straight away.
 - Move strings to `frontend/src/locales/en/<namespace>.ts`; add the files to `TRANSLATED` in `frontend/eslint.config.js`.
   Your words go into `<Trans>` as components, never `values`. A regex with `//` gets its own line, for the unused-key
   scanner. Pass `TFunction<"namespace">`, not `ReturnType<typeof useTranslation>["t"]` (too deep for TypeScript).
@@ -472,8 +475,8 @@ isn't a bug.
   main's build with the branch's: it must say 0 view parts differ, and no view "couldn't open".
 - A `*Text.test.tsx` pins what the snapshot can't reach: plurals, hover titles, errors, confirmations.
 - `pr-<task>.md` in `<tmp>/deps/` is the PR body; `python3 <tmp>/deps/finish_i18n.py <task> "<what>" "<title>"` bumps, writes
-  the changelog, marks the roadmap done and opens the PR.
-- Review, fix, run everything, `merge.sh <pr>`, then `ship.sh <version> <pr> <task>` from the main checkout. Add the
+  the changelog, marks the roadmap done, sets the draft PR's title and body, and marks it ready.
+- Review, fix, review again until no `must_fix` is left, run everything (the list is in CLAUDE.md *Git*), `merge.sh <pr>`, then `ship.sh <version> <pr> <task>` from the main checkout. Add the
   RFC's Built entry in the PR. Don't stop after the merge without checking the release exists.
 
 **The loop's scripts,** in `<tmp>` = `/home/kai/.claude/jobs/cf5328f4/tmp`: `deps/e2e.sh <spec>` (format, typecheck, lint,
@@ -487,8 +490,8 @@ from this description. `e2e.sh`'s `tail -1` hides a failure: read `tail -2` or t
 - `deps-frontend`: vite to 8.3.3 (direct dev dependency; 6 alerts), seroval to 1.6.11 (via TanStack Router, in the
   bundle), undici to 8.12.2 (via jsdom, tests only), zod to 4.6.6 (via the eslint plugin, lint only).
 - `deps-website`: fast-uri to 3.1.9, undici to 8.12.2. Check what pulls them in after installing (`pnpm why`).
-- Test each with pytest, vitest, `pnpm e2e`, and for the website a build and a screenshot. These are patches and need
-  Kai's approval to merge.
+- Test each with pytest, vitest, `pnpm e2e`, and for the website a build and a screenshot. These are patches: start
+  them when Kai says, then merge and release after the review-fix cycle.
 
 **PM dashboard.** http://127.0.0.1:8767 runs from the main checkout as a background job of this session (`python3 -m
 tools.pm`). It reads the main checkout's roadmap, so **pull main after every merge, roadmap-only ones too**, or Kai's
@@ -519,8 +522,8 @@ hiding empty columns on phones (`.col.empty`).
   releasing. `window.confirm` needs `page.once("dialog", …)`, or it's dismissed by default.
 - Demo data names: Alex Morgan, Sam Patel, Jordan Lee (no Riley Chen); stages Interested, Applied, Screen, Interviewing,
   Final, Offer, Accepted, then closed Rejected, Withdrawn, Ghosted; Backend CV (v2, v3 (impact first)), Short cover letter.
-- A TypeScript error stops the build, so every test then fails for one reason. Prettier reformats specs: patch scripts
-  should use regexes or read the file first. Run `git` with no `-C`, and don't `cd ..` before it: the harness refuses both.
+- A TypeScript error stops the build, so every test then fails for one reason. Prettier reformats specs, which is one more
+  reason to edit them directly. Run `git` with no `-C`, and don't `cd ..` before it: the harness refuses both.
 - `gh pr merge` can fail right after a push (still rechecking) or with a 504: merge.sh retries. The "'main' is already
   used" line is harmless. Never run finish.py during a merge conflict: it once committed markers (it refuses now).
 
@@ -528,7 +531,7 @@ hiding empty columns on phones (`.col.empty`).
 
 - **In flight:** none (after this doc's PR merges).
 - **Next: the i18n work, P8, in this order** (Kai wants to continue it; one area per go-ahead,
-  preview before merge, stop after merge and release unless told otherwise):
+  stop after merge and release unless told otherwise):
   1. **`i18n-applications`** (1.2.1): list, board (round columns found by stage id, not the word
      "interview"), quick view (`ApplicationDrawer`), application page, New application, stage
      badge, documents sent, People card, `DuplicateWarning` callers' titles.
@@ -584,33 +587,35 @@ hiding empty columns on phones (`.col.empty`).
 
 1. `git fetch -q && git worktree add -q .claude/worktrees/<name> -b worktree-<name> origin/main`,
    then EnterWorktree with `path`. Add the roadmap task (P7, `building`), commit, push with
-   `-u`. In a new worktree, `pnpm --dir frontend install` before frontend commands.
+   `-u`, and open it with `gh pr create --draft`. In a new worktree, `pnpm --dir frontend install`
+   before frontend commands. Stay near 500 changed lines (CLAUDE.md *Git*); split the task if not.
 2. Backend: model + migration (check `tests/test_db.py`), API, tests; new tables/columns in
    `tests/factories.py` `populate()`; regenerate OpenAPI and types. Commit and push.
 3. Frontend: hooks (invalidate every query key that shows the data), components, pages,
    tests. Commit and push.
-4. Docs: guide, README row and text, `llms.txt`, changelog with the PR number (`gh pr list
-   --state all --limit 1` + 1) under a new `## X.Y.Z (date)` section, screenshots if visible UI
+4. Docs: guide, README row and text, `llms.txt`, changelog with the PR number (the draft's,
+   `gh pr view --json number`) under a new `## X.Y.Z (date)` section, screenshots if visible UI
    changed. Bump the version (CLAUDE.md *Versions and releases*: five files, `uv lock`,
    `jat.openapi`, `gen:api`). Link check.
 5. Live check: seed demo data, build the branch's frontend, serve on a spare port, drive it
    with Playwright, Read the screenshots (also at 375 px when rows gain buttons).
-6. PR with `--body-file` (what Kai asked, quoted; what changed; checks). Start a background
-   `general-purpose` reviewer: `gh pr diff N` once, Read files in the worktree, report
+6. Fill in the draft PR's body (what Kai asked, quoted; what changed; checks) and run
+   `gh pr ready`. Start a background `general-purpose` reviewer: `gh pr diff N` once, Read files in the worktree, report
    must_fix/should_fix/nit with file:line. For anything touching Kai's real data, tell it to
    focus on data safety. Tell Kai what's happening meanwhile.
-7. Apply fixes (more tests where it found gaps), re-run every check, set the roadmap task
-   `done`, push. Poll `mergeStateStatus` for CLEAN, then merge.
+7. Apply fixes (more tests where it found gaps) and review again until no `must_fix` is left. Set the
+   roadmap task `done`, re-run every check on that commit, push. Poll `mergeStateStatus` for CLEAN, then merge,
+   unless it's a major: stop and ask Kai first (CLAUDE.md *Versions and releases*).
 8. ExitWorktree keep; on main: `git pull -q --ff-only`, `git worktree remove --force …`,
    `git branch -D …`, `git fetch -q --prune`; rebuild the frontend; TaskStop demo servers;
    check the tracker answers; report what's live and whether Kai must restart.
 9. Release: `git tag -a vX.Y.Z <merge sha> -m vX.Y.Z`, `git push origin vX.Y.Z`,
    `gh release create vX.Y.Z --title vX.Y.Z --notes-file <that changelog section>
    --verify-tag` (notes extracted with a script into the tmp dir; make relative links
-   absolute). Needs Kai's approval in the current message (section 1).
+   absolute). Follows the review-fix cycle without asking; a major needs Kai's explicit yes each time.
 
 **An i18n area's cutover** (since #113; CONTRIBUTING "Text in the UI"):
-1. Worktree `worktree-i18n-<area>`; set its P8 task `building`.
+1. Worktree `worktree-i18n-<area>`; set its P8 task `building`, push, open a draft PR.
 2. Baseline: build main's frontend in the worktree (it starts identical), seed demo data
    (`scripts/seed_demo.py <tmp>/demo-x`), `uv run jat --data-dir … serve --port 88xx`, then
    `uv run --with playwright python scripts/i18n/text_snapshot.py http://127.0.0.1:88xx before.json`.
@@ -623,11 +628,11 @@ hiding empty columns on phones (`.col.empty`).
    `0 view parts differ` (or only intended changes). Pin what the snapshot can't reach in a
    test (`components/TodayText.test.tsx` is the model). Prove a test catches a slip by breaking
    one English string.
-5. Dev preview for Kai: `JAT_API_URL=http://127.0.0.1:88xx pnpm exec vite --port 5174
+5. Dev preview, when Kai asks for one: `JAT_API_URL=http://127.0.0.1:88xx pnpm exec vite --port 5174
    --strictPort` from `frontend/` (background); http://127.0.0.1:5174 and `?lang=pseudo`.
    Screenshot pseudo to check nothing in the area is still plain English.
-6. Docs: CONTRIBUTING (what's moved), RFC Status + Learned, CHANGELOG `## 1.x.y`; bump. PR,
-   reviewer (tell it to check exact text equivalence for every string), fixes, wait for Kai.
+6. Docs: CONTRIBUTING (what's moved), RFC Status + Learned, CHANGELOG `## 1.x.y`; bump. `gh pr ready`,
+   reviewer (tell it to check exact text equivalence for every string), fixes, review again, merge.
 
 Several features can be in flight at once (one worktree each): ExitWorktree keep, then
 EnterWorktree the other. Merge main into a branch before its PR when main moved; the usual
@@ -736,8 +741,8 @@ conflict is the last lines of `docs/ROADMAP.yaml` (keep both, in merge order).
 
 - **Harness refusals.** Bash it can't prove stays in the entered worktree is refused:
   heredocs and inline Python (especially when the text contains "git"), `for` loops with
-  variables as programs, `cd` before git, `&&` chains mixing git with other tools. Fix: Write a
-  script to the tmp dir and run it with `python3`; Edit for small changes; split commands.
+  variables as programs, `cd` before git, `&&` chains mixing git with other tools. Fix: split the
+  commands, and edit files with Edit. A script in the tmp dir is only for mechanical bulk changes.
   A refused command changed nothing.
 - **Never `open(p, "w").write(f(open(p).read()))`**: the write mode truncates the file before
   the read. Read into a variable first. If it happens, `git checkout -- <file>` (tracked files
@@ -799,8 +804,8 @@ conflict is the last lines of `docs/ROADMAP.yaml` (keep both, in merge order).
   scripts (e.g. `@scarf/scarf` from `swagger-ui-dist`) by default.
 - **`ruff check src tests` misses `scripts/`**: include `scripts` (a long line in
   `make_card.py` sat on main from #96 to #99).
-- **The auto-mode permission check** blocks merges and releases without Kai's explicit
-  approval in the current message (section 1). A blocked command ran nothing.
+- **The auto-mode permission check** can block merges and releases, as it did on #147's first try
+  (no review, no approval). A blocked command ran nothing: ask Kai, never work around it.
 - **Migrations that read config:** `migrate()` passes `cfg.attributes["data_dir"]`; a
   `config.toml` that doesn't load must stop the migration, never fall back silently (#83).
 - **Data-touching features** (rewriting applications from another edit) get a reviewer told
@@ -821,23 +826,22 @@ conflict is the last lines of `docs/ROADMAP.yaml` (keep both, in merge order).
   - Mantine menu items and options render hidden: query with `hidden: true`.
   - `mouseenter` doesn't bubble: hover a Tooltip's own target element in tests.
 - **Bash refusals in a worktree** also hit `cd ..` before git and `python3 - <<EOF` scripts that
-  mention git: use `git -C <worktree>`, and write scripts to the tmp dir first.
+  mention git: split the commands, and put long text in a file.
 
 ### 8a. How Kai works
 
 - Uses the tracker for a real job search and reports gaps as they hit them, often several in
   one message or mid-turn: split them into PRs, fold small ones into the one in progress.
-- Likes to see things running before they land (a local URL), then says "merge".
+- Sometimes wants to see things running before they land (a local URL): do that when asked.
 - Asks short questions ("how do i run thius?"): answer plainly with the exact command.
 - Values findability, honesty about state, docs and images that match the code, a tidy repo,
   and the project being discoverable on GitHub.
 - Thinks out loud in questions first ("how will…", "what did you mean…"): answer plainly, and
   record the answers in the RFC when Kai says "commit the plan".
-- Checks each step in the dev preview and spots gaps (calendar, date order, role lines):
+- When previewing, spots gaps (calendar, date order, role lines):
   fold the fix into the open PR if it's small and in scope, else say which planned PR owns it.
-- Refines visual things in quick rounds (the Sankeys took #84–#86): show a demo URL with each
-  round, fold follow-ups into the open PR, and expect "merge it once ready and update local
-  main" at the end.
+- Refines visual things in quick rounds (the Sankeys took #84–#86) when asked to look at them:
+  show a demo URL with each round, and fold follow-ups into the open PR.
 
 ### 9. Drop
 
@@ -847,10 +851,8 @@ palettes; the earlier versions of this doc.
 
 ### 10. End the summary with
 
-The resume steps below, then: "Next action: Kai's latest instruction is to work through all the P9 browser tests and
-stop before the security fixes. Finish PR #131 (section 4a, In flight), then carry on with the remaining `e2e-*` tasks
-with section 4a's loop, recording every real bug in phase B and telling Kai, and merging and releasing each without
-asking as long as it changes no UI behaviour or text."
+The resume steps below, then one line with the next action: Kai's latest instruction if it's unfinished; otherwise
+"Next action: nothing is approved to start; wait for Kai (section 4a)."
 
 ---
 
@@ -864,7 +866,8 @@ asking as long as it changes no UI behaviour or text."
    Kai runs it in their terminal (section 2): if it answers, leave it alone. If it's down, say
    so and offer to start it (`uv run jat serve` in the main checkout, as a background job), or
    Kai reruns it themselves.
-3. **Open PRs first:** apply review fixes or start a reviewer; merge when clean; deploy.
+3. **Open PRs first:** finish a draft's work, run the review-fix cycle, then merge and release
+   (a major needs Kai's yes first).
 4. **Unfinished worktrees:** commit and push, then finish that task.
 5. **Then Kai's latest request,** which section 4a spells out. If there isn't one, report the state in two lines and
    wait.
