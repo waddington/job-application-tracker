@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.2.16 (2026-10-30)
+
+- **Developers:** browser tests for Insights: every tab, the Sankey charts against the API, filters, hovering, what shows when something can't load, and weekly activity. Nothing in the app changes (#140).
+
 ## 1.2.15 (2026-10-30)
 
 - **Developers:** browser tests for notes, links and files on every kind of page, with real uploads and downloads, and what happens when what they're on goes away. Nothing in the app changes (#139).
