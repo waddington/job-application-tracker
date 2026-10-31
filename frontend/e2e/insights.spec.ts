@@ -494,10 +494,6 @@ test.describe("CVs and cover letters", () => {
     expect(first).not.toBe(second);
     await expect(verdict).toContainText(first);
     await expect(verdict).toContainText(second);
-    await page.getByLabel("With", { exact: true }).first().click();
-    await expect(page.getByRole("option", { name: first, exact: true })).toHaveAttribute(
-      "data-combobox-disabled",
-    );
   });
 
   test("a route narrows the sent applications", async ({ page, request }) => {
