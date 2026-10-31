@@ -42,7 +42,7 @@ def page(title: str, active: str, body: str, roadmap: Roadmap, snapshot: Snapsho
 <path d="M8 1.5A6.5 6.5 0 0 1 14.5 8H8z"/></svg>
 <span class="brand-name">{project}</span><span class="brand-sub">PM</span></div>
 <nav class="tabs" aria-label="Views">{nav}</nav><div class="top-right">
-<span class="live{"" if healthy else " down"}"><span class="live-dot"></span>Updated {taken}</span>
+<span class="live{"" if healthy else " down"}"><span class="live-dot"></span>Checked {taken}</span>
 <a href="?refresh=1">Refresh</a><span class="sources" aria-label="Data sources">{sources(roadmap, snapshot)}</span>
 {THEME_BUTTON}</div></header>
 <main id="view" tabindex="-1">{problems(roadmap, snapshot)}{body}</main></body></html>"""
@@ -50,6 +50,10 @@ def page(title: str, active: str, body: str, roadmap: Roadmap, snapshot: Snapsho
 
 def problems(roadmap: Roadmap, snapshot: Snapshot) -> str:
     items = [*roadmap.errors, *snapshot.live.warnings]
+    ages = ((snapshot.git_ok, snapshot.git_at, "commits"), (snapshot.github_ok, snapshot.github_at, "PRs"))
+    for ok, at, what in ages:
+        if not ok and at:
+            items.append(f"Showing {what} from {datetime.fromtimestamp(at):%-d %b, %H:%M}, when they last answered")
     if not items:
         return ""
     lis = "".join(f"<li>{escape(i)}</li>" for i in items)
@@ -285,7 +289,8 @@ live from branches and PRs</p>{pipeline_table(roadmap, snapshot)}</div></div>
     )
 
     trees = [w for w in snapshot.worktrees if w.branch != "main"]
-    trees_html = "".join(f"<li><code>{escape(w.branch)}</code></li>" for w in trees) or '<li class="muted">None.</li>'
+    no_trees = f'<li class="muted">{"None" if snapshot.git_ok else UNKNOWN_GIT}.</li>'
+    trees_html = "".join(f"<li><code>{escape(w.branch)}</code></li>" for w in trees) or no_trees
 
     return (
         header
