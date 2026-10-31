@@ -72,7 +72,9 @@ class Snapshot:
 
 
 def _run(args: list[str], cwd: Path, timeout: float = 15) -> str:
-    result = subprocess.run(args, cwd=cwd, capture_output=True, text=True, timeout=timeout, check=True)
+    result = subprocess.run(
+        args, cwd=cwd, capture_output=True, text=True, errors="replace", timeout=timeout, check=True
+    )
     return result.stdout
 
 
@@ -211,7 +213,7 @@ def parse_diff(text: str) -> tuple[int, int, int]:
             in_header = False
         elif in_header:
             if line.startswith("--- a/") and not name or line.startswith("+++ b/"):
-                name = line[6:]
+                name = line[6:].rstrip("\t")  # git ends a path with spaces in it with a tab
         elif name:
             path = Path(name)
             if path.suffix not in SOURCE_SUFFIXES or path.name in GENERATED:
@@ -228,6 +230,7 @@ def parse_diff(text: str) -> tuple[int, int, int]:
 
 
 _merged_seen: dict[str, TaskEvidence] = {}  # a merge never changes
+GIT_DIFF = ("git", "-c", "core.quotepath=off", "diff", "-U0")
 
 
 def _read_last(root: Path, ref: str, evidence: TaskEvidence) -> None:
@@ -239,13 +242,18 @@ def _read_last(root: Path, ref: str, evidence: TaskEvidence) -> None:
 def task_evidence(root: Path, branch: str, pr: PullRequest | None) -> TaskEvidence:
     """The diff, ahead and behind and last commit: from the merge if it merged, else from its branch."""
     try:
-        if pr and pr.state == "MERGED" and pr.merge_commit:
+        if pr and pr.state == "MERGED":
             sha = pr.merge_commit
+            if not sha:  # nothing recorded to read, and its branch's diff against main would now be empty
+                return TaskEvidence()
             if sha not in _merged_seen:
                 found = TaskEvidence("merged")
-                diff = _run(["git", "diff", "-U0", f"{sha}^1", sha], root, timeout=30)
+                diff = _run([*GIT_DIFF, f"{sha}^1", sha], root, timeout=30)
                 found.added, found.removed, found.tests = parse_diff(diff)
-                _read_last(root, f"{sha}^2", found)  # the branch's own last commit
+                try:
+                    _read_last(root, f"{sha}^2", found)  # the branch's own last commit
+                except subprocess.CalledProcessError:  # a squash has one parent
+                    _read_last(root, sha, found)
                 _merged_seen[sha] = found
             return _merged_seen[sha]
         main = _main_ref(root)
@@ -257,9 +265,7 @@ def task_evidence(root: Path, branch: str, pr: PullRequest | None) -> TaskEviden
             found = TaskEvidence("branch")
             found.ahead = int(_run(["git", "rev-list", "--count", f"{main}..{ref}"], root).strip())
             found.behind = int(_run(["git", "rev-list", "--count", f"{ref}..{main}"], root).strip())
-            found.added, found.removed, found.tests = parse_diff(
-                _run(["git", "diff", "-U0", f"{main}...{ref}"], root, timeout=30)
-            )
+            found.added, found.removed, found.tests = parse_diff(_run([*GIT_DIFF, f"{main}...{ref}"], root, timeout=30))
             _read_last(root, ref, found)
             return found
         return TaskEvidence()

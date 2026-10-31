@@ -69,6 +69,16 @@ class DiffTests(unittest.TestCase):
         self.assertEqual(parse_diff(diff), (1, 1, 0))
 
 
+class PathTests(unittest.TestCase):
+    def test_a_path_with_spaces_ends_in_a_tab_and_still_counts(self):
+        diff = "diff --git a/a b.py b/a b.py\n--- a/a b.py\t\n+++ b/a b.py\t\n@@ -1 +1 @@\n-x\n+y\n"
+        self.assertEqual(parse_diff(diff), (1, 1, 0))
+
+    def test_a_merged_pr_with_no_commit_reads_nothing(self):
+        with mock.patch("tools.pm.live._run", side_effect=AssertionError("shouldn't read")):
+            self.assertEqual(task_evidence(Path("."), "b", pr(merge_commit="")).source, "")
+
+
 class ParseTests(unittest.TestCase):
     def test_the_merge_commit_is_read_and_may_be_missing(self):
         raw = '[{"number":1,"mergeCommit":{"oid":"abc"}},{"number":2,"mergeCommit":null}]'
@@ -118,6 +128,21 @@ class RealGitTests(unittest.TestCase):
         with mock.patch("tools.pm.live._run", side_effect=OSError("no git")):
             self.assertIs(task_evidence(self.root, "worktree-a", pr(merge_commit=sha)), found)
 
+    def test_a_squash_merge_has_one_parent_and_still_reads(self):
+        self.git("merge", "-q", "--squash", "worktree-a")
+        self.git("commit", "-qm", "feat: squashed")
+        found = task_evidence(self.root, "worktree-a", pr(merge_commit=self.git("rev-parse", "HEAD")))
+        self.assertEqual((found.source, found.added, found.unreadable), ("merged", 3, False))
+        self.assertEqual(found.last_subject, "feat: squashed")
+
+    def test_a_merge_of_main_into_the_branch_doesnt_inflate_it(self):
+        self.git("checkout", "-q", "worktree-a")
+        self.git("merge", "-q", "--no-ff", "-m", "Merge main in", "main")
+        self.git("checkout", "-q", "main")
+        self.git("merge", "-q", "--no-ff", "-m", "Merge", "worktree-a")
+        found = task_evidence(self.root, "worktree-a", pr(merge_commit=self.git("rev-parse", "HEAD")))
+        self.assertEqual(found.added, 3)
+
     def test_no_branch_and_no_pr(self):
         self.assertEqual(task_evidence(self.root, "worktree-none", None).source, "")
 
@@ -148,13 +173,13 @@ class PageTests(unittest.TestCase):
         self.assertIn("+120 −4", html)
         self.assertIn("<dt>Tests added</dt><dd>3</dd>", html)
         self.assertIn("feat: &lt;x&gt;", html)
-        self.assertIn("(no longer exists)", html)
+        self.assertIn("(merged)", html)
         self.assertNotIn("Against main", html)
 
     def test_a_branch_in_flight_shows_ahead_and_behind(self):
         html = self.page(TaskEvidence("branch", ahead=2, behind=5), [pr("OPEN", merge_commit="")])
         self.assertIn("2 ahead, 5 behind", html)
-        self.assertNotIn("(no longer exists)", html)
+        self.assertNotIn("(merged)", html)
         self.assertIn("PR #7 open.", html)
         self.assertIn('class="dot review at"', html)
 
@@ -190,6 +215,50 @@ class PageTests(unittest.TestCase):
         for raw in ("A <b>", "<i>detail", "A <title>"):
             self.assertNotIn(raw, html)
         self.assertEqual(html.count("<div"), html.count("</div>"))
+
+
+class BranchNoteTests(unittest.TestCase):
+    def note(self, evidence=None, prs=(), **task):
+        return task_page.branch_note(road(prs, **task).task("a"), evidence or TaskEvidence())
+
+    def test_each_case_says_only_what_is_known(self):
+        self.assertEqual(self.note(), " (not started)")
+        self.assertEqual(self.note(status="done"), " (none: marked done on the roadmap)")
+        self.assertEqual(self.note(TaskEvidence("branch"), [pr("OPEN")]), "")
+        self.assertEqual(self.note(TaskEvidence("merged"), [pr()]), " (merged)")
+        self.assertEqual(self.note(prs=[pr("CLOSED")]), " (not found)")
+
+    def test_a_git_failure_claims_nothing_about_the_branch(self):
+        self.assertEqual(self.note(TaskEvidence(unreadable=True), [pr()]), "")
+
+
+class EmptyCodeTests(unittest.TestCase):
+    def code(self, *prs):
+        roadmap = road(prs)
+        return task_page.task_page(roadmap.task("a"), roadmap, TaskEvidence())
+
+    def test_merged_with_no_commit_doesnt_say_it_never_merged(self):
+        html = self.code(pr(merge_commit=""))
+        self.assertIn("no merge commit", html)
+        self.assertNotIn("never merged", html)
+
+    def test_open_with_no_branch_here_suggests_a_fetch(self):
+        html = self.code(pr("OPEN", merge_commit=""))
+        self.assertIn("git fetch", html)
+        self.assertNotIn("never merged", html)
+
+    def test_no_source_changes_says_so(self):
+        roadmap = road([pr()])
+        html = task_page.task_page(roadmap.task("a"), roadmap, TaskEvidence("merged"))
+        self.assertIn("No source changes", html)
+
+    def test_other_prs_on_the_branch_are_listed(self):
+        first, second = pr(), pr()
+        first.number = 3
+        roadmap = road([first, second])
+        html = task_page.task_page(roadmap.task("a"), roadmap, TaskEvidence("merged"), [first, second])
+        self.assertIn("Other PRs", html)
+        self.assertIn("#3", html)
 
 
 class WhyTests(unittest.TestCase):

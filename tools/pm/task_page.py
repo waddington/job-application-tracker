@@ -2,13 +2,12 @@
 
 from __future__ import annotations
 
-from datetime import datetime
 from html import escape
 
 from .derive import parse_time
 from .live import TaskEvidence
 from .render import PIPELINE_STAGES, bug_tag, pill, repo_link, task_link
-from .roadmap import Roadmap, Task
+from .roadmap import PullRequest, Roadmap, Task
 
 
 def stage_why(task: Task) -> str:
@@ -56,20 +55,28 @@ def links(ids: list[str], roadmap: Roadmap) -> str:
 
 def code_section(evidence: TaskEvidence, task: Task) -> str:
     if evidence.unreadable:
-        return '<p class="muted">git couldn\'t read this just now.</p>'
+        return (
+            '<p class="muted">git couldn\'t read this. If it only just merged, a <code>git fetch</code> may help.</p>'
+        )
     if not evidence.source:
-        if task.pr:
+        state = task.pr.state if task.pr else ""
+        if state == "CLOSED":
             return '<p class="muted">Its branch is gone, and it never merged, so there\'s no diff to read.</p>'
+        if state == "MERGED":
+            return '<p class="muted">It merged, but GitHub gives no merge commit to read a diff from.</p>'
+        if state == "OPEN":
+            return '<p class="muted">Its branch isn\'t here yet. A <code>git fetch</code> may help.</p>'
         if task.status == "done":
             return '<p class="muted">Marked done on the roadmap, with no PR or branch to read.</p>'
         return '<p class="muted">No branch yet.</p>'
     origin = "the merge commit" if evidence.source == "merged" else "the branch against main"
+    lines = (
+        f"+{evidence.added:,} −{evidence.removed:,} <span class='small muted'>from {origin}, source files only</span>"
+        if evidence.added or evidence.removed
+        else f"No source changes <span class='small muted'>in {origin}</span>"
+    )
     facts = [
-        fact(
-            "Source lines",
-            f"+{evidence.added:,} −{evidence.removed:,} <span class='small muted'>from {origin}, generated "
-            "files left out</span>",
-        ),
+        fact("Source lines", lines),
         fact("Tests added", f"{evidence.tests:,}"),
     ]
     if evidence.ahead is not None:
@@ -85,7 +92,18 @@ def code_section(evidence: TaskEvidence, task: Task) -> str:
     return f'<dl class="facts">{"".join(facts)}</dl>'
 
 
-def task_page(task: Task, roadmap: Roadmap, evidence: TaskEvidence, now: datetime | None = None) -> str:
+def branch_note(task: Task, evidence: TaskEvidence) -> str:
+    """Only what's known: a merge says nothing about whether the branch was kept."""
+    if evidence.unreadable or evidence.source == "branch":
+        return ""
+    if evidence.source == "merged" or (task.pr and task.pr.state == "MERGED"):
+        return " (merged)"
+    if task.pr:
+        return " (not found)"
+    return " (none: marked done on the roadmap)" if task.status == "done" else " (not started)"
+
+
+def task_page(task: Task, roadmap: Roadmap, evidence: TaskEvidence, branch_prs: list[PullRequest] | None = None) -> str:
     needed_by = [t.id for t in roadmap.tasks if task.id in t.depends]
     owner = "Kai" if task.owner == "kai" else escape(task.owner)
     about = [
@@ -100,12 +118,7 @@ def task_page(task: Task, roadmap: Roadmap, evidence: TaskEvidence, now: datetim
     )
     if documents:
         about.append(fact("Documents", documents))
-    branch = fact(
-        "Branch",
-        f"<code>{escape(task.branch_name)}</code>{'' if evidence.source == 'branch' else ' (no longer exists)'}"
-        if task.pr or evidence.source
-        else f"<code>{escape(task.branch_name)}</code> (not started)",
-    )
+    branch = fact("Branch", f"<code>{escape(task.branch_name)}</code>{branch_note(task, evidence)}")
     if task.pr:
         pr = task.pr
         draft = ", draft" if pr.is_draft else ""
@@ -116,8 +129,12 @@ def task_page(task: Task, roadmap: Roadmap, evidence: TaskEvidence, now: datetim
             fact("Merged", when(pr.merged_at)),
             fact("Size", f"+{pr.additions:,} −{pr.deletions:,} <span class='small muted'>everything, on GitHub</span>"),
         ]
+        others = sorted((p for p in branch_prs or [] if p.number != pr.number), key=lambda p: p.number)
+        if others:
+            listed = ", ".join(f'<a href="{escape(p.url)}">#{p.number}</a>' for p in others)
+            pr_facts.append(fact("Other PRs", f"{listed} <span class='small muted'>on the same branch</span>"))
     else:
-        pr_facts = [fact("PR", "None yet")]
+        pr_facts = [fact("PR", "None yet" if task.status != "done" else "None")]
     detail = f'<p style="margin:8px 0 0">{escape(task.detail)}</p>' if task.detail else ""
     waiting = roadmap.waiting(task)
     wait_note = (
