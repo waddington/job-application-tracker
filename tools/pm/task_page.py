@@ -13,6 +13,10 @@ from .roadmap import Roadmap, Task
 
 def stage_why(task: Task) -> str:
     """Why the task is at its stage, in words."""
+    if task.status == "done" and task.pr and task.pr.state == "MERGED":
+        return f"PR #{task.pr.number} merged."
+    if task.status == "bug":
+        return "Recorded as a bug in <code>docs/ROADMAP.yaml</code>. No fix has started."
     if task.status_source == "roadmap":
         return f"<code>docs/ROADMAP.yaml</code> says {escape(task.status)}, and no open PR says otherwise."
     return f"{escape(task.status_source)}."

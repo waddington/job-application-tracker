@@ -192,6 +192,23 @@ class PageTests(unittest.TestCase):
         self.assertEqual(html.count("<div"), html.count("</div>"))
 
 
+class WhyTests(unittest.TestCase):
+    def test_a_merged_pr_is_the_evidence_even_when_the_roadmap_also_says_done(self):
+        task = road([pr()], status="done").task("a")
+        self.assertEqual(task_page.stage_why(task), "PR #7 merged.")
+
+    def test_done_with_no_pr_rests_on_the_roadmap(self):
+        self.assertIn("says done", task_page.stage_why(road(status="done").task("a")))
+
+    def test_a_bug_not_started_says_so(self):
+        task = road(type="bug", severity="low").task("a")
+        self.assertIn("No fix has started", task_page.stage_why(task))
+
+    def test_a_bug_being_fixed_shows_its_pr(self):
+        task = road([pr("OPEN", merge_commit="")], type="bug", severity="low").task("a")
+        self.assertEqual(task_page.stage_why(task), "PR #7 open.")
+
+
 class LinkTests(unittest.TestCase):
     def test_every_list_links_to_the_task(self):
         roadmap = road([pr("OPEN", merge_commit="")])
