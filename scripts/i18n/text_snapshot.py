@@ -369,6 +369,26 @@ with sync_playwright() as p:
             .first.click(timeout=3000),
         )
     step("insights+documents-letters", lambda: page.get_by_text("Cover letters", exact=True).click(timeout=3000))
+
+    # Timeline: the list over all time, the lanes by each kind of row and at both tick sizes (a dot's
+    # hover too), the Period and About menus, and the Show buttons down to nothing ticked and to a
+    # kind the demo has none of. Only views change here.
+    for path in ["/timeline?period=all", "/timeline?period=30", "/timeline?view=lanes&period=30"]:
+        visit(page, path)
+        snap[path] = grab(page)
+    visit(page, "/timeline?view=lanes&period=all")
+    snap["timeline+lanes-all"] = grab(page)
+    for name in ["Person", "Company", "Agency", "Role"]:
+        step("timeline+lanes-" + name.lower(), lambda name=name: view(name))
+    step("timeline+lanes-hover", lambda: page.locator("ul[aria-label] button").first.hover(timeout=3000))
+    visit(page, "/timeline")
+    step("timeline+period", lambda: page.get_by_label("Period", exact=True).first.click(timeout=3000))
+    page.keyboard.press("Escape")
+    step("timeline+about", lambda: page.get_by_label("About", exact=True).first.click(timeout=3000))
+    page.keyboard.press("Escape")
+    step("timeline+everything", lambda: page.get_by_role("button", name="Everything", exact=True).click(timeout=3000))
+    step("timeline+none", lambda: page.get_by_role("button", name="None", exact=True).click(timeout=3000))
+    step("timeline+only-files", lambda: page.get_by_text("Files", exact=True).click(timeout=3000))
     browser.close()
 
 with open(OUT, "w") as f:
