@@ -1,4 +1,5 @@
 import { Card, Loader, Text, Title } from "@mantine/core";
+import { useTranslation } from "react-i18next";
 
 import { useWholeFlow } from "../api/insightHooks";
 import { SankeyChart } from "./SankeyChart";
@@ -8,33 +9,25 @@ import { SankeyChart } from "./SankeyChart";
  * it) to passing on it, still deciding, or applying and where that went, with a spur from each
  * stage to what's still waiting there.
  */
-const roles = (n: number) => `${n} role${n === 1 ? "" : "s"}`;
-
 export function WholePicture({ since }: { since?: string }) {
+  const { t } = useTranslation("insights");
   const { data: flow, isLoading, isError } = useWholeFlow(since);
   return (
     <Card withBorder>
-      <Title order={4}>The whole picture</Title>
+      <Title order={4}>{t("whole.title")}</Title>
       <Text size="sm" c="dimmed" mb="md">
-        {flow ? roles(flow.applications) : "…"} by the date they were added: where each came from, then
-        passing on it, deciding, or applying and how far it got. Just after each stage, what's still waiting
-        there (one moved back counts at the furthest stage it reached); on the right, how things ended. A role
-        you applied to twice counts twice.
+        {flow ? t("whole.intro", { count: flow.applications }) : t("whole.introLoading")}
       </Text>
       {isLoading ? (
         <Loader />
       ) : isError || !flow ? (
-        <Text c="red">Couldn't load the whole picture.</Text>
+        <Text c="red">{t("whole.loadFailed")}</Text>
       ) : !flow.links.length ? (
         <Text size="sm" c="dimmed">
-          Nothing here yet: add a role or an application and it shows up.
+          {t("whole.empty")}
         </Text>
       ) : (
-        <SankeyChart
-          flow={flow}
-          unit="role"
-          label={`Sankey diagram of ${roles(flow.applications)}, from where they came from to where they are now`}
-        />
+        <SankeyChart flow={flow} unit="role" label={t("whole.chart", { count: flow.applications })} />
       )}
     </Card>
   );

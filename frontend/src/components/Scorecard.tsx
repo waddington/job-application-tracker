@@ -1,19 +1,25 @@
 import { Anchor, Badge, Card, Group, Loader, SegmentedControl, Table, Text, Title } from "@mantine/core";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { PersonName } from "./GhostMark";
 import { useScorecard, type Score } from "../api/insightHooks";
+import { i18n } from "../i18n";
 import { ago } from "../utils/time";
 
 type View = "recruiters" | "agencies";
 
-const percent = (n: number, of: number) => (of ? `${Math.round((100 * n) / of)}%` : "—");
+const percent = (n: number, of: number) =>
+  of ? i18n.t("insights:percent", { percent: Math.round((100 * n) / of) }) : "—";
 
 function firstUpdate(days: number | null | undefined) {
   if (days == null) return "—";
-  if (days < 1) return "same day";
-  return `${days % 1 === 0 ? days : days.toFixed(1)} day${days === 1 ? "" : "s"}`;
+  if (days < 1) return i18n.t("insights:scorecard.sameDay");
+  return i18n.t("insights:scorecard.days", {
+    count: days,
+    value: days % 1 === 0 ? days : days.toFixed(1),
+  });
 }
 
 function lastContact(iso: string | null | undefined) {
@@ -24,19 +30,20 @@ function lastContact(iso: string | null | undefined) {
 }
 
 function Outcomes({ s }: { s: Score }) {
-  const parts: [number, string, string][] = [
-    [s.active, "active", "blue"],
-    [s.success, "accepted", "green"],
-    [s.ghosted, "ghosted", "dark"],
-    [s.closed, "closed", "red"],
+  const { t } = useTranslation("insights");
+  const parts: [string, number, string, string][] = [
+    ["active", s.active, t("scorecard.active", { count: s.active }), "blue"],
+    ["accepted", s.success, t("scorecard.accepted", { count: s.success }), "green"],
+    ["ghosted", s.ghosted, t("scorecard.ghosted", { count: s.ghosted }), "dark"],
+    ["closed", s.closed, t("scorecard.closed", { count: s.closed }), "red"],
   ];
   return (
     <Group gap={4}>
       {parts
-        .filter(([n]) => n > 0)
-        .map(([n, label, color]) => (
-          <Badge key={label} size="sm" variant="light" color={color}>
-            {n} {label}
+        .filter(([, n]) => n > 0)
+        .map(([key, , text, color]) => (
+          <Badge key={key} size="sm" variant="light" color={color}>
+            {text}
           </Badge>
         ))}
     </Group>
@@ -45,6 +52,7 @@ function Outcomes({ s }: { s: Score }) {
 
 /** Recruiter and agency scorecard (PRD FR20): who sends roles that go somewhere. */
 export function ScorecardCard({ since }: { since?: string }) {
+  const { t } = useTranslation("insights");
   const [view, setView] = useState<View>("recruiters");
   const { data, isLoading, isError } = useScorecard(since);
   const rows = data?.[view] ?? [];
@@ -52,42 +60,43 @@ export function ScorecardCard({ since }: { since?: string }) {
     <Card withBorder>
       <Group justify="space-between" wrap="wrap" mb="sm">
         <div>
-          <Title order={4}>Recruiter scorecard</Title>
+          <Title order={4}>{t("scorecard.title")}</Title>
           <Text size="sm" c="dimmed">
-            For the roles each one put you forward for. First update is the median time from adding an
-            application to the first call, email, message or stage move.
+            {t("scorecard.intro")}
           </Text>
         </div>
         <SegmentedControl
-          aria-label="Scorecard by"
+          aria-label={t("scorecard.by")}
           size="xs"
           value={view}
           onChange={(v) => setView(v as View)}
           data={[
-            { value: "recruiters", label: "Recruiters" },
-            { value: "agencies", label: "Agencies" },
+            { value: "recruiters", label: t("scorecard.recruiters") },
+            { value: "agencies", label: t("scorecard.agencies") },
           ]}
         />
       </Group>
       {isLoading ? (
         <Loader />
       ) : isError ? (
-        <Text c="red">Couldn't load the scorecard.</Text>
+        <Text c="red">{t("scorecard.loadFailed")}</Text>
       ) : !rows.length ? (
         <Text size="sm" c="dimmed">
-          No roles from {view} in this period. Add a recruiter or agency to an application to see it here.
+          {view === "recruiters" ? t("scorecard.noneRecruiters") : t("scorecard.noneAgencies")}
         </Text>
       ) : (
         <Table.ScrollContainer minWidth={640}>
           <Table>
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>{view === "recruiters" ? "Recruiter" : "Agency"}</Table.Th>
-                <Table.Th>Roles</Table.Th>
-                <Table.Th>Interviewed</Table.Th>
-                <Table.Th>Where they are now</Table.Th>
-                <Table.Th>First update</Table.Th>
-                <Table.Th>Last contact</Table.Th>
+                <Table.Th>
+                  {view === "recruiters" ? t("scorecard.recruiter") : t("scorecard.agency")}
+                </Table.Th>
+                <Table.Th>{t("scorecard.roles")}</Table.Th>
+                <Table.Th>{t("scorecard.interviewed")}</Table.Th>
+                <Table.Th>{t("scorecard.now")}</Table.Th>
+                <Table.Th>{t("scorecard.firstUpdate")}</Table.Th>
+                <Table.Th>{t("scorecard.lastContact")}</Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
