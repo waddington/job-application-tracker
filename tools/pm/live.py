@@ -15,6 +15,17 @@ from .roadmap import BRANCH_PREFIX, Live, PullRequest
 
 SEP = "\x1f"
 PR_LIMIT = 1000
+COMMIT_LIMIT = 5000
+AREAS = (
+    ("frontend/e2e/", "Browser tests"),
+    ("frontend/", "Frontend"),
+    ("src/", "Backend"),
+    ("tests/pm/", "PM dashboard"),
+    ("tests/", "Backend"),
+    ("tools/", "PM dashboard"),
+    ("website/", "Website"),
+    ("scripts/", "Scripts"),
+)
 ROADMAP_PATH = "docs/ROADMAP.yaml"
 TASK_LINE = re.compile(r"^\s+- \{id: .*$", re.M)
 _scope_seen: dict[str, int] = {}
@@ -51,6 +62,7 @@ class Snapshot:
     git_at: float = 0.0  # when each source last answered
     github_at: float = 0.0
     scope: list[tuple[str, int]] = field(default_factory=list)  # (when, tasks on the roadmap)
+    areas: dict[str, tuple[int, int]] = field(default_factory=dict)  # area of the repo: (lines, tests)
 
 
 def _run(args: list[str], cwd: Path, timeout: float = 15) -> str:
@@ -90,10 +102,20 @@ def parse_prs(output: str) -> list[PullRequest]:
     return prs
 
 
+def area_of(name: str) -> str:
+    return next((area for prefix, area in AREAS if name.startswith(prefix)), "Other")
+
+
 def count_code(root: Path, files: list[str]) -> tuple[int, int]:
-    """Lines of source and tests defined across `files`. Generated files don't count, and a
-    parameterised test counts once."""
-    lines = tests = 0
+    """Lines of source and tests defined across `files`."""
+    by_area = code_by_area(root, files)
+    return sum(n[0] for n in by_area.values()), sum(n[1] for n in by_area.values())
+
+
+def code_by_area(root: Path, files: list[str]) -> dict[str, tuple[int, int]]:
+    """(lines, tests) per area of the repo. Generated files don't count, and a parameterised test
+    counts once."""
+    counts: dict[str, list[int]] = {}
     for name in files:
         path = root / name
         if path.suffix not in SOURCE_SUFFIXES or path.name in GENERATED:
@@ -102,12 +124,13 @@ def count_code(root: Path, files: list[str]) -> tuple[int, int]:
             text = path.read_text(errors="ignore")
         except OSError:  # listed by git but gone from the checkout
             continue
-        lines += text.count("\n")
+        tally = counts.setdefault(area_of(name), [0, 0])
+        tally[0] += text.count("\n")
         if path.suffix == ".py":
-            tests += len(PY_TEST.findall(text))
+            tally[1] += len(PY_TEST.findall(text))
         elif ".test." in path.name or ".spec." in path.name:
-            tests += len(JS_TEST.findall(text))
-    return lines, tests
+            tally[1] += len(JS_TEST.findall(text))
+    return {area: (n[0], n[1]) for area, n in counts.items()}
 
 
 def parse_commits(output: str) -> list[Commit]:
@@ -181,10 +204,12 @@ def collect(root: Path, repo: str) -> Snapshot:
             if not counted:
                 snapshot.git_ok = False
                 live.warnings.append(f"git: couldn't compare {branch} with main")
-        log = _run(["git", "log", main, "-n", "300", f"--format=%h{SEP}%s{SEP}%cI{SEP}%an"], root)
+        log = _run(["git", "log", main, "-n", str(COMMIT_LIMIT), f"--format=%h{SEP}%s{SEP}%cI{SEP}%an"], root)
         snapshot.commits = parse_commits(log)
         snapshot.worktrees = parse_worktrees(_run(["git", "worktree", "list", "--porcelain"], root))
-        snapshot.lines, snapshot.tests = count_code(root, _run(["git", "ls-files"], root).splitlines())
+        snapshot.areas = code_by_area(root, _run(["git", "ls-files"], root).splitlines())
+        snapshot.lines = sum(n[0] for n in snapshot.areas.values())
+        snapshot.tests = sum(n[1] for n in snapshot.areas.values())
         snapshot.scope = scope_history(root, main)
     except (subprocess.SubprocessError, OSError, ValueError) as exc:
         snapshot.git_ok = False
@@ -223,6 +248,7 @@ def keep_last_good(new: Snapshot, old: Snapshot | None) -> Snapshot:
     if not new.git_ok:
         new.git_at = old.git_at
         new.scope = new.scope or old.scope
+        new.areas = new.areas or old.areas
         new.commits = new.commits or old.commits
         new.worktrees = new.worktrees or old.worktrees
         new.lines, new.tests = (new.lines, new.tests) if new.lines else (old.lines, old.tests)
