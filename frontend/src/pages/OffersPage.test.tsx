@@ -81,7 +81,7 @@ describe("offers", () => {
       within(table).getByRole("rowheader", { name: label }).closest("tr")!.textContent;
     expect(rowText("Worth a year")).toBe("Worth a year£143,000Highest£98,100");
     expect(rowText("Pay")).toBe("Pay£650 a day£85,000 a year");
-    expect(rowText("IR35")).toBe("IR35outside—");
+    expect(rowText("IR35")).toBe("IR35Outside—");
 
     fireEvent.click(screen.getByLabelText("Show declined and withdrawn"));
     expect(await screen.findByText("Northwind Traders")).toBeInTheDocument();

@@ -273,6 +273,32 @@ with sync_playwright() as p:
     time.sleep(0.4)
     step("calls+menu", lambda: page.locator("[aria-label^='More for ']").first.click(timeout=3000))
     step("calls+edit", lambda: page.get_by_role("menuitem", name="Edit").click(timeout=3000))
+    page.keyboard.press("Escape")
+    time.sleep(0.4)
+
+    # Offers: the page with closed ones shown, an application's Offer card, and the form for each
+    # kind with its currency error. Each closed unsaved.
+    visit(page, "/offers")
+    step("offers+closed", lambda: page.get_by_label("Show declined and withdrawn").click(timeout=3000))
+    offer_links = page.evaluate(LINKS, "/applications/")
+    for n, href in enumerate(offer_links[:2]):
+        visit(page, href)
+        snap[f"offers+application#{n}"] = grab(page)
+    visit(page, offer_links[0])
+    step("offers+edit", lambda: page.get_by_role("button", name="Edit offer").first.click(timeout=3000))
+    page.keyboard.press("Escape")
+    time.sleep(0.4)
+    step("offers+add", lambda: page.get_by_role("button", name="Add a revised offer").click(timeout=3000))
+    dialog = page.get_by_role("dialog")
+    step("offers+add-contract", lambda: dialog.get_by_text("Contract", exact=True).click(timeout=3000))
+    step("offers+add-ir35", lambda: dialog.get_by_label("IR35", exact=True).click(timeout=3000))
+    page.keyboard.press("Escape")
+    step("offers+add-fixed", lambda: dialog.get_by_text("Fixed term", exact=True).click(timeout=3000))
+    step(
+        "offers+add-errors",
+        lambda: dialog.get_by_label("Currency", exact=True).fill("X", timeout=3000),
+        lambda: dialog.get_by_role("button", name="Add offer").click(timeout=3000),
+    )
     browser.close()
 
 with open(OUT, "w") as f:

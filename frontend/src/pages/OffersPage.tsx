@@ -13,10 +13,13 @@ import {
 } from "@mantine/core";
 import { IconCash, IconTrophy } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
+import type { TFunction } from "i18next";
 import type { ReactNode } from "react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
-import { headline, money, STATUS_LABELS, useOffers, type Offer } from "../api/offerHooks";
+import { headline, money, OFFER_STATUS, useOffers, type Offer } from "../api/offerHooks";
+import { i18n } from "../i18n";
 import { formatDate } from "../utils/time";
 
 const dash = (
@@ -25,55 +28,69 @@ const dash = (
   </Text>
 );
 
-const ROWS: { label: string; cell: (o: Offer) => ReactNode }[] = [
-  {
-    label: "Status",
-    cell: (o) => (
-      <Badge size="sm" variant="light" color={STATUS_LABELS[o.status].color}>
-        {STATUS_LABELS[o.status].label}
-      </Badge>
-    ),
-  },
-  { label: "Pay", cell: (o) => headline(o) },
-  { label: "Bonus", cell: (o) => (o.bonus ? money(o.bonus, o.currency) : dash) },
-  { label: "Employer pension", cell: (o) => (o.pension_percent != null ? `${o.pension_percent}%` : dash) },
-  {
-    label: "Equity",
-    cell: (o) =>
-      o.equity || o.equity_value ? (
-        <>
-          {o.equity}
-          {o.equity_value ? (
-            <Text size="xs" c="dimmed">
-              about {money(o.equity_value, o.currency)} a year
-            </Text>
-          ) : null}
-        </>
-      ) : (
-        dash
+/** "Outside", or a value the app doesn't know as saved (capitalised, as ever). */
+function ir35Cell(value: string, t: TFunction<"offers">) {
+  if (value === "outside") return t("page.ir35.outside");
+  if (value === "inside") return t("page.ir35.inside");
+  if (value === "unknown") return t("page.ir35.unknown");
+  return (
+    <Text span tt="capitalize">
+      {value}
+    </Text>
+  );
+}
+
+function rows(t: TFunction<"offers">): { label: string; cell: (o: Offer) => ReactNode }[] {
+  return [
+    {
+      label: t("page.rows.status"),
+      cell: (o) => (
+        <Badge size="sm" variant="light" color={OFFER_STATUS[o.status].color}>
+          {i18n.t(OFFER_STATUS[o.status].label)}
+        </Badge>
       ),
-  },
-  { label: "Holiday", cell: (o) => (o.holiday_days != null ? `${o.holiday_days} days` : dash) },
-  {
-    label: "IR35",
-    cell: (o) =>
-      o.ir35 ? (
-        <Text span tt="capitalize">
-          {o.ir35}
-        </Text>
-      ) : (
-        dash
-      ),
-  },
-  { label: "Length", cell: (o) => (o.contract_months ? `${o.contract_months} months` : dash) },
-  { label: "Benefits", cell: (o) => o.benefits ?? dash },
-  { label: "Start date", cell: (o) => (o.start_on ? formatDate(o.start_on) : dash) },
-  { label: "Reply by", cell: (o) => (o.respond_by ? formatDate(o.respond_by) : dash) },
-  { label: "Notes", cell: (o) => o.notes ?? dash },
-];
+    },
+    { label: t("page.rows.pay"), cell: (o) => headline(o) },
+    { label: t("page.rows.bonus"), cell: (o) => (o.bonus ? money(o.bonus, o.currency) : dash) },
+    {
+      label: t("page.rows.pension"),
+      cell: (o) => (o.pension_percent != null ? t("page.percent", { percent: o.pension_percent }) : dash),
+    },
+    {
+      label: t("page.rows.equity"),
+      cell: (o) =>
+        o.equity || o.equity_value ? (
+          <>
+            {o.equity}
+            {o.equity_value ? (
+              <Text size="xs" c="dimmed">
+                {t("page.equityWorth", { amount: money(o.equity_value, o.currency) })}
+              </Text>
+            ) : null}
+          </>
+        ) : (
+          dash
+        ),
+    },
+    {
+      label: t("page.rows.holiday"),
+      cell: (o) => (o.holiday_days != null ? t("page.days", { count: o.holiday_days }) : dash),
+    },
+    { label: t("page.rows.ir35"), cell: (o) => (o.ir35 ? ir35Cell(o.ir35, t) : dash) },
+    {
+      label: t("page.rows.length"),
+      cell: (o) => (o.contract_months ? t("page.months", { count: o.contract_months }) : dash),
+    },
+    { label: t("page.rows.benefits"), cell: (o) => o.benefits ?? dash },
+    { label: t("page.rows.start"), cell: (o) => (o.start_on ? formatDate(o.start_on) : dash) },
+    { label: t("page.rows.replyBy"), cell: (o) => (o.respond_by ? formatDate(o.respond_by) : dash) },
+    { label: t("page.rows.notes"), cell: (o) => o.notes ?? dash },
+  ];
+}
 
 /** Offers side by side (P6): each application's newest offer, worth-a-year first. */
 export function OffersPage() {
+  const { t } = useTranslation("offers");
   const [showClosed, setShowClosed] = useState(false);
   const { data, isLoading } = useOffers({});
   const offers = (data ?? [])
@@ -90,10 +107,10 @@ export function OffersPage() {
       <Group justify="space-between" wrap="wrap">
         <Group gap="sm">
           <IconCash size={26} stroke={1.6} />
-          <Title order={2}>Offers</Title>
+          <Title order={2}>{t("page.title")}</Title>
         </Group>
         <Switch
-          label="Show declined and withdrawn"
+          label={t("page.showClosed")}
           checked={showClosed}
           onChange={(e) => setShowClosed(e.currentTarget.checked)}
         />
@@ -103,23 +120,20 @@ export function OffersPage() {
       ) : !offers.length ? (
         <Card withBorder>
           <Text c="dimmed" size="sm">
-            {data?.length
-              ? "No offers being considered. Switch on the toggle to see declined and withdrawn ones."
-              : "No offers yet. Add one from an application's page when it comes in."}
+            {data?.length ? t("page.noneOpen") : t("page.none")}
           </Text>
         </Card>
       ) : (
         <Card withBorder>
           <Text size="sm" c="dimmed" mb="sm">
-            Worth a year is base salary plus expected bonus, your estimate of the equity and the employer's
-            pension; a day rate counts 220 working days. A revised offer replaces the one before it.
+            {t("page.explain")}
           </Text>
           <Table.ScrollContainer minWidth={240 + 220 * offers.length}>
             <Table withColumnBorders verticalSpacing="sm">
               <Table.Thead>
                 <Table.Tr>
                   <Table.Th w={160}>
-                    <VisuallyHidden>Detail</VisuallyHidden>
+                    <VisuallyHidden>{t("page.detail")}</VisuallyHidden>
                   </Table.Th>
                   {offers.map((o) => (
                     <Table.Th key={o.id}>
@@ -135,21 +149,21 @@ export function OffersPage() {
               </Table.Thead>
               <Table.Tbody>
                 <Table.Tr>
-                  <Table.Th scope="row">Worth a year</Table.Th>
+                  <Table.Th scope="row">{t("page.worth")}</Table.Th>
                   {offers.map((o) => (
                     <Table.Td key={o.id}>
                       <Group gap={6} wrap="nowrap">
                         <Text fw={700}>{money(o.annual_value, o.currency)}</Text>
                         {best?.id === o.id && offers.length > 1 && (
                           <Badge size="sm" color="green" leftSection={<IconTrophy size={12} />}>
-                            Highest
+                            {t("page.highest")}
                           </Badge>
                         )}
                       </Group>
                     </Table.Td>
                   ))}
                 </Table.Tr>
-                {ROWS.map((row) => (
+                {rows(t).map((row) => (
                   <Table.Tr key={row.label}>
                     <Table.Th scope="row">{row.label}</Table.Th>
                     {offers.map((o) => (

@@ -57,6 +57,9 @@ const TRANSLATED = [
   "src/components/Reschedule.tsx",
   // i18n-calls
   "src/components/Meetings.tsx",
+  // i18n-offers
+  "src/pages/OffersPage.tsx",
+  "src/components/Offers.tsx",
 ];
 
 export default tseslint.config(
