@@ -1,8 +1,9 @@
 // Errors the API sends with a code, and the toast that shows them (api/notifyError.ts).
 import type { ErrorCode } from "../../api/client";
 
-/** Codes whose text depends on `count`: these have _one and _other keys instead of one key. */
-type PluralCode = never;
+type Codes<C extends ErrorCode> = C;
+/** Codes whose text depends on `count`, as `Codes<"a" | "b">`: these have _one and _other keys instead of one key. */
+type PluralCode = Codes<never>;
 
 // One line per ErrorCode in src/jat/api/errors.py. A code with no text, or text for a code that's
 // gone, fails the type check. This English matches the API's `detail` today; if they drift, the app

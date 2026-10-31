@@ -175,12 +175,14 @@ keep writing its text as before. Once it has:
   2. add its line to `codes` in `frontend/src/locales/en/errors.ts`, with values as `{{placeholders}}`;
      a code with a `count` also goes in `PluralCode` there, with `_one` and `_other` lines;
   3. raise it, with `detail` the same English as before and the values as params:
-     `raise CodedError(409, f"{name} is taken", "company_name_taken", {"name": name})`, and pass
-     `responses=coded(409)` to the route;
-  4. run `uv run python -m jat.openapi` and `pnpm --dir frontend gen:api`, and add a row to
-     `components/ErrorsText.test.tsx`.
+     `raise CodedError(409, f"{name} is taken", "company_name_taken", {"name": name})`. Write params
+     as a dict there, and don't name one after an i18next option (`lng`, `ns`, `context`…): a test
+     checks both;
+  4. run `uv run python -m jat.openapi` and `pnpm --dir frontend gen:api`, and add its row to `TEXT`
+     in `components/ErrorsText.test.tsx`.
 
-  The type check fails if a code has no text, or text has no code. Errors people never see can stay
+  The type check fails if a code has no text or no row, or text has no code. Every route under
+  `/api/v1` already declares `ErrorOut`, so a route needs nothing. Errors people never see can stay
   plain `HTTPException`s.
 - **Adding a language** (once its translation is reviewed; the `multi-language` task does the
   first):

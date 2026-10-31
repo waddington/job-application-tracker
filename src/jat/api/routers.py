@@ -31,8 +31,9 @@ from . import schemas as S
 from .crud import crud_router, values
 from .deps import SessionDep, WorkflowDep, get_or_404, get_workflow, require
 from .documents import sent_documents
+from .errors import ERROR_RESPONSES
 
-router = APIRouter(prefix="/api/v1")
+router = APIRouter(prefix="/api/v1", responses=ERROR_RESPONSES)
 
 
 # --- simple entities -------------------------------------------------------------------------

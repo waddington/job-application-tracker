@@ -14,35 +14,34 @@ afterEach(() => {
 const coded = (code: ErrorCode, params: Record<string, string | number> = {}) =>
   new ApiError({ detail: "the API's English", code, params });
 
-const TEXT: [ErrorCode, Record<string, string | number>, string][] = [
-  ["backup_add_failed", { reason: "denied" }, "git add failed: denied"],
-  ["backup_commit_failed", { reason: "denied" }, "git commit failed: denied"],
-  [
-    "backup_detached_head",
+// Keyed by code, so a code with no row fails the type check.
+const TEXT: Record<ErrorCode, [Record<string, string | number>, string]> = {
+  backup_add_failed: [{ reason: "denied" }, "git add failed: denied"],
+  backup_commit_failed: [{ reason: "denied" }, "git commit failed: denied"],
+  backup_detached_head: [
     {},
     "The data repo is on a detached HEAD; check out a branch so snapshots aren't lost.",
   ],
-  ["backup_git_timeout", { command: "push", seconds: "120" }, "git push timed out after 120s"],
-  ["backup_git_unavailable", { reason: "no such file" }, "couldn't run git: no such file"],
-  ["backup_lock_failed", { path: "/x/y.lock", reason: "denied" }, "couldn't lock /x/y.lock: denied"],
-  ["backup_mid_rebase", {}, "The data repo is mid-rebase/merge; finish it and snapshots will resume."],
-  [
-    "backup_no_remote",
-    {},
-    "The data repo has no remote to push to. Add one with `git remote add origin ...`.",
-  ],
-  ["backup_not_a_repo", {}, "The data directory isn't a git repo."],
-  ["backup_push_failed", { reason: "denied" }, "git push failed: denied"],
-  ["backup_shut_down", {}, "snapshots are shut down"],
-  ["backup_snapshot_failed", { reason: "disk full" }, "snapshot failed: disk full"],
-  ["backup_snapshots_off", {}, "The data directory isn't a git repo, so snapshots are off."],
-  ["todo_text_required", {}, "text: say what needs doing"],
-];
+  backup_git_timeout: [{ command: "push", seconds: "120" }, "git push timed out after 120s"],
+  backup_git_unavailable: [{ reason: "no such file" }, "couldn't run git: no such file"],
+  backup_lock_failed: [{ path: "/x/y.lock", reason: "denied" }, "couldn't lock /x/y.lock: denied"],
+  backup_mid_rebase: [{}, "The data repo is mid-rebase/merge; finish it and snapshots will resume."],
+  backup_no_remote: [{}, "The data repo has no remote to push to. Add one with `git remote add origin ...`."],
+  backup_not_a_repo: [{}, "The data directory isn't a git repo."],
+  backup_push_failed: [{ reason: "denied" }, "git push failed: denied"],
+  backup_shut_down: [{}, "snapshots are shut down"],
+  backup_snapshot_failed: [{ reason: "disk full" }, "snapshot failed: disk full"],
+  backup_snapshots_off: [{}, "The data directory isn't a git repo, so snapshots are off."],
+  todo_text_required: [{}, "text: say what needs doing"],
+};
 
 describe("an error with a code", () => {
-  it.each(TEXT)("%s has its exact English", (code, params, english) => {
-    expect(errorText(coded(code, params))).toBe(english);
-  });
+  it.each(Object.entries(TEXT) as [ErrorCode, (typeof TEXT)[ErrorCode]][])(
+    "%s has its exact English",
+    (code, [params, english]) => {
+      expect(errorText(coded(code, params))).toBe(english);
+    },
+  );
 
   it("keeps values as written, with nothing escaped", () => {
     expect(errorText(coded("backup_push_failed", { reason: "<a> & 'b'" }))).toBe(

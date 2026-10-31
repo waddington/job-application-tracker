@@ -15,7 +15,7 @@ from ..db.types import utcnow
 from . import schemas as S
 from .crud import values
 from .deps import ENTITY_MODELS, SessionDep, get_or_404
-from .errors import CodedError, coded
+from .errors import CodedError
 
 router = APIRouter(prefix="/todos", tags=["to-dos"])
 
@@ -91,7 +91,7 @@ def list_todos(
     return [out(session, todo) for todo in in_order(todos, today or datetime.now(UTC).date())]
 
 
-@router.post("", response_model=S.TodoOut, status_code=201, responses=coded(422))
+@router.post("", response_model=S.TodoOut, status_code=201)
 def create_todo(body: S.TodoIn, session: SessionDep):
     if body.entity_type is not None and session.get(ENTITY_MODELS[body.entity_type], body.entity_id) is None:
         raise HTTPException(422, f"entity_id: {body.entity_type} {body.entity_id} not found")
@@ -105,7 +105,7 @@ def create_todo(body: S.TodoIn, session: SessionDep):
     return out(session, todo)
 
 
-@router.patch("/{todo_id}", response_model=S.TodoOut, responses=coded(422))
+@router.patch("/{todo_id}", response_model=S.TodoOut)
 def update_todo(todo_id: str, body: S.TodoPatch, session: SessionDep):
     todo = get_or_404(session, Todo, todo_id)
     data = values(body, partial=True)

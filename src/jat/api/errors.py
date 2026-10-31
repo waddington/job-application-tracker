@@ -34,10 +34,19 @@ ErrorCode = Literal[
 ErrorParams = dict[str, str | int]
 
 
-class ErrorOut(BaseModel):
-    """An error's body. Only `detail` is always there: `code` and `params` come with coded errors."""
+class ValidationIssue(BaseModel):
+    """One problem in the framework's own 422."""
 
-    detail: str
+    loc: list[str | int]
+    msg: str
+    type: str
+
+
+class ErrorOut(BaseModel):
+    """An error's body. Only `detail` is always there: `code` and `params` come with coded errors.
+    `detail` is English text, or for the framework's own 422 a list of problems."""
+
+    detail: str | list[ValidationIssue]
     code: ErrorCode | None = None
     params: ErrorParams | None = None
 
@@ -61,18 +70,8 @@ async def coded_error_handler(_request: Request, exc: Exception) -> JSONResponse
     )
 
 
-def coded(*statuses: int) -> dict[int | str, dict[str, Any]]:
-    """`responses=` for a route that raises CodedError with these statuses, so the schema shows it.
-    A 422 can still be the framework's own validation error, so it declares both."""
-    described = "An error, with a code when people can see it"
-    responses: dict[int | str, dict[str, Any]] = {}
-    for status in statuses:
-        if status == 422:
-            schemas = [{"$ref": f"#/components/schemas/{name}"} for name in ("ErrorOut", "HTTPValidationError")]
-            responses[status] = {
-                "description": described,
-                "content": {"application/json": {"schema": {"anyOf": schemas}}},
-            }
-        else:
-            responses[status] = {"description": described, "model": ErrorOut}
-    return responses
+ERROR_RESPONSES: dict[int | str, dict[str, Any]] = {
+    "default": {"description": "An error, with a code when people can see it", "model": ErrorOut},
+}
+"""For the /api/v1 router, so every route declares its errors, wherever they're raised. FastAPI then
+adds no 422 of its own, so ErrorOut also describes a validation error's list."""

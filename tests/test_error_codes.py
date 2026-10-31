@@ -9,7 +9,7 @@ from typing import get_args
 
 from fastapi.testclient import TestClient
 
-from jat.api.errors import ErrorCode
+from jat.api.errors import ErrorCode, ErrorOut
 from jat.app import create_app
 from jat.datadir import CODE_ROOT, init_data_dir
 from jat.db import db_path, migrate
@@ -20,6 +20,24 @@ from .factories import post
 
 SOURCE = Path(__file__).parent.parent / "src" / "jat"
 CODES = set(get_args(ErrorCode))
+# `count` isn't here: it picks the plural form, as it should.
+I18NEXT_OPTIONS = {
+    "context",
+    "defaultValue",
+    "fallbackLng",
+    "interpolation",
+    "joinArrays",
+    "keySeparator",
+    "lng",
+    "lngs",
+    "ns",
+    "nsSeparator",
+    "ordinal",
+    "postProcess",
+    "replace",
+    "returnDetails",
+    "returnObjects",
+}
 
 
 def english_keys() -> set[str]:
@@ -61,9 +79,48 @@ def test_the_schema_declares_the_codes():
     schema = build_schema()
     error = schema["components"]["schemas"]["ErrorOut"]["properties"]["code"]
     assert set(error["anyOf"][0]["enum"]) == CODES
-    create = schema["paths"]["/api/v1/todos"]["post"]["responses"]["422"]
-    refs = {s["$ref"] for s in create["content"]["application/json"]["schema"]["anyOf"]}
-    assert refs == {"#/components/schemas/ErrorOut", "#/components/schemas/HTTPValidationError"}
+
+
+def test_every_route_declares_its_errors():
+    operations = [op for path in build_schema()["paths"].values() for op in path.values() if isinstance(op, dict)]
+    assert len(operations) > 50
+    for op in operations:
+        body = op["responses"]["default"]["content"]["application/json"]["schema"]
+        assert body == {"$ref": "#/components/schemas/ErrorOut"}
+
+
+def test_the_backup_zip_is_still_a_zip_in_the_schema():
+    archive = build_schema()["paths"]["/api/v1/backup/archive"]["get"]["responses"]["200"]
+    assert "application/zip" in archive["content"]
+
+
+def test_a_validation_error_fits_the_declared_body(client, seeded):
+    response = client.post("/api/v1/todos", json={})
+    assert response.status_code == 422
+    assert isinstance(ErrorOut.model_validate(response.json()).detail, list)
+
+
+def test_no_param_is_named_like_an_i18next_option():
+    # The frontend passes params to t() as its options, so `lng` would change the language shown.
+    position = {"CodedError": 3, "SnapshotError": 2}
+    seen = 0
+    for path in SOURCE.rglob("*.py"):
+        for node in ast.walk(ast.parse(path.read_text())):
+            if not (isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id in position):
+                continue
+            index = position[node.func.id]
+            keyword = next((k.value for k in node.keywords if k.arg == "params"), None)
+            params = node.args[index] if len(node.args) > index else keyword
+            if params is None or isinstance(params, ast.Attribute):  # none, or passing on exc.params
+                continue
+            assert isinstance(params, ast.Dict), (
+                f"{path}:{node.lineno}: write params as a dict here, so they're checked"
+            )
+            names = {key.value for key in params.keys if isinstance(key, ast.Constant)}
+            assert len(names) == len(params.keys), f"{path}:{node.lineno}: name each param"
+            assert not names & I18NEXT_OPTIONS, f"{path}:{node.lineno}"
+            seen += 1
+    assert seen, "the scan found the params"
 
 
 def test_a_coded_error_keeps_its_english_detail(client, seeded):

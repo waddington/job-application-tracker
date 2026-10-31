@@ -13,7 +13,7 @@ from starlette.background import BackgroundTask
 
 from ..snapshot.archive import write_archive
 from ..snapshot.git import SnapshotError, SnapshotService
-from .errors import CodedError, coded
+from .errors import CodedError
 
 router = APIRouter(prefix="/backup", tags=["backup"])
 
@@ -51,7 +51,7 @@ def backup_status(request: Request):
     return _service(request).status().as_dict()
 
 
-@router.post("/snapshot", response_model=SnapshotResult, responses=coded(409))
+@router.post("/snapshot", response_model=SnapshotResult)
 def snapshot(request: Request):
     service = _service(request)
     try:
@@ -61,7 +61,7 @@ def snapshot(request: Request):
     return {"commit": commit, "status": service.status().as_dict()}
 
 
-@router.post("/push", response_model=PushResult, responses=coded(409))
+@router.post("/push", response_model=PushResult)
 def push(request: Request):
     service = _service(request)
     try:
