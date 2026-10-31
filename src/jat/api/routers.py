@@ -298,7 +298,7 @@ def merge_contact(contact_id: str, body: S.MergeIn, request: Request, session: S
     keep = get_or_404(session, Contact, contact_id)
     gone = get_or_404(session, Contact, body.from_id)
     if keep.id == gone.id:
-        raise HTTPException(422, "Pick someone else to merge in: that's the same person.")
+        raise CodedError(422, "Pick someone else to merge in: that's the same person.", "merge_same_person")
     people_svc.merge(session, keep, gone, notes)
     return _contact_out(session, session.get(Contact, contact_id))
 

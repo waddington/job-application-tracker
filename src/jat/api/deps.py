@@ -19,7 +19,7 @@ from .errors import CodedError, ErrorCode
 log = logging.getLogger(__name__)
 
 # What the app can ask for after someone deleted it in another tab, or with the CLI. Whole sentences,
-# so a code per kind of thing. A model or field not here is one nobody sees, and stays English.
+# so a code per kind of thing. A model not in NOT_FOUND is one nobody sees, and stays English.
 NOT_FOUND: dict[str, ErrorCode] = {
     "Agency": "agency_not_found",
     "Application": "application_not_found",
@@ -33,14 +33,25 @@ NOT_FOUND: dict[str, ErrorCode] = {
     "Role": "role_not_found",
     "Todo": "todo_not_found",
 }
-REQUIRED_NOT_FOUND: dict[str, ErrorCode] = {
-    "agency_id": "agency_id_not_found",
-    "application_id": "application_id_not_found",
-    "company_id": "company_id_not_found",
-    "contact_id": "contact_id_not_found",
-    "meeting_id": "meeting_id_not_found",
-    "recruiter_id": "recruiter_id_not_found",
-    "role_id": "role_id_not_found",
+# By model and field, as the sentence names both. A test checks every `require` call is here.
+REQUIRED_NOT_FOUND: dict[tuple[str, str], ErrorCode] = {
+    ("Agency", "agency_id"): "agency_id_not_found",
+    ("Application", "application_id"): "application_id_not_found",
+    ("Company", "company_id"): "company_id_not_found",
+    ("Contact", "contact_id"): "contact_id_not_found",
+    ("Meeting", "meeting_id"): "meeting_id_not_found",
+    ("Contact", "recruiter_id"): "recruiter_id_not_found",
+    ("Role", "role_id"): "role_id_not_found",
+}
+# For something a link or to-do is about.
+ENTITY_NOT_FOUND: dict[str, ErrorCode] = {
+    "agency": "entity_agency_not_found",
+    "application": "entity_application_not_found",
+    "company": "entity_company_not_found",
+    "contact": "entity_contact_not_found",
+    "document": "entity_document_not_found",
+    "interview": "entity_interview_not_found",
+    "role": "entity_role_not_found",
 }
 
 
@@ -129,6 +140,4 @@ def require(session: Session, model, obj_id: str | None, field: str) -> None:
     """422 if a referenced id doesn't exist (clearer than a foreign-key error)."""
     if obj_id is not None and session.get(model, obj_id) is None:
         detail = f"{field}: {model.__name__} {obj_id} not found"
-        if code := REQUIRED_NOT_FOUND.get(field):
-            raise CodedError(422, detail, code, {"id": obj_id})
-        raise HTTPException(status_code=422, detail=detail)
+        raise CodedError(422, detail, REQUIRED_NOT_FOUND[(model.__name__, field)], {"id": obj_id})

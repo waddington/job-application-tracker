@@ -50,22 +50,23 @@ const TEXT: Record<ErrorCode, [Record<string, string | number>, string]> = {
   ],
   interview_not_found: [{ id: "x1" }, "Interview x1 not found"],
   interviewer_not_found: [{ id: "x1" }, "interviewer_ids: Contact x1 not found"],
-  link_agency_not_found: [{ id: "x1" }, "entity_id: agency x1 not found"],
-  link_application_not_found: [{ id: "x1" }, "entity_id: application x1 not found"],
-  link_company_not_found: [{ id: "x1" }, "entity_id: company x1 not found"],
-  link_contact_not_found: [{ id: "x1" }, "entity_id: contact x1 not found"],
-  link_document_not_found: [{ id: "x1" }, "entity_id: document x1 not found"],
-  link_interview_not_found: [{ id: "x1" }, "entity_id: interview x1 not found"],
+  entity_agency_not_found: [{ id: "x1" }, "entity_id: agency x1 not found"],
+  entity_application_not_found: [{ id: "x1" }, "entity_id: application x1 not found"],
+  entity_company_not_found: [{ id: "x1" }, "entity_id: company x1 not found"],
+  entity_contact_not_found: [{ id: "x1" }, "entity_id: contact x1 not found"],
+  entity_document_not_found: [{ id: "x1" }, "entity_id: document x1 not found"],
+  entity_interview_not_found: [{ id: "x1" }, "entity_id: interview x1 not found"],
   link_not_found: [{ id: "x1" }, "Link x1 not found"],
-  link_role_not_found: [{ id: "x1" }, "entity_id: role x1 not found"],
+  entity_role_not_found: [{ id: "x1" }, "entity_id: role x1 not found"],
   meeting_id_not_found: [{ id: "x1" }, "meeting_id: Meeting x1 not found"],
   meeting_not_found: [{ id: "x1" }, "Meeting x1 not found"],
+  merge_same_person: [{}, "Pick someone else to merge in: that's the same person."],
   move_not_allowed: [
-    { from_stage: "applied", to_stage: "offer", allowed: "screen, rejected" },
+    { from_stage: "'applied'", to_stage: "'offer'", allowed: "screen, rejected" },
     "can't move from 'applied' to 'offer' (allowed: screen, rejected)",
   ],
   move_not_allowed_none: [
-    { from_stage: "rejected", to_stage: "offer" },
+    { from_stage: "'rejected'", to_stage: "'offer'" },
     "can't move from 'rejected' to 'offer' (allowed: none)",
   ],
   offer_not_found: [{ id: "x1" }, "Offer x1 not found"],
@@ -79,10 +80,10 @@ const TEXT: Record<ErrorCode, [Record<string, string | number>, string]> = {
   ],
   role_id_not_found: [{ id: "x1" }, "role_id: Role x1 not found"],
   role_not_found: [{ id: "x1" }, "Role x1 not found"],
-  stage_unknown: [{ stage: "nope" }, "unknown stage 'nope'"],
+  stage_unknown: [{ stage: "'nope'" }, "unknown stage 'nope'"],
   todo_not_found: [{ id: "x1" }, "Todo x1 not found"],
   undo_inconsistent: [
-    { to_stage: "offer", stage: "applied" },
+    { to_stage: "'offer'", stage: "'applied'" },
     "history is inconsistent: last move went to 'offer', stage is 'applied'",
   ],
   undo_nothing: [{}, "nothing to undo"],
@@ -122,6 +123,10 @@ describe("an error with a code", () => {
     ["role_has_applications", "Contoso has an application. Delete it first, or archive it instead."],
   ] as [ErrorCode, string][])("%s has its own sentence for one", (code, english) => {
     expect(errorText(coded(code, { name: "Contoso", count: 1 }))).toBe(english);
+  });
+
+  it("matches the API's English for a stage id with an apostrophe", () => {
+    expect(errorText(coded("stage_unknown", { stage: `"it's"` }))).toBe(`unknown stage "it's"`);
   });
 
   it("keeps values as written, with nothing escaped", () => {

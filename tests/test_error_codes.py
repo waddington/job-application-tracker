@@ -7,8 +7,11 @@ import re
 from pathlib import Path
 from typing import get_args
 
+import pytest
+from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
+from jat.api.deps import REQUIRED_NOT_FOUND, get_or_404
 from jat.api.errors import ErrorCode, ErrorOut
 from jat.app import create_app
 from jat.datadir import CODE_ROOT, init_data_dir
@@ -147,8 +150,30 @@ def test_a_plain_error_keeps_its_body(client, seeded):
     response = client.get("/api/v1/applications/duplicates", params={"role_title": "Engineer"})
     assert response.status_code == 422
     assert response.json() == {"detail": "Give company_id or company_name."}
-    missing = {"text": "x", "entity_type": "company", "entity_id": "nope"}
-    assert client.post("/api/v1/todos", json=missing).json() == {"detail": "entity_id: company nope not found"}
+
+
+def test_a_model_with_no_code_stays_plain():
+    class Unmapped:
+        pass
+
+    class Empty:
+        def get(self, _model, _id):
+            return None
+
+    with pytest.raises(HTTPException) as error:
+        get_or_404(Empty(), Unmapped, "nope")
+    assert type(error.value) is HTTPException
+    assert (error.value.status_code, error.value.detail) == (404, "Unmapped nope not found")
+
+
+def test_every_require_call_has_a_code():
+    # `require` looks its code up by model and field, so a pair not listed would be a 500.
+    pairs = set()
+    for path in SOURCE.rglob("*.py"):
+        for node in ast.walk(ast.parse(path.read_text())):
+            if isinstance(node, ast.Call) and getattr(node.func, "id", None) == "require":
+                pairs.add((node.args[1].id, node.args[3].value))
+    assert pairs == set(REQUIRED_NOT_FOUND)
 
 
 def test_backup_errors_carry_codes(tmp_path):

@@ -45,7 +45,7 @@ def test_a_company_or_role_in_use_says_how_many(client, seeded):
 
 def test_an_unknown_stage_and_nothing_to_undo(client, seeded):
     url = f"/api/v1/applications/{_application(client, seeded)['id']}"
-    unknown = ("unknown stage 'nope'", "stage_unknown", {"stage": "nope"})
+    unknown = ("unknown stage 'nope'", "stage_unknown", {"stage": "'nope'"})
     _coded(client.post(f"{url}/undo"), 422, "nothing to undo", "undo_nothing")
     _coded(client.post(f"{url}/move", json={"to_stage": "nope"}), 422, *unknown)
     new = {"role_id": seeded["role"]["id"], "route": "direct", "stage": "nope"}
@@ -75,20 +75,20 @@ def test_a_move_not_allowed_has_a_code_for_each_case(tmp_path):
             move(session, workflow, app, "c")
         assert str(some.value) == "can't move from 'a' to 'c' (allowed: b)"
         assert some.value.code == "move_not_allowed"
-        assert some.value.params == {"from_stage": "a", "to_stage": "c", "allowed": "b"}
+        assert some.value.params == {"from_stage": "'a'", "to_stage": "'c'", "allowed": "b"}
 
         move(session, workflow, app, "b")
         with pytest.raises(TransitionError) as none:
             move(session, workflow, app, "a")
         assert str(none.value) == "can't move from 'b' to 'a' (allowed: none)"
         assert none.value.code == "move_not_allowed_none"
-        assert none.value.params == {"from_stage": "b", "to_stage": "a"}
+        assert none.value.params == {"from_stage": "'b'", "to_stage": "'a'"}
 
         app.stage = "a"
         with pytest.raises(TransitionError) as off:
             undo_last_move(session, app)
         assert str(off.value) == "history is inconsistent: last move went to 'b', stage is 'a'"
-        assert (off.value.code, off.value.params) == ("undo_inconsistent", {"to_stage": "b", "stage": "a"})
+        assert (off.value.code, off.value.params) == ("undo_inconsistent", {"to_stage": "'b'", "stage": "'a'"})
     engine.dispose()
 
 
@@ -182,7 +182,7 @@ def test_a_reference_deleted_elsewhere(client, seeded):
     _coded(client.post(apps, json=bad_role), 422, "role_id: Role nope not found", "role_id_not_found", gone)
     link = {"entity_type": "company", "entity_id": "nope", "url": "https://example.com/a"}
     detail = "entity_id: company nope not found"
-    _coded(client.post("/api/v1/links", json=link), 422, detail, "link_company_not_found", gone)
+    _coded(client.post("/api/v1/links", json=link), 422, detail, "entity_company_not_found", gone)
     role_url = f"/api/v1/roles/{role}"
     company = {"company_id": "nope"}
     _coded(
@@ -202,6 +202,28 @@ def test_a_reference_deleted_elsewhere(client, seeded):
     url = f"/api/v1/applications/{_application(client, seeded)['id']}/interviews"
     detail = "interviewer_ids: Contact nope not found"
     _coded(client.post(url, json=interview), 422, detail, "interviewer_not_found", gone)
+
+
+def test_a_stage_id_with_an_apostrophe_keeps_pythons_quotes(client, seeded):
+    url = f"/api/v1/applications/{_application(client, seeded)['id']}/move"
+    response = client.post(url, json={"to_stage": "it's"})
+    _coded(response, 422, 'unknown stage "it\'s"', "stage_unknown", {"stage": '"it\'s"'})
+
+
+def test_merging_someone_with_themselves(client, seeded):
+    who = seeded["recruiter"]["id"]
+    _coded(
+        client.post(f"/api/v1/contacts/{who}/merge", json={"from_id": who}),
+        422,
+        "Pick someone else to merge in: that's the same person.",
+        "merge_same_person",
+    )
+
+
+def test_a_to_do_about_something_deleted_elsewhere(client, seeded):
+    body = {"text": "x", "entity_type": "company", "entity_id": "nope"}
+    detail = "entity_id: company nope not found"
+    _coded(client.post("/api/v1/todos", json=body), 422, detail, "entity_company_not_found", {"id": "nope"})
 
 
 def test_a_call_that_ends_before_it_starts(client, seeded):

@@ -99,7 +99,8 @@ class Workflow:
         try:
             return self.stages[self._index[stage_id]]
         except KeyError:
-            raise WorkflowError(f"unknown stage {stage_id!r}", "stage_unknown", {"stage": stage_id}) from None
+            # The param has its quotes, so the text matches for an id like it's, which repr quotes differently.
+            raise WorkflowError(f"unknown stage {stage_id!r}", "stage_unknown", {"stage": repr(stage_id)}) from None
 
     def has(self, stage_id: str) -> bool:
         return stage_id in self._index

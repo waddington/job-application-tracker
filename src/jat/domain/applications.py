@@ -126,10 +126,12 @@ def move(
     if not allowed_move:
         allowed = ", ".join(workflow.allowed_next(app.stage))
         message = f"can't move from {app.stage!r} to {to_stage!r} (allowed: {allowed or 'none'})"
+        # Stage params have their quotes, as in stage_unknown.
+        from_stage, to = repr(app.stage), repr(to_stage)
         if not allowed:
-            raise TransitionError(message, "move_not_allowed_none", {"from_stage": app.stage, "to_stage": to_stage})
+            raise TransitionError(message, "move_not_allowed_none", {"from_stage": from_stage, "to_stage": to})
         raise TransitionError(
-            message, "move_not_allowed", {"from_stage": app.stage, "to_stage": to_stage, "allowed": allowed}
+            message, "move_not_allowed", {"from_stage": from_stage, "to_stage": to, "allowed": allowed}
         )
     when = occurred_at or utcnow()
     event = Event(
@@ -213,7 +215,7 @@ def undo_last_move(session: Session, app: Application, *, note: str | None = Non
         raise TransitionError(
             f"history is inconsistent: last move went to {last.to_stage!r}, stage is {app.stage!r}",
             "undo_inconsistent",
-            {"to_stage": last.to_stage, "stage": app.stage},
+            {"to_stage": repr(last.to_stage), "stage": repr(app.stage)},
         )
     assert last.from_stage is not None
     event = Event(
