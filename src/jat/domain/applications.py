@@ -7,7 +7,7 @@ history. Nothing here updates or deletes an event: undo appends a correcting eve
 from __future__ import annotations
 
 from datetime import date, datetime, timedelta
-from typing import Any
+from typing import Any, Literal, get_args
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -277,12 +277,27 @@ def log_activity(
     return event
 
 
+# The same keys as `EventMsg` in api/schemas.py (tests/test_event_messages.py checks).
+EventMsgKey = Literal[
+    "event.linkAdded",
+    "event.noteAdded",
+    "event.fileAdded",
+    "event.email",
+    "event.emailNoSubject",
+    "event.emailUnknownSender",
+    "event.emailNoSubjectUnknownSender",
+    "event.cvSent",
+    "event.coverLetterSent",
+    "event.documentSent",
+]
+
+
 def log_message(
     session: Session,
     app: Application,
     kind: str,
     *,
-    key: str,
+    key: EventMsgKey,
     params: dict[str, str],
     summary: str,
     occurred_at: datetime | None = None,
@@ -293,5 +308,7 @@ def log_message(
     `summary` stays what's saved, exported and searched. `data.msg` sits beside whatever `data` holds, and
     `EventMsg` in api/schemas.py lists the keys. Text someone typed has no key: use `log_activity`.
     """
+    if key not in get_args(EventMsgKey):  # saved for good, and a key the API doesn't know would show as null
+        raise ValueError(f"unknown event message key {key!r}")
     data = {**(data or {}), "msg": {"key": key, "params": params}}
     return log_activity(session, app, kind, summary=summary, occurred_at=occurred_at, data=data)

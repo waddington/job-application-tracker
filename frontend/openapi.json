@@ -7,6 +7,7 @@
           "data": {
             "additionalProperties": true,
             "default": {},
+            "description": "Saved with the event, except a `msg`, which is ignored: only the app writes messages.",
             "title": "Data",
             "type": "object"
           },

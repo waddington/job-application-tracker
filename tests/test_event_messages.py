@@ -67,6 +67,20 @@ def test_every_message_has_a_case():
     assert {c["key"] for c in CASES} == KEYS
 
 
+def test_the_writer_accepts_exactly_the_keys_the_api_reads():
+    assert set(get_args(svc.EventMsgKey)) == KEYS
+
+
+def test_a_mistyped_key_is_refused_before_anything_is_saved():
+    session = SimpleNamespace(add=lambda _: pytest.fail("saved"), flush=lambda: None)
+    with pytest.raises(ValueError, match="event.linkAded"):
+        svc.log_message(session, SimpleNamespace(id="a"), "manual", key="event.linkAded", params={}, summary="x")
+
+
+def test_the_api_says_a_logged_msg_is_ignored():
+    assert "msg" in S.ActivityIn.model_fields["data"].description
+
+
 @pytest.mark.parametrize("case", CASES, ids=lambda c: c["summary"])
 def test_each_case_is_a_valid_message(case):
     out = S.EventOut.model_validate(_event({"msg": {"key": case["key"], "params": case["params"]}}))
@@ -114,12 +128,8 @@ def test_a_file_writes_its_message(client, seeded):
     assert event["data"]["attachment_id"] == att["id"]
 
 
-@pytest.mark.parametrize(
-    "key",
-    ["event.email", "event.emailNoSubject", "event.emailUnknownSender", "event.emailNoSubjectUnknownSender"],
-)
-def test_an_email_writes_the_message_for_what_it_has(client, seeded, key):
-    [case] = _case(key)
+@pytest.mark.parametrize("case", [c for c in CASES if c["key"].startswith("event.email")], ids=lambda c: c["summary"])
+def test_an_email_writes_the_message_for_what_it_has(client, seeded, case):
     app_id = _app(client, seeded)
     _upload(client, app_id, "mail.eml", _eml(case["params"].get("subject"), case["params"].get("sender")))
     event = _last(client, app_id)
@@ -128,11 +138,15 @@ def test_an_email_writes_the_message_for_what_it_has(client, seeded, key):
 
 
 @pytest.mark.parametrize(
-    ("kind", "key"),
-    [("cv", "event.cvSent"), ("cover_letter", "event.coverLetterSent"), ("other", "event.documentSent")],
+    ("kind", "case"),
+    [
+        *[("cv", c) for c in _case("event.cvSent")],
+        *[("cover_letter", c) for c in _case("event.coverLetterSent")],
+        *[("other", c) for c in _case("event.documentSent")],
+    ],
+    ids=lambda v: v["summary"] if isinstance(v, dict) else v,
 )
-def test_sending_a_document_writes_its_message(client, seeded, kind, key):
-    [case] = _case(key)
+def test_sending_a_document_writes_its_message(client, seeded, kind, case):
     app_id = _app(client, seeded)
     doc = post(client, "/api/v1/documents", {"kind": kind, "name": case["params"]["name"]})
     version = client.post(f"/api/v1/documents/{doc['id']}/versions", data={"label": case["params"]["label"]}).json()
@@ -143,7 +157,7 @@ def test_sending_a_document_writes_its_message(client, seeded, kind, key):
 
 
 def test_adopting_a_cv_file_writes_its_message(client, seeded):
-    [case] = _case("event.cvSent")
+    case = _case("event.cvSent")[0]
     app_id = _app(client, seeded)
     _upload(client, app_id, "Backend_CV.pdf", PDF)
     [found] = client.get("/api/v1/cv-files").json()
@@ -216,6 +230,7 @@ def test_a_bad_message_on_disk_is_null_through_the_api(client, seeded, app):
     assert next(e for e in r.json()["events"] if e["summary"] == "Old")["msg"] is None
     listed = client.get(f"/api/v1/applications/{app_id}/events")
     assert listed.status_code == 200
+    assert next(e for e in listed.json() if e["summary"] == "Old")["msg"] is None
 
 
 def test_export_and_restore_keep_the_message(client, seeded, app, tmp_path):

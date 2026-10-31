@@ -1285,6 +1285,7 @@ export interface components {
         ActivityIn: {
             /**
              * Data
+             * @description Saved with the event, except a `msg`, which is ignored: only the app writes messages.
              * @default {}
              */
             data: {

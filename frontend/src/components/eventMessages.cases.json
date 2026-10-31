@@ -25,6 +25,14 @@
     "summary": "Contoso - next steps (from Alex Morgan <alex.morgan@example.com>)"
   },
   {
+    "key": "event.email",
+    "params": {
+      "subject": "{{sender}} $t(common:actions.cancel) $& <b>A & B</b>",
+      "sender": "Alex Morgan <alex.morgan@example.com>"
+    },
+    "summary": "{{sender}} $t(common:actions.cancel) $& <b>A & B</b> (from Alex Morgan <alex.morgan@example.com>)"
+  },
+  {
     "key": "event.emailNoSubject",
     "params": { "sender": "Alex Morgan <alex.morgan@example.com>" },
     "summary": "(no subject) (from Alex Morgan <alex.morgan@example.com>)"
@@ -43,6 +51,11 @@
     "key": "event.cvSent",
     "params": { "name": "Backend CV", "label": "v3 (fintech)" },
     "summary": "CV sent: Backend CV v3 (fintech)"
+  },
+  {
+    "key": "event.cvSent",
+    "params": { "name": "{{label}} $& <b>A & B</b>", "label": "{{name}} $t(common:actions.cancel)" },
+    "summary": "CV sent: {{label}} $& <b>A & B</b> {{name}} $t(common:actions.cancel)"
   },
   {
     "key": "event.coverLetterSent",

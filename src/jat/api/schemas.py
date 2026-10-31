@@ -681,7 +681,9 @@ class ActivityIn(In):
     kind: ActivityKind
     summary: str | None = None
     occurred_at: AwareDatetime | None = None
-    data: dict[str, Any] = {}
+    data: dict[str, Any] = Field(
+        default={}, description="Saved with the event, except a `msg`, which is ignored: only the app writes messages."
+    )
 
 
 class TitleParams(BaseModel):
