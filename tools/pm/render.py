@@ -11,7 +11,13 @@ from .live import Snapshot
 from .roadmap import STATUSES, Roadmap, Task
 from .style import CSS, KEEP_FOLDS, THEME_BUTTON, THEME_HEAD
 
-NAV = (("/", "Overview"), ("/board", "Board"), ("/roadmap", "Roadmap"), ("/activity", "Activity"))
+NAV = (
+    ("/", "Overview"),
+    ("/board", "Board"),
+    ("/roadmap", "Roadmap"),
+    ("/activity", "Activity"),
+    ("/agents", "Agents"),
+)
 
 
 def sources(roadmap: Roadmap, snapshot: Snapshot) -> str:

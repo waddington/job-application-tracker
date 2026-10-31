@@ -15,6 +15,7 @@ from .roadmap import BRANCH_PREFIX, Live, PullRequest
 
 SEP = "\x1f"
 PR_LIMIT = 1000
+DETACHED = "(detached)"
 COMMIT_LIMIT = 5000
 AREAS = (
     ("frontend/e2e/", "Browser tests"),
@@ -47,6 +48,11 @@ class Commit:
 class Worktree:
     path: str
     branch: str
+    ahead: int = 0  # commits not on main yet
+    dirty: int = 0  # files with unsaved changes
+    last_commit: str = ""  # the latest commit of its own, not main's
+    last_edit: float = 0.0  # when an unsaved file last changed
+    unreadable: bool = False
 
 
 @dataclass
@@ -149,6 +155,8 @@ def parse_worktrees(output: str) -> list[Worktree]:
             path = line.removeprefix("worktree ")
         elif line.startswith("branch ") and path:
             trees.append(Worktree(path, line.removeprefix("branch refs/heads/")))
+        elif line == "detached" and path:  # mid-rebase, say: it's still being worked in
+            trees.append(Worktree(path, DETACHED))
     return trees
 
 
@@ -171,6 +179,40 @@ def scope_history(root: Path, main: str) -> list[tuple[str, int]]:
             _scope_seen[sha] = count_scope(_run(["git", "show", f"{sha}:{ROADMAP_PATH}"], root))
         history.append((when, _scope_seen[sha]))
     return history
+
+
+def parse_status(output: str) -> list[str]:
+    """The changed files from `git status --porcelain -z`. A rename's second entry is its old name."""
+    names = []
+    entries = iter(output.split("\0"))
+    for entry in entries:
+        if not entry:
+            continue
+        names.append(entry[3:])
+        if "R" in entry[:2] or "C" in entry[:2]:
+            next(entries, None)
+    return names
+
+
+def read_activity(tree: Worktree, main: str) -> None:
+    """Fill in what a worktree is up to. One that can't be read is marked, and the rest carry on."""
+    path = Path(tree.path)
+    try:
+        tree.ahead = int(_run(["git", "rev-list", "--count", f"{main}..HEAD"], path).strip())
+        # With nothing of its own, its latest commit is main's, which says nothing about this worktree.
+        tree.last_commit = _run(["git", "log", "-1", "--format=%cI"], path).strip() if tree.ahead else ""
+        # No optional locks: this runs in the background, where an agent may be committing.
+        status = ["git", "--no-optional-locks", "status", "--porcelain", "-z", "--untracked-files=all"]
+        changed = parse_status(_run(status, path))
+    except (subprocess.SubprocessError, OSError, ValueError):
+        tree.unreadable = True
+        return
+    tree.dirty = len(changed)
+    for name in changed:
+        try:
+            tree.last_edit = max(tree.last_edit, (path / name).stat().st_mtime)
+        except OSError:  # deleted: nothing to date it by
+            continue
 
 
 def _main_ref(root: Path) -> str:
@@ -209,6 +251,9 @@ def collect(root: Path, repo: str) -> Snapshot:
         if len(snapshot.commits) >= COMMIT_LIMIT:
             live.warnings.append(f"git: only the latest {COMMIT_LIMIT} commits are read, so older activity is missing")
         snapshot.worktrees = parse_worktrees(_run(["git", "worktree", "list", "--porcelain"], root))
+        for tree in snapshot.worktrees:
+            if tree.branch != "main":
+                read_activity(tree, main)
         snapshot.areas = code_by_area(root, _run(["git", "ls-files"], root).splitlines())
         snapshot.lines = sum(n[0] for n in snapshot.areas.values())
         snapshot.tests = sum(n[1] for n in snapshot.areas.values())

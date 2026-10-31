@@ -87,7 +87,7 @@ class ParseTests(unittest.TestCase):
             "worktree /tmp/detached\nHEAD 3\ndetached\n"
         )
         trees = parse_worktrees(out)
-        self.assertEqual([t.branch for t in trees], ["main", "worktree-x"])
+        self.assertEqual([t.branch for t in trees], ["main", "worktree-x", "(detached)"])
 
 
 if __name__ == "__main__":
