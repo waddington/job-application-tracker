@@ -25,7 +25,7 @@ export default {
     bonus: "Bonus {{amount}}",
     pension: "Pension {{percent}}%",
     equity: "Equity: {{equity}}",
-    // The one forms repeat the plural until fix-offer-plurals: this PR changes no English.
+    // The one forms repeat the plural: see fix-offer-plurals on the roadmap.
     holiday_one: "{{count}} days' holiday",
     holiday_other: "{{count}} days' holiday",
     months_one: "{{count}} months",
