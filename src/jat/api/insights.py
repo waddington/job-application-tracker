@@ -45,7 +45,7 @@ NodeCode = Literal[
 
 class FlowNode(BaseModel):
     id: str
-    name: str  # in English
+    name: str  # English, or a stage as you wrote it
     kind: str  # a stage's kind, "holding" (where things are waiting) or "outcome" (passed)
     color: str
     reached: int  # applications (or roles, in the whole picture) that got here

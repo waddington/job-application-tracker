@@ -45,6 +45,8 @@ def test_conversations(client, seeded):
     _role(client, company, "Staff Engineer")
 
     out = client.get("/api/v1/insights/conversations").json()
+    # The pitched-roles diagram: every node names itself, and its id isn't a stage's.
+    assert out["flow"]["nodes"] and all(n["code"] == n["id"] for n in out["flow"]["nodes"])
     total = out["total"]
     assert (total["calls_held"], total["calls_booked"], total["calls_cancelled"]) == (3, 1, 1)
     assert (total["pitched"], total["applied"], total["passed"], total["deciding"]) == (5, 2, 2, 1)

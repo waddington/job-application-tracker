@@ -7,7 +7,7 @@ Numbers in brackets are pull requests.
 
 ## 1.2.29 (2026-10-31)
 
-- **Developers:** The Sankey read their text from the translation files, ready for other languages. The English is unchanged (#164).
+- **Developers:** The Sankey reads its text from the translation files, ready for other languages. The English is unchanged. A node in the API gains `code` and `stage_name` (#164).
 
 ## 1.2.28 (2026-10-31)
 

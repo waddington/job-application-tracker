@@ -198,6 +198,12 @@ def test_whole_flow_with_your_own_stages_and_sources(app, client, seeded):
     assert nodes["holding:applied"]["code"] == "holding_applied"
     assert (nodes["holding:phone"]["code"], nodes["holding:phone"]["stage_name"]) == ("holding_other", "Phone call")
     assert nodes["applied"]["code"] is None
+    assert {i: nodes[i]["code"] for i in ("source:referral", "source:recruiter", "source:found", "deciding")} == {
+        "source:referral": "source_referral",
+        "source:recruiter": "source_recruiter",
+        "source:found": "source_found",
+        "deciding": "deciding",
+    }
     # The same spurs on the applications-only flow.
     plain = {n["id"] for n in client.get("/api/v1/insights/flow").json()["nodes"]}
     assert plain == {"applied", "phone", "holding:applied", "holding:phone"}

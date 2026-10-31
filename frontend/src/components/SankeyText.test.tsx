@@ -134,6 +134,34 @@ describe("the chart", () => {
     );
   });
 
+  it("says roles on where things wait too, on a role chart", () => {
+    const { container } = chart(flowOf(2), "role");
+    expect(titles(container)).toContain("Still screening: 2 roles");
+  });
+
+  it("keeps how many reached and how many are still there apart, and works out the share", () => {
+    const { container } = chart({
+      applications: 5,
+      nodes: [
+        node({ id: "a", name: "Applied", reached: 5, current: 2 }),
+        node({ id: "source:found", name: "ignored", code: "source_found", reached: 3 }),
+        node({ id: "b", name: "Screen", reached: 3 }),
+      ],
+      links: [
+        { source: "a", target: "b", value: 3 },
+        { source: "source:found", target: "a", value: 3 },
+      ],
+    });
+    expect(titles(container)).toEqual(
+      expect.arrayContaining([
+        "Applied: 5 applications reached, 2 still there",
+        "Applied → Screen: 3 applications (60% of Applied)",
+        "You found it: 3 applications",
+        "You found it → Applied: 3 applications (100% of You found it)",
+      ]),
+    );
+  });
+
   it("shows the hint, then a node's numbers on hover", () => {
     const { container } = chart(flowOf(2));
     expect(screen.getByText("Hover over a stage or a flow to see its numbers.")).toBeInTheDocument();
