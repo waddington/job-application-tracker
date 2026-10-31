@@ -8,7 +8,7 @@ and how to carry on afterwards, so the work continues as if nothing happened.
 After compaction, the session follows [Resuming](#resuming-after-compaction), and
 [Re-expanding](#re-expanding-what-the-summary-dropped) when it needs a detail back.
 
-Sections 3, 4 and 5 are a snapshot (2026-10-30, after PR #115), and 4a is the live plan, updated after #131 opened;
+Sections 3, 4 and 5 are a snapshot (2026-10-30, after PR #115), and 4a is the live plan, updated after #145 (v1.2.20);
 refresh them before each
 compaction in a small docs PR. This repo is public: nothing here may contain Kai's job-search
 data (no real companies, people, salaries or notes).
@@ -415,110 +415,71 @@ next action.
   - Then: "update … COMPACTION.md again for claude code compact command. i want to continue with
     the i18n work".
 
-### 4a. Current work, 2026-10-30 late evening (read this first; it overrides 4 and 5 where they differ)
+### 4a. Current work, 2026-10-31 (read this first; it overrides 4 and 5 where they differ)
 
 Keep this whole section word for word in the summary: it is the live plan.
 
-**Versions and main.** Released up to v1.2.8; v1.2.9 is PR #131, open. Main has P9, B and P10 on the roadmap. 6 of 15
-`e2e-*` tasks are released. Before trusting anything here, re-read `docs/ROADMAP.yaml` and run `gh pr list`.
+**Versions and main.** Released up to v1.2.20 (#145); no PRs are open and nothing is in flight. All 15 `e2e-*` tasks in
+P9 are done (v1.2.9 to v1.2.19), and `i18n-people` in P8 (v1.2.20). The whole browser suite is 645 tests and passes.
+Before trusting anything here, re-read `docs/ROADMAP.yaml` and run `gh pr list`.
 
-**Kai's instructions for this work, word for word:**
-- "work your way through all p9 browser tests, dont do the security fixes". So: every `e2e-*` task in P9, then
-  stop and report. `deps-*` and `security-alerts` wait until Kai says.
-- "as long as you're not changing UI behaviour/text/etc, I trust you to review the PRs and auto merge and release
-  for the e2e automated browser tests"; "each of the PRs will be a patch I think". This covers `e2e-*` only.
-  Everything else that changes the app, bug fixes included, needs Kai's go-ahead in the current message.
-- "first create automated browser test suite, quite thorough, perhaps a PR per page oor even split furtther by
-  feature. only then can we work on dependency chabnges".
-- "the e2e tests should cover things like (not limitted to): creating an agency; creating a recruiter; editting a
-  recruiter; permutations of all above, e..g with and without agency, recruiter before agentcy, creating agency from
-  within recruiter modal and checking it exists; then same as above for roles, people, applications, etc etc".
-  And "no you add cases too, not me": add your own scenarios, including things going out of sync between pages.
-- "any real bugs, report them in the roadmap. add a new column/status for bugs. this should be on the board and
-  backlog, etc, akin to using Jira to report bugs"; "add a claude.md note so that all future discovered bugs get
-  recorded too"; "ensure all bugs eventually getr recorded". The rule is in CLAUDE.md, *Bugs*.
-- "we already have a baord, the PM dashboard, it just needs some enhancements. Check out
-  http://localhost:8766/overview my PM dashboard for hype-pie, there are a few pages/tabs which show quite a lot more
-  detail than what we currently do in this". Planned as phase P10; not asked to build yet.
-- Dependabot: "please review them, and create PRs with fixes as necessary. When changing dependency versions be sure
-  to test the tool first, both code tests and also automated browser tests / renders".
-- "do 5 then 6" (i18n) was finished: v1.2.1, v1.2.2.
+**Nothing is running: wait for Kai.** The "keep going" loop does not apply right now. Kai scopes each step:
+- P9: "continue with the P9 E2e test tasks but do not make the security fixes or bug fixes" (finished).
+- P8: "do the next single p8 i18n item, and clean up that real names issue in the same PR. it will be another patch. you
+  have my approval to merge and relase after completing tyhe review-fix iteratrive cycle" (finished). That approval was
+  for that one item. Next up when Kai says go: `i18n-interviews-offers`.
+- Bugs: asked which to fix and when, Kai said "none yet". Recording them is still required.
+- Not started, waiting on Kai: `deps-*` and `security-alerts` (the Dependabot fixes, below), P10.
 
-**In flight, in order:**
-1. **PR #131, `e2e-people`** (worktree `.claude/worktrees/e2e-people`, 44 tests passing, 1.2.9). Reviewed, not yet
-   applied: no need to run the reviewer again. The app bugs below are predictions: test them, and record in phase B only
-   what a test confirms. Apply, run twice, `merge.sh 131`, then `ship.sh 1.2.9 131 e2e-people`. The findings:
-   - **Suspected bug, agency typed but not chosen:** typing a new agency then pressing Add person or Enter, without the
-     `+ Add` option, probably saves with no agency and no warning (`CreatableSelect.tsx`). On edit, clearing the text
-     probably keeps the old agency. Test: both, `ArrowDown`+Enter on `+ Add` (exactly one made), and the clearable X.
-   - **Suspected bug, stale edit:** reopening Edit right after saving can overwrite the edit with old values
-     (`ContactFormModal.tsx` resets only on `opened` and `contact?.id`; `refresh` doesn't wait). Test: delay
-     `**/contacts/*/summary` by 1 s, edit the title, save, click Edit at once, expect the new title.
-   - **Suspected bug, New agency draft:** closing the dialog probably keeps the typed name (only a save resets it). Test:
-     reopen, expect an empty Name. Also trigger "Who is it?", cancel, reopen, and expect no error in the person dialog.
-   - **The duplicate agency `test.fail` can stay green after a fix** that refuses and keeps the dialog open: wait for the
-     POST response instead of `toBeHidden`, keep only the count check, and allow the POST.
-   - **Refused tests pass on any failure:** assert the wording (`Email Owner already has taken@example.com`, from
-     `domain/people.py`), and narrow `problems.allow` to the POST or PATCH and the status. Add, each refused with no second
-     person: `TAKEN@Example.com`, and the same LinkedIn profile as `https://www.linkedin.com/in/x/` and
-     `https://linkedin.com/in/x?trk=1`.
-   - **Merge:** also seed on the other person a meeting, a link, a to-do, a Markdown note (check after a reload, and one
-     made just before the merge), an application where both hold the same relation (one row), and a phone both have (one
-     detail).
-   - **Agency permutations:** an "exactly one" helper for inline creates; an existing agency's name in other capitals
-     (no `+ Add`, no second one); an inner double space (`Twin  Agency`); typing while GET `/agencies` is delayed; a recruiter
-     with details and a title then given an agency (details unchanged); edit, make an agency inline, Cancel; edit, change
-     the name, Cancel, reopen (nothing sent); the pencil on an agency's page, moving someone away.
-   - **Tests claiming more than they check:** "says when no one matches" should assert `No matches.`; "first in the list"
-     should use `Zzz Star` and assert order; wait for `Alex Morgan` before the hidden check after a delete; seed a role and
-     a detail on the person-page test and follow the application link; `exact: true` on `Company Person`.
-   - **Agency edit and delete** belong in `e2e-companies`: a rename showing on a recruiter's tile, clearing the website, and
-     a delete leaving recruiters with `agency_id: null`.
-   - **Suspected, separate:** `MergePerson.tsx`'s LinkedIn regex keeps only the first path segment of `/pub/`, so its "same
-     LinkedIn" nudge can fire for two different people.
-2. **This doc's PR**, if still open: merge it (internal docs merge without asking).
-3. **Then the remaining tasks, in order:** `e2e-companies` (agencies were partly covered in people: create, rename and
-   delete, from their pages and inside other dialogs, what can't be deleted), `e2e-interviews-calls`, `e2e-offers`,
-   `e2e-documents`, `e2e-notes-files`, `e2e-insights`, `e2e-timeline-search`, `e2e-shell`. Their full scope is in the
-   roadmap. Hold each to the permutation standard above.
-4. **Then stop and report to Kai.** Bring: the open bugs, and the questions below.
+**Kai's latest word on how to work:**
+- "all deletes should have a confirmation dialog/modal". Recorded as `fix-deletes-no-confirm` and
+  `fix-call-delete-no-confirm`; not fixed.
+- "why are you making changes via tmp files and not working in the worktree directly": edit worktree files directly
+  with the Edit tool. A script only for a truly mechanical bulk change. Patch scripts kept breaking on Prettier's wrapping.
+- "have you started yet? the pm dashboard doesnt show anything in progress?": the dashboard reads `worktree-<id>`
+  branches and PRs, so push the branch as soon as work starts, not after it's done.
+- "how tf is pr 131 still open??????" and "was antyhing done in the last 90 minutes…": never leave a ready PR unmerged
+  when approval covers it, and never report and stop while approved work remains. A subagent's report isn't the end of
+  the job: check for open PRs before going quiet.
+- Mid-turn "sitrep" questions get a short honest answer straight away, then carry on.
 
-**The loop for each e2e task:**
-- From the main checkout: `git fetch -q && git worktree add -q .claude/worktrees/<task> -b worktree-<task> origin/main`,
-  then EnterWorktree with `path`. (EnterWorktree needs the cwd to be in a git repo: `cd` to the main checkout first.)
-- Read the components first for exact labels. Write `frontend/e2e/<area>.spec.ts`, importing from `./fixtures`.
-- `bash <tmp>/deps/e2e.sh <area>.spec` runs format, typecheck, lint and the spec. Pass twice. A ✘ on a `test.fail` is
-  expected and still counts as passed. A review or a finding of a bug gets a `test.fail` test plus a roadmap entry.
-- Commit, push. Merge main in first if it moved, and **check for conflicts before finish.py** (it now refuses).
-- `python3 <tmp>/deps/finish.py <task> "<what it covers>" "<PR title>"`: patch bump, changelog, roadmap done, PR.
-- Background `general-purpose` reviewer: name the PR, the spec path and the app files in that worktree; "Use Read only
-  (Bash may be refused; don't work around that)"; look for assertions that can pass when the feature is broken, missing
-  permutations, real bugs the code suggests (say what to test to confirm), flakiness; must_fix / should_fix / nit with
-  line numbers; maximum 8 items. Every review so far found real weaknesses, and two found real bugs.
-- Fix, run twice. `bash <tmp>/deps/merge.sh <pr>` from the worktree. ExitWorktree keep. From the main checkout:
-  `bash <tmp>/deps/ship.sh <version> <pr> <task>` (pull, clean up, tag, release, rebuild the frontend, check the tracker).
-- While a review runs, start the next task in a parallel worktree (branch from origin/main). finish.py takes the next
-  version from the branch, so merge main in before running it.
-- `<tmp>` is `/home/kai/.claude/jobs/cf5328f4/tmp`. If the scripts are gone, rewrite them from this description. Scratch
-  files go in `<tmp>/deps/`.
-
-**Open bugs (phase B; all recorded, owner Kai; none to fix without a go-ahead):**
-- `fix-applied-date-wipe` (high): saving Details after a move to Applied wipes the date. Two `test.fail` tests. Can
-  have hit Kai's real data; I recommended fixing it first and Kai hasn't answered.
-- `fix-add-another-role-carries-over` (medium): one `test.fail` test.
-- `fix-duplicate-role` (medium): Add role twice makes two roles, with no backend dedup. Kai: "shouldnt there be some
-  backend dedup to prevent that? Record it as a bug". Its pinned test becomes `test.fail` in #131.
-- `fix-duplicate-agency-name` (medium): one `test.fail` test (in #131).
-- `fix-deleted-person-404`, `fix-edit-role-list-covers-form`, `fix-cancel-leaves-created-entity` (low).
-Remove a bug's `test.fail` in the PR that fixes it. A fix branch is `worktree-<bug id>`, and the board follows it.
+**Open bugs (phase B; 56, all recorded, owner Kai; none to fix without a go-ahead).** Each has a `test.fail` or a detail
+in the roadmap; remove a bug's `test.fail` in the PR that fixes it. Branch `worktree-<bug id>`, and the board follows it.
+- High: `fix-applied-date-wipe` (may have hit Kai's real data; I recommended it first, with the two 422s below).
+- Medium, can't edit: `fix-person-move-blocks-application`, `fix-agency-delete-blocks-application-save` (every edit gets 422).
+- Medium, lost or overwritten data: `fix-person-saved-before-new-company`, `fix-note-reopen-stale`, `fix-stale-edit-after-save`,
+  `fix-typed-agency-lost`, `fix-emptied-agency-kept`, `fix-call-delete-no-confirm`, `fix-deletes-no-confirm`.
+- Medium, silent or wrong: `fix-hidden-link-blocks-save`, `fix-timeline-load-error-silent`, `fix-link-rename-cancel-saves`.
+- Medium, 500 on overlapping writes (`database is locked`): `fix-double-save-locked`, `fix-link-rename-tick-error`.
+- Medium, duplicates: `fix-duplicate-agency-name`, `fix-duplicate-company-name`, `fix-duplicate-role`. Also
+  `fix-add-another-role-carries-over`.
+- Low: 37 more, in the roadmap.
+Told to Kai but unconfirmed, not recorded: the backup hint says `jat init` where the restore docs say `jat restore`.
 
 **Settled:** two people can share a name. Kai: "yes there can be 2 people with the same name". Keep that test pinned; it
 isn't a bug.
 
-**Waiting on Kai:**
-- Which bugs to fix, and when. Kai: "the bugs: youre not fixing them now, only recording them".
-- P10 isn't now. Kai: "we're not doing p10 or anything else yet, we're doing p9 the e2e tests".
-- The Dependabot PRs after P9.
+**The running tracker** on 8770 is still on 1.2.10's backend, serving the rebuilt frontend. Nothing behaves differently
+(only a docstring and the version changed in the backend), and I offered to restart it; it may be in Kai's terminal.
+
+**The loop for the next i18n area** (`i18n-interviews-offers`, then `i18n-files-notes`, `i18n-insights`, `i18n-timeline`,
+`i18n-errors`, `i18n-events`, `i18n-finish`; one per go-ahead):
+- Read the area and the last entry in `docs/rfc/i18n.md`. Worktree `worktree-<id>`; push early.
+- Move strings to `frontend/src/locales/en/<namespace>.ts`; add the files to `TRANSLATED` in `frontend/eslint.config.js`.
+  Your words go into `<Trans>` as components, never `values`. A regex with `//` gets its own line, for the unused-key
+  scanner. Pass `TFunction<"namespace">`, not `ReturnType<typeof useTranslation>["t"]` (too deep for TypeScript).
+- Add the area's views to `scripts/i18n/text_snapshot.py`. `bash <tmp>/deps/i18n_snapshot.sh` from the worktree compares
+  main's build with the branch's: it must say 0 view parts differ, and no view "couldn't open".
+- A `*Text.test.tsx` pins what the snapshot can't reach: plurals, hover titles, errors, confirmations.
+- `pr-<task>.md` in `<tmp>/deps/` is the PR body; `python3 <tmp>/deps/finish_i18n.py <task> "<what>" "<title>"` bumps, writes
+  the changelog, marks the roadmap done and opens the PR.
+- Review, fix, run everything, `merge.sh <pr>`, then `ship.sh <version> <pr> <task>` from the main checkout. Add the
+  RFC's Built entry in the PR. Don't stop after the merge without checking the release exists.
+
+**The loop's scripts,** in `<tmp>` = `/home/kai/.claude/jobs/cf5328f4/tmp`: `deps/e2e.sh <spec>` (format, typecheck, lint,
+one spec), `deps/merge_main.sh` (merge main; a roadmap conflict keeps both sides, then `deps/roadmap_dedupe.py` leaves one
+line per id, the longer), `deps/merge.sh`, `deps/ship.sh`, `deps/finish.py` (tests-only PRs). If they're gone, rewrite them
+from this description. `e2e.sh`'s `tail -1` hides a failure: read `tail -2` or the whole output.
 
 **Dependabot, already reviewed (31 alerts: 27 open, 4 auto-dismissed; no PRs made). Three PRs, one per lockfile:**
 - `deps-python`, `uv.lock`: certifi to 2026.10.18 (critical advisory; only pulled in by httpx, a dev dependency, despite
@@ -527,11 +488,7 @@ isn't a bug.
   bundle), undici to 8.12.2 (via jsdom, tests only), zod to 4.6.6 (via the eslint plugin, lint only).
 - `deps-website`: fast-uri to 3.1.9, undici to 8.12.2. Check what pulls them in after installing (`pnpm why`).
 - Test each with pytest, vitest, `pnpm e2e`, and for the website a build and a screenshot. These are patches and need
-  Kai's approval to merge (the e2e approval doesn't cover them). `<tmp>/deps/drive.py` is an early smoke script, now
-  replaced by the suite.
-
-**P8 (i18n) is paused** at step 6 done. When Kai returns to it: `i18n-people` next, with the cutover loop in section 6,
-and `scripts/i18n/text_snapshot.py` opens the Applications and Roles dialogs already. Kai previews each before merging.
+  Kai's approval to merge.
 
 **PM dashboard.** http://127.0.0.1:8767 runs from the main checkout as a background job of this session (`python3 -m
 tools.pm`). It reads the main checkout's roadmap, so **pull main after every merge, roadmap-only ones too**, or Kai's
@@ -551,6 +508,7 @@ hiding empty columns on phones (`.col.empty`).
   request fails the test unless `problems.allow(/…/)`.
 - Tests in a file share data: use unique names, make what you need through the API, and don't rely on counts. A failed
   test restarts the worker and reseeds.
+- A `test.fail` must not rest on timing: freeze staleness with `page.clock.setFixedTime`, hold overlapping requests in `page.route` and release them together, wait for retries with the loader gone. And it must go green for any shape of fix: check the outcome, not the wording.
 - Check `toBeHidden` only after something else has loaded, or it passes during loading. After "nothing happened",
   watch for non-GET requests. A mocked request can't prove the server's state, so check the UI there.
 - Mantine: `getByLabel` needs `exact: true` or `.first()` (a hidden twin); SegmentedControl: click its label text;
