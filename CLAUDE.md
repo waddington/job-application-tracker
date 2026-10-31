@@ -77,8 +77,8 @@ roadmap is `docs/ROADMAP.yaml`, shown by the PM dashboard (see "Project manageme
 ## Versions and releases
 The app follows [semantic versioning](https://semver.org/), from 1.0.0. **Every PR that changes
 what people get (the app, the website, the README or the guide) bumps the version in that
-PR.** PRs that only touch internal planning files (`CLAUDE.md`, `docs/ROADMAP.yaml`,
-`docs/COMPACTION.md`, `docs/IDEAS.md`, `var/`) don't.
+PR.** PRs that only touch internal files (`CLAUDE.md`, `docs/ROADMAP.yaml`, `docs/COMPACTION.md`,
+`docs/IDEAS.md`, `var/`, and the PM dashboard: `tools/pm`, `tests/pm`) don't, and so get no release.
 
 - **Patch (1.0.0 → 1.0.1): most PRs.** Fixes, wording, docs, screenshots, refactors, tests,
   tooling, small tweaks to something that already exists.
