@@ -22,6 +22,7 @@ import { Fragment, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { PersonName } from "../components/GhostMark";
+import { timelineTitle } from "../components/timelineTitle";
 import { useAgencies, useCompanies, useContacts } from "../api/hooks";
 import {
   CATEGORIES,
@@ -153,7 +154,7 @@ export function TimelineRow({ item, showDate }: { item: TimelineItem; showDate?:
       </Badge>
       <Stack gap={2} style={{ minWidth: 0 }}>
         <Text size="sm" fw={500}>
-          {item.title}
+          {timelineTitle(item)}
         </Text>
         {item.detail && (
           <Text size="xs" c="dimmed" lineClamp={2}>
@@ -374,15 +375,16 @@ function LanesView({ items, now, since }: { items: TimelineItem[]; now: string; 
                         const when = item.all_day
                           ? date
                           : t("dateTime", { date, time: timeOf(item, t, lang) });
+                        const title = timelineTitle(item);
                         return (
                           <li key={item.id}>
-                            <Tooltip label={t("lanes.dotHover", { when, title: item.title })} withArrow>
+                            <Tooltip label={t("lanes.dotHover", { when, title })} withArrow>
                               <Box
                                 component="button"
                                 aria-label={t("lanes.dot", {
                                   when,
                                   kind: i18n.t(cat.one),
-                                  title: item.title,
+                                  title,
                                 })}
                                 onClick={() => router.history.push(hrefOf(item))}
                                 style={{

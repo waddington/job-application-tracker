@@ -46,6 +46,26 @@ Category = Literal[
 ]
 CATEGORIES: tuple[str, ...] = Category.__args__
 
+# What sort of entry it is, so the frontend can word its title (docs/rfc/i18n.md).
+Kind = Literal[
+    "stage-event",
+    "other-event",
+    "interview",
+    "offer-reply",
+    "meeting",
+    "role",
+    "role-added",
+    "role-passed",
+    "company",
+    "agency",
+    "contact",
+    "contact-waiting",
+    "contact-chased",
+    "contact-closed",
+    "contact-to-read",
+    "note",
+]
+
 
 class TimelinePerson(BaseModel):
     id: str
@@ -64,7 +84,8 @@ class TimelineItem(BaseModel):
     at: datetime
     all_day: bool  # `at` stands for a calendar date (shown without a time)
     category: Category
-    title: str
+    kind: Kind
+    title: str  # the English, for older clients; the frontend words the title itself from `kind`
     detail: str | None = None
     application_id: str | None = None
     role_title: str | None = None
@@ -215,6 +236,7 @@ def timeline(
                     at=e.occurred_at,
                     all_day=False,
                     category=_event_category(e),
+                    kind="stage-event" if e.kind == STAGE_CHANGE else "other-event",
                     title=_event_title(e, stage_names),
                     detail=_detail(e),
                 )
@@ -240,6 +262,7 @@ def timeline(
                 at=when,
                 all_day=False,
                 category="interview",
+                kind="interview",
                 title=f"{interviews_svc.label(i)} ({status})",
                 people=panel,
             )
@@ -258,6 +281,7 @@ def timeline(
                     at=_day(o.respond_by),
                     all_day=True,
                     category="offer",
+                    kind="offer-reply",
                     title=f"Reply due on the offer: {offers_svc.headline(o)}",
                 )
             )
@@ -277,6 +301,7 @@ def timeline(
             at=m.starts_at,
             all_day=False,
             category="meeting",
+            kind="meeting",
             title=f"{meeting_label(m, c.name)} ({'booked' if m.status == 'scheduled' else m.status})",
             detail=m.notes or m.agenda,
             roles=from_call[m.id],
@@ -313,6 +338,7 @@ def timeline(
                     at=r.created_at,
                     all_day=False,
                     category="role",
+                    kind="role",
                     title=f"{who.name} pitched {r.title} at {co.name if co else '?'}",
                     detail=r.description,
                     **base,
@@ -325,6 +351,7 @@ def timeline(
                     at=r.created_at,
                     all_day=False,
                     category="added",
+                    kind="role-added",
                     title=f"Added role {r.title} at {co.name if co else '?'}",
                     **base,
                 )
@@ -336,6 +363,7 @@ def timeline(
                     at=_day(r.decided_on),
                     all_day=True,
                     category="role",
+                    kind="role-passed",
                     title=f"Passed on {r.title} at {co.name if co else '?'}",
                     detail=r.decision_reason,
                     **base,
@@ -349,6 +377,7 @@ def timeline(
                 at=c.created_at,
                 all_day=False,
                 category="added",
+                kind="company",
                 title=f"Added company {c.name}",
                 company_id=c.id,
                 company_name=c.name,
@@ -361,6 +390,7 @@ def timeline(
                 at=ag.created_at,
                 all_day=False,
                 category="added",
+                kind="agency",
                 title=f"Added agency {ag.name}",
                 agency_id=ag.id,
                 agency_name=ag.name,
@@ -369,7 +399,13 @@ def timeline(
     for c in contacts.values():
         items.append(
             about_contact(
-                c, id=f"contact:{c.id}", at=c.created_at, all_day=False, category="added", title=f"Added {c.name}"
+                c,
+                id=f"contact:{c.id}",
+                at=c.created_at,
+                all_day=False,
+                category="added",
+                kind="contact",
+                title=f"Added {c.name}",
             )
         )
         # A chase restarts the waiting on the same day: "Chased X" says it, once.
@@ -381,6 +417,7 @@ def timeline(
                     at=_day(c.awaiting_reply_since),
                     all_day=True,
                     category="message",
+                    kind="contact-waiting",
                     title=f"Replied to {c.name}; waiting to hear back",
                 )
             )
@@ -392,6 +429,7 @@ def timeline(
                     at=_day(c.chased_on),
                     all_day=True,
                     category="message",
+                    kind="contact-chased",
                     title=f"Chased {c.name}",
                 )
             )
@@ -403,6 +441,7 @@ def timeline(
                     at=_day(c.closed_on),
                     all_day=True,
                     category="other",
+                    kind="contact-closed",
                     title=f"{c.name}: {'ghosted' if c.closed_as == 'ghosted' else 'not interested'}",
                 )
             )
@@ -414,6 +453,7 @@ def timeline(
                     at=_day(c.reply_to_read_since),
                     all_day=True,
                     category="message",
+                    kind="contact-to-read",
                     title=f"{c.name} replied; to read",
                 )
             )
@@ -447,6 +487,7 @@ def timeline(
                 at=n.created_at,
                 all_day=False,
                 category="note",
+                kind="note",
                 title=f"Note: {n.title}",
                 role_id=role.id if role else None,
                 role_title=role.title if role else None,

@@ -3524,6 +3524,11 @@ export interface components {
             /** Id */
             id: string;
             /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "stage-event" | "other-event" | "interview" | "offer-reply" | "meeting" | "role" | "role-added" | "role-passed" | "company" | "agency" | "contact" | "contact-waiting" | "contact-chased" | "contact-closed" | "contact-to-read" | "note";
+            /**
              * People
              * @default []
              */

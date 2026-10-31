@@ -112,6 +112,12 @@ describe("a row", () => {
     expect(await screen.findByText("5 Mar")).toBeTruthy();
   });
 
+  it("words the title itself when it has text for that kind", async () => {
+    await wrapped(<TimelineRow item={item({ kind: "company", company_name: "Example Co" })} />);
+    expect(await screen.findByText("Added company Example Co")).toBeTruthy();
+    expect(screen.queryByText("the API's title")).toBeNull();
+  });
+
   it("leaves the API's title and detail as they came", async () => {
     await wrapped(<TimelineRow item={item({ title: "Moved to <Screen>", detail: "{{not}} a value" })} />);
     expect(await screen.findByText("Moved to <Screen>")).toBeTruthy();
@@ -206,6 +212,25 @@ describe("the lanes", () => {
     const dot = screen.getByRole("button", { name: "5 Mar 2026 09:07 · Call: the API's title" });
     fireEvent.mouseEnter(dot);
     expect(await screen.findByText("5 Mar 2026 09:07 · the API's title")).toBeTruthy();
+  });
+
+  it("words a dot's title itself when it has text for that kind", async () => {
+    serve([
+      item({
+        id: "d",
+        kind: "role-added",
+        role_id: "r1",
+        role_title: "Engineer",
+        company_name: "Example Co",
+        category: "added",
+      }),
+    ]);
+    await wrapped(<TimelinePage />, "/?view=lanes&period=all");
+    const dot = await screen.findByRole("button", {
+      name: "5 Mar 2026 09:07 · Added: Added role Engineer at Example Co",
+    });
+    fireEvent.mouseEnter(dot);
+    expect(await screen.findByText("5 Mar 2026 09:07 · Added role Engineer at Example Co")).toBeTruthy();
   });
 
   it("leaves the time off an all-day dot", async () => {

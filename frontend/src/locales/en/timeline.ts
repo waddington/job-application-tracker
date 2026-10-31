@@ -1,6 +1,6 @@
 // The Timeline page: its filters, list, lanes and kinds of thing, and the rows Today's recent list
-// shares (docs/rfc/i18n.md §15). An entry's title and detail still come from the API in English
-// (i18n-timeline-titles, i18n-timeline-records). Names of roles, companies and people are your data.
+// shares (docs/rfc/i18n.md §15). Some entries' titles are in `titles`; the rest, and every detail, still
+// come from the API in English (i18n-timeline-records). Names of roles, companies and people are your data.
 export default {
   title: "Timeline",
   description:
@@ -43,6 +43,22 @@ export default {
     file: { label: "Files", one: "File" },
     added: { label: "Companies, agencies and people added", one: "Added" },
     other: { label: "Other", one: "Other" },
+  },
+  // An entry's title. Must match the API's `title` in English: timelineTitles.cases.json proves it.
+  // "?" stands for a company that isn't there any more, as the API has always written it.
+  titles: {
+    pitched: "{{person}} pitched {{role}} at {{company}}",
+    pitchedNoCompany: "{{person}} pitched {{role}} at ?",
+    roleAdded: "Added role {{role}} at {{company}}",
+    roleAddedNoCompany: "Added role {{role}} at ?",
+    rolePassed: "Passed on {{role}} at {{company}}",
+    rolePassedNoCompany: "Passed on {{role}} at ?",
+    company: "Added company {{company}}",
+    agency: "Added agency {{agency}}",
+    contact: "Added {{person}}",
+    contactWaiting: "Replied to {{person}}; waiting to hear back",
+    contactChased: "Chased {{person}}",
+    contactToRead: "{{person}} replied; to read",
   },
   allDay: "All day",
   dateTime: "{{date}} {{time}}",
