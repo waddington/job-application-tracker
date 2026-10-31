@@ -1,8 +1,8 @@
-import { notifications } from "@mantine/notifications";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api, unwrap, type Schemas } from "./client";
 import { invalidateApplicationViews, keys } from "./hooks";
+import { notifyError } from "./notifyError";
 import { i18n } from "../i18n";
 
 export type RoleSummary = Schemas["RoleSummary"];
@@ -29,10 +29,6 @@ export function roleBadge(role: RoleSummary): { label: string; color: string } {
   // closed_as is the stage's name, as written in config.toml.
   const label = role.status === "closed" && role.closed_as ? role.closed_as : i18n.t(status.label);
   return { label, color: status.color };
-}
-
-function notifyError(error: Error) {
-  notifications.show({ color: "red", title: "That didn't work", message: error.message });
 }
 
 /** Roles with where they came from and where they stand, oldest first. */

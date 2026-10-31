@@ -15,6 +15,7 @@ from fastapi.staticfiles import StaticFiles
 
 from . import __version__
 from .api.deps import WorkflowCache, WriteNotifier
+from .api.errors import CodedError, coded_error_handler
 from .api.routers import router as api_v1
 from .config import Settings, resolve_data_dir
 from .datadir import CODE_ROOT, check_outside_code_repo, is_git_repo
@@ -121,6 +122,7 @@ def create_app(
         openapi_url="/api/openapi.json",
         redoc_url=None,
     )
+    app.add_exception_handler(CodedError, coded_error_handler)
     engine = make_engine(db_path(data_dir))
     app.state.engine = engine
     app.state.sessions = session_factory(engine)

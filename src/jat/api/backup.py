@@ -13,6 +13,7 @@ from starlette.background import BackgroundTask
 
 from ..snapshot.archive import write_archive
 from ..snapshot.git import SnapshotError, SnapshotService
+from .errors import CodedError
 
 router = APIRouter(prefix="/backup", tags=["backup"])
 
@@ -56,7 +57,7 @@ def snapshot(request: Request):
     try:
         commit = service.snapshot_now()
     except SnapshotError as exc:
-        raise HTTPException(status_code=409, detail=str(exc)) from exc
+        raise CodedError(409, str(exc), exc.code, exc.params) from exc
     return {"commit": commit, "status": service.status().as_dict()}
 
 
@@ -66,7 +67,7 @@ def push(request: Request):
     try:
         output = service.push()
     except SnapshotError as exc:
-        raise HTTPException(status_code=409, detail=str(exc)) from exc
+        raise CodedError(409, str(exc), exc.code, exc.params) from exc
     return {"output": output, "status": service.status().as_dict()}
 
 

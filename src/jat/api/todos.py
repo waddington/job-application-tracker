@@ -15,6 +15,7 @@ from ..db.types import utcnow
 from . import schemas as S
 from .crud import values
 from .deps import ENTITY_MODELS, SessionDep, get_or_404
+from .errors import CodedError
 
 router = APIRouter(prefix="/todos", tags=["to-dos"])
 
@@ -97,7 +98,7 @@ def create_todo(body: S.TodoIn, session: SessionDep):
     data = values(body, partial=False)
     data["text"] = data["text"].strip()
     if not data["text"]:
-        raise HTTPException(422, "text: say what needs doing")
+        raise CodedError(422, "text: say what needs doing", "todo_text_required")
     todo = Todo(**data)
     session.add(todo)
     session.flush()
@@ -111,7 +112,7 @@ def update_todo(todo_id: str, body: S.TodoPatch, session: SessionDep):
     if "text" in data:
         data["text"] = data["text"].strip()
         if not data["text"]:
-            raise HTTPException(422, "text: say what needs doing")
+            raise CodedError(422, "text: say what needs doing", "todo_text_required")
     if "done" in data:
         done = data.pop("done")
         if done and todo.done_at is None:

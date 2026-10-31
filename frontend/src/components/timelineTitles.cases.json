@@ -1,0 +1,119 @@
+[
+  {
+    "kind": "role",
+    "person": "Sam Sample",
+    "role": "Platform Engineer",
+    "company": "Contoso",
+    "title": "Sam Sample pitched Platform Engineer at Contoso"
+  },
+  {
+    "kind": "role",
+    "person": "{{role}} <b>Sam</b> & \"Co\"",
+    "role": "$t(common:actions.cancel) $& {{company}}",
+    "company": "<i>Q&A</i> é: {{person}}",
+    "title": "{{role}} <b>Sam</b> & \"Co\" pitched $t(common:actions.cancel) $& {{company}} at <i>Q&A</i> é: {{person}}"
+  },
+  {
+    "kind": "role",
+    "person": "Sam Sample",
+    "role": "Platform Engineer",
+    "company": null,
+    "title": "Sam Sample pitched Platform Engineer at ?"
+  },
+  {
+    "kind": "role-added",
+    "person": null,
+    "role": "Data Engineer",
+    "company": "Contoso",
+    "title": "Added role Data Engineer at Contoso"
+  },
+  {
+    "kind": "role-added",
+    "person": null,
+    "role": "$t(common:actions.cancel) $& <b>{{company}}</b>",
+    "company": "<i>Q&A</i> {{role}}",
+    "title": "Added role $t(common:actions.cancel) $& <b>{{company}}</b> at <i>Q&A</i> {{role}}"
+  },
+  {
+    "kind": "role-added",
+    "person": null,
+    "role": "Data Engineer",
+    "company": null,
+    "title": "Added role Data Engineer at ?"
+  },
+  {
+    "kind": "role-passed",
+    "person": null,
+    "role": "Data Engineer",
+    "company": "Contoso",
+    "title": "Passed on Data Engineer at Contoso"
+  },
+  {
+    "kind": "role-passed",
+    "person": "Sam Sample",
+    "role": "Data Engineer",
+    "company": "Contoso",
+    "title": "Passed on Data Engineer at Contoso"
+  },
+  {
+    "kind": "role-passed",
+    "person": null,
+    "role": "$t(common:actions.cancel) $& <b>{{company}}</b>",
+    "company": "<i>Q&A</i> {{role}}",
+    "title": "Passed on $t(common:actions.cancel) $& <b>{{company}}</b> at <i>Q&A</i> {{role}}"
+  },
+  {
+    "kind": "role-passed",
+    "person": null,
+    "role": "Data Engineer",
+    "company": null,
+    "title": "Passed on Data Engineer at ?"
+  },
+  {
+    "kind": "role-passed",
+    "person": "Sam Sample",
+    "role": "Data Engineer",
+    "company": null,
+    "title": "Passed on Data Engineer at ?"
+  },
+  { "kind": "company", "company": "Contoso", "title": "Added company Contoso" },
+  {
+    "kind": "company",
+    "company": "$t(common:actions.cancel) $& <b>{{company}}</b>",
+    "title": "Added company $t(common:actions.cancel) $& <b>{{company}}</b>"
+  },
+  { "kind": "agency", "agency": "Northwind Talent", "title": "Added agency Northwind Talent" },
+  {
+    "kind": "agency",
+    "agency": "$t(common:actions.cancel) $& <b>{{agency}}</b>",
+    "title": "Added agency $t(common:actions.cancel) $& <b>{{agency}}</b>"
+  },
+  { "kind": "contact", "person": "Sam Sample", "title": "Added Sam Sample" },
+  {
+    "kind": "contact",
+    "person": "$t(common:actions.cancel) $& <b>{{person}}</b>",
+    "title": "Added $t(common:actions.cancel) $& <b>{{person}}</b>"
+  },
+  {
+    "kind": "contact-waiting",
+    "person": "Sam Sample",
+    "title": "Replied to Sam Sample; waiting to hear back"
+  },
+  {
+    "kind": "contact-waiting",
+    "person": "$t(common:actions.cancel) $& <b>{{person}}</b>",
+    "title": "Replied to $t(common:actions.cancel) $& <b>{{person}}</b>; waiting to hear back"
+  },
+  { "kind": "contact-chased", "person": "Sam Sample", "title": "Chased Sam Sample" },
+  {
+    "kind": "contact-chased",
+    "person": "$t(common:actions.cancel) $& <b>{{person}}</b>",
+    "title": "Chased $t(common:actions.cancel) $& <b>{{person}}</b>"
+  },
+  { "kind": "contact-to-read", "person": "Sam Sample", "title": "Sam Sample replied; to read" },
+  {
+    "kind": "contact-to-read",
+    "person": "$t(common:actions.cancel) $& <b>{{person}}</b>",
+    "title": "$t(common:actions.cancel) $& <b>{{person}}</b> replied; to read"
+  }
+]

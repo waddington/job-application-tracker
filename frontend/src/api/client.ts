@@ -1,5 +1,6 @@
 import createClient from "openapi-fetch";
 
+import { i18n } from "../i18n";
 import type { components, paths } from "./schema";
 
 /** Typed client for the local API. Types are generated from openapi.json (`pnpm gen:api`). */
@@ -19,6 +20,7 @@ export type Agency = Schemas["AgencyOut"];
 export type Contact = Schemas["ContactOut"];
 export type Role = Schemas["RoleOut"];
 export type ApiEvent = Schemas["EventOut"];
+export type ErrorCode = NonNullable<Schemas["ErrorOut"]["code"]>;
 
 /** Turn an openapi-fetch error body into a readable message. */
 export function errorMessage(error: unknown): string {
@@ -31,13 +33,29 @@ export function errorMessage(error: unknown): string {
         .join("; ");
     }
   }
-  return "Something went wrong";
+  return i18n.t("errors:somethingWrong");
+}
+
+/** A failed API call. `message` is the API's English detail; a code, when there is one, has text in `errors`. */
+export class ApiError extends Error {
+  readonly code?: ErrorCode;
+  readonly params?: Record<string, string | number>;
+
+  constructor(body: unknown) {
+    super(errorMessage(body));
+    this.name = "ApiError";
+    if (body && typeof body === "object") {
+      const { code, params } = body as Partial<Schemas["ErrorOut"]>;
+      if (typeof code === "string") this.code = code;
+      if (params && typeof params === "object") this.params = params;
+    }
+  }
 }
 
 /** Unwrap an openapi-fetch result or throw with a readable message (for TanStack Query). */
 export function unwrap<T>(result: { data?: T; error?: unknown }): T {
   if (result.error !== undefined || result.data === undefined) {
-    throw new Error(errorMessage(result.error));
+    throw new ApiError(result.error);
   }
   return result.data;
 }

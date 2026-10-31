@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { useToday } from "../utils/useToday";
 import { api, unwrap, type Schemas } from "./client";
+import { notifyError } from "./notifyError";
 
 export type Todo = Schemas["TodoOut"];
 export type TodoAbout = NonNullable<Schemas["TodoIn"]["entity_type"]>;
@@ -12,10 +13,6 @@ export interface TodoFilters {
   entity_type?: TodoAbout;
   entity_id?: string;
   status?: "open" | "done" | "all";
-}
-
-function notifyError(error: Error) {
-  notifications.show({ color: "red", title: "That didn't work", message: error.message });
 }
 
 /**
