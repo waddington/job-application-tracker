@@ -206,6 +206,8 @@ def collect(root: Path, repo: str) -> Snapshot:
                 live.warnings.append(f"git: couldn't compare {branch} with main")
         log = _run(["git", "log", main, "-n", str(COMMIT_LIMIT), f"--format=%h{SEP}%s{SEP}%cI{SEP}%an"], root)
         snapshot.commits = parse_commits(log)
+        if len(snapshot.commits) >= COMMIT_LIMIT:
+            live.warnings.append(f"git: only the latest {COMMIT_LIMIT} commits are read, so older activity is missing")
         snapshot.worktrees = parse_worktrees(_run(["git", "worktree", "list", "--porcelain"], root))
         snapshot.areas = code_by_area(root, _run(["git", "ls-files"], root).splitlines())
         snapshot.lines = sum(n[0] for n in snapshot.areas.values())

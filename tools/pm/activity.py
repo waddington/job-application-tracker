@@ -125,7 +125,7 @@ def commits_chart(bars: CommitBars) -> str:
                 rects.append(
                     f'<rect class="k-{kind}" x="{LEFT + i * each + 0.5:.1f}" y="{y(below + n):.1f}" '
                     f'width="{max(each - 1, 0.5):.1f}" height="{y(below) - y(below + n):.1f}">'
-                    f"<title>{day(start)}: {n} {kind}</title></rect>"
+                    f"<title>{'Week of ' if bars.days_each > 1 else ''}{day(start)}: {n} {kind}</title></rect>"
                 )
                 below += n
         if i % max(len(bars.starts) // 5, 1) == 0 and i <= 0.85 * len(bars.starts):  # none hangs off the end
@@ -133,9 +133,9 @@ def commits_chart(bars: CommitBars) -> str:
     legend = "".join(f'<span><i class="k-{k}"></i>{k}</span>' for k in TYPES if any(bars.series[k]))
     total = sum(totals)
     return (
-        f'<svg class="chart wide" viewBox="0 0 {WIDE} {HEIGHT}" role="img" '
+        f'<div class="table-wrap"><svg class="chart wide" viewBox="0 0 {WIDE} {HEIGHT}" role="img" '
         f'aria-label="{total} commits by type over time">'
-        f'{_axis(tallest, y, WIDE)}{"".join(rects)}{"".join(labels)}</svg><div class="legend">{legend}</div>'
+        f'{_axis(tallest, y, WIDE)}{"".join(rects)}{"".join(labels)}</svg></div><div class="legend">{legend}</div>'
     )
 
 
@@ -244,8 +244,11 @@ def activity_page(snapshot: Snapshot, now: datetime | None = None) -> str:
     no_git = '<p class="muted">git hasn\'t answered yet.</p>'
     no_github = '<p class="muted">GitHub hasn\'t answered yet.</p>'
     known_git = snapshot.git_ok or bool(snapshot.commits)
+    known_areas = snapshot.git_ok or bool(snapshot.areas)  # read separately, so it can fail alone
     known_github = snapshot.github_ok or bool(prs)
     latest = pr_sizes(prs)
+    bars = commits_over_time(snapshot, now)
+    per = "a bar per week" if bars.days_each > 1 else "a bar per day"
     opened, merged = throughput(prs, now)
     days, counts = heatmap(snapshot, now)
     areas = sorted(snapshot.areas.items(), key=lambda item: -item[1][0])
@@ -256,8 +259,8 @@ def activity_page(snapshot: Snapshot, now: datetime | None = None) -> str:
         section(
             "commits",
             "Commits over time",
-            "On main, by Conventional Commit type, merges left out.",
-            commits_chart(commits_over_time(snapshot, now)) if known_git else no_git,
+            f"On main, by Conventional Commit type, merges left out: {per}.",
+            commits_chart(bars) if known_git else no_git,
         )
     }
 <div class="rm-grid">
@@ -282,7 +285,7 @@ def activity_page(snapshot: Snapshot, now: datetime | None = None) -> str:
             "lines",
             "Lines by area",
             "Source in the checkout the dashboard runs in, generated files left out.",
-            bar_rows(area_lines) if known_git else no_git,
+            bar_rows(area_lines) if known_areas else no_git,
         )
     }
 {
@@ -290,7 +293,7 @@ def activity_page(snapshot: Snapshot, now: datetime | None = None) -> str:
             "tests",
             "Tests by area",
             "Tests defined in the source. A parameterised test counts once.",
-            bar_rows(area_tests) if known_git else no_git,
+            bar_rows(area_tests) if known_areas else no_git,
         )
     }
 {

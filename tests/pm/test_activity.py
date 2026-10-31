@@ -1,8 +1,10 @@
 import unittest
 from datetime import datetime, timedelta
+from pathlib import Path
+from unittest import mock
 
 from tools.pm import activity
-from tools.pm.live import Commit, Snapshot, area_of
+from tools.pm.live import Commit, Snapshot, area_of, collect, keep_last_good
 from tools.pm.roadmap import Live, PullRequest
 
 NOW = datetime(2026, 10, 31, 12, 0).astimezone()
@@ -128,6 +130,48 @@ class ScopeTests(unittest.TestCase):
     def test_most_used_first(self):
         snapshot = Snapshot(live=Live(), commits=[commit("feat(pm): a"), commit("fix(pm): b"), commit("fix(api): c")])
         self.assertEqual(activity.scopes(snapshot), [("pm", 2), ("api", 1)])
+
+
+class LongHistoryTests(unittest.TestCase):
+    def test_weekly_bars_say_they_are_weeks(self):
+        snapshot = Snapshot(live=Live(), commits=[commit("feat: old", 200), commit("feat: new", 0)])
+        html = activity.activity_page(snapshot, NOW)
+        self.assertIn("a bar per week", html)
+        self.assertIn("<title>Week of ", html)
+
+    def test_daily_bars_say_so(self):
+        html = activity.activity_page(Snapshot(live=Live(), commits=[commit("feat: new", 0)]), NOW)
+        self.assertIn("a bar per day", html)
+        self.assertNotIn("Week of", html)
+
+    def test_reaching_the_commit_limit_warns(self):
+        line = "abc\x1ffeat: a\x1f2026-10-01T10:00:00+00:00\x1fx\n"
+
+        def run(args, cwd, timeout=15):
+            return line * 3 if "-n" in args else ""
+
+        with mock.patch("tools.pm.live._run", side_effect=run), mock.patch("tools.pm.live.COMMIT_LIMIT", 3):
+            self.assertIn("only the latest 3 commits", " ".join(collect(Path("."), "o/d").live.warnings))
+
+
+class PartialFailureTests(unittest.TestCase):
+    def test_areas_that_never_answered_say_so_though_commits_did(self):
+        snapshot = Snapshot(live=Live(), commits=[commit("feat: a")], git_ok=False)
+        html = activity.activity_page(snapshot, NOW)
+        self.assertEqual(html.count("git hasn't answered"), 2)  # lines and tests, nothing else
+
+    def test_a_failed_source_keeps_its_areas(self):
+        old = Snapshot(live=Live(), areas={"Backend": (1, 1)})
+        self.assertEqual(keep_last_good(Snapshot(live=Live(), git_ok=False), old).areas, old.areas)
+
+
+class EdgeTests(unittest.TestCase):
+    def test_an_old_commit_stays_off_the_heatmap(self):
+        days, counts = activity.heatmap(Snapshot(live=Live(), commits=[commit("feat: a", 20)]), NOW)
+        self.assertNotIn('class="on"', activity.heatmap_grid(days, counts))
+
+    def test_a_pr_of_no_lines_draws(self):
+        self.assertIn("#1: +0 −0", activity.size_chart([pr(1, additions=0, deletions=0)]))
 
 
 class PageTests(unittest.TestCase):
