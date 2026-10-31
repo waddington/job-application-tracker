@@ -6,17 +6,17 @@ import { expect, test } from "./fixtures";
 // download, not found, and phone width. What each page does is in its own file.
 
 const MENU = [
-  ["Today", "/"],
-  ["Roles", "/roles"],
-  ["Applications", "/applications"],
-  ["Recruiters", "/recruiters"],
-  ["Companies", "/companies"],
-  ["Interviews", "/interviews"],
-  ["Offers", "/offers"],
-  ["Documents", "/documents"],
-  ["Notes", "/notes"],
-  ["Insights", "/insights"],
-  ["Timeline", "/timeline"],
+  ["Today", "/", "Your move"],
+  ["Roles", "/roles", "Roles"],
+  ["Applications", "/applications", "Applications"],
+  ["Recruiters", "/recruiters", "Recruiters"],
+  ["Companies", "/companies", "Companies"],
+  ["Interviews", "/interviews", "Interviews"],
+  ["Offers", "/offers", "Offers"],
+  ["Documents", "/documents", "Documents"],
+  ["Notes", "/notes", "Notes"],
+  ["Insights", "/insights", "Insights"],
+  ["Timeline", "/timeline", "Timeline"],
 ] as const;
 
 const menu = (page: Page) => page.getByRole("navigation", { name: "Main navigation" });
@@ -48,13 +48,14 @@ test.describe("the menu", () => {
     await expect(item(page, "Companies")).toHaveAttribute("data-active", "true");
   });
 
-  for (const [name, path] of MENU) {
+  for (const [name, path, heading] of MENU) {
     test(`${name}: its address opens directly, and after a reload`, async ({ page }) => {
       await page.goto(path);
+      await expect(page.getByRole("heading", { name: heading }).first()).toBeVisible();
       await expect(item(page, name)).toHaveAttribute("data-active", "true");
       await page.reload();
+      await expect(page.getByRole("heading", { name: heading }).first()).toBeVisible();
       await expect(item(page, name)).toHaveAttribute("data-active", "true");
-      await expect(page.getByText("Page not found")).toBeHidden();
     });
   }
 
@@ -90,14 +91,29 @@ test.describe("the theme", () => {
     await toLight.click();
     await expect.poll(() => scheme(page)).toBe("light");
   });
+});
 
-  test("a browser that prefers dark isn't a problem", async ({ browser, baseURL }) => {
-    const context = await browser.newContext({ colorScheme: "dark", baseURL });
-    const page = await context.newPage();
-    await page.goto("/");
-    await expect(page.getByRole("heading", { name: "Your move" })).toBeVisible();
-    await expect(page.getByRole("button", { name: /^Switch to (dark|light) mode$/ })).toBeVisible();
-    await context.close();
+test.describe("a browser that prefers dark", () => {
+  test.use({ colorScheme: "dark" });
+
+  test("starts dark; choosing light is kept", async ({ page }) => {
+    await opened(page);
+    await expect.poll(() => scheme(page)).toBe("dark");
+    await page.getByRole("button", { name: "Switch to light mode" }).click();
+    await expect.poll(() => scheme(page)).toBe("light");
+    await page.reload();
+    await expect(page.getByRole("button", { name: "Switch to dark mode" })).toBeVisible();
+    await expect.poll(() => scheme(page)).toBe("light");
+  });
+});
+
+test.describe("a browser in another language, with a stale saved choice", () => {
+  test.use({ locale: "de-DE" });
+
+  test("falls back to English, all the way", async ({ page, context }) => {
+    await context.addInitScript(() => localStorage.setItem("jat.language", "xx"));
+    await opened(page);
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
   });
 });
 
@@ -129,18 +145,6 @@ test.describe("language", () => {
   test("?lang=pseudo does nothing in the built app", async ({ page }) => {
     await page.goto("/?lang=pseudo");
     await expect(page.getByRole("heading", { name: "Your move" })).toBeVisible();
-  });
-
-  test("a browser in another language, or a stale saved choice, falls back to English", async ({
-    browser,
-    baseURL,
-  }) => {
-    const context = await browser.newContext({ locale: "de-DE", baseURL });
-    await context.addInitScript(() => localStorage.setItem("jat.language", "xx"));
-    const page = await context.newPage();
-    await page.goto("/");
-    await expect(page.getByRole("heading", { name: "Your move" })).toBeVisible();
-    await context.close();
   });
 });
 
@@ -190,7 +194,11 @@ test.describe("the backup", () => {
     expect(zip.subarray(0, 2).toString()).toBe("PK");
     expect(zip.length).toBeGreaterThan(1000);
     // Names in a zip are stored plain: the export and config should be listed.
-    expect(zip.toString("latin1")).toContain("config.toml");
+    const names = zip.toString("latin1");
+    expect(names).toContain("config.toml");
+    expect(names).toContain("export/");
+    expect(names).toContain("RESTORE.md");
+    expect(names).not.toContain(".tmp/");
   });
 
   test("another site can't set it off", async ({ request }) => {
@@ -219,9 +227,9 @@ test.describe("not found", () => {
   });
 
   for (const [what, path, words] of [
-    ["application", "/applications/no-such-id", /Couldn't load|not found/i],
-    ["person", "/people/no-such-id", /Couldn't load|not found/i],
-    ["role", "/roles/no-such-id", /Couldn't load|not found/i],
+    ["application", "/applications/no-such-id", /^Couldn't load this application/],
+    ["person", "/people/no-such-id", /^Couldn't load this person/],
+    ["role", "/roles/no-such-id", /^Couldn't load this role/],
   ] as const) {
     test(`an ${what} that doesn't exist says so`, async ({ page, problems }) => {
       problems.allow(/404.*no-such-id/);
@@ -261,15 +269,16 @@ test.describe("phone width", () => {
     await page.getByRole("textbox", { name: "Search everything" }).fill("Backend CV");
     await page.keyboard.press("Enter");
     await expect(page.getByRole("heading", { name: "Results for “Backend CV”", level: 2 })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Backend CV" }).first()).toBeVisible();
   });
 
-  for (const [name, path] of MENU) {
+  for (const [name, path, heading] of MENU) {
     test(`${name} doesn't scroll sideways`, async ({ page }) => {
+      await page.goto(path);
+      await expect(page.getByRole("heading", { name: heading }).first()).toBeVisible();
+      await page.waitForLoadState("networkidle");
       // KNOWN BUG (fix-phone-sideways-scroll on the roadmap): expected to fail until it is fixed.
       test.fail(name === "Roles" || name === "Companies");
-      await page.goto(path);
-      await expect(page.getByRole("heading", { level: 2 }).first()).toBeVisible();
-      await page.waitForLoadState("networkidle");
       await expect.poll(() => sideways(page)).toBeLessThanOrEqual(1);
     });
   }
@@ -280,5 +289,57 @@ test.describe("wide screens", () => {
     await opened(page);
     await expect(item(page, "Notes")).toBeInViewport();
     await expect(page.getByRole("button", { name: "Toggle navigation" })).toBeHidden();
+  });
+});
+
+test.describe("more of the frame", () => {
+  // KNOWN BUG (fix-menu-prefix-active on the roadmap): expected to fail until it is fixed.
+  test.fail("an address that only starts like a section marks nothing", async ({ page }) => {
+    await page.goto("/notes-old");
+    await expect(page.getByRole("heading", { name: "Page not found", level: 2 })).toBeVisible();
+    await expect(menu(page).locator('a[data-active="true"]')).toHaveCount(0);
+  });
+
+  // KNOWN BUG (fix-menu-recruiters-section on the roadmap): expected to fail until it is fixed.
+  test.fail("a person's and an agency's pages are under Recruiters", async ({ page, request }) => {
+    const firm = (await (
+      await request.post("/api/v1/agencies", { data: { name: "Section Agency" } })
+    ).json()) as { id: string };
+    const who = (await (
+      await request.post("/api/v1/contacts", { data: { name: "Section Person" } })
+    ).json()) as { id: string };
+    await page.goto(`/agencies/${firm.id}`);
+    await expect(page.getByRole("heading", { name: "Section Agency", level: 2 })).toBeVisible();
+    await expect(item(page, "Recruiters")).toHaveAttribute("data-active", "true", { timeout: 2_000 });
+    await page.goto(`/people/${who.id}`);
+    await expect(page.getByRole("heading", { name: "Section Person", level: 2 })).toBeVisible();
+    await expect(item(page, "Recruiters")).toHaveAttribute("data-active", "true", { timeout: 2_000 });
+  });
+
+  // KNOWN BUG (fix-backup-same-site on the roadmap): expected to fail until it is fixed.
+  test.fail("a site on another port of this machine can't set the backup off", async ({ request }) => {
+    const refused = await request.get("/api/v1/backup/archive", {
+      headers: { "sec-fetch-site": "same-site" },
+    });
+    expect(refused.status()).toBe(403);
+  });
+
+  test.describe("at phone width", () => {
+    test.use({ viewport: { width: 390, height: 800 } });
+
+    // KNOWN BUG (fix-phone-header-overflow on the roadmap): expected to fail until it is fixed.
+    test.fail("the header's contents stay in the header", async ({ page }) => {
+      await opened(page);
+      for (const control of [
+        page.getByRole("button", { name: "Toggle navigation" }),
+        page.getByRole("textbox", { name: "Search everything" }),
+        page.getByRole("button", { name: "Language" }),
+      ]) {
+        const box = await control.boundingBox();
+        expect(box).not.toBeNull();
+        expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(56);
+        expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(390);
+      }
+    });
   });
 });
