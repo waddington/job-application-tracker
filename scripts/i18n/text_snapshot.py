@@ -299,6 +299,26 @@ with sync_playwright() as p:
         lambda: dialog.get_by_label("Currency", exact=True).fill("X", timeout=3000),
         lambda: dialog.get_by_role("button", name="Add offer").click(timeout=3000),
     )
+    page.keyboard.press("Escape")
+    time.sleep(0.4)
+
+    # Documents: where a document was used, and the new document and new version forms with their
+    # errors. None saved.
+    visit(page, "/documents")
+    step("documents+used", lambda: page.get_by_role("button", name="Where it was used").first.click(timeout=3000))
+    step("documents+new", lambda: page.get_by_role("button", name="New document").click(timeout=3000))
+    step(
+        "documents+new-errors",
+        lambda: page.get_by_role("dialog").get_by_role("button", name="Create").click(timeout=3000),
+    )
+    page.keyboard.press("Escape")
+    time.sleep(0.4)
+    step("documents+version", lambda: page.get_by_role("button", name="New version").first.click(timeout=3000))
+    step(
+        "documents+version-errors",
+        lambda: page.get_by_role("dialog").get_by_label("Label", exact=True).fill("", timeout=3000),
+        lambda: page.get_by_role("dialog").get_by_role("button", name="Add version").click(timeout=3000),
+    )
     browser.close()
 
 with open(OUT, "w") as f:

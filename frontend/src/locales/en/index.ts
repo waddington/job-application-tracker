@@ -3,6 +3,7 @@
 import applications from "./applications";
 import calls from "./calls";
 import common from "./common";
+import documents from "./documents";
 import interviews from "./interviews";
 import offers from "./offers";
 import people from "./people";
@@ -20,6 +21,7 @@ const en = {
   interviews,
   calls,
   offers,
+  documents,
   todos,
   selftest,
 } as const;

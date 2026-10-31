@@ -7,7 +7,7 @@ import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
 import type { ApplicationDetail } from "../api/client";
-import { KIND_LABEL, useDocuments, useSendDocument, useUnsendDocument } from "../api/documentHooks";
+import { documentKind, useDocuments, useSendDocument, useUnsendDocument } from "../api/documentHooks";
 import { formatDate } from "../utils/time";
 
 /** Which CV and cover-letter versions went with this application, and when. */
@@ -22,7 +22,7 @@ export function SentDocumentsCard({ app }: { app: ApplicationDetail }) {
   const already = new Set(app.documents.map((d) => d.version_id));
   const options = (documents ?? [])
     .map((doc) => ({
-      group: t("sent.group", { document: doc.name, kind: KIND_LABEL[doc.kind] ?? doc.kind }),
+      group: t("sent.group", { document: doc.name, kind: documentKind(doc.kind) }),
       items: doc.versions
         .filter((v) => !already.has(v.id))
         .map((v) => ({ value: v.id, label: t("sent.option", { document: doc.name, version: v.label }) })),
@@ -51,8 +51,8 @@ export function SentDocumentsCard({ app }: { app: ApplicationDetail }) {
                 </Group>
                 <Text size="xs" c="dimmed">
                   {d.sent_on
-                    ? t("sent.kindSent", { kind: KIND_LABEL[d.kind] ?? d.kind, date: formatDate(d.sent_on) })
-                    : (KIND_LABEL[d.kind] ?? d.kind)}
+                    ? t("sent.kindSent", { kind: documentKind(d.kind), date: formatDate(d.sent_on) })
+                    : documentKind(d.kind)}
                 </Text>
               </div>
             </Group>

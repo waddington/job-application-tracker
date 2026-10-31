@@ -60,6 +60,9 @@ const TRANSLATED = [
   // i18n-offers
   "src/pages/OffersPage.tsx",
   "src/components/Offers.tsx",
+  // i18n-documents
+  "src/pages/DocumentsPage.tsx",
+  "src/components/CvFiles.tsx",
 ];
 
 export default tseslint.config(

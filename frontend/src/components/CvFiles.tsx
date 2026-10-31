@@ -15,8 +15,10 @@ import { notifications } from "@mantine/notifications";
 import { IconFileCv } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 
 import { useAdoptCvFile, useCvFiles, useDocuments, type CvFile } from "../api/documentHooks";
+import { i18n } from "../i18n";
 
 const NOT_A_CV = "jat.notACv";
 
@@ -30,26 +32,26 @@ function readDismissed(): Set<string> {
 
 const kb = (size: number) =>
   size < 1024
-    ? `${size} B`
+    ? i18n.t("documents:cvFiles.size.bytes", { size })
     : size < 1024 * 1024
-      ? `${Math.round(size / 1024)} KB`
-      : `${(size / 1048576).toFixed(1)} MB`;
+      ? i18n.t("documents:cvFiles.size.kb", { size: Math.round(size / 1024) })
+      : i18n.t("documents:cvFiles.size.mb", { size: (size / 1048576).toFixed(1) });
 const stem = (name: string) => name.replace(/\.[^.]+$/, "").slice(0, 100);
 
 /** Make a file a version: of an existing document, or a new one. */
 const HREF = { application: "/applications", role: "/roles", contact: "/people" } as const;
-const SOURCE_PREFIX = { application: "", role: "On role ", contact: "Sent to " } as const;
 
 /** Make a file a version (of an existing CV or a new one), or record the version it already is,
  * on the applications you tick. */
 function AdoptModal({ file, onClose }: { file: CvFile; onClose: () => void }) {
+  const { t } = useTranslation(["documents", "common"]);
   const { data: documents } = useDocuments();
   const adopt = useAdoptCvFile();
   const cvs = (documents ?? []).filter((d) => d.kind === "cv");
   const [picked, setDocumentId] = useState<string | null>(null);
   // Your first CV once they've loaded, unless you've picked one.
   const documentId = picked ?? cvs[0]?.id ?? "new";
-  const [name, setName] = useState("CV");
+  const [name, setName] = useState<string>(() => t("adopt.defaultName"));
   const [label, setLabel] = useState(stem(file.name));
   const missing = file.applications.filter((a) => !a.has_it);
   const [ticked, setTicked] = useState<string[]>(missing.map((a) => a.id));
@@ -77,11 +79,10 @@ function AdoptModal({ file, onClose }: { file: CvFile; onClose: () => void }) {
             },
       {
         onSuccess: (r) => {
-          const apps = `${r.recorded} application${r.recorded === 1 ? "" : "s"}`;
           notifications.show({
             message: recordOnly
-              ? `Recorded as sent with ${apps}.`
-              : `${label.trim()} is a version now, recorded as sent with ${apps}.`,
+              ? t("adopt.recorded", { count: r.recorded })
+              : t("adopt.made", { count: r.recorded, label: label.trim() }),
           });
           onClose();
         },
@@ -93,18 +94,21 @@ function AdoptModal({ file, onClose }: { file: CvFile; onClose: () => void }) {
       onClose={onClose}
       title={
         recordOnly
-          ? `Record ${file.version!.document_name} · ${file.version!.label} as sent`
-          : `Make ${file.name} a CV version`
+          ? t("adopt.recordTitle", {
+              document: file.version!.document_name,
+              version: file.version!.label,
+            })
+          : t("adopt.makeTitle", { name: file.name })
       }
     >
       <Stack>
         {!recordOnly && (
           <>
             <Select
-              label="Add it to"
+              label={t("adopt.addTo")}
               data={[
                 ...cvs.map((d) => ({ value: d.id, label: d.name })),
-                { value: "new", label: "A new CV…" },
+                { value: "new", label: t("adopt.newCv") },
               ]}
               value={documentId}
               onChange={setDocumentId}
@@ -112,14 +116,14 @@ function AdoptModal({ file, onClose }: { file: CvFile; onClose: () => void }) {
             />
             {isNew && (
               <TextInput
-                label="Name of the new CV"
+                label={t("adopt.newName")}
                 value={name}
                 onChange={(e) => setName(e.currentTarget.value)}
               />
             )}
             <TextInput
-              label="Version"
-              description="What sets it apart, e.g. v3 (fintech)"
+              label={t("adopt.version")}
+              description={t("adopt.versionHint")}
               value={label}
               onChange={(e) => setLabel(e.currentTarget.value)}
             />
@@ -127,32 +131,35 @@ function AdoptModal({ file, onClose }: { file: CvFile; onClose: () => void }) {
         )}
         {missing.length ? (
           <Checkbox.Group
-            label="Sent with"
-            description="The applications it went out with. Untick any that got a different CV."
+            label={t("adopt.sentWith")}
+            description={t("adopt.sentWithHint")}
             value={ticked}
             onChange={setTicked}
           >
             <Stack gap={6} mt={6}>
               {missing.map((a) => (
-                <Checkbox key={a.id} value={a.id} label={`${a.company_name} · ${a.role_title}`} />
+                <Checkbox
+                  key={a.id}
+                  value={a.id}
+                  label={t("adopt.application", { company: a.company_name, role: a.role_title })}
+                />
               ))}
             </Stack>
           </Checkbox.Group>
         ) : (
           <Text size="sm" c="dimmed">
-            No applications without a CV yet. Make it a version anyway: it comes back when there are some to
-            record it on.
+            {t("adopt.noneMissing")}
           </Text>
         )}
         <Text size="xs" c="dimmed">
-          The file stays where you attached it too.
+          {t("adopt.stays")}
         </Text>
         <Group justify="flex-end">
           <Button variant="default" onClick={onClose}>
-            Cancel
+            {t("common:actions.cancel")}
           </Button>
           <Button onClick={save} disabled={!ready} loading={adopt.isPending}>
-            {recordOnly ? "Record as sent" : "Make it a version"}
+            {recordOnly ? t("cvFiles.recordAsSent") : t("cvFiles.makeVersion")}
           </Button>
         </Group>
       </Stack>
@@ -161,6 +168,7 @@ function AdoptModal({ file, onClose }: { file: CvFile; onClose: () => void }) {
 }
 
 function CvFileRow({ file, onDismiss }: { file: CvFile; onDismiss: () => void }) {
+  const { t } = useTranslation("documents");
   const [adopting, setAdopting] = useState(false);
   const missing = file.applications.filter((a) => !a.has_it);
   // Applications it's attached to are already in the list of where it counts.
@@ -176,31 +184,43 @@ function CvFileRow({ file, onDismiss }: { file: CvFile; onDismiss: () => void })
         </Text>
         {file.version && (
           <Text size="xs" c="dimmed">
-            This is {file.version.document_name} · {file.version.label}.
+            {t("cvFiles.thisIs", { document: file.version.document_name, version: file.version.label })}
           </Text>
         )}
         {elsewhere.length > 0 && (
           <Text size="xs" c="dimmed">
-            {elsewhere.map((x, i) => (
-              <span key={`${x.kind}:${x.id}`}>
-                {i ? " · " : ""}
-                {SOURCE_PREFIX[x.kind]}
+            {elsewhere.map((x, i) => {
+              const where = (
                 <Anchor component={Link} to={`${HREF[x.kind]}/${x.id}`} size="xs">
                   {x.name}
                 </Anchor>
-              </span>
-            ))}
+              );
+              return (
+                <span key={`${x.kind}:${x.id}`}>
+                  {i ? " · " : ""}
+                  {x.kind === "role" ? (
+                    <Trans t={t} i18nKey="cvFiles.onRole" components={{ where }} />
+                  ) : x.kind === "contact" ? (
+                    <Trans t={t} i18nKey="cvFiles.sentTo" components={{ where }} />
+                  ) : (
+                    where
+                  )}
+                </span>
+              );
+            })}
           </Text>
         )}
         <Text size="xs" c="dimmed">
-          {missing.length
-            ? `${file.version ? "Not yet recorded on" : "For"} ${missing.length} application${missing.length === 1 ? "" : "s"}: `
-            : "No applications without a CV yet."}
+          {!missing.length
+            ? t("cvFiles.noApplications")
+            : file.version
+              ? t("cvFiles.notRecordedOn", { count: missing.length })
+              : t("cvFiles.for", { count: missing.length })}
           {missing.map((a, i) => (
             <span key={a.id}>
               {i ? ", " : ""}
               <Anchor component={Link} to={`/applications/${a.id}`} size="xs">
-                {a.company_name} · {a.role_title}
+                {t("cvFiles.application", { company: a.company_name, role: a.role_title })}
               </Anchor>
             </span>
           ))}
@@ -208,16 +228,16 @@ function CvFileRow({ file, onDismiss }: { file: CvFile; onDismiss: () => void })
       </div>
       <Group gap="xs">
         <Button size="compact-sm" variant="light" onClick={() => setAdopting(true)}>
-          {file.version ? "Record as sent" : "Make it a version"}
+          {file.version ? t("cvFiles.recordAsSent") : t("cvFiles.makeVersion")}
         </Button>
         <Button
           size="compact-sm"
           variant="subtle"
           color="gray"
           onClick={onDismiss}
-          aria-label={`${file.name} is not a CV`}
+          aria-label={t("cvFiles.notCvNamed", { name: file.name })}
         >
-          Not a CV
+          {t("cvFiles.notCv")}
         </Button>
       </Group>
       {adopting && <AdoptModal file={file} onClose={() => setAdopting(false)} />}
@@ -227,6 +247,7 @@ function CvFileRow({ file, onDismiss }: { file: CvFile; onDismiss: () => void })
 
 /** The CV files you've attached that aren't recorded as versions yet; nothing when there are none. */
 export function CvFilesCard() {
+  const { t } = useTranslation("documents");
   const { data: files } = useCvFiles();
   const [dismissed, setDismissed] = useState(readDismissed);
   const shown = (files ?? []).filter((f) => !dismissed.has(f.sha256));
@@ -247,12 +268,10 @@ export function CvFilesCard() {
     <Card withBorder>
       <Group gap="xs" mb={4}>
         <IconFileCv size={18} />
-        <Title order={4}>CV files you've attached</Title>
+        <Title order={4}>{t("cvFiles.title")}</Title>
       </Group>
       <Text size="sm" c="dimmed" mb="md">
-        Files that look like a CV (named like one, or the same file in several places) attached to
-        applications, roles or people, like a CV you sent a recruiter. Make each a version so Insights can
-        compare how they do; the same file counts as the same version.
+        {t("cvFiles.intro")}
       </Text>
       <Stack gap="sm">
         {shown.map((f) => (
@@ -260,7 +279,7 @@ export function CvFilesCard() {
         ))}
         {hidden > 0 && (
           <Anchor component="button" type="button" size="xs" c="dimmed" ta="left" onClick={showHidden}>
-            Show {hidden} you said {hidden === 1 ? "isn't a CV" : "aren't CVs"}
+            {t("cvFiles.showHidden", { count: hidden })}
           </Anchor>
         )}
       </Stack>

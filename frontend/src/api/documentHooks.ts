@@ -1,6 +1,7 @@
 import { notifications } from "@mantine/notifications";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { i18n } from "../i18n";
 import { api, errorMessage, unwrap, type Schemas } from "./client";
 import { invalidateApplicationViews } from "./hooks";
 
@@ -8,7 +9,13 @@ export type DocumentItem = Schemas["DocumentOut"];
 export type DocumentVersion = Schemas["VersionOut"];
 export type SentDocument = Schemas["SentDocumentOut"];
 
-export const KIND_LABEL: Record<string, string> = { cv: "CV", cover_letter: "Cover letter", other: "Other" };
+/** "CV", "Cover letter", "Other"; a kind the app doesn't know shows as saved. */
+export function documentKind(kind: string): string {
+  if (kind === "cv") return i18n.t("documents:kinds.cv");
+  if (kind === "cover_letter") return i18n.t("documents:kinds.cover_letter");
+  if (kind === "other") return i18n.t("documents:kinds.other");
+  return kind;
+}
 
 function notifyError(error: Error) {
   notifications.show({ color: "red", title: "That didn't work", message: error.message });
