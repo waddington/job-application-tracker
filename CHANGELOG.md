@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.2.25 (2026-10-31)
+
+- **Developers:** The Files and Links cards read their text from the translation files, ready for other languages. The English is unchanged (#160).
+
 ## 1.2.24 (2026-10-31)
 
 - **Developers:** The Documents page and the CV files card read their text from the translation files, ready for other languages. The English is unchanged (#159).
