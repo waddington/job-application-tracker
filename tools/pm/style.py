@@ -13,7 +13,7 @@ CSS = """
 :root[data-theme="light"]{color-scheme:light;--bg:#f3f5f8;--grid:rgba(30,41,59,.045);--panel:#fff;--panel-2:#f7f8fa;
 --hover:#eef1f6;--line:#e2e6ed;--line-2:#cdd4df;--ink:#0e1420;--ink-2:#4a5568;--ink-3:#667084;--accent:#3f55e0;
 --on-pill:#fff;--bug:#c93636;--planned:#667084;--building:#2268bd;--review:#8f6400;--done:#5a48c4;--blocked:#c93636;
---ok:#13925f;--warn:#b77b00;--bad:#d64545}
+--ok:#13925f;--warn:#b77b00;--bad:#c93636}
 *{box-sizing:border-box}
 body{margin:0;background-color:var(--bg);background-image:linear-gradient(var(--grid) 1px,transparent 1px),
 linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:24px 24px;background-attachment:fixed;
@@ -76,8 +76,7 @@ vertical-align:top}th{color:var(--ink-3);font-weight:500;font-size:12px}
 """
 
 # Runs before the first paint, so a saved theme never flashes the other one.
-THEME_HEAD = """<script>(function(){var t=new URLSearchParams(location.search).get("theme");
-if(t!=="light"&&t!=="dark"){t=null;try{t=localStorage.getItem("pm-theme")}catch(e){}}
+THEME_HEAD = """<script>(function(){var t=null;try{t=localStorage.getItem("pm-theme")}catch(e){}
 if(t!=="light"&&t!=="dark"){t=matchMedia("(prefers-color-scheme: light)").matches?"light":"dark"}
 document.documentElement.setAttribute("data-theme",t)})()</script>"""
 

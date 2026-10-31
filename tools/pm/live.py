@@ -106,20 +106,28 @@ def collect(root: Path, repo: str) -> Snapshot:
     snapshot = Snapshot(live=live, taken_at=time.time())
     try:
         main = _main_ref(root)
+        if main == "HEAD":
+            snapshot.git_ok = False
+            live.warnings.append("git: no main branch found, so 'main' here means whatever is checked out")
         refs = _run(["git", "for-each-ref", "--format=%(refname:short)", "refs/heads", "refs/remotes/origin"], root)
         for branch in parse_branches(refs):
-            for ref in (branch, f"origin/{branch}"):
+            counted = False
+            for ref in (branch, f"origin/{branch}"):  # one of these may not exist, which is fine
                 try:
                     count = int(_run(["git", "rev-list", "--count", f"{main}..{ref}"], root).strip())
                 except (subprocess.SubprocessError, OSError, ValueError):
                     continue
+                counted = True
                 live.branches_ahead[branch] = max(count, live.branches_ahead.get(branch, 0))
+            if not counted:
+                snapshot.git_ok = False
+                live.warnings.append(f"git: couldn't compare {branch} with main")
         log = _run(["git", "log", main, "-n", "20", f"--format=%h{SEP}%s{SEP}%cI{SEP}%an"], root)
         snapshot.commits = parse_commits(log)
         snapshot.worktrees = parse_worktrees(_run(["git", "worktree", "list", "--porcelain"], root))
-    except (subprocess.SubprocessError, OSError) as exc:
+    except (subprocess.SubprocessError, OSError, ValueError) as exc:
         snapshot.git_ok = False
-        live.warnings.append(f"git unavailable: {exc}")
+        live.warnings.append(f"git failed: {exc}")
     try:
         args = [
             "gh",

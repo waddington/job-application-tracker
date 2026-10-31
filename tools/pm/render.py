@@ -16,8 +16,8 @@ def sources(roadmap: Roadmap, snapshot: Snapshot) -> str:
     """A light per source of live data: green when it answered, red when it didn't."""
     lights = (("git", snapshot.git_ok), ("GitHub", snapshot.github_ok), ("roadmap", not roadmap.errors))
     return "".join(
-        f'<span class="src{"" if ok else " bad"}" title="{name}: {"ok" if ok else "not available"}">'
-        f"<i></i>{name}</span>"
+        f'<span class="src{"" if ok else " bad"}" title="{name}: {"ok" if ok else "has problems, listed below"}">'
+        f"<i></i>{name}{'' if ok else ' (problem)'}</span>"
         for name, ok in lights
     )
 
@@ -39,7 +39,7 @@ def page(title: str, active: str, body: str, roadmap: Roadmap, snapshot: Snapsho
 <body><a class="skip" href="#view">Skip to content</a><header class="top"><div class="brand">
 <svg class="mark" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5"/>
 <path d="M8 1.5A6.5 6.5 0 0 1 14.5 8H8z"/></svg>
-<span class="brand-name">{project}</span><span class="brand-sub">build control</span></div>
+<span class="brand-name">{project}</span><span class="brand-sub">PM</span></div>
 <nav class="tabs" aria-label="Views">{nav}</nav><div class="top-right">
 <span class="live{"" if healthy else " down"}"><span class="live-dot"></span>Updated {taken}</span>
 <a href="?refresh=1">Refresh</a><span class="sources" aria-label="Data sources">{sources(roadmap, snapshot)}</span>

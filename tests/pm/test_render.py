@@ -80,14 +80,14 @@ class LookTests(unittest.TestCase):
     def test_a_source_that_fails_shows_red(self):
         for flag, name in (("git_ok", "git"), ("github_ok", "GitHub")):
             html = self.html(**{flag: False})
-            self.assertIn(f'<span class="src bad" title="{name}: not available">', html)
+            self.assertIn(f'<span class="src bad" title="{name}: has problems, listed below">', html)
             self.assertIn('class="live down"', html)
 
     def test_a_broken_roadmap_shows_red(self):
         roadmap, snapshot = state()
         roadmap.errors.append("bad file")
         html = render.page("T", "/", "body", roadmap, snapshot)
-        self.assertIn('<span class="src bad" title="roadmap: not available">', html)
+        self.assertIn('<span class="src bad" title="roadmap: has problems, listed below">', html)
 
     def test_the_theme_is_set_before_the_page_paints_and_can_be_switched(self):
         html = self.html()
@@ -95,9 +95,17 @@ class LookTests(unittest.TestCase):
         self.assertIn('id="theme"', html)
 
     def test_it_loads_nothing_from_the_web(self):
-        html = self.html()
-        self.assertNotIn("https://", html)
-        self.assertNotIn("http://", html)
+        roadmap, snapshot = state()
+        # Links to GitHub are fine; nothing may be fetched as the page loads.
+        for body in (
+            render.overview(roadmap, snapshot),
+            render.board(roadmap, snapshot),
+            render.roadmap_page(roadmap, snapshot),
+        ):
+            html = render.page("T", "/", body, roadmap, snapshot)
+            for word in (" src=", "url(", "@import"):
+                self.assertNotIn(word, html)
+            self.assertEqual(html.count("<link"), html.count('<link rel="icon" href="data:,">'))
 
 
 class BugTests(unittest.TestCase):
