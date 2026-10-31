@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.2.34 (2026-10-31)
+
+- **Developers:** EVENTSPLACEHOLDER read their text from the translation files, ready for other languages. The English is unchanged (#171).
+
 ## 1.2.33 (2026-10-31)
 
 - **Developers:** Timeline titles for roles, companies, agencies and people read their text from the translation files, ready for other languages. The English is unchanged (#170).
