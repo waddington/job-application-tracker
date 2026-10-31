@@ -95,12 +95,20 @@ def _load(request: Request, session: Session, note_id: str) -> tuple[NoteStore, 
     return store, note
 
 
-def _log(session: Session, note: Note, links: list[str], what: str) -> None:
+def _log(session: Session, note: Note, links: list[str]) -> None:
     """Put the note on the timeline of each application it's attached to."""
     for link in links:
         kind, _, target = link.partition(":")
         if kind == "application" and (app := session.get(Application, target)) is not None:
-            svc.log_activity(session, app, "note", summary=f"{what}: {note.title}", data={"note_id": note.id})
+            svc.log_message(
+                session,
+                app,
+                "note",
+                key="event.noteAdded",
+                params={"title": note.title},
+                summary=f"Note added: {note.title}",
+                data={"note_id": note.id},
+            )
 
 
 @router.get("", response_model=list[S.NoteSummary])
@@ -136,7 +144,7 @@ def create_note(body: S.NoteIn, request: Request, session: SessionDep):
         raise HTTPException(422, str(exc)) from exc
     _index(request, store, note)
     session.commit()  # end this read so the timeline write below sees the index write (SQLite snapshot)
-    _log(session, note, links, "Note added")
+    _log(session, note, links)
     return _out(note)
 
 
@@ -165,7 +173,7 @@ def update_note(note_id: str, body: S.NotePatch, request: Request, session: Sess
         raise HTTPException(422, str(exc)) from exc
     _index(request, store, note)
     session.commit()  # end this read so the timeline write below sees the index write (SQLite snapshot)
-    _log(session, note, [link for link in note.links if link not in before], "Note added")
+    _log(session, note, [link for link in note.links if link not in before])
     return _out(note)
 
 

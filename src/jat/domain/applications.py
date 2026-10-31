@@ -275,3 +275,23 @@ def log_activity(
     _touch(app, when)
     session.flush()
     return event
+
+
+def log_message(
+    session: Session,
+    app: Application,
+    kind: str,
+    *,
+    key: str,
+    params: dict[str, str],
+    summary: str,
+    occurred_at: datetime | None = None,
+    data: dict[str, Any] | None = None,
+) -> Event:
+    """Record activity the app wrote itself: the English `summary`, and the same text as a message to translate.
+
+    `summary` stays what's saved, exported and searched. `data.msg` sits beside whatever `data` holds, and
+    `EventMsg` in api/schemas.py lists the keys. Text someone typed has no key: use `log_activity`.
+    """
+    data = {**(data or {}), "msg": {"key": key, "params": params}}
+    return log_activity(session, app, kind, summary=summary, occurred_at=occurred_at, data=data)

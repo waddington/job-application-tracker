@@ -78,6 +78,23 @@ def _versions(session: Session, document_ids: list[str]) -> dict[str, list[S.Ver
     return out
 
 
+def _log_sent(session: Session, app: Application, doc: Document, version: DocumentVersion) -> None:
+    """Put a sent version on the application's timeline."""
+    kind, key = {
+        "cv": ("CV", "event.cvSent"),
+        "cover_letter": ("Cover letter", "event.coverLetterSent"),
+    }.get(doc.kind, ("Document", "event.documentSent"))
+    svc.log_message(
+        session,
+        app,
+        "file",
+        key=key,
+        params={"name": doc.name, "label": version.label},
+        summary=f"{kind} sent: {doc.name} {version.label}",
+        data={"document_version_id": version.id},
+    )
+
+
 def _doc_out(doc: Document, versions: list[S.VersionOut]) -> S.DocumentOut:
     return S.DocumentOut(
         id=doc.id,
@@ -310,14 +327,7 @@ def send_document(app_id: str, body: S.SentDocumentIn, session: SessionDep):
     doc = session.get(Document, version.document_id)
     session.add(ApplicationDocument(application_id=app.id, document_version_id=version.id, sent_on=body.sent_on))
     session.flush()
-    kind = {"cv": "CV", "cover_letter": "Cover letter"}.get(doc.kind, "Document")
-    svc.log_activity(
-        session,
-        app,
-        "file",
-        summary=f"{kind} sent: {doc.name} {version.label}",
-        data={"document_version_id": version.id},
-    )
+    _log_sent(session, app, doc, version)
     return next(d for d in sent_documents(session, app.id) if d.version_id == version.id)
 
 
@@ -532,7 +542,6 @@ def adopt_cv_file(body: S.CvFileAdopt, request: Request, session: SessionDep):
             doc.updated_at = utcnow()
             session.flush()
         recorded = 0
-        kind = {"cv": "CV", "cover_letter": "Cover letter"}.get(doc.kind, "Document")
         for a in chosen:
             if a.has_it:
                 continue
@@ -555,13 +564,7 @@ def adopt_cv_file(body: S.CvFileAdopt, request: Request, session: SessionDep):
                     sent_on=application.applied_on or (attached.astimezone().date() if attached else None),
                 )
             )
-            svc.log_activity(
-                session,
-                application,
-                "file",
-                summary=f"{kind} sent: {doc.name} {version.label}",
-                data={"document_version_id": version.id},
-            )
+            _log_sent(session, application, doc, version)
             recorded += 1
         session.flush()
         session.commit()  # now, so a failed save can take its copied file with it

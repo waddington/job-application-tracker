@@ -2368,6 +2368,24 @@
         "title": "ConversationsOut",
         "type": "object"
       },
+      "CoverLetterSentMsg": {
+        "properties": {
+          "key": {
+            "const": "event.coverLetterSent",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/DocumentSentParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "CoverLetterSentMsg",
+        "type": "object"
+      },
       "CvFile": {
         "description": "A file that looks like a CV, attached to applications, roles or people: one per distinct\nfile (by content).",
         "properties": {
@@ -2612,6 +2630,24 @@
           "document_name"
         ],
         "title": "CvFileVersion",
+        "type": "object"
+      },
+      "CvSentMsg": {
+        "properties": {
+          "key": {
+            "const": "event.cvSent",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/DocumentSentParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "CvSentMsg",
         "type": "object"
       },
       "DocumentDetail": {
@@ -2916,6 +2952,42 @@
           "versions"
         ],
         "title": "DocumentPerformance",
+        "type": "object"
+      },
+      "DocumentSentMsg": {
+        "properties": {
+          "key": {
+            "const": "event.documentSent",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/DocumentSentParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "DocumentSentMsg",
+        "type": "object"
+      },
+      "DocumentSentParams": {
+        "properties": {
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "label"
+        ],
+        "title": "DocumentSentParams",
         "type": "object"
       },
       "DocumentTally": {
@@ -3443,6 +3515,122 @@
         "title": "DuplicateOut",
         "type": "object"
       },
+      "EmailMsg": {
+        "properties": {
+          "key": {
+            "const": "event.email",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/EmailParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "EmailMsg",
+        "type": "object"
+      },
+      "EmailNoSubjectMsg": {
+        "properties": {
+          "key": {
+            "const": "event.emailNoSubject",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/EmailNoSubjectParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "EmailNoSubjectMsg",
+        "type": "object"
+      },
+      "EmailNoSubjectParams": {
+        "properties": {
+          "sender": {
+            "title": "Sender",
+            "type": "string"
+          }
+        },
+        "required": [
+          "sender"
+        ],
+        "title": "EmailNoSubjectParams",
+        "type": "object"
+      },
+      "EmailNoSubjectUnknownSenderMsg": {
+        "properties": {
+          "key": {
+            "const": "event.emailNoSubjectUnknownSender",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/NoParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "EmailNoSubjectUnknownSenderMsg",
+        "type": "object"
+      },
+      "EmailParams": {
+        "properties": {
+          "sender": {
+            "title": "Sender",
+            "type": "string"
+          },
+          "subject": {
+            "title": "Subject",
+            "type": "string"
+          }
+        },
+        "required": [
+          "subject",
+          "sender"
+        ],
+        "title": "EmailParams",
+        "type": "object"
+      },
+      "EmailUnknownSenderMsg": {
+        "properties": {
+          "key": {
+            "const": "event.emailUnknownSender",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/EmailUnknownSenderParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "EmailUnknownSenderMsg",
+        "type": "object"
+      },
+      "EmailUnknownSenderParams": {
+        "properties": {
+          "subject": {
+            "title": "Subject",
+            "type": "string"
+          }
+        },
+        "required": [
+          "subject"
+        ],
+        "title": "EmailUnknownSenderParams",
+        "type": "object"
+      },
       "EventOut": {
         "properties": {
           "application_id": {
@@ -3477,6 +3665,63 @@
           "kind": {
             "title": "Kind",
             "type": "string"
+          },
+          "msg": {
+            "anyOf": [
+              {
+                "discriminator": {
+                  "mapping": {
+                    "event.coverLetterSent": "#/components/schemas/CoverLetterSentMsg",
+                    "event.cvSent": "#/components/schemas/CvSentMsg",
+                    "event.documentSent": "#/components/schemas/DocumentSentMsg",
+                    "event.email": "#/components/schemas/EmailMsg",
+                    "event.emailNoSubject": "#/components/schemas/EmailNoSubjectMsg",
+                    "event.emailNoSubjectUnknownSender": "#/components/schemas/EmailNoSubjectUnknownSenderMsg",
+                    "event.emailUnknownSender": "#/components/schemas/EmailUnknownSenderMsg",
+                    "event.fileAdded": "#/components/schemas/FileAddedMsg",
+                    "event.linkAdded": "#/components/schemas/LinkAddedMsg",
+                    "event.noteAdded": "#/components/schemas/NoteAddedMsg"
+                  },
+                  "propertyName": "key"
+                },
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/LinkAddedMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/NoteAddedMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/FileAddedMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/EmailMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/EmailNoSubjectMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/EmailUnknownSenderMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/EmailNoSubjectUnknownSenderMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CvSentMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CoverLetterSentMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/DocumentSentMsg"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Msg"
           },
           "occurred_at": {
             "format": "date-time",
@@ -3518,6 +3763,37 @@
           "created_at"
         ],
         "title": "EventOut",
+        "type": "object"
+      },
+      "FileAddedMsg": {
+        "properties": {
+          "key": {
+            "const": "event.fileAdded",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/FileNameParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "FileAddedMsg",
+        "type": "object"
+      },
+      "FileNameParams": {
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "FileNameParams",
         "type": "object"
       },
       "FlowLink": {
@@ -4343,6 +4619,24 @@
         "title": "InterviewPatch",
         "type": "object"
       },
+      "LinkAddedMsg": {
+        "properties": {
+          "key": {
+            "const": "event.linkAdded",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/TitleParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "LinkAddedMsg",
+        "type": "object"
+      },
       "LinkIn": {
         "additionalProperties": false,
         "description": "An external link (a Google Doc, the job ad, a repo\u2026) on something. Title defaults from the URL.",
@@ -5121,6 +5415,29 @@
           "today"
         ],
         "title": "NextActions",
+        "type": "object"
+      },
+      "NoParams": {
+        "properties": {},
+        "title": "NoParams",
+        "type": "object"
+      },
+      "NoteAddedMsg": {
+        "properties": {
+          "key": {
+            "const": "event.noteAdded",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/TitleParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "NoteAddedMsg",
         "type": "object"
       },
       "NoteIn": {
@@ -8195,6 +8512,19 @@
           "company_name"
         ],
         "title": "TimelineRole",
+        "type": "object"
+      },
+      "TitleParams": {
+        "properties": {
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "title": "TitleParams",
         "type": "object"
       },
       "TodoIn": {
