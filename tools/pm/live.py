@@ -14,6 +14,7 @@ from pathlib import Path
 from .roadmap import BRANCH_PREFIX, Live, PullRequest
 
 SEP = "\x1f"
+PR_LIMIT = 1000
 SOURCE_SUFFIXES = {".py", ".ts", ".tsx", ".css", ".astro", ".mjs", ".js"}
 GENERATED = {"schema.d.ts"}
 PY_TEST = re.compile(r"^\s*(?:async\s+)?def test_", re.M)
@@ -134,7 +135,7 @@ def _main_ref(root: Path) -> str:
 
 def collect(root: Path, repo: str) -> Snapshot:
     live = Live()
-    snapshot = Snapshot(live=live, taken_at=time.time())
+    snapshot = Snapshot(live=live)
     try:
         main = _main_ref(root)
         if main == "HEAD":
@@ -168,30 +169,61 @@ def collect(root: Path, repo: str) -> Snapshot:
             "--state",
             "all",
             "--limit",
-            "1000",
+            str(PR_LIMIT),
             "--json",
             "number,title,state,headRefName,url,isDraft,updatedAt,createdAt,mergedAt,additions,deletions",
         ]
         if repo:
             args += ["--repo", repo]
         live.prs = parse_prs(_run(args, root, timeout=30))
+        if len(live.prs) >= PR_LIMIT:
+            live.warnings.append(f"GitHub: only the latest {PR_LIMIT} PRs are read, so PR counts are too low")
     except (subprocess.SubprocessError, OSError, ValueError, KeyError) as exc:
         snapshot.github_ok = False
         live.warnings.append(f"GitHub PRs unavailable (is `gh` installed and logged in?): {exc}")
+    snapshot.taken_at = time.time()
     return snapshot
 
 
+def keep_last_good(new: Snapshot, old: Snapshot | None) -> Snapshot:
+    """A source that failed keeps what it last said, so one timeout doesn't blank the page. Its light
+    stays red and its warning stays up, so stale data is never passed off as fresh."""
+    if old is None:
+        return new
+    if not new.git_ok:
+        new.commits = new.commits or old.commits
+        new.worktrees = new.worktrees or old.worktrees
+        new.lines, new.tests = (new.lines, new.tests) if new.lines else (old.lines, old.tests)
+        new.live.branches_ahead = new.live.branches_ahead or old.live.branches_ahead
+    if not new.github_ok:
+        new.live.prs = old.live.prs
+    return new
+
+
 class Collector:
-    """Caches snapshots so page loads stay fast; refreshes at most every `ttl` seconds."""
+    """Serves the latest snapshot straight away and refreshes a stale one in the background, so a slow
+    `gh` never holds up a page. Only the first load, or an asked-for refresh, waits."""
 
     def __init__(self, root: Path, repo: str, ttl: float = 30):
         self.root, self.repo, self.ttl = root, repo, ttl
         self._lock = threading.Lock()
         self._snapshot: Snapshot | None = None
+        self._refreshing = False
+
+    def _refresh(self) -> None:
+        try:
+            fresh = collect(self.root, self.repo)
+            with self._lock:
+                self._snapshot = keep_last_good(fresh, self._snapshot)
+        finally:
+            with self._lock:
+                self._refreshing = False
 
     def get(self, force: bool = False) -> Snapshot:
         with self._lock:
-            stale = self._snapshot is None or time.time() - self._snapshot.taken_at > self.ttl
-            if force or stale:
-                self._snapshot = collect(self.root, self.repo)
+            if self._snapshot is None or force:
+                self._snapshot = keep_last_good(collect(self.root, self.repo), self._snapshot)
+            elif time.time() - self._snapshot.taken_at > self.ttl and not self._refreshing:
+                self._refreshing = True
+                threading.Thread(target=self._refresh, daemon=True).start()
             return self._snapshot

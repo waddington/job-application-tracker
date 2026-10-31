@@ -1,13 +1,15 @@
+import threading
 import unittest
-from datetime import UTC, datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest import mock
 
 from tools.pm import derive, render
-from tools.pm.live import Commit, Snapshot, count_code, parse_prs
+from tools.pm.live import Collector, Commit, Snapshot, count_code, keep_last_good, parse_prs
 from tools.pm.roadmap import Live, PullRequest, apply_live, from_data
 
-NOW = datetime(2026, 10, 31, 12, 0, tzinfo=UTC).astimezone()
+NOW = datetime(2026, 10, 31, 12, 0).astimezone()  # noon here, wherever the tests run
 
 
 def pr(number, branch, state="MERGED", created="2026-10-01T10:00:00Z", merged="2026-10-02T10:00:00Z", **kw):
@@ -81,8 +83,18 @@ class PipelineTests(unittest.TestCase):
         road = roadmap([pr(1, "worktree-a"), pr(2, "worktree-b", merged="2026-10-05T10:00:00Z")])
         self.assertEqual([t.id for t in derive.pipeline(road, merged=1)], ["b"])
 
-    def test_a_blocked_or_planned_task_stays_out(self):
+    def test_a_planned_task_stays_out(self):
         self.assertEqual(derive.pipeline(roadmap()), [])
+
+    def test_a_task_marked_done_stays_in_review_while_its_pr_is_open(self):
+        data = {
+            "project": "d",
+            "repo": "o/d",
+            "phases": [{"id": "P", "name": "n", "goal": "g", "tasks": [{"id": "a", "name": "A", "status": "done"}]}],
+        }
+        road = apply_live(from_data(data), Live(prs=[pr(1, "worktree-a", "OPEN", merged="")]))
+        self.assertEqual(road.task("a").status, "review")
+        self.assertEqual([t.id for t in derive.pipeline(road)], ["a"])
 
 
 class FeedTests(unittest.TestCase):
@@ -106,10 +118,10 @@ class CommitCountTests(unittest.TestCase):
         snapshot = Snapshot(
             live=Live(),
             commits=[
-                Commit("a", "feat: now", "2026-10-31T11:30:00+00:00", "x"),
-                Commit("b", "fix: earlier", "2026-10-31T09:00:00+00:00", "x"),
-                Commit("c", "Merge pull request", "2026-10-31T11:40:00+00:00", "x"),
-                Commit("d", "fix: yesterday", "2026-10-30T11:00:00+00:00", "x"),
+                Commit("a", "feat: now", (NOW - timedelta(minutes=30)).isoformat(), "x"),
+                Commit("b", "fix: earlier", (NOW - timedelta(hours=3)).isoformat(), "x"),
+                Commit("c", "Merge pull request", (NOW - timedelta(minutes=20)).isoformat(), "x"),
+                Commit("d", "fix: yesterday", (NOW - timedelta(hours=24)).isoformat(), "x"),
             ],
         )
         today, last_hour, by_hour = derive.commits_today(snapshot, NOW)
@@ -140,6 +152,61 @@ class ParseTests(unittest.TestCase):
         self.assertEqual((parsed.additions, parsed.deletions, parsed.merged_at), (5, 2, ""))
 
 
+class LastGoodTests(unittest.TestCase):
+    def old(self):
+        live = Live(prs=[pr(1, "worktree-a")], branches_ahead={"worktree-a": 2})
+        return Snapshot(live=live, commits=[Commit("a", "s", "2026-10-01T10:00:00Z", "x")], lines=10, tests=2)
+
+    def test_a_failed_source_keeps_its_data_and_stays_red(self):
+        kept = keep_last_good(Snapshot(live=Live(warnings=["w"]), git_ok=False, github_ok=False), self.old())
+        self.assertEqual(
+            (len(kept.live.prs), len(kept.commits), kept.lines, kept.tests, kept.live.branches_ahead),
+            (1, 1, 10, 2, {"worktree-a": 2}),
+        )
+        self.assertEqual((kept.git_ok, kept.github_ok, kept.live.warnings), (False, False, ["w"]))
+
+    def test_a_source_that_answered_replaces_it_even_with_nothing(self):
+        kept = keep_last_good(Snapshot(live=Live()), self.old())
+        self.assertEqual((kept.live.prs, kept.commits, kept.lines), ([], [], 0))
+
+    def test_one_failing_keeps_only_its_own(self):
+        kept = keep_last_good(Snapshot(live=Live(), github_ok=False), self.old())
+        self.assertEqual((len(kept.live.prs), kept.commits), (1, []))
+
+
+class CollectorTests(unittest.TestCase):
+    def test_a_stale_snapshot_is_served_at_once_while_it_refreshes_behind(self):
+        release, refreshed = threading.Event(), threading.Event()
+        first = Snapshot(live=Live(), taken_at=1.0)
+        second = Snapshot(live=Live(), taken_at=9e12)  # far ahead, so it never goes stale here
+
+        def slow(*_):
+            release.wait(5)
+            refreshed.set()
+            return second
+
+        collector = Collector(Path("."), "o/d", ttl=30)
+        with mock.patch("tools.pm.live.collect", return_value=first):
+            self.assertIs(collector.get(), first)
+        with mock.patch("tools.pm.live.collect", side_effect=slow) as call:
+            self.assertIs(collector.get(), first)  # stale, and returned while the refresh is held
+            self.assertIs(collector.get(), first)  # a second page doesn't start a second refresh
+            release.set()
+            refreshed.wait(5)
+            for _ in range(100):
+                if collector.get() is second:
+                    break
+                threading.Event().wait(0.01)
+            self.assertIs(collector.get(), second)
+            self.assertEqual(call.call_count, 1)
+
+    def test_an_asked_for_refresh_waits_for_the_new_data(self):
+        collector = Collector(Path("."), "o/d", ttl=30)
+        fresh = Snapshot(live=Live(), taken_at=9e12)
+        with mock.patch("tools.pm.live.collect", return_value=fresh):
+            self.assertIs(collector.get(force=True), fresh)
+
+
 class OverviewTests(unittest.TestCase):
     def html(self, *prs, **kw):
         return render.overview(roadmap(prs), Snapshot(live=Live(prs=list(prs)), **kw), NOW)
@@ -166,6 +233,34 @@ class OverviewTests(unittest.TestCase):
             9, "<script>x</script>", "OPEN", "worktree-c", "https://example.com/9", created_at="2026-10-31T10:00:00Z"
         )
         self.assertNotIn("<script>x", self.html(evil))
+        quote = PullRequest(9, 'a" onclick="x', "OPEN", "worktree-c", "u", created_at="2026-10-31T10:00:00Z")
+        self.assertNotIn('" onclick="x', self.html(quote))
+
+    def test_a_source_that_never_answered_shows_no_false_numbers(self):
+        road = roadmap()
+        html = render.overview(road, Snapshot(live=Live(), git_ok=False, github_ok=False), NOW)
+        for false in (
+            "0 merged",
+            "0 total",
+            "No open PRs",
+            "Nothing in flight",
+            "not started",
+            "Nothing yet",
+            "tests defined",
+        ):
+            self.assertNotIn(false, html)
+        self.assertIn("GitHub hasn&#x27;t answered".replace("&#x27;", "'"), html)
+        self.assertIn("unknown", html)
+
+    def test_a_phase_done_without_prs_doesnt_say_not_started(self):
+        data = {
+            "project": "d",
+            "repo": "o/d",
+            "phases": [{"id": "P", "name": "n", "goal": "g", "tasks": [{"id": "a", "name": "A", "status": "done"}]}],
+        }
+        html = render.overview(apply_live(from_data(data), Live()), Snapshot(live=Live()), NOW)
+        self.assertIn("no PRs", html)
+        self.assertNotIn("not started", html)
 
     def test_an_empty_roadmap_still_renders(self):
         empty = apply_live(from_data({"project": "d", "repo": "o/d", "phases": []}), Live())

@@ -261,19 +261,22 @@ def apply_live(roadmap: Roadmap, live: Live) -> Roadmap:
     """Set each task's live status from git and GitHub evidence, falling back to the roadmap.
 
     merged PR -> done; open PR -> review; branch with commits ahead of main -> building.
-    A task the roadmap already marks done or blocked keeps that status.
+    A task the roadmap already marks blocked keeps that status, and one marked done keeps it unless
+    a PR is still open: a PR marks its task done just before merging, and it isn't done until then.
     """
     for task in roadmap.tasks:
         task.status, task.status_source = task.planned_status, "roadmap"
         task.pr = live.pr_for(task.branch_name)
         task.commits_ahead = live.branches_ahead.get(task.branch_name, 0)
         task.branch = task.branch_name if task.branch_name in live.branches_ahead else None
-        if task.planned_status in ("done", "blocked"):
+        if task.planned_status == "blocked":
             continue
-        if task.pr and task.pr.state == "MERGED":
-            task.status, task.status_source = "done", f"PR #{task.pr.number} merged"
-        elif task.pr and task.pr.state == "OPEN":
+        if task.pr and task.pr.state == "OPEN":
             task.status, task.status_source = "review", f"PR #{task.pr.number} open"
+        elif task.planned_status == "done":
+            continue
+        elif task.pr and task.pr.state == "MERGED":
+            task.status, task.status_source = "done", f"PR #{task.pr.number} merged"
         elif task.commits_ahead > 0:
             task.status, task.status_source = "building", f"{task.commits_ahead} commits on {task.branch_name}"
     return roadmap

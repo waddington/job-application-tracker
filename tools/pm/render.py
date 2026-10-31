@@ -142,17 +142,28 @@ def kpis(roadmap: Roadmap, snapshot: Snapshot, now: datetime) -> str:
             )
         )
     bar = f'<div class="bar"><i style="width:{percent(done, len(tasks))}%"></i></div>'
+    # A source that failed before it ever answered has no numbers: saying 0 would be false.
+    no_prs = not snapshot.github_ok and not prs
+    no_commits = not snapshot.git_ok and not snapshot.commits
+    no_code = not snapshot.git_ok and not snapshot.lines
     cards += [
         kpi("Whole roadmap", f"{percent(done, len(tasks))}%", f"{done} of {len(tasks)} tasks done", bar),
-        kpi("Pull requests", f"{open_prs} <small>open</small>", f"{merged} merged, {len(prs)} total"),
+        kpi("Pull requests", "—", UNKNOWN_GITHUB)
+        if no_prs
+        else kpi("Pull requests", f"{open_prs} <small>open</small>", f"{merged} merged, {len(prs)} total"),
         kpi("Open bugs", str(len(bugs)), f"{high} high"),
-        kpi("Commits today", str(today), f"{last_hour} in the last hour", f'<div class="spark">{spark}</div>'),
-        kpi("Code", f"{snapshot.lines:,} <small>lines</small>", f"{snapshot.tests:,} tests defined"),
+        kpi("Commits today", "—", UNKNOWN_GIT)
+        if no_commits
+        else kpi("Commits today", str(today), f"{last_hour} in the last hour", f'<div class="spark">{spark}</div>'),
+        kpi("Code", "—", UNKNOWN_GIT)
+        if no_code
+        else kpi("Code", f"{snapshot.lines:,} <small>lines</small>", f"{snapshot.tests:,} tests defined"),
     ]
     return f'<div class="kpis">{"".join(cards)}</div>'
 
 
-def phase_rows(roadmap: Roadmap) -> str:
+def phase_rows(roadmap: Roadmap, snapshot: Snapshot) -> str:
+    known = snapshot.github_ok or bool(snapshot.live.prs)
     current = derive.current_phase(roadmap)
     rows = []
     for p in roadmap.phases:
@@ -160,7 +171,12 @@ def phase_rows(roadmap: Roadmap) -> str:
         counts = {s: sum(t.status == s for t in p.tasks) for s in ("done", "review", "building")}
         segs = "".join(f'<i class="{s}" style="width:{100 * n / total:.2f}%"></i>' for s, n in counts.items() if n)
         dates = derive.phase_dates(p)
-        when = f"{day(dates[0])} – {day(dates[1])}" if dates else "not started"
+        if dates:
+            when = f"{day(dates[0])} – {day(dates[1])}"
+        elif not known:
+            when = "unknown"
+        else:  # finished without a PR is possible: the roadmap can mark a task done by hand
+            when = "no PRs" if counts["done"] else "not started"
         tag = ' <span class="now">now</span>' if p is current else ""
         rows.append(
             f'<div class="phase-row"><code class="muted">{escape(p.id)}</code>'
@@ -172,10 +188,12 @@ def phase_rows(roadmap: Roadmap) -> str:
     return "".join(rows)
 
 
+UNKNOWN_GITHUB = "GitHub hasn't answered"
+UNKNOWN_GIT = "git hasn't answered"
 PIPELINE_STAGES = (("Planned", "planned"), ("Building", "building"), ("In review", "review"), ("Merged", "done"))
 
 
-def pipeline_table(roadmap: Roadmap) -> str:
+def pipeline_table(roadmap: Roadmap, snapshot: Snapshot) -> str:
     order = [status for _, status in PIPELINE_STAGES]
     head = "".join(f'<th class="stage">{label}</th>' for label, _ in PIPELINE_STAGES)
     rows = []
@@ -187,7 +205,8 @@ def pipeline_table(roadmap: Roadmap) -> str:
             else f'<td class="stage"><span class="dot{" past" if i < at else ""}"></span></td>'
             for i, (label, _) in enumerate(PIPELINE_STAGES)
         )
-        size = f"+{t.pr.additions:,} −{t.pr.deletions:,}" if t.pr else f"{t.commits_ahead} commits"
+        commits = f"{t.commits_ahead} commit{'' if t.commits_ahead == 1 else 's'}"
+        size = f"+{t.pr.additions:,} −{t.pr.deletions:,}" if t.pr else commits
         rows.append(
             f'<tr><td><span class="sr">{escape(t.status)}: </span>{bug_tag(t)}'
             f'<span class="clip" title="{escape(t.name)}">{escape(t.name)}</span>'
@@ -195,6 +214,8 @@ def pipeline_table(roadmap: Roadmap) -> str:
             f'<td class="small muted">{size}</td></tr>'
         )
     if not rows:
+        if not snapshot.github_ok:
+            return f'<p class="muted">Can\'t tell: {UNKNOWN_GITHUB}.</p>'
         return '<p class="muted">Nothing in flight or merged yet.</p>'
     return f'<div class="table-wrap"><table><tr><th>Task</th>{head}<th>Size</th></tr>{"".join(rows)}</table></div>'
 
@@ -211,7 +232,10 @@ def feed_list(snapshot: Snapshot, now: datetime) -> str:
             f'<span style="min-width:0"><span class="what" title="{escape(e.title)}">{title}</span>'
             f'<span class="about" title="{escape(e.detail)}">{about}</span></span></li>'
         )
-    return "".join(items) or '<li class="muted">Nothing yet.</li>'
+    if items:
+        return "".join(items)
+    known = snapshot.git_ok and snapshot.github_ok
+    return '<li class="muted">Nothing yet.</li>' if known else '<li class="muted">Can\'t tell: a source failed.</li>'
 
 
 def overview(roadmap: Roadmap, snapshot: Snapshot, now: datetime | None = None) -> str:
@@ -226,9 +250,9 @@ def overview(roadmap: Roadmap, snapshot: Snapshot, now: datetime | None = None) 
         )
     )
     header = f"""{kpis(roadmap, snapshot, now)}<div class="ov-grid"><div class="ov-main">
-<div class="panel"><h2>Phases</h2>{phase_rows(roadmap)}<div class="legend">{legend}</div></div>
+<div class="panel"><h2>Phases</h2>{phase_rows(roadmap, snapshot)}<div class="legend">{legend}</div></div>
 <div class="panel"><h2>Pipeline</h2><p class="small muted" style="margin:0 0 6px">In flight, then the latest merged,
-live from branches and PRs</p>{pipeline_table(roadmap)}</div></div>
+live from branches and PRs</p>{pipeline_table(roadmap, snapshot)}</div></div>
 <div class="panel"><h2>Happening now</h2><ol class="feed">{feed_list(snapshot, now)}</ol></div></div>"""
 
     bugs = "".join(task_line(roadmap, t) for t in roadmap.open_bugs())
@@ -257,7 +281,7 @@ live from branches and PRs</p>{pipeline_table(roadmap)}</div></div>
             f'<span class="small muted"><code>{escape(p.branch)}</code></span></li>'
             for p in open_prs
         )
-        or '<li class="muted">No open PRs.</li>'
+        or f'<li class="muted">{"No open PRs" if snapshot.github_ok else UNKNOWN_GITHUB}.</li>'
     )
 
     trees = [w for w in snapshot.worktrees if w.branch != "main"]
