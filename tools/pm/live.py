@@ -4,6 +4,7 @@ with a warning when a tool is missing or fails, so the dashboard always renders.
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 import threading
 import time
@@ -13,6 +14,10 @@ from pathlib import Path
 from .roadmap import BRANCH_PREFIX, Live, PullRequest
 
 SEP = "\x1f"
+SOURCE_SUFFIXES = {".py", ".ts", ".tsx", ".css", ".astro", ".mjs", ".js"}
+GENERATED = {"schema.d.ts"}
+PY_TEST = re.compile(r"^\s*(?:async\s+)?def test_", re.M)
+JS_TEST = re.compile(r"^\s*(?:it|test)(?:\.(?:only|skip|each|fixme)(?:\([^)]*\))?)?\(", re.M)
 
 
 @dataclass
@@ -37,6 +42,8 @@ class Snapshot:
     taken_at: float = 0.0
     git_ok: bool = True
     github_ok: bool = True
+    lines: int = 0  # lines of source in tracked files
+    tests: int = 0  # tests defined in tracked files
 
 
 def _run(args: list[str], cwd: Path, timeout: float = 15) -> str:
@@ -67,9 +74,33 @@ def parse_prs(output: str) -> list[PullRequest]:
                 url=raw.get("url", ""),
                 is_draft=bool(raw.get("isDraft")),
                 updated_at=raw.get("updatedAt", ""),
+                created_at=raw.get("createdAt", ""),
+                merged_at=raw.get("mergedAt") or "",
+                additions=int(raw.get("additions") or 0),
+                deletions=int(raw.get("deletions") or 0),
             )
         )
     return prs
+
+
+def count_code(root: Path, files: list[str]) -> tuple[int, int]:
+    """Lines of source and tests defined across `files`. Generated files don't count, and a
+    parameterised test counts once."""
+    lines = tests = 0
+    for name in files:
+        path = root / name
+        if path.suffix not in SOURCE_SUFFIXES or path.name in GENERATED:
+            continue
+        try:
+            text = path.read_text(errors="ignore")
+        except OSError:  # listed by git but gone from the checkout
+            continue
+        lines += text.count("\n")
+        if path.suffix == ".py":
+            tests += len(PY_TEST.findall(text))
+        elif ".test." in path.name or ".spec." in path.name:
+            tests += len(JS_TEST.findall(text))
+    return lines, tests
 
 
 def parse_commits(output: str) -> list[Commit]:
@@ -122,9 +153,10 @@ def collect(root: Path, repo: str) -> Snapshot:
             if not counted:
                 snapshot.git_ok = False
                 live.warnings.append(f"git: couldn't compare {branch} with main")
-        log = _run(["git", "log", main, "-n", "20", f"--format=%h{SEP}%s{SEP}%cI{SEP}%an"], root)
+        log = _run(["git", "log", main, "-n", "300", f"--format=%h{SEP}%s{SEP}%cI{SEP}%an"], root)
         snapshot.commits = parse_commits(log)
         snapshot.worktrees = parse_worktrees(_run(["git", "worktree", "list", "--porcelain"], root))
+        snapshot.lines, snapshot.tests = count_code(root, _run(["git", "ls-files"], root).splitlines())
     except (subprocess.SubprocessError, OSError, ValueError) as exc:
         snapshot.git_ok = False
         live.warnings.append(f"git failed: {exc}")
@@ -136,9 +168,9 @@ def collect(root: Path, repo: str) -> Snapshot:
             "--state",
             "all",
             "--limit",
-            "200",
+            "1000",
             "--json",
-            "number,title,state,headRefName,url,isDraft,updatedAt",
+            "number,title,state,headRefName,url,isDraft,updatedAt,createdAt,mergedAt,additions,deletions",
         ]
         if repo:
             args += ["--repo", repo]

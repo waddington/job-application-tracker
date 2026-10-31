@@ -21,6 +21,10 @@ class PullRequest:
     url: str
     is_draft: bool = False
     updated_at: str = ""
+    created_at: str = ""
+    merged_at: str = ""
+    additions: int = 0
+    deletions: int = 0
 
 
 @dataclass
