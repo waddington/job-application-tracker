@@ -152,7 +152,7 @@ export const relationOptions = () =>
   (Object.keys(RELATION_TEXT) as Relation[]).map((value) => ({ value, label: RELATION_TEXT[value]() }));
 
 export function relationLabel(relation: string): string {
-  return relation in RELATION_TEXT ? RELATION_TEXT[relation as Relation]() : relation;
+  return Object.hasOwn(RELATION_TEXT, relation) ? RELATION_TEXT[relation as Relation]() : relation;
 }
 
 /** One person's page: details, the applications they're part of and their interviews. */
