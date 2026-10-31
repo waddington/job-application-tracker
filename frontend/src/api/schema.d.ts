@@ -3280,10 +3280,16 @@ export interface components {
             ir35: string | null;
             /** Location */
             location: string | null;
+            /** Meeting Contact Name */
+            meeting_contact_name?: string | null;
             /** Meeting Id */
             meeting_id?: string | null;
+            /** Meeting Kind */
+            meeting_kind?: string | null;
             /** Meeting Label */
             meeting_label?: string | null;
+            /** Meeting Title */
+            meeting_title?: string | null;
             /** Salary Max */
             salary_max: number | null;
             /** Salary Min */

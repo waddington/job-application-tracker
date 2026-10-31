@@ -49,7 +49,12 @@ def summaries(session: Session, *where, workflow: Workflow | None = None) -> lis
             .join(Contact, Meeting.contact_id == Contact.id)
             .where(Meeting.id.in_(meeting_ids))
         ):
-            meetings[m.id] = meeting_label(m, name)
+            meetings[m.id] = {
+                "meeting_label": meeting_label(m, name),
+                "meeting_kind": m.kind,
+                "meeting_title": m.title,
+                "meeting_contact_name": name,
+            }
 
     names = {st.id: st.name for st in workflow.stages} if workflow is not None else {}
     kinds = {st.id: st.kind for st in workflow.stages} if workflow is not None else {}
@@ -90,7 +95,7 @@ def summaries(session: Session, *where, workflow: Workflow | None = None) -> lis
                 contact_name=contact.name if contact else None,
                 agency_id=agency.id if agency else None,
                 agency_name=agency.name if agency else None,
-                meeting_label=meetings.get(role.meeting_id or ""),
+                **meetings.get(role.meeting_id or "", {}),
             )
         )
     return out

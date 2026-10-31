@@ -40,6 +40,7 @@ import {
 import type { Schemas } from "../api/client";
 import { i18n } from "../i18n";
 import { beforeApplied } from "../utils/applied";
+import { callLabel } from "../utils/calls";
 import { formatDay } from "../utils/format";
 import { useFavourite, useGhosted } from "./GhostMark";
 import { CreatableSelect } from "./CreatableSelect";
@@ -254,7 +255,7 @@ export function RoleFormModal({
               data={(theirCalls ?? []).map((m) => ({
                 value: m.id,
                 label: t("form.callOption", {
-                  call: m.title ?? m.label,
+                  call: m.title ?? callLabel(m),
                   date: formatDay(m.starts_at, "dayMonth", i18n.language),
                 }),
               }))}

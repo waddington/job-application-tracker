@@ -7235,6 +7235,17 @@
             ],
             "title": "Location"
           },
+          "meeting_contact_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Meeting Contact Name"
+          },
           "meeting_id": {
             "anyOf": [
               {
@@ -7246,6 +7257,17 @@
             ],
             "title": "Meeting Id"
           },
+          "meeting_kind": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Meeting Kind"
+          },
           "meeting_label": {
             "anyOf": [
               {
@@ -7256,6 +7278,17 @@
               }
             ],
             "title": "Meeting Label"
+          },
+          "meeting_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Meeting Title"
           },
           "salary_max": {
             "anyOf": [
@@ -8469,7 +8502,7 @@
   },
   "info": {
     "title": "Job Application Tracker",
-    "version": "1.2.21"
+    "version": "1.2.22"
   },
   "openapi": "3.1.0",
   "paths": {

@@ -75,14 +75,21 @@ describe("a role's page", () => {
       contact_name: "Alex Morgan",
       agency_id: "ag1",
       agency_name: "Northwind Talent",
-      meeting_label: "Intro call",
+      meeting_kind: "call",
+      meeting_contact_name: "Alex Morgan",
     });
-    expect(await fact("From")).toBe("Alex Morgan at Northwind Talent · on Intro call");
+    expect(await fact("From")).toBe("Alex Morgan at Northwind Talent · on Call with Alex Morgan");
   });
 
   it("shows a call's name as typed, even with a < in it", async () => {
-    page({ contact_id: "c1", contact_name: "Riley Chen", meeting_label: "Intro <platform> chat" });
-    expect(await fact("From")).toBe("Riley Chen · on Intro <platform> chat");
+    page({
+      contact_id: "c1",
+      contact_name: "Riley Chen",
+      meeting_kind: "call",
+      meeting_title: "Intro <platform> chat",
+      meeting_contact_name: "Riley Chen",
+    });
+    expect(await fact("From")).toBe("Riley Chen · on Call with Riley Chen: Intro <platform> chat");
   });
 
   it("says who it came from without an agency or a call", async () => {
@@ -91,8 +98,13 @@ describe("a role's page", () => {
   });
 
   it("says who it came from, on a call, without an agency", async () => {
-    page({ contact_id: "c1", contact_name: "Riley Chen", meeting_label: "Coffee chat" });
-    expect(await fact("From")).toBe("Riley Chen · on Coffee chat");
+    page({
+      contact_id: "c1",
+      contact_name: "Riley Chen",
+      meeting_kind: "in_person",
+      meeting_contact_name: "Riley Chen",
+    });
+    expect(await fact("From")).toBe("Riley Chen · on Meeting with Riley Chen");
   });
 
   it("names the terms, in office", async () => {

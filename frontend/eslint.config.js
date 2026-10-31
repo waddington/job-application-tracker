@@ -55,6 +55,8 @@ const TRANSLATED = [
   "src/components/Interviews.tsx",
   "src/components/InterviewFormModal.tsx",
   "src/components/Reschedule.tsx",
+  // i18n-calls
+  "src/components/Meetings.tsx",
 ];
 
 export default tseslint.config(

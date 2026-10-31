@@ -6,11 +6,11 @@ import { api, unwrap, type Schemas } from "./client";
 export type Meeting = Schemas["MeetingOut"];
 export type MeetingKind = Schemas["MeetingIn"]["kind"];
 
-export const MEETING_KINDS: { value: NonNullable<MeetingKind>; label: string }[] = [
-  { value: "call", label: "Phone call" },
-  { value: "video", label: "Video call" },
-  { value: "in_person", label: "In person" },
-];
+export const MEETING_KINDS = [
+  { value: "call", key: "calls:kinds.call" },
+  { value: "video", key: "calls:kinds.video" },
+  { value: "in_person", key: "calls:kinds.in_person" },
+] as const satisfies readonly { value: NonNullable<MeetingKind>; key: string }[];
 
 export interface MeetingFilters {
   contact_id?: string;

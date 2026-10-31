@@ -19,7 +19,7 @@ import { Trans, useTranslation } from "react-i18next";
 
 import { PersonName } from "../components/GhostMark";
 import { stageLookup, useApplications, useWorkflow } from "../api/hooks";
-import { roleBadge, useRoleSummary } from "../api/roleHooks";
+import { roleBadge, useRoleSummary, type RoleSummary } from "../api/roleHooks";
 import { AttachmentsCard } from "../components/Attachments";
 import { DeleteButton } from "../components/DeleteButton";
 import { LinksCard } from "../components/Links";
@@ -28,6 +28,7 @@ import { NotesCard } from "../components/Notes";
 import { pay, RoleActions, RoleFormModal } from "../components/Roles";
 import { StageBadge } from "../components/StageBadge";
 import { TodosCard } from "../components/Todos";
+import { callLabel } from "../utils/calls";
 import { ago, formatDate } from "../utils/time";
 
 const WORK_MODE = {
@@ -56,6 +57,16 @@ function Fact({ label, children }: { label: string; children: ReactNode }) {
       </Text>
     </Group>
   );
+}
+
+/** The call a role came up in, named in your language. */
+function callOf(role: RoleSummary) {
+  if (!role.meeting_kind) return null;
+  return callLabel({
+    kind: role.meeting_kind,
+    title: role.meeting_title ?? null,
+    contact_name: role.meeting_contact_name ?? "",
+  });
 }
 
 /** A role's page: what it is, where it came from, what you decided, and everything kept on it. */
@@ -148,10 +159,10 @@ export function RolePage() {
                       t={t}
                       i18nKey={
                         role.agency_name && role.agency_id
-                          ? role.meeting_label
+                          ? callOf(role)
                             ? "page.fromPersonAgencyCall"
                             : "page.fromPersonAgency"
-                          : role.meeting_label
+                          : callOf(role)
                             ? "page.fromPersonCall"
                             : "page.fromPerson"
                       }
@@ -167,7 +178,7 @@ export function RolePage() {
                           </Anchor>
                         ),
                         // A component, not a value: <Trans> would read a "<" you typed as markup.
-                        call: <>{role.meeting_label}</>,
+                        call: <>{callOf(role)}</>,
                       }}
                     />
                   </Fact>

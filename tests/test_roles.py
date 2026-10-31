@@ -47,6 +47,9 @@ def test_roles_from_a_recruiter_call(client, seeded):
     assert first["company_name"] == "Fabrikam" and first["contact_name"] == "Alex Recruiter"
     assert first["agency_name"] == "Northwind Talent"
     assert first["meeting_label"] == "Call with Alex Recruiter: Market catch-up"
+    assert first["meeting_kind"] == "call"
+    assert first["meeting_title"] == "Market catch-up"
+    assert first["meeting_contact_name"] == "Alex Recruiter"
     nxt = client.get("/api/v1/next-actions").json()
     assert {r["title"] for r in nxt["roles_to_decide"]} >= {"Platform Engineer", "Data Engineer"}
 

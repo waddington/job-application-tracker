@@ -249,6 +249,30 @@ with sync_playwright() as p:
     visit(page, page.evaluate(LINKS, "/applications/")[0])
     snap["interviews+application"] = grab(page)
     step("interviews+add", lambda: page.get_by_role("button", name="Add round").first.click(timeout=3000))
+    page.keyboard.press("Escape")
+    time.sleep(0.4)
+
+    # Calls: on a person's page, the form with each way of meeting and its link error, and a
+    # call's menu and edit form. Each closed unsaved.
+    visit(page, "/recruiters")
+    visit(page, page.evaluate(LINKS, "/people/")[0])
+    snap["calls+person"] = grab(page)
+    book = page.get_by_role("button", name="Book a call").first
+    step("calls+book", lambda: book.click(timeout=3000))
+    dialog = page.get_by_role("dialog")
+    step("calls+book-video", lambda: dialog.get_by_text("Video call", exact=True).click(timeout=3000))
+    step("calls+book-in-person", lambda: dialog.get_by_text("In person", exact=True).click(timeout=3000))
+    step("calls+book-log", lambda: dialog.get_by_text("Happened", exact=True).click(timeout=3000))
+    step(
+        "calls+book-errors",
+        lambda: dialog.get_by_text("Phone call", exact=True).click(timeout=3000),
+        lambda: dialog.get_by_label("Link (optional)").fill("not a link", timeout=3000),
+        lambda: dialog.get_by_role("button", name="Log call").click(timeout=3000),
+    )
+    page.keyboard.press("Escape")
+    time.sleep(0.4)
+    step("calls+menu", lambda: page.locator("[aria-label^='More for ']").first.click(timeout=3000))
+    step("calls+edit", lambda: page.get_by_role("menuitem", name="Edit").click(timeout=3000))
     browser.close()
 
 with open(OUT, "w") as f:
