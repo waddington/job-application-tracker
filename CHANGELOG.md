@@ -7,7 +7,7 @@ Numbers in brackets are pull requests.
 
 ## 1.2.35 (2026-10-31)
 
-- **Developers:** ERRPLACEHOLDER read their text from the translation files, ready for other languages. The English is unchanged (#172).
+- **Developers:** the API's errors about applications, people, companies, roles, calls and stage moves gain a `code` and `params` beside the unchanged English `detail`, and those errors and the "Couldn't delete…" toasts read their text from the translation files, ready for other languages (#172).
 
 ## 1.2.34 (2026-10-31)
 
