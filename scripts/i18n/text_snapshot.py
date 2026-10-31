@@ -337,7 +337,7 @@ with sync_playwright() as p:
         visit(page, path)
         snap[path] = grab(page)
 
-    # Insights: every tab, a date range that changes things, each route and the agencies'
+    # Insights: every tab, a date range, a route and the agencies'
     # scorecard. Only views change here.
     visit(page, "/insights")
     step("insights+applications", lambda: page.get_by_role("tab", name="Applications").click(timeout=3000))

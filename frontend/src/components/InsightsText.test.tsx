@@ -12,7 +12,7 @@ import { mockApi, WORKFLOW } from "../test/mockApi";
 import { RouteTable, StageTable, WeeklyActivity } from "./InsightStats";
 
 // Insights' text comes from locales/en/insights.ts (i18n-insights-tabs). A before/after snapshot
-// of each tab showed no change; these pin the counts and states the demo data can't reach.
+// of each tab showed no change; these pin most of the counts and states the demo data can't reach.
 
 const wrap = (node: ReactNode) =>
   render(
@@ -216,10 +216,11 @@ describe("the Insights page", () => {
     });
     await applicationsTab();
     const row = (await screen.findByText("Person a")).closest("tr")!;
-    for (const text of ["25%", "1 active", "1 accepted", "1 ghosted", "1 closed", "same day"]) {
-      expect(row).toHaveTextContent(text);
+    expect(row).toHaveTextContent("25%");
+    for (const text of ["1 active", "1 accepted", "1 ghosted", "1 closed", "same day"]) {
+      expect(within(row).getByText(text)).toBeInTheDocument();
     }
-    expect(screen.getByText("Person b").closest("tr")!).toHaveTextContent("1 day");
-    expect(screen.getByText("Person c").closest("tr")!).toHaveTextContent("2.5 days");
+    expect(within(screen.getByText("Person b").closest("tr")!).getByText("1 day")).toBeInTheDocument();
+    expect(within(screen.getByText("Person c").closest("tr")!).getByText("2.5 days")).toBeInTheDocument();
   });
 });
