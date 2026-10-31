@@ -185,9 +185,13 @@ def test_a_reference_deleted_elsewhere(client, seeded):
     _coded(client.post("/api/v1/links", json=link), 422, detail, "link_company_not_found", gone)
     role_url = f"/api/v1/roles/{role}"
     company = {"company_id": "nope"}
-    _coded(client.patch(role_url, json=company), 422, "company_id: Company nope not found", "company_id_not_found", gone)
+    _coded(
+        client.patch(role_url, json=company), 422, "company_id: Company nope not found", "company_id_not_found", gone
+    )
     contact = {"contact_id": "nope"}
-    _coded(client.patch(role_url, json=contact), 422, "contact_id: Contact nope not found", "contact_id_not_found", gone)
+    _coded(
+        client.patch(role_url, json=contact), 422, "contact_id: Contact nope not found", "contact_id_not_found", gone
+    )
     call = {"meeting_id": "nope"}
     _coded(client.patch(role_url, json=call), 422, "meeting_id: Meeting nope not found", "meeting_id_not_found", gone)
     who = seeded["recruiter"]["id"]
