@@ -124,12 +124,19 @@ svg.chart .today-line{stroke:var(--accent)}
 .legend .key-merged{background:var(--done)}.legend .key-scope{background:var(--ink-3)}
 .legend .key-forecast{background:repeating-linear-gradient(90deg,var(--done) 0 3px,transparent 3px 5px)}
 details.panel>summary h2{display:inline;margin:0}
-@media (max-width:700px){.tl-row{grid-template-columns:90px minmax(0,1fr);gap:8px}}
+@media (max-width:700px){.tl-row{grid-template-columns:90px minmax(0,1fr);gap:8px}
+svg.chart .axis{font-size:26px}.tl-mark:nth-child(even){display:none}}
 @media (max-width:1000px){.ov-grid{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:700px){.top{position:static;padding:0 16px}main{padding:16px}
 .board{grid-template-columns:repeat(6,85vw)}.phase-row{grid-template-columns:36px minmax(0,1fr) 40px}
 .phase-row .segs{grid-column:1/-1;order:1}.phase-row .dates{display:none}}
 """
+
+# The page reloads itself every minute: what you've unfolded stays unfolded.
+KEEP_FOLDS = """<script>(function(){var k="pm-folds",s={};try{s=JSON.parse(localStorage.getItem(k))||{}}catch(e){}
+document.querySelectorAll("details[id]").forEach(function(d){if(d.id in s)d.open=s[d.id];
+d.addEventListener("toggle",function(){s[d.id]=d.open;try{localStorage.setItem(k,JSON.stringify(s))}catch(e){}})})})()
+</script>"""
 
 # Runs before the first paint, so a saved theme never flashes the other one.
 THEME_HEAD = """<script>(function(){var t=null;try{t=localStorage.getItem("pm-theme")}catch(e){}

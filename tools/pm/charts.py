@@ -74,6 +74,10 @@ def _steps(points: list[tuple[datetime, int]], x, y) -> str:
     return " ".join(out)
 
 
+def _line(name: str, points: list[tuple[datetime, int]], x, y) -> str:
+    return f'<polyline class="{name}" points="{_steps(points, x, y)}"/>' if points else ""
+
+
 def burnup_svg(b: derive.Burnup) -> str:
     span = b.now - b.start
     # A forecast far off would squash the rest, so the chart stops at half as long again.
@@ -111,14 +115,15 @@ def burnup_svg(b: derive.Burnup) -> str:
     return (
         f'<svg class="chart" viewBox="0 0 {WIDTH} {HEIGHT}" role="img" aria-label="Burn-up: {summary}">{grid}'
         f'<line class="today-line" x1="{x(b.now):.1f}" x2="{x(b.now):.1f}" y1="{TOP}" y2="{HEIGHT - BOTTOM}"/>'
-        f'<polyline class="ln-scope" points="{_steps(b.scope, x, y)}"/>'
-        f'<polyline class="ln-merged" points="{_steps(b.merged, x, y)}"/>{forecast}{labels}</svg>'
+        f"{_line('ln-scope', b.scope, x, y)}{_line('ln-merged', b.merged, x, y)}{forecast}{labels}</svg>"
     )
 
 
 def burnup_panel(roadmap: Roadmap, snapshot, now: datetime) -> str:
     b = derive.burnup(roadmap, snapshot, now)
-    if b.forecast:
+    if not b.merged:
+        pace = "GitHub hasn't answered, so merges over time aren't known."
+    elif b.forecast:
         pace = (
             f"{b.recent} merged in the last {derive.PACE_DAYS} days. At that pace the rest are done around "
             f"{day(b.forecast)}: a forecast, as the roadmap holds no planned dates."
@@ -128,11 +133,15 @@ def burnup_panel(roadmap: Roadmap, snapshot, now: datetime) -> str:
     else:
         pace = f"Nothing merged in the last {derive.PACE_DAYS} days, so there's no forecast."
     undated = f" {b.undated} done with no merged PR count from the start." if b.undated else ""
-    legend = (
-        '<div class="legend"><span><i class="key-merged"></i>Merged</span>'
-        '<span><i class="key-scope"></i>Scope (tasks on the roadmap)</span>'
-        '<span><i class="key-forecast"></i>Forecast</span></div>'
+    if not b.scope:
+        undated += " git hasn't answered, so scope over time isn't known."
+    keys = (
+        (b.merged, "key-merged", "Merged"),
+        (b.scope, "key-scope", "Scope (tasks on the roadmap)"),
+        (b.forecast, "key-forecast", "Forecast"),
     )
+    spans = "".join(f'<span><i class="{key}"></i>{label}</span>' for shown, key, label in keys if shown)
+    legend = f'<div class="legend">{spans}</div>'
     return (
         f'<div class="panel"><h2>Burn-up</h2>{burnup_svg(b)}{legend}'
         f'<p class="small muted" style="margin:8px 0 0">{pace}{undated}</p></div>'
@@ -157,7 +166,7 @@ def status_table(roadmap: Roadmap) -> str:
         )
     heads = "".join(
         f'<th class="num">{h}</th>'
-        for h in ("Done", "In review", "Building", "Planned", "Blocked", "Bugs", "Hours", "%")
+        for h in ("Done", "In review", "Building", "Planned", "Blocked", "Bugs", "Hours", "% of tasks")
     )
     return (
         f'<div class="panel"><h2>Phase status</h2><div class="table-wrap"><table><tr><th>Phase</th>{heads}'

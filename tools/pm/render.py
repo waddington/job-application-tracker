@@ -9,7 +9,7 @@ from . import charts, derive
 from .charts import day
 from .live import Snapshot
 from .roadmap import STATUSES, Roadmap, Task
-from .style import CSS, THEME_BUTTON, THEME_HEAD
+from .style import CSS, KEEP_FOLDS, THEME_BUTTON, THEME_HEAD
 
 NAV = (("/", "Overview"), ("/board", "Board"), ("/roadmap", "Roadmap"))
 
@@ -46,7 +46,7 @@ def page(title: str, active: str, body: str, roadmap: Roadmap, snapshot: Snapsho
 <span class="live{"" if healthy else " down"}"><span class="live-dot"></span>Checked {taken}</span>
 <a href="?refresh=1">Refresh</a><span class="sources" aria-label="Data sources">{sources(roadmap, snapshot)}</span>
 {THEME_BUTTON}</div></header>
-<main id="view" tabindex="-1">{problems(roadmap, snapshot)}{body}</main></body></html>"""
+<main id="view" tabindex="-1">{problems(roadmap, snapshot)}{body}</main>{KEEP_FOLDS}</body></html>"""
 
 
 def problems(roadmap: Roadmap, snapshot: Snapshot) -> str:
@@ -259,7 +259,8 @@ live from branches and PRs</p>{pipeline_table(roadmap, snapshot)}</div></div>
     bugs = "".join(task_line(roadmap, t) for t in roadmap.open_bugs())
     if bugs:
         header += (
-            f'<details class="panel errors gap"><summary>Open bugs · {len(roadmap.open_bugs())}</summary>'
+            '<details id="open-bugs" class="panel errors gap">'
+            f"<summary>Open bugs · {len(roadmap.open_bugs())}</summary>"
             f'<ul class="plain">{bugs}</ul></details>'
         )
     nxt = "".join(task_line(roadmap, t, False) for t in roadmap.next_up()[:8])
@@ -362,7 +363,8 @@ Each phase from its first PR to its latest. Fill shows tasks done, a tick is a t
                 f'<span class="muted">{escape(t.status_source)}</span></td></tr>'
             )
         out.append(
-            f'<details class="panel gap"{" open" if p is current else ""}><summary><h2>{escape(p.id)} · '
+            f'<details id="phase-{escape(p.id)}" class="panel gap"{" open" if p is current else ""}>'
+            f"<summary><h2>{escape(p.id)} · "
             f'{escape(p.name)} <span class="muted">· {p.done_h:g}/{p.estimate_h:g} h · {pct}%</span></h2></summary>'
             f'<p class="muted" style="margin:0">{escape(p.goal)}</p><div class="bar"><i style="width:{pct}%"></i></div>'
             f'<div class="table-wrap"><table><tr><th>Status</th><th>Task</th><th>Estimate</th><th>Depends on</th>'

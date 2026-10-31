@@ -138,6 +138,43 @@ class BurnupChartTests(unittest.TestCase):
         self.assertIn(charts.day(NOW + (NOW - b.start) / 2), svg)
 
 
+class FailedSourceTests(unittest.TestCase):
+    def test_github_never_answering_states_no_false_merges(self):
+        html = charts.burnup_panel(road(), Snapshot(live=Live(), github_ok=False), NOW)
+        self.assertIn("merges over time aren't known", html)
+        self.assertNotIn("ln-merged", html)
+        self.assertNotIn("Nothing merged", html)
+        self.assertNotIn("done with no merged PR", html)
+        self.assertNotIn("key-merged", html)
+
+    def test_git_never_answering_draws_no_false_scope(self):
+        html = charts.burnup_panel(road(), Snapshot(live=Live(), git_ok=False), NOW)
+        self.assertIn("scope over time isn't known", html)
+        self.assertNotIn("ln-scope", html)
+        self.assertNotIn("key-scope", html)
+
+    def test_kept_data_is_still_drawn_when_a_source_fails_later(self):
+        prs = [merged(1, "worktree-a", 3)]
+        snapshot = Snapshot(live=Live(prs=prs), github_ok=False, git_ok=False, scope=[(ago(9), 2)])
+        html = charts.burnup_panel(road(prs), snapshot, NOW)
+        self.assertIn("ln-merged", html)
+        self.assertIn("ln-scope", html)
+
+    def test_the_forecast_legend_shows_only_with_a_forecast(self):
+        self.assertNotIn("key-forecast", charts.burnup_panel(road(), Snapshot(live=Live()), NOW))
+        with_one = charts.burnup_panel(road([merged(1, "worktree-a", 3)]), Snapshot(live=Live()), NOW)
+        self.assertIn("key-forecast", with_one)
+
+
+class FoldTests(unittest.TestCase):
+    def test_folds_have_ids_so_they_survive_the_auto_reload(self):
+        roadmap = road()
+        snapshot = Snapshot(live=Live())
+        self.assertIn('id="phase-P0"', render.roadmap_page(roadmap, snapshot, NOW))
+        self.assertIn('id="open-bugs"', render.overview(roadmap, snapshot, NOW))
+        self.assertIn("details[id]", render.page("T", "/", "", roadmap, snapshot))
+
+
 class TimelineTests(unittest.TestCase):
     def test_a_phase_with_prs_gets_a_bar_ticks_and_every_row_the_today_line(self):
         html = charts.timeline_html(road([merged(1, "worktree-a", 10)]), NOW)
@@ -185,7 +222,7 @@ class PageTests(unittest.TestCase):
         self.assertIn("Burn-up", html)
         self.assertIn("Phase status", html)
         self.assertEqual(html.count("<details"), 3)
-        self.assertEqual(html.count('<details class="panel gap" open>'), 1)
+        self.assertEqual(html.count('class="panel gap" open>'), 1)
 
 
 if __name__ == "__main__":

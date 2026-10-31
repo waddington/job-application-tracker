@@ -132,6 +132,11 @@ def burnup(roadmap: Roadmap, snapshot: Snapshot, now: datetime) -> Burnup:
     recent = sum(timedelta(0) <= now - when <= timedelta(days=PACE_DAYS) for when in dated)
     left = len(tasks) - len(done)
     forecast = now + timedelta(days=left * PACE_DAYS / recent) if left > 0 and recent else None
+    # A source that has never answered says nothing, rather than a flat line that looks like data.
+    if not snapshot.github_ok and not snapshot.live.prs:
+        merged, undated, forecast = [], 0, None
+    if not snapshot.git_ok and not history:
+        scope = []
     return Burnup(start, now, merged, scope, len(done), len(tasks), undated, forecast, recent)
 
 
