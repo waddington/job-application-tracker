@@ -3639,6 +3639,12 @@
             "anyOf": [
               {
                 "enum": [
+                  "application_document_not_found",
+                  "attachment_file_missing",
+                  "attachment_not_found",
+                  "document_not_found",
+                  "document_version_not_found",
+                  "attachment_is_version_file",
                   "agency_id_not_found",
                   "agency_needs_agency_route",
                   "agency_not_found",
@@ -3659,6 +3665,30 @@
                   "backup_shut_down",
                   "backup_snapshot_failed",
                   "backup_snapshots_off",
+                  "cv_file_applications_invalid",
+                  "cv_file_document_required",
+                  "cv_file_missing",
+                  "cv_file_not_found",
+                  "document_sent",
+                  "document_version_id_not_found",
+                  "file_is_symlink",
+                  "file_outside_files",
+                  "file_too_large",
+                  "note_changed",
+                  "note_link_agency_not_found",
+                  "note_link_application_not_found",
+                  "note_link_company_not_found",
+                  "note_link_contact_not_found",
+                  "note_link_document_not_found",
+                  "note_link_interview_not_found",
+                  "note_link_invalid",
+                  "note_link_role_not_found",
+                  "note_not_found",
+                  "note_path_invalid",
+                  "note_unreadable",
+                  "version_already_sent",
+                  "version_label_required",
+                  "version_sent",
                   "call_ends_before_start",
                   "company_has_applications",
                   "company_id_not_found",
@@ -9915,7 +9945,7 @@
   },
   "info": {
     "title": "Job Application Tracker",
-    "version": "1.2.35"
+    "version": "1.2.36"
   },
   "openapi": "3.1.0",
   "paths": {

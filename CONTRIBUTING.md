@@ -123,7 +123,7 @@ The app is being made translatable, English only for now; the plan and its order
 - Timeline: the page's own text, filters, kinds of thing and lanes, and entries' titles, also in
   Today's recent list (only other events' titles, and every detail, still come from the API in English).
 - Errors: the shared "That didn't work" toast, and the errors that have a code so far (backup,
-  to-dos, applications, people, calls and stage moves).
+  to-dos, applications, people, calls, stage moves, documents, attachments and notes).
 
 The files are listed in `TRANSLATED` in `frontend/eslint.config.js`. Until an area has moved,
 keep writing its text as before. Once it has:

@@ -15,16 +15,24 @@ import tempfile
 import unicodedata
 from dataclasses import dataclass
 from pathlib import Path
-from typing import BinaryIO
+from typing import TYPE_CHECKING, BinaryIO
 
 from ..db.types import new_id, utcnow
+
+if TYPE_CHECKING:
+    from ..api.errors import ErrorCode, ErrorParams
 
 MAX_BYTES = 50 * 1024 * 1024  # a CV, a brief, a screenshot: not videos
 _CHUNK = 1024 * 1024
 
 
 class FileError(ValueError):
-    pass
+    """The message is English, for the CLI and logs. The API sends the code and params beside it."""
+
+    def __init__(self, message: str, code: ErrorCode, params: ErrorParams | None = None) -> None:
+        super().__init__(message)
+        self.code: ErrorCode = code
+        self.params = params
 
 
 class TooLarge(FileError):
@@ -62,9 +70,9 @@ class FileStore:
     def resolve(self, rel_path: str) -> Path:
         path = (self.root / rel_path).resolve()
         if not path.is_relative_to(self.root) or path == self.root:
-            raise FileError(f"{rel_path} isn't under files/")
+            raise FileError(f"{rel_path} isn't under files/", "file_outside_files", {"path": rel_path})
         if (self.root / rel_path).is_symlink():
-            raise FileError(f"{rel_path} is a symlink")
+            raise FileError(f"{rel_path} is a symlink", "file_is_symlink", {"path": rel_path})
         return path
 
     def save(self, stream: BinaryIO, original_name: str) -> Stored:
@@ -83,7 +91,8 @@ class FileStore:
                 while chunk := stream.read(_CHUNK):
                     size += len(chunk)
                     if size > self.max_bytes:
-                        raise TooLarge(f"files can be up to {self.max_bytes // (1024 * 1024)} MB")
+                        limit = self.max_bytes // (1024 * 1024)
+                        raise TooLarge(f"files can be up to {limit} MB", "file_too_large", {"count": limit})
                     digest.update(chunk)
                     out.write(chunk)
             os.replace(tmp, dest)

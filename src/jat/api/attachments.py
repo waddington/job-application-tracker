@@ -16,7 +16,8 @@ from ..domain import applications as svc
 from ..storage import eml
 from ..storage.files import FileError, FileStore, TooLarge
 from . import schemas as S
-from .deps import ENTITY_MODELS, SessionDep, get_or_404
+from .deps import ENTITY_MODELS, ENTITY_NOT_FOUND, SessionDep, get_or_404
+from .errors import CodedError
 
 router = APIRouter(prefix="/attachments", tags=["attachments"])
 log = logging.getLogger(__name__)
@@ -69,7 +70,8 @@ def _check_entity(session: Session, entity_type: str | None, entity_id: str | No
         raise HTTPException(422, f"entity_type must be one of {', '.join(ENTITY_MODELS)}")
     target = session.get(model, entity_id)
     if target is None:
-        raise HTTPException(422, f"entity_id: {entity_type} {entity_id} not found")
+        detail = f"entity_id: {entity_type} {entity_id} not found"
+        raise CodedError(422, detail, ENTITY_NOT_FOUND[entity_type], {"id": entity_id})
     return target
 
 
@@ -110,9 +112,9 @@ def upload_attachment(
     try:
         stored = store.save(file.file, name)
     except TooLarge as exc:
-        raise HTTPException(413, str(exc)) from exc
+        raise CodedError(413, str(exc), exc.code, exc.params) from exc
     except FileError as exc:
-        raise HTTPException(422, str(exc)) from exc
+        raise CodedError(422, str(exc), exc.code, exc.params) from exc
     meta: dict = {}
     if eml.is_eml(name, file.content_type):
         content_type = "message/rfc822"  # never shown inline
@@ -176,9 +178,10 @@ def download_attachment(attachment_id: str, request: Request, session: SessionDe
     try:
         path = _store(request).resolve(att.path)
     except FileError as exc:
-        raise HTTPException(404, str(exc)) from exc
+        raise CodedError(404, str(exc), exc.code, exc.params) from exc
     if not path.is_file():
-        raise HTTPException(404, f"{att.original_name} is missing from files/")
+        name = att.original_name
+        raise CodedError(404, f"{name} is missing from files/", "attachment_file_missing", {"name": name})
     inline = att.content_type in INLINE_TYPES
     return FileResponse(
         path,
@@ -211,7 +214,13 @@ def delete_attachment(attachment_id: str, request: Request, session: SessionDep)
     version = session.scalar(select(DocumentVersion).where(DocumentVersion.attachment_id == att.id).limit(1))
     if version is not None:
         # A CV's file is part of its version (and what you sent): delete the version instead.
-        raise HTTPException(409, f"This is the file of version {version.label!r}; delete that version instead.")
+        raise CodedError(
+            409,
+            f"This is the file of version {version.label!r}; delete that version instead.",
+            "attachment_is_version_file",
+            # quoted_label is Python's quoting of the label, which the English shows.
+            {"label": version.label, "quoted_label": repr(version.label)},
+        )
     path = att.path
     session.delete(att)
     session.commit()  # the record goes first: a failed commit must not leave it pointing at nothing

@@ -1,8 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { api, errorMessage, unwrap, type Schemas } from "./client";
+import { i18n } from "../i18n";
+import { api, ApiError, unwrap, type Schemas } from "./client";
 import { invalidateApplicationViews } from "./hooks";
-import { notifyError } from "./notifyError";
+import { errorText, notifyError } from "./notifyError";
 
 export type AttachmentItem = Schemas["AttachmentOut"];
 
@@ -29,7 +30,7 @@ export function useRoleFiles() {
 }
 
 /** Upload files onto one thing, one request per file, so one that's too big doesn't sink the rest. */
-async function uploadFiles(files: File[], entityType: string, entityId: string) {
+export async function uploadFiles(files: File[], entityType: string, entityId: string) {
   const failed: string[] = [];
   for (const file of files) {
     const form = new FormData();
@@ -42,10 +43,12 @@ async function uploadFiles(files: File[], entityType: string, entityId: string) 
     });
     if (!response.ok) {
       const body: unknown = await response.json().catch(() => null);
-      failed.push(`${file.name}: ${errorMessage(body)}`);
+      failed.push(
+        i18n.t("errors:uploadFileFailed", { name: file.name, reason: errorText(new ApiError(body)) }),
+      );
     }
   }
-  if (failed.length) throw new Error(failed.join("; "));
+  if (failed.length) throw new Error(failed.join(i18n.t("errors:uploadFailedSeparator")));
 }
 
 function useRefreshFiles() {
@@ -88,7 +91,7 @@ export function useDeleteAttachment() {
       const { error } = await api.DELETE("/api/v1/attachments/{attachment_id}", {
         params: { path: { attachment_id: id } },
       });
-      if (error) throw new Error("Couldn't delete the file");
+      if (error) throw new Error(i18n.t("errors:own.deleteFile"));
     },
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ["attachments"] });

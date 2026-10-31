@@ -3,12 +3,20 @@ import type { ErrorCode } from "../../api/client";
 
 type Codes<C extends ErrorCode> = C;
 /** Codes whose text depends on `count`, as `Codes<"a" | "b">`: these have _one and _other keys instead of one key. */
-type PluralCode = Codes<"company_has_applications" | "role_has_applications">;
+type PluralCode = Codes<
+  "company_has_applications" | "document_sent" | "file_too_large" | "role_has_applications" | "version_sent"
+>;
 
 // One line per ErrorCode in src/jat/api/errors.py. A code with no text, or text for a code that's
 // gone, fails the type check. This English matches the API's `detail` today; if they drift, the app
 // shows this text and nothing breaks.
 const codes = {
+  application_document_not_found: "ApplicationDocument {{id}} not found",
+  attachment_file_missing: "{{name}} is missing from files/",
+  attachment_not_found: "Attachment {{id}} not found",
+  document_not_found: "Document {{id}} not found",
+  document_version_not_found: "DocumentVersion {{id}} not found",
+  attachment_is_version_file: "This is the file of version {{quoted_label}}; delete that version instead.",
   agency_id_not_found: "agency_id: Agency {{id}} not found",
   agency_needs_agency_route: "Only applications through a recruiter can have an agency.",
   agency_not_found: "Agency {{id}} not found",
@@ -29,6 +37,35 @@ const codes = {
   backup_shut_down: "snapshots are shut down",
   backup_snapshot_failed: "snapshot failed: {{reason}}",
   backup_snapshots_off: "The data directory isn't a git repo, so snapshots are off.",
+  cv_file_applications_invalid: "application_ids: only applications this file counts for.",
+  cv_file_document_required: "Pick a document to add it to, or name a new one.",
+  cv_file_missing: "{{name}} is missing from your data folder.",
+  cv_file_not_found: "No CV file like that among your attachments (or it's all recorded already).",
+  document_sent_one:
+    "A version of this document was sent with {{count}} application(s); remove it from them first.",
+  document_sent_other:
+    "A version of this document was sent with {{count}} application(s); remove it from them first.",
+  document_version_id_not_found: "document_version_id: {{id}} not found",
+  file_is_symlink: "{{path}} is a symlink",
+  file_outside_files: "{{path}} isn't under files/",
+  file_too_large_one: "files can be up to {{count}} MB",
+  file_too_large_other: "files can be up to {{count}} MB",
+  note_changed: "This note changed since you opened it (maybe in another editor). Reload it first.",
+  note_link_agency_not_found: "links: agency {{id}} not found",
+  note_link_application_not_found: "links: application {{id}} not found",
+  note_link_company_not_found: "links: company {{id}} not found",
+  note_link_contact_not_found: "links: contact {{id}} not found",
+  note_link_document_not_found: "links: document {{id}} not found",
+  note_link_interview_not_found: "links: interview {{id}} not found",
+  note_link_invalid: "links: {{quoted_link}} should look like 'application:<id>' ({{kinds}})",
+  note_link_role_not_found: "links: role {{id}} not found",
+  note_not_found: "Note {{id}} not found",
+  note_path_invalid: "{{path}} isn't a note under notes/",
+  note_unreadable: "Note {{id}} can't be read: {{reason}}",
+  version_already_sent: "That version is already recorded for this application.",
+  version_label_required: "label: give the version a name, e.g. v3 (fintech)",
+  version_sent_one: "This version was sent with {{count}} application(s); remove it from them first.",
+  version_sent_other: "This version was sent with {{count}} application(s); remove it from them first.",
   call_ends_before_start: "ends_at: can't be before starts_at",
   company_has_applications_one: "{{name}} has an application. Delete it first, or archive it instead.",
   company_has_applications_other:
@@ -81,9 +118,13 @@ const codes = {
 export default {
   title: "That didn't work",
   somethingWrong: "Something went wrong",
+  uploadFileFailed: "{{name}}: {{reason}}",
+  uploadFailedSeparator: "; ",
   // The app's own words for a request that failed: these ignore why, as they always have.
   own: {
     deleteCall: "Couldn't delete the call",
+    deleteFile: "Couldn't delete the file",
+    deleteNote: "Couldn't delete the note",
     deleteInterview: "Couldn't delete the interview",
     deleteIt: "Couldn't delete it",
     deleteOffer: "Couldn't delete the offer",
