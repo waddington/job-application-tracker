@@ -426,7 +426,12 @@ trusting anything here, re-read `docs/ROADMAP.yaml` and run `gh pr list`.
 - P9: "continue with the P9 E2e test tasks but do not make the security fixes or bug fixes" (finished).
 - P8: "now back to p8, pick up items 8 then 9 then 10 then stop and wait for further instruction", then "first, detail them
   out to me", then "each item can be multiple PRs", which I took as the go. Items 8, 9, 10 are the roadmap's "i18n 8/14",
-  "9/14", "10/14". Stop after #164. Next when Kai says go: `i18n-timeline`, `i18n-errors`, `i18n-events`, `i18n-finish`.
+  "9/14", "10/14". Stopped after #164. Then "coninue with these 3 items" (11, 12, 13), "i want you to fan out and work in
+  parallel", "sounds good, get started". **Live plan: nine PRs (#166 split the tasks), three at a time, one from each item.**
+  Wave 1: `i18n-timeline-page`, `i18n-errors-setup`, `i18n-events-setup`. Wave 2: `i18n-timeline-titles`,
+  `i18n-errors-applications`, `i18n-events-rounds-offers`. Wave 3: `i18n-timeline-records`, `i18n-errors-files`, then
+  `i18n-events-activity` once `i18n-timeline-records` has merged. Merges go one at a time; the version bump and changelog
+  happen only at merge time, from main's version. Stop after these nine; `i18n-finish` waits for Kai.
 - P10: "start p10, the pm dashboard upgrades. do 3 items from it for now", "feel free to start PM activityt and also pm
   agents", "keep going, finish p10 then stop" (finished).
 - Bugs: asked which to fix and when, Kai said "none yet". Recording them is still required.
@@ -476,7 +481,7 @@ isn't a bug.
 told Kai. Until then: a role's page loses "on Call with…" (#156, the only thing that goes missing), and search and Sankey
 names stay in their English (#161, #164), which looks the same. Leave it alone.
 
-**The loop for the next i18n area** (`i18n-timeline`, `i18n-errors`, `i18n-events`, `i18n-finish`; as Kai scopes them):
+**The loop for the next i18n area** (the nine parts above, then `i18n-finish`; as Kai scopes them):
 - Read the area and the last entry in `docs/rfc/i18n.md`. If it won't fit in about 500 changed lines (1,000 at most,
   CLAUDE.md *Git*), split its roadmap task first, in its own PR (#158). Worktree `worktree-<id>`; set the task `building`,
   push, and open a draft PR straight away.
@@ -579,10 +584,10 @@ is that stopped process, not a fault. To preview a branch, serve it on a spare p
 
 - **In flight:** none (after this doc's PR merges).
 - **Next: what's left of the i18n work, P8, in this order** (when Kai says; the areas before these are done, see 4a):
-  1. `i18n-timeline`: titles built in the frontend from kind and fields, including a round's and a call's title
-     (`api/timeline.py`), which Today's recent list also shows.
-  2. `i18n-errors`: error codes (Literal) + `errors` namespace, and the "That didn't work" toasts in `api/*Hooks`.
-  3. `i18n-events`: `data.msg` on new events, a typed `msg` in the API; "Followed up", "No reply" and the rounds' saved
+  1. `i18n-timeline-*`: titles built in the frontend from a new `kind` and raw fields, including a round's and a call's
+     title (`api/timeline.py`), which Today's recent list also shows.
+  2. `i18n-errors-*`: error codes (Literal) + `errors` namespace, and the "That didn't work" toasts in `api/*Hooks`.
+  3. `i18n-events-*`: `data.msg` on new events, a typed `msg` in the API; "Followed up", "No reply" and the rounds' saved
      summaries (saved English today) move here. No backfill.
   4. `i18n-finish`: the lint rule everywhere, `shadow.ts` removed, a pseudo screenshot pass, RFC done. Then
      `i18n-contribute-language`, `i18n-default-stages` and `multi-language` (Chinese, a native-speaker review; also percent
