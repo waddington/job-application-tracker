@@ -330,15 +330,17 @@ test.describe("more of the frame", () => {
     // KNOWN BUG (fix-phone-header-overflow on the roadmap): expected to fail until it is fixed.
     test.fail("the header's contents stay in the header", async ({ page }) => {
       await opened(page);
-      for (const control of [
-        page.getByRole("button", { name: "Toggle navigation" }),
-        page.getByRole("textbox", { name: "Search everything" }),
-        page.getByRole("button", { name: "Language" }),
-      ]) {
-        const box = await control.boundingBox();
-        expect(box).not.toBeNull();
-        expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(56);
-        expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(390);
+      // Whatever's there: a fix may fold some of them away.
+      const controls = page.locator("header").locator("a, button, input").filter({ visible: true });
+      expect(await controls.count()).toBeGreaterThan(0);
+      for (const box of await controls.evaluateAll((all) =>
+        all.map((el) => {
+          const { right, bottom } = el.getBoundingClientRect();
+          return { right, bottom };
+        }),
+      )) {
+        expect(box.bottom).toBeLessThanOrEqual(56);
+        expect(box.right).toBeLessThanOrEqual(390);
       }
     });
   });
