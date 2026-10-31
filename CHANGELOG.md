@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.2.30 (2026-10-31)
+
+- **Developers:** the Timeline page's filters, lanes and hover text read their text from the translation files, ready for other languages. The English is unchanged (#167).
+
 ## 1.2.29 (2026-10-31)
 
 - **Developers:** The Sankey reads its text from the translation files, ready for other languages. The English is unchanged. A node in the API gains `code` and `stage_name` (#164).
