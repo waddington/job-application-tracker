@@ -1,0 +1,57 @@
+[
+  {
+    "key": "event.linkAdded",
+    "params": { "title": "Contoso careers" },
+    "summary": "Link added: Contoso careers"
+  },
+  {
+    "key": "event.linkAdded",
+    "params": { "title": "{{title}} $t(common:actions.cancel) $& <b>A & B</b> \"q\" é: x" },
+    "summary": "Link added: {{title}} $t(common:actions.cancel) $& <b>A & B</b> \"q\" é: x"
+  },
+  {
+    "key": "event.noteAdded",
+    "params": { "title": "Call with Alex" },
+    "summary": "Note added: Call with Alex"
+  },
+  {
+    "key": "event.fileAdded",
+    "params": { "name": "job ad.pdf" },
+    "summary": "File added: job ad.pdf"
+  },
+  {
+    "key": "event.email",
+    "params": { "subject": "Contoso - next steps", "sender": "Alex Morgan <alex.morgan@example.com>" },
+    "summary": "Contoso - next steps (from Alex Morgan <alex.morgan@example.com>)"
+  },
+  {
+    "key": "event.emailNoSubject",
+    "params": { "sender": "Alex Morgan <alex.morgan@example.com>" },
+    "summary": "(no subject) (from Alex Morgan <alex.morgan@example.com>)"
+  },
+  {
+    "key": "event.emailUnknownSender",
+    "params": { "subject": "Contoso - next steps" },
+    "summary": "Contoso - next steps (from unknown sender)"
+  },
+  {
+    "key": "event.emailNoSubjectUnknownSender",
+    "params": {},
+    "summary": "(no subject) (from unknown sender)"
+  },
+  {
+    "key": "event.cvSent",
+    "params": { "name": "Backend CV", "label": "v3 (fintech)" },
+    "summary": "CV sent: Backend CV v3 (fintech)"
+  },
+  {
+    "key": "event.coverLetterSent",
+    "params": { "name": "Short letter", "label": "v1" },
+    "summary": "Cover letter sent: Short letter v1"
+  },
+  {
+    "key": "event.documentSent",
+    "params": { "name": "Portfolio", "label": "v1" },
+    "summary": "Document sent: Portfolio v1"
+  }
+]

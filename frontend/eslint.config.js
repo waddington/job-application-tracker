@@ -81,6 +81,8 @@ const TRANSLATED = [
   "src/components/DocumentPerformance.tsx",
   // i18n-sankey
   "src/components/SankeyChart.tsx",
+  // i18n-events-setup
+  "src/components/eventText.ts",
 ];
 
 export default tseslint.config(
