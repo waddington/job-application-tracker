@@ -11,7 +11,9 @@ class SourceTests(unittest.TestCase):
         with mock.patch("tools.pm.live._run", side_effect=OSError("no tool")):
             snapshot = collect(Path("."), "owner/demo")
         self.assertEqual((snapshot.git_ok, snapshot.github_ok), (False, False))
-        self.assertEqual(len(snapshot.live.warnings), 2)
+        warnings = " ".join(snapshot.live.warnings)
+        self.assertIn("git failed", warnings)
+        self.assertIn("GitHub PRs unavailable", warnings)
 
     def collect_failing(self, *words):
         """Collect with every command containing one of `words` failing."""

@@ -72,7 +72,8 @@ vertical-align:top}th{color:var(--ink-3);font-weight:500;font-size:12px}
 .filters{margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap}
 .filters a{padding:2px 10px;border:1px solid var(--line-2);border-radius:12px;color:var(--ink-2)}
 .filters a.active{background:var(--accent);color:var(--on-pill);border-color:var(--accent)}
-@media (max-width:700px){.top{position:static;padding:0 16px}main{padding:16px}.board{grid-template-columns:repeat(6,85vw)}}
+@media (max-width:700px){.top{position:static;padding:0 16px}main{padding:16px}
+.board{grid-template-columns:repeat(6,85vw)}}
 """
 
 # Runs before the first paint, so a saved theme never flashes the other one.
