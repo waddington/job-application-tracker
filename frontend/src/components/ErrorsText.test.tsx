@@ -128,4 +128,18 @@ describe("the toast", () => {
     void i18n.changeLanguage(was);
     i18n.removeResourceBundle("xx", "errors");
   });
+
+  it("picks a plural form by the count, and shows the API's English without one", () => {
+    i18n.addResourceBundle("de", "errors", {
+      codes: { many_one: "{{count}} Sache", many_other: "{{count}} Sachen" },
+    });
+    const was = i18n.language;
+    void i18n.changeLanguage("de");
+    const plural = (params: object) => new ApiError({ detail: "the API's English", code: "many", params });
+    expect(errorText(plural({ count: 1 }))).toBe("1 Sache");
+    expect(errorText(plural({ count: 3 }))).toBe("3 Sachen");
+    expect(errorText(plural({}))).toBe("the API's English");
+    void i18n.changeLanguage(was);
+    i18n.removeResourceBundle("de", "errors");
+  });
 });
