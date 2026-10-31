@@ -210,6 +210,34 @@ describe("CVs and cover letters", () => {
     );
   });
 
+  it("counts one application, and several CV files", async () => {
+    const data = { ...performance([]), applications: 1 };
+    await openIt(data, {
+      "/api/v1/cv-files": ["a", "b"].map((sha256) => ({
+        sha256,
+        version: null,
+        sources: [],
+        applications: [],
+      })),
+    });
+    expect(await screen.findByText(/^Your 1 sent application \(by the date/)).toBeInTheDocument();
+    expect(
+      await screen.findByText(
+        /^2 CV files you've attached aren't a version yet, so they aren't compared here\./,
+      ),
+    ).toHaveTextContent(
+      "2 CV files you've attached aren't a version yet, so they aren't compared here. Sort them out on Documents.",
+    );
+  });
+
+  it("says other documents by their own words", async () => {
+    const kind = (name: string) => ({ kind: name, documents: [], none: docTally(0, 0) });
+    await openIt({ applications: 0, kinds: [kind("other"), kind("cv")] });
+    expect(await screen.findByText("CVs")).toBeInTheDocument();
+    fireEvent.click(screen.getByText("Other documents"));
+    expect(await screen.findByText("Which document works best")).toBeInTheDocument();
+  });
+
   it("says when there's only one to compare", async () => {
     await openIt(performance([doc("d1", "Backend CV", docTally(3, 1))]));
     expect(
@@ -222,11 +250,12 @@ describe("CVs and cover letters", () => {
   it("names a version under its document, and what's not recorded", async () => {
     const v = (id: string, label: string) => ({ id, label, ...docTally(2, 1) });
     await openIt(
-      performance([doc("d1", "Backend CV", docTally(4, 2), [v("v1", "v2"), v("v2", "v3 · short")])], {
+      performance([doc("d1", "Backend · Go", docTally(4, 2), [v("v1", "v2"), v("v2", "v3 · short")])], {
         none: docTally(1, 0),
       }),
     );
     expect(await screen.findByText("v3 · short")).toBeInTheDocument();
+    expect(screen.getByText("v2")).toBeInTheDocument(); // not "Go · v2"
     expect(screen.getAllByText("No CV recorded").length).toBeGreaterThan(0);
     expect(screen.getByText("Which CV works best")).toBeInTheDocument();
   });

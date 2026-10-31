@@ -8,6 +8,7 @@ Numbers in brackets are pull requests.
 ## 1.2.28 (2026-10-31)
 
 - **Developers:** Recruiter conversations and CV performance read their text from the translation files, ready for other languages. The English is unchanged (#163).
+- **Fix:** on CVs and cover letters, a version shows its own label, where a document with " · " in its name also showed part of that name (#163).
 
 ## 1.2.27 (2026-10-31)
 

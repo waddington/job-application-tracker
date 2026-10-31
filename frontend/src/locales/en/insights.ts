@@ -1,5 +1,5 @@
-// Insights: the page and its tabs, stage and route tables, the scorecard, weekly activity and
-// The whole picture (docs/rfc/i18n.md §15). Stage, company and people's names are your data.
+// Insights: the page and its tabs, stage and route tables, the scorecard, weekly activity,
+// The whole picture, Recruiter conversations and CV performance (docs/rfc/i18n.md §15). Stage, company and people's names are your data.
 export default {
   title: "Insights",
   percent: "{{percent}}%",
