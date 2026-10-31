@@ -9,11 +9,13 @@ CSS = """
 :root,:root[data-theme="dark"]{color-scheme:dark;--bg:#0a0d13;--grid:rgba(148,163,184,.045);--panel:#0f131b;
 --panel-2:#141a24;--hover:#18202c;--line:#1d2430;--line-2:#2a3342;--ink:#e7ebf3;--ink-2:#a3adbe;--ink-3:#7f899b;
 --accent:#8ea2ff;--on-pill:#0a0d13;--bug:#e46565;--planned:#7a8496;--building:#5aa2ef;--review:#d39a12;--done:#9085e9;
---blocked:#e46565;--ok:#1faa77;--warn:#d39a12;--bad:#e46565}
+--blocked:#e46565;--ok:#1faa77;--warn:#d39a12;--bad:#e46565;
+--c1:#3987e5;--c2:#d95926;--c3:#199e70;--c4:#c98500;--c5:#d55181;--c7:#9085e9;--c8:#5d6676}
 :root[data-theme="light"]{color-scheme:light;--bg:#f3f5f8;--grid:rgba(30,41,59,.045);--panel:#fff;--panel-2:#f7f8fa;
 --hover:#eef1f6;--line:#e2e6ed;--line-2:#cdd4df;--ink:#0e1420;--ink-2:#4a5568;--ink-3:#667084;--accent:#3f55e0;
 --on-pill:#fff;--bug:#c93636;--planned:#667084;--building:#2268bd;--review:#8f6400;--done:#5a48c4;--blocked:#c93636;
---ok:#13925f;--warn:#b77b00;--bad:#c93636}
+--ok:#13925f;--warn:#b77b00;--bad:#c93636;
+--c1:#2a78d6;--c2:#eb6834;--c3:#1baf7a;--c4:#eda100;--c5:#e87ba4;--c7:#4a3aa7;--c8:#97a0af}
 *{box-sizing:border-box}
 body{margin:0;background-color:var(--bg);background-image:linear-gradient(var(--grid) 1px,transparent 1px),
 linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:24px 24px;background-attachment:fixed;
@@ -124,6 +126,26 @@ svg.chart .today-line{stroke:var(--accent)}
 .legend .key-merged{background:var(--done)}.legend .key-scope{background:var(--ink-3)}
 .legend .key-forecast{background:repeating-linear-gradient(90deg,var(--done) 0 3px,transparent 3px 5px)}
 details.panel>summary h2{display:inline;margin:0}
+svg.chart .k-feat,.legend .k-feat{fill:var(--c1);background:var(--c1)}
+svg.chart .k-fix,.legend .k-fix{fill:var(--c2);background:var(--c2)}
+svg.chart .k-test,.legend .k-test{fill:var(--c3);background:var(--c3)}
+svg.chart .k-docs,.legend .k-docs{fill:var(--c4);background:var(--c4)}
+svg.chart .k-refactor,.legend .k-refactor{fill:var(--c5);background:var(--c5)}
+svg.chart .k-chore,.legend .k-chore{fill:var(--c7);background:var(--c7)}
+svg.chart .k-other,.legend .k-other{fill:var(--c8);background:var(--c8)}
+svg.chart .add,.legend .add{fill:var(--c1);background:var(--c1)}
+svg.chart .del,.legend .del{fill:var(--c2);background:var(--c2)}
+.hbar{display:grid;grid-template-columns:minmax(80px,130px) minmax(40px,1fr) 80px;gap:8px;align-items:center;
+padding:3px 0}
+.hname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hbar .num{text-align:right}
+.htrack{height:8px;background:var(--line);border-radius:2px;overflow:hidden}
+.htrack i{display:block;height:100%;background:var(--building)}
+.heat{display:grid;grid-template-columns:44px repeat(24,minmax(0,1fr));gap:2px;align-items:center;font-size:11px}
+.heat i{display:block;height:14px;border-radius:2px;background:var(--line)}.heat i.on{background:var(--building)}
+.hm-day,.hm-h{color:var(--ink-3);white-space:nowrap}
+.rm-grid svg.chart .axis{font-size:18px}
+@media (max-width:700px){svg.chart.wide{min-width:640px}svg.chart.wide .axis{font-size:26px}
+.rm-grid svg.chart .axis{font-size:24px}}
 @media (max-width:700px){.tl-row{grid-template-columns:90px minmax(0,1fr);gap:8px}
 svg.chart .axis{font-size:26px}.tl-mark:nth-child(even){display:none}}
 @media (max-width:1000px){.ov-grid{grid-template-columns:minmax(0,1fr)}}

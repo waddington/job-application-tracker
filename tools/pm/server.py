@@ -7,7 +7,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlencode, urlparse
 
-from . import render
+from . import activity, render
 from .live import Collector
 from .roadmap import apply_live, load
 
@@ -41,6 +41,9 @@ class Dashboard:
         if path == "/roadmap":
             body = render.roadmap_page(roadmap, snapshot)
             return 200, "text/html", render.page("Roadmap", "/roadmap", body, roadmap, snapshot)
+        if path == "/activity":
+            body = activity.activity_page(snapshot)
+            return 200, "text/html", render.page("Activity", "/activity", body, roadmap, snapshot)
         if path == "/api/roadmap.json":
             return 200, "application/json", json.dumps(render.as_json(roadmap, snapshot), indent=2)
         return 404, "text/plain", "not found"
