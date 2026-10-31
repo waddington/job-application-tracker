@@ -3545,6 +3545,36 @@
       },
       "FlowNode": {
         "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "enum": [
+                  "source_recruiter",
+                  "source_referral",
+                  "source_found",
+                  "deciding",
+                  "passed",
+                  "holding_applied",
+                  "holding_screen",
+                  "holding_interviewing",
+                  "holding_final",
+                  "holding_offer",
+                  "holding_other",
+                  "pitched",
+                  "applied",
+                  "in_progress",
+                  "offer",
+                  "closed",
+                  "ghosted"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code"
+          },
           "color": {
             "title": "Color",
             "type": "string"
@@ -3568,6 +3598,17 @@
           "reached": {
             "title": "Reached",
             "type": "integer"
+          },
+          "stage_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stage Name"
           }
         },
         "required": [
@@ -8540,7 +8581,7 @@
   },
   "info": {
     "title": "Job Application Tracker",
-    "version": "1.2.28"
+    "version": "1.2.29"
   },
   "openapi": "3.1.0",
   "paths": {

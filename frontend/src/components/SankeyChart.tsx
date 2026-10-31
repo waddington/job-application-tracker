@@ -2,8 +2,10 @@ import { Text } from "@mantine/core";
 import { useElementSize } from "@mantine/hooks";
 import { sankey, sankeyLinkHorizontal, type SankeyLink, type SankeyNode } from "d3-sankey";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import type { Flow, FlowLink, FlowNode } from "../api/insightHooks";
+import { i18n } from "../i18n";
 
 type Node = SankeyNode<FlowNode, FlowLink>;
 type Link = SankeyLink<FlowNode, FlowLink>;
@@ -163,13 +165,43 @@ function layoutAt(flow: Flow, width: number, height: number, order?: Map<string,
 
 const colour = (name: string) => `var(--mantine-color-${name}-6)`;
 
+// A code the API adds without text here is a type error.
+const NODE_NAMES = {
+  source_recruiter: "insights:sankey.nodes.source_recruiter",
+  source_referral: "insights:sankey.nodes.source_referral",
+  source_found: "insights:sankey.nodes.source_found",
+  deciding: "insights:sankey.nodes.deciding",
+  passed: "insights:sankey.nodes.passed",
+  holding_applied: "insights:sankey.nodes.holding_applied",
+  holding_screen: "insights:sankey.nodes.holding_screen",
+  holding_interviewing: "insights:sankey.nodes.holding_interviewing",
+  holding_final: "insights:sankey.nodes.holding_final",
+  holding_offer: "insights:sankey.nodes.holding_offer",
+  pitched: "insights:sankey.nodes.pitched",
+  applied: "insights:sankey.nodes.applied",
+  in_progress: "insights:sankey.nodes.in_progress",
+  offer: "insights:sankey.nodes.offer",
+  closed: "insights:sankey.nodes.closed",
+  ghosted: "insights:sankey.nodes.ghosted",
+} as const satisfies Record<Exclude<NonNullable<FlowNode["code"]>, "holding_other">, string>;
+
+/** A node's name in your language. A stage has no code, and shows as you wrote it, as does
+ * anything from an older server. */
+export function nodeName(node: FlowNode, lng = i18n.language): string {
+  if (!node.code) return node.name;
+  if (node.code === "holding_other") {
+    return i18n.t("insights:sankey.nodes.holding_other", { stage: node.stage_name ?? "", lng });
+  }
+  return i18n.t(NODE_NAMES[node.code], { lng });
+}
+
 /**
  * Stage-to-stage flows, left to right. Each node sits one column after the furthest thing that
  * leads to it, so outcomes and what's waiting follow their stage. `unit` is what the flow counts:
  * applications, or roles.
  */
 export function SankeyChart({
-  flow,
+  flow: rawFlow,
   unit = "application",
   label,
 }: {
@@ -177,19 +209,32 @@ export function SankeyChart({
   unit?: "application" | "role";
   label?: string; // what the diagram shows, for screen readers
 }) {
-  const plural = (n: number) => `${n} ${unit}${n === 1 ? "" : "s"}`;
+  const {
+    t,
+    i18n: { language },
+  } = useTranslation("insights");
+  // Everything below, wrapping labels included, reads the name in your language.
+  const flow = useMemo(
+    () => ({ ...rawFlow, nodes: rawFlow.nodes.map((n) => ({ ...n, name: nodeName(n, language) })) }),
+    [rawFlow, language],
+  );
   const nodeText = (n: FlowNode) => {
+    const count = n.reached;
+    const name = n.name;
+    if (unit === "role") return t("sankey.nodeRoles", { name, count });
     // Sources, and where things are waiting, count what's there rather than what "reached" it.
-    if (unit === "role" || n.kind === "holding" || n.id.startsWith("source:"))
-      return `${n.name}: ${plural(n.reached)}`;
-    const still = n.current ? `, ${n.current} still there` : "";
-    return `${n.name}: ${plural(n.reached)} reached${still}`;
+    if (n.kind === "holding" || n.id.startsWith("source:"))
+      return t("sankey.nodeApplications", { name, count });
+    return n.current
+      ? t("sankey.nodeReachedStill", { name, count, still: n.current })
+      : t("sankey.nodeReached", { name, count });
   };
   const linkText = (l: Link) => {
     const source = l.source as Node;
     const target = l.target as Node;
     const share = source.reached ? Math.round((100 * l.value) / source.reached) : 0;
-    return `${source.name} → ${target.name}: ${plural(l.value)} (${share}% of ${source.name})`;
+    const values = { source: source.name, target: target.name, count: l.value, share };
+    return unit === "role" ? t("sankey.linkRoles", values) : t("sankey.linkApplications", values);
   };
   const { ref, width: measured } = useElementSize();
   // Never so narrow that labels run into the next column: on a phone it scrolls sideways instead.
@@ -221,8 +266,8 @@ export function SankeyChart({
         aria-label={
           label ??
           (unit === "role"
-            ? `Sankey diagram of ${plural(flow.applications)} pitched to you, by what happened to them`
-            : `Sankey diagram of ${plural(flow.applications)} moving through the stages`)
+            ? t("sankey.chartRoles", { count: flow.applications })
+            : t("sankey.chartApplications", { count: flow.applications }))
         }
         style={{ display: "block" }}
       >
@@ -298,7 +343,7 @@ export function SankeyChart({
         })}
       </svg>
       <Text size="sm" c={caption ? undefined : "dimmed"} mt="xs">
-        {caption ?? "Hover over a stage or a flow to see its numbers."}
+        {caption ?? t("sankey.hint")}
       </Text>
     </div>
   );
