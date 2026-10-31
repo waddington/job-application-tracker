@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import { useSaveInterview, type Interview } from "../api/interviewHooks";
 import { useSaveMeeting, type Meeting } from "../api/meetingHooks";
+import { callLabel } from "../utils/calls";
 import { roundLabel } from "../utils/rounds";
 
 type Field = { key: string; label: string; placeholder: string; initial: string | null };
@@ -168,14 +169,14 @@ export function MeetingDidntHappen({ meeting }: { meeting: Meeting }) {
         size="compact-xs"
         variant="subtle"
         color="gray"
-        aria-label={t("outcome.didntHappenWho", { label: meeting.label })}
+        aria-label={t("outcome.didntHappenWho", { label: callLabel(meeting) })}
         onClick={() => setOpen(true)}
       >
         {t("outcome.didntHappen")}
       </Button>
       {open && (
         <OutcomeNotesModal
-          title={t("outcome.didntHappenTitle", { label: meeting.label })}
+          title={t("outcome.didntHappenTitle", { label: callLabel(meeting) })}
           subtitle={t("outcome.callSubtitle")}
           fields={[
             {

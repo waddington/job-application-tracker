@@ -21,6 +21,7 @@ import { IconDots, IconPhone, IconPlus } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { useState, type ReactNode } from "react";
+import { Trans, useTranslation } from "react-i18next";
 
 import { PersonName } from "./GhostMark";
 import { useApplications, useContacts } from "../api/hooks";
@@ -36,6 +37,8 @@ import { Markdown } from "./Markdown";
 import { MeetingDidntHappen } from "./OutcomeNotes";
 import { RoleFormModal, RoleLine } from "./Roles";
 import { useRoleSummaries } from "../api/roleHooks";
+import { i18n } from "../i18n";
+import { callLabel } from "../utils/calls";
 import { formatDateTime } from "../utils/time";
 
 type Status = "scheduled" | "done" | "cancelled";
@@ -55,7 +58,7 @@ interface Values {
 
 const PICKER = "YYYY-MM-DD HH:mm:ss";
 const blank = (s: string) => s.trim() || null;
-const isLink = (v: string) => (!v || /^https?:\/\//.test(v) ? null : "Links start with http:// or https://");
+const LINK = /^https?:\/\//;
 
 /** Next whole hour, as a sensible default time for a call you're booking. */
 const nextHour = () => dayjs().add(1, "hour").startOf("hour").format(PICKER);
@@ -96,15 +99,16 @@ export function MeetingFormModal({
   contactId?: string;
   status?: Status;
 }) {
+  const { t } = useTranslation(["calls", "common"]);
   const { data: contacts } = useContacts();
   const { data: apps } = useApplications({});
   const save = useSaveMeeting();
   const form = useForm<Values>({
     initialValues: fromMeeting(meeting, contactId, status),
     validate: {
-      contactId: (v) => (v ? null : "Who is it with?"),
-      startsAt: (v) => (v ? null : "When is it?"),
-      meetingUrl: isLink,
+      contactId: (v) => (v ? null : t("form.whoError")),
+      startsAt: (v) => (v ? null : t("form.whenError")),
+      meetingUrl: (v) => (!v || LINK.test(v) ? null : t("form.linkError")),
     },
   });
   const done = form.values.status === "done";
@@ -125,80 +129,87 @@ export function MeetingFormModal({
     save.mutate(meeting ? { id: meeting.id, body } : { body }, { onSuccess: onClose });
   });
 
-  const title = meeting ? (status === "done" ? "How did it go?" : `Edit ${meeting.label}`) : "Book a call";
+  const title = meeting
+    ? status === "done"
+      ? t("form.howDidItGoTitle")
+      : t("form.editTitle", { label: callLabel(meeting) })
+    : t("form.bookTitle");
   return (
     <Modal opened={opened} onClose={onClose} title={title} size="lg">
       <form onSubmit={submit}>
         <Stack>
           <Group grow align="flex-start">
             <Select
-              label="With"
-              placeholder="Pick a person"
+              label={t("form.with")}
+              placeholder={t("form.withPlaceholder")}
               searchable
               data={(contacts ?? []).map((c) => ({ value: c.id, label: c.name }))}
               disabled={!!contactId && !meeting}
               {...form.getInputProps("contactId")}
             />
             <TextInput
-              label="About"
-              placeholder="Market catch-up, roles at Contoso…"
+              label={t("form.about")}
+              placeholder={t("form.aboutPlaceholder")}
               {...form.getInputProps("title")}
             />
           </Group>
           <Group grow align="flex-start">
-            <DateTimePicker label="When" {...form.getInputProps("startsAt")} />
+            <DateTimePicker label={t("form.when")} {...form.getInputProps("startsAt")} />
             <div>
               <Text size="sm" fw={500} mb={4}>
-                How
+                {t("form.how")}
               </Text>
               <SegmentedControl
                 fullWidth
-                aria-label="How"
-                data={MEETING_KINDS}
+                aria-label={t("form.how")}
+                data={MEETING_KINDS.map((k) => ({ value: k.value, label: i18n.t(k.key) }))}
                 {...form.getInputProps("kind")}
               />
             </div>
           </Group>
           <div>
             <Text size="sm" fw={500} mb={4}>
-              Status
+              {t("form.status")}
             </Text>
             <SegmentedControl
-              aria-label="Status"
+              aria-label={t("form.status")}
               data={[
-                { value: "scheduled", label: "Booked" },
-                { value: "done", label: "Happened" },
-                { value: "cancelled", label: "Didn't happen" },
+                { value: "scheduled", label: t("status.scheduled") },
+                { value: "done", label: t("status.done") },
+                { value: "cancelled", label: t("status.cancelled") },
               ]}
               {...form.getInputProps("status")}
             />
           </div>
           {form.values.kind === "in_person" ? (
             <TextInput
-              label="Where"
-              placeholder="Coffee shop, their office…"
+              label={t("form.where")}
+              placeholder={t("form.wherePlaceholder")}
               {...form.getInputProps("location")}
             />
           ) : (
             <TextInput
-              label={form.values.kind === "video" ? "Meeting link" : "Link (optional)"}
-              placeholder="https://…"
+              label={form.values.kind === "video" ? t("form.meetingLink") : t("form.linkOptional")}
+              placeholder={t("form.linkPlaceholder")}
               {...form.getInputProps("meetingUrl")}
             />
           )}
           <Select
-            label="About an application (optional)"
-            description="If it's about one role you've applied for: it then shows with that application on the Timeline."
-            placeholder="Not about one application"
+            label={t("form.application")}
+            description={t("form.applicationHint")}
+            placeholder={t("form.applicationPlaceholder")}
             searchable
             clearable
-            data={(apps ?? []).map((a) => ({ value: a.id, label: `${a.company_name} · ${a.role_title}` }))}
+            data={(apps ?? []).map((a) => ({
+              value: a.id,
+              label: t("form.applicationOption", { company: a.company_name, role: a.role_title }),
+            }))}
             {...form.getInputProps("applicationId")}
           />
           {!done && (
             <Textarea
-              label="Agenda"
-              description="What to ask, what to tell them. Markdown works."
+              label={t("form.agenda")}
+              description={t("form.agendaHint")}
               autosize
               minRows={2}
               {...form.getInputProps("agenda")}
@@ -206,8 +217,8 @@ export function MeetingFormModal({
           )}
           {done && (
             <Textarea
-              label="How did it go?"
-              description="What you talked about and next steps. Add the roles they mentioned from the call on their page, to apply or pass on each. Markdown works."
+              label={t("form.howDidItGo")}
+              description={t("form.howDidItGoHint")}
               autosize
               minRows={3}
               data-autofocus
@@ -216,10 +227,10 @@ export function MeetingFormModal({
           )}
           <Group justify="flex-end">
             <Button variant="default" onClick={onClose}>
-              Cancel
+              {t("common:actions.cancel")}
             </Button>
             <Button type="submit" loading={save.isPending}>
-              {meeting ? "Save" : done ? "Log call" : "Book call"}
+              {meeting ? t("common:actions.save") : done ? t("form.log") : t("form.book")}
             </Button>
           </Group>
         </Stack>
@@ -228,11 +239,18 @@ export function MeetingFormModal({
   );
 }
 
-const STATUS_BADGE: Record<string, { label: string; color: string }> = {
-  scheduled: { label: "Booked", color: "blue" },
-  done: { label: "Happened", color: "teal" },
-  cancelled: { label: "Didn't happen", color: "gray" },
-};
+const STATUS_BADGE = {
+  scheduled: { key: "calls:status.scheduled", color: "blue" },
+  done: { key: "calls:status.done", color: "teal" },
+  cancelled: { key: "calls:status.cancelled", color: "gray" },
+} as const;
+
+/** A past call's badge; a status the app doesn't know shows as saved. */
+function statusBadge(status: string): { label: string; color?: string } {
+  if (!Object.hasOwn(STATUS_BADGE, status)) return { label: status };
+  const badge = STATUS_BADGE[status as keyof typeof STATUS_BADGE];
+  return { label: i18n.t(badge.key), color: badge.color };
+}
 
 /** One call: what, when, who with; `action` sits on the right. */
 export function MeetingLine({
@@ -244,30 +262,43 @@ export function MeetingLine({
   action?: ReactNode;
   showWho?: boolean;
 }) {
+  const { t } = useTranslation("calls");
   const where = meeting.agency_name ?? meeting.company_name;
+  const who = <PersonName id={meeting.contact_id} name={meeting.contact_name} size={12} />;
   // The date stays on one line beside the title; buttons get a line of their own underneath.
   return (
     <Stack gap={4}>
       <Group justify="space-between" wrap="nowrap" align="flex-start" gap="sm">
         <div style={{ minWidth: 0 }}>
           <Text fw={600} size="sm" truncate="end">
-            {meeting.label}
+            {callLabel(meeting)}
           </Text>
           <Group gap={6}>
             {showWho && (
               <Anchor component={Link} to={`/people/${meeting.contact_id}`} size="xs">
-                <PersonName id={meeting.contact_id} name={meeting.contact_name} size={12} />
-                {where ? ` · ${where}` : ""}
+                {where ? (
+                  <Trans
+                    t={t}
+                    i18nKey="line.whoAt"
+                    // Components, not values: <Trans> would read a "<" in a name as markup.
+                    components={{ who, where: <>{where}</> }}
+                  />
+                ) : (
+                  who
+                )}
               </Anchor>
             )}
             {meeting.application_id && (
               <Anchor component={Link} to={`/applications/${meeting.application_id}`} size="xs">
-                {meeting.application_company_name} · {meeting.role_title}
+                {t("line.application", {
+                  company: meeting.application_company_name ?? "",
+                  role: meeting.role_title ?? "",
+                })}
               </Anchor>
             )}
             {meeting.meeting_url && meeting.status === "scheduled" && (
               <Anchor href={meeting.meeting_url} target="_blank" rel="noreferrer" size="xs">
-                Join link
+                {t("line.joinLink")}
               </Anchor>
             )}
           </Group>
@@ -287,6 +318,7 @@ export function MeetingLine({
 
 /** "Happened" (opens the form to say how it went) and "Didn't happen", for a call whose time has passed. */
 export function MeetingOutcome({ meeting }: { meeting: Meeting }) {
+  const { t } = useTranslation("calls");
   const [closing, setClosing] = useState(false);
   return (
     <Group gap={4} wrap="nowrap">
@@ -294,10 +326,10 @@ export function MeetingOutcome({ meeting }: { meeting: Meeting }) {
         size="compact-xs"
         variant="light"
         color="teal"
-        aria-label={`Happened: ${meeting.label}`}
+        aria-label={t("happenedWho", { label: callLabel(meeting) })}
         onClick={() => setClosing(true)}
       >
-        Happened
+        {t("happened")}
       </Button>
       <MeetingDidntHappen meeting={meeting} />
       {closing && (
@@ -314,18 +346,19 @@ export function MeetingOutcome({ meeting }: { meeting: Meeting }) {
 }
 
 function MeetingMenu({ meeting, onEdit }: { meeting: Meeting; onEdit: () => void }) {
+  const { t } = useTranslation(["calls", "common"]);
   const del = useDeleteMeeting();
   return (
     <Menu position="bottom-end" withinPortal>
       <Menu.Target>
-        <ActionIcon variant="subtle" color="gray" aria-label={`More for ${meeting.label}`}>
+        <ActionIcon variant="subtle" color="gray" aria-label={t("moreFor", { label: callLabel(meeting) })}>
           <IconDots size={16} />
         </ActionIcon>
       </Menu.Target>
       <Menu.Dropdown>
-        <Menu.Item onClick={onEdit}>Edit</Menu.Item>
+        <Menu.Item onClick={onEdit}>{t("edit")}</Menu.Item>
         <Menu.Item color="red" onClick={() => del.mutate(meeting.id)}>
-          Delete
+          {t("common:actions.delete")}
         </Menu.Item>
       </Menu.Dropdown>
     </Menu>
@@ -334,6 +367,7 @@ function MeetingMenu({ meeting, onEdit }: { meeting: Meeting; onEdit: () => void
 
 /** A person's calls and meetings: booked ones first, then what happened, with notes. */
 export function MeetingsCard({ contactId, name }: { contactId: string; name: string }) {
+  const { t } = useTranslation("calls");
   const { data: meetings } = useMeetings({ contact_id: contactId });
   const [editing, setEditing] = useState<Meeting | "new" | null>(null);
   const [addingRoles, setAddingRoles] = useState<string | null>(null); // the call they came up in
@@ -347,19 +381,19 @@ export function MeetingsCard({ contactId, name }: { contactId: string; name: str
   return (
     <Card withBorder>
       <Group justify="space-between" mb="sm">
-        <Title order={4}>Calls and meetings</Title>
+        <Title order={4}>{t("card.title")}</Title>
         <Button
           size="xs"
           variant="light"
           leftSection={<IconPhone size={14} />}
           onClick={() => setEditing("new")}
         >
-          Book a call
+          {t("card.book")}
         </Button>
       </Group>
       {all.length === 0 ? (
         <Text size="sm" c="dimmed">
-          No calls with {name} yet. Book one, or log one you've had.
+          {t("card.empty", { name })}
         </Text>
       ) : (
         <Stack gap="sm">
@@ -394,8 +428,8 @@ export function MeetingsCard({ contactId, name }: { contactId: string; name: str
                 showWho={false}
                 action={
                   <Group gap={4} wrap="nowrap">
-                    <Badge size="xs" variant="light" color={STATUS_BADGE[m.status]?.color}>
-                      {STATUS_BADGE[m.status]?.label ?? m.status}
+                    <Badge size="xs" variant="light" color={statusBadge(m.status).color}>
+                      {statusBadge(m.status).label}
                     </Badge>
                     <MeetingMenu meeting={m} onEdit={() => setEditing(m)} />
                   </Group>
@@ -424,7 +458,7 @@ export function MeetingsCard({ contactId, name }: { contactId: string; name: str
                     onClick={() => setAddingRoles(m.id)}
                     style={{ alignSelf: "flex-start" }}
                   >
-                    Add roles from this call
+                    {t("card.addRoles")}
                   </Button>
                 </Stack>
               )}

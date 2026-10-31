@@ -125,7 +125,12 @@ describe("calls and meetings", () => {
         waiting_people: [],
         meetings: [meeting()],
         meetings_to_close: [
-          meeting({ id: "m0", label: "Call with Alex Morgan: Intro", starts_at: "2026-09-29T10:00:00Z" }),
+          meeting({
+            id: "m0",
+            title: "Intro",
+            label: "Call with Alex Morgan: Intro",
+            starts_at: "2026-09-29T10:00:00Z",
+          }),
         ],
         today: "2026-10-02",
       },

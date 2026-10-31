@@ -230,6 +230,10 @@ class RoleSummary(RoleOut):
     agency_id: str | None = None  # the person's agency
     agency_name: str | None = None
     meeting_label: str | None = None
+    # What the frontend names the call from, in your language.
+    meeting_kind: str | None = None
+    meeting_title: str | None = None
+    meeting_contact_name: str | None = None
 
 
 # --- applications ------------------------------------------------------------------------
