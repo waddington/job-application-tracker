@@ -13,7 +13,7 @@ from pathlib import PurePosixPath
 
 from .charts import _at, day
 from .derive import parse_time
-from .live import Snapshot, Worktree
+from .live import DETACHED, Snapshot, Worktree
 from .roadmap import BRANCH_PREFIX, PullRequest, Roadmap, Task
 
 WORKING = timedelta(minutes=45)
@@ -70,9 +70,11 @@ def agent_rows(roadmap: Roadmap, snapshot: Snapshot, now: datetime) -> list[Agen
         if tree.branch == "main":
             continue
         last = last_active(tree)
-        task = roadmap.task(tree.branch.removeprefix(BRANCH_PREFIX))
-        pr = snapshot.live.pr_for(tree.branch)
-        rows.append(AgentRow(tree, PurePosixPath(tree.path).name, task, state_of(last, now), last, pr))
+        name = PurePosixPath(tree.path).name
+        # Mid-rebase it has no branch, but its folder is still named after its task.
+        task_id = name if tree.branch == DETACHED else tree.branch.removeprefix(BRANCH_PREFIX)
+        pr = snapshot.live.pr_for(BRANCH_PREFIX + task_id)
+        rows.append(AgentRow(tree, name, roadmap.task(task_id), state_of(last, now), last, pr))
     earliest = datetime.min.replace(tzinfo=now.tzinfo)
     return sorted(rows, key=lambda r: (STATE_ORDER[r.state], -(r.last or earliest).timestamp()))
 
@@ -133,6 +135,8 @@ def working_table(rows: list[AgentRow], now: datetime) -> str:
             else '<span class="muted">Not on the roadmap</span>'
         )
         link = f' · <a href="{escape(pr.url)}">PR #{pr.number}</a>' if pr else ""
+        if tree.branch == DETACHED:
+            link = f" {DETACHED}{link}"
         state = (
             '<span class="pill blocked">can\'t read</span>'
             if tree.unreadable
@@ -219,9 +223,9 @@ def agents_page(roadmap: Roadmap, snapshot: Snapshot, now: datetime | None = Non
     )
     note = (
         f"The latest {len(found)} PRs from opened to merged. A bar is a PR, not an agent: it's a sign of when work "
-        f"ran, and subagents such as reviewers don't appear. Over this period at most "
-        f"{peak_in_window(snapshot.live.prs, found, now)} ran at once. Since PRs open as drafts when work starts, "
-        "recent bars are closest to the truth."
+        f"ran, and subagents such as reviewers don't appear. Over this period, counting older PRs still "
+        f"running, at most {peak_in_window(snapshot.live.prs, found, now)} ran at once. "
+        "Since PRs open as drafts when work starts, recent bars are closest to the truth."
         if found
         else ""
     )

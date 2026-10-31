@@ -7,7 +7,7 @@ from tempfile import TemporaryDirectory
 from unittest import mock
 
 from tools.pm import agents
-from tools.pm.live import Snapshot, Worktree, parse_worktrees, read_activity
+from tools.pm.live import Snapshot, Worktree, parse_status, parse_worktrees, read_activity
 from tools.pm.roadmap import Live, PullRequest, apply_live, from_data
 
 NOW = datetime(2026, 10, 31, 12, 0).astimezone()
@@ -201,6 +201,26 @@ class LaneTests(unittest.TestCase):
         self.assertEqual([t.branch for t in trees], ["main", "(detached)"])
         rows = agents.agent_rows(road(), Snapshot(live=Live(), worktrees=trees), NOW)
         self.assertEqual([r.name for r in rows], ["w"])
+
+    def test_a_detached_row_says_so_and_still_finds_its_task_and_pr(self):
+        task_pr = PullRequest(7, "T", "OPEN", "worktree-a", "https://example.com/7", created_at=NOW.isoformat())
+        detached = Worktree("/r/.claude/worktrees/a", "(detached)")
+        html = agents.agents_page(road([task_pr]), Snapshot(live=Live(prs=[task_pr]), worktrees=[detached]), NOW)
+        self.assertIn("(detached)", html)
+        self.assertIn("Task &lt;A&gt;", html)
+        self.assertIn("PR #7", html)
+        self.assertNotIn("Not on the roadmap", html)
+
+    def test_a_rename_on_either_side_counts_once(self):
+        self.assertEqual(
+            parse_status("R  new.py\0old.py\0 R two.py\0one.py\0RM three.py\0x.py\0?? y.py\0"),
+            [
+                "new.py",
+                "two.py",
+                "three.py",
+                "y.py",
+            ],
+        )
 
     def test_the_most_at_once(self):
         self.assertEqual(agents.most_at_once(agents.lanes([pr(1, 9, 5), pr(2, 8, 6), pr(3, 3, 2)], NOW)), 2)

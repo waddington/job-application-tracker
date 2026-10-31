@@ -189,7 +189,7 @@ def parse_status(output: str) -> list[str]:
         if not entry:
             continue
         names.append(entry[3:])
-        if entry[0] in "RC":
+        if "R" in entry[:2] or "C" in entry[:2]:
             next(entries, None)
     return names
 
