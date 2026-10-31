@@ -9,7 +9,7 @@ from . import derive
 from .roadmap import Roadmap
 
 WIDTH, HEIGHT = 800, 280
-LEFT, RIGHT, TOP, BOTTOM = 40, 16, 12, 28
+LEFT, RIGHT, TOP, BOTTOM = 56, 16, 24, 32  # room for the axis text, which is larger on phones
 
 
 def day(when: datetime) -> str:
