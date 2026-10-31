@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime, timedelta
+from typing import Literal
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from fastapi import APIRouter, HTTPException, Query
@@ -19,13 +20,38 @@ from .deps import SessionDep, WorkflowDep
 router = APIRouter(prefix="/insights", tags=["insights"])
 
 
+# Nodes the app names itself, for the frontend to say in your language. A stage has none: its name is
+# yours. `id` won't do: the pitched-roles diagram has its own "applied" and "offer", which aren't stages.
+NodeCode = Literal[
+    "source_recruiter",
+    "source_referral",
+    "source_found",
+    "deciding",
+    "passed",
+    "holding_applied",
+    "holding_screen",
+    "holding_interviewing",
+    "holding_final",
+    "holding_offer",
+    "holding_other",
+    "pitched",
+    "applied",
+    "in_progress",
+    "offer",
+    "closed",
+    "ghosted",
+]
+
+
 class FlowNode(BaseModel):
     id: str
-    name: str
+    name: str  # in English
     kind: str  # a stage's kind, "holding" (where things are waiting) or "outcome" (passed)
     color: str
     reached: int  # applications (or roles, in the whole picture) that got here
     current: int  # of those, how many got no further (0 on holding and source nodes)
+    code: NodeCode | None = None
+    stage_name: str | None = None  # with holding_other: the stage it's waiting at, as you wrote it
 
 
 class FlowLink(BaseModel):
@@ -74,6 +100,21 @@ HOLDING_NAMES = {
     "interviewing": "Still interviewing",
     "final": "In final rounds",
     "offer": "Deciding on the offer",
+}
+
+EXTRA_CODES: dict[str, NodeCode] = {
+    "source:recruiter": "source_recruiter",
+    "source:referral": "source_referral",
+    "source:found": "source_found",
+    svc.DECIDING: "deciding",
+    svc.PASSED: "passed",
+}
+HOLDING_CODES: dict[str, NodeCode] = {
+    "applied": "holding_applied",
+    "screen": "holding_screen",
+    "interviewing": "holding_interviewing",
+    "final": "holding_final",
+    "offer": "holding_offer",
 }
 
 
@@ -134,12 +175,28 @@ def _flow_out(result: svc.Flow, workflow) -> FlowOut:
             return stages[sid].name, stages[sid].kind, stages[sid].color
         return sid, "unknown", "gray"
 
+    def code_of(sid: str) -> tuple[NodeCode | None, str | None]:
+        if sid in EXTRA_CODES:
+            return EXTRA_CODES[sid], None
+        if sid.startswith("holding:"):
+            st = stages[sid.removeprefix("holding:")]
+            return (HOLDING_CODES[st.id], None) if st.id in HOLDING_CODES else ("holding_other", st.name)
+        return None, None
+
     nodes = []
     for sid in sorted(result.reached, key=pos):
         name, kind, color = describe(sid)
+        code, stage_name = code_of(sid)
         nodes.append(
             FlowNode(
-                id=sid, name=name, kind=kind, color=color, reached=result.reached[sid], current=result.current[sid]
+                id=sid,
+                name=name,
+                kind=kind,
+                color=color,
+                reached=result.reached[sid],
+                current=result.current[sid],
+                code=code,
+                stage_name=stage_name,
             )
         )
     links = [
@@ -399,7 +456,8 @@ def _role_flow(t: conv_svc.Tally) -> FlowOut:
     return FlowOut(
         applications=t.pitched,
         nodes=[
-            FlowNode(id=i, name=name, kind=kind, color=color, reached=n, current=0)
+            # Every one of these has a code of the same name.
+            FlowNode(id=i, name=name, kind=kind, color=color, reached=n, current=0, code=i)
             for i, name, kind, color, n in nodes
             if n
         ],

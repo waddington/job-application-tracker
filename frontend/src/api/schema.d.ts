@@ -2352,6 +2352,8 @@ export interface components {
         };
         /** FlowNode */
         FlowNode: {
+            /** Code */
+            code?: ("source_recruiter" | "source_referral" | "source_found" | "deciding" | "passed" | "holding_applied" | "holding_screen" | "holding_interviewing" | "holding_final" | "holding_offer" | "holding_other" | "pitched" | "applied" | "in_progress" | "offer" | "closed" | "ghosted") | null;
             /** Color */
             color: string;
             /** Current */
@@ -2364,6 +2366,8 @@ export interface components {
             name: string;
             /** Reached */
             reached: number;
+            /** Stage Name */
+            stage_name?: string | null;
         };
         /** FlowOut */
         FlowOut: {

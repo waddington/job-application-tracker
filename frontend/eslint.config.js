@@ -79,6 +79,8 @@ const TRANSLATED = [
   // i18n-insights-reviews
   "src/components/Conversations.tsx",
   "src/components/DocumentPerformance.tsx",
+  // i18n-sankey
+  "src/components/SankeyChart.tsx",
 ];
 
 export default tseslint.config(
