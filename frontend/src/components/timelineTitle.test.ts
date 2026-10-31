@@ -11,14 +11,20 @@ import { timelineTitle } from "./timelineTitle";
 
 const API_TITLE = "the API's title";
 
-type Case = (typeof cases)[number] & {
+type Raw = Pick<TimelineItem, "stage_move" | "round" | "offer" | "call" | "note_title" | "closed_as">;
+
+type Case = Partial<Raw> & {
+  kind?: string;
+  title?: string;
   person?: string | null;
   role?: string | null;
   company?: string | null;
   agency?: string | null;
 };
 
-const itemOf = (c: Partial<Case>, title = API_TITLE) =>
+const CASES = cases as unknown as (Case & { title: string })[];
+
+const itemOf = (c: Case, title = API_TITLE) =>
   ({
     kind: c.kind,
     title,
@@ -26,35 +32,95 @@ const itemOf = (c: Partial<Case>, title = API_TITLE) =>
     role_title: c.role ?? null,
     company_name: c.company ?? null,
     agency_name: c.agency ?? null,
-  }) as TimelineItem;
+    stage_move: c.stage_move,
+    round: c.round,
+    offer: c.offer,
+    call: c.call,
+    note_title: c.note_title,
+    closed_as: c.closed_as,
+  }) as unknown as TimelineItem;
+
+/** A part of a raw field gone, as an older or odder server might send. */
+const broken = (value: object) => value as never;
 
 afterEach(async () => {
   await i18n.changeLanguage("en");
 });
 
 describe("a title built here", () => {
-  it.each(cases as Case[])("reads as the API wrote it: $title", (c) => {
+  it.each(CASES)("reads as the API wrote it: $title", (c) => {
     expect(timelineTitle(itemOf(c))).toBe(c.title);
   });
 
   it("goes through the translation files", async () => {
     await i18n.changeLanguage(PSEUDO);
-    for (const c of cases as Case[]) expect(timelineTitle(itemOf(c))).not.toBe(c.title);
+    for (const c of CASES) expect(timelineTitle(itemOf(c))).not.toBe(c.title);
+  });
+
+  it("names who a call is with, whoever comes first on the entry", () => {
+    const call = { kind: "call", title: null, status: "booked", contact_name: "Sam Second" };
+    const item = itemOf({ kind: "meeting", person: "Riley First", call });
+    expect(timelineTitle(item)).toBe("Call with Sam Second (booked)");
   });
 });
 
 describe("the API's title shows", () => {
-  it.each([
-    "stage-event",
-    "other-event",
-    "interview",
-    "offer-reply",
-    "meeting",
-    "contact-closed",
-    "note",
-  ] as const)("for %s, which has no text yet", (kind) => {
-    const item = itemOf({ kind, person: "Sam Sample", role: "Engineer", company: "Contoso" });
+  it("for other events, whose words come from i18n-events-activity", () => {
+    const item = itemOf({ kind: "other-event", person: "Sam Sample", role: "Engineer", company: "Contoso" });
     expect(timelineTitle(item)).toBe(API_TITLE);
+  });
+
+  // No raw field at all is what an older server sends.
+  const MISSING: (Case & { why: string })[] = [
+    { why: "no move", kind: "stage-event" },
+    { why: "a move to nowhere", kind: "stage-event", stage_move: broken({ from_name: "Applied" }) },
+    { why: "no round", kind: "interview" },
+    {
+      why: "a round with no status",
+      kind: "interview",
+      round: broken({ round: 1, title: "Chat", kind: "technical" }),
+    },
+    {
+      why: "a round with no name",
+      kind: "interview",
+      round: broken({ round: 1, title: null, kind: null, status: "booked" }),
+    },
+    {
+      why: "a round status it has no text for",
+      kind: "interview",
+      round: { round: 1, title: "Chat", kind: "technical", status: "on_hold" },
+    },
+    { why: "no offer", kind: "offer-reply" },
+    {
+      why: "an offer with no amount",
+      kind: "offer-reply",
+      offer: { per: "year", amount: null, currency: "GBP" },
+    },
+    { why: "an offer with no basis", kind: "offer-reply", offer: broken({ amount: 650, currency: "GBP" }) },
+    { why: "no call", kind: "meeting" },
+    {
+      why: "a call with no person",
+      kind: "meeting",
+      call: broken({ kind: "call", title: null, status: "booked" }),
+    },
+    {
+      why: "a call with no status",
+      kind: "meeting",
+      call: broken({ kind: "call", title: null, contact_name: "Sam Sample" }),
+    },
+    {
+      why: "a call status it has no text for",
+      kind: "meeting",
+      call: { kind: "call", title: null, status: "on_hold", contact_name: "Sam Sample" },
+    },
+    { why: "no note title", kind: "note" },
+    { why: "a null note title", kind: "note", note_title: null },
+    { why: "not knowing how it closed", kind: "contact-closed", person: "Sam Sample" },
+    { why: "a way of closing it has no text for", kind: "contact-closed", person: "Sam", closed_as: "moved" },
+    { why: "no person", kind: "contact-closed", closed_as: "ghosted" },
+  ];
+  it.each(MISSING)("for $kind: $why", (c) => {
+    expect(timelineTitle(itemOf(c))).toBe(API_TITLE);
   });
 
   it("from an older server, which sends no kind", () => {

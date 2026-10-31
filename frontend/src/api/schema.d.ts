@@ -3885,6 +3885,17 @@ export interface components {
              */
             now: string;
         };
+        /** TimelineCall */
+        TimelineCall: {
+            /** Contact Name */
+            contact_name: string;
+            /** Kind */
+            kind: string;
+            /** Status */
+            status: string;
+            /** Title */
+            title: string | null;
+        };
         /** TimelineItem */
         TimelineItem: {
             /** Agency Id */
@@ -3905,11 +3916,14 @@ export interface components {
              * Format: date-time
              */
             at: string;
+            call?: components["schemas"]["TimelineCall"] | null;
             /**
              * Category
              * @enum {string}
              */
             category: "stage" | "message" | "meeting" | "interview" | "offer" | "role" | "note" | "file" | "document" | "added" | "other";
+            /** Closed As */
+            closed_as?: string | null;
             /** Company Id */
             company_id?: string | null;
             /** Company Name */
@@ -3923,6 +3937,9 @@ export interface components {
              * @enum {string}
              */
             kind: "stage-event" | "other-event" | "interview" | "offer-reply" | "meeting" | "role" | "role-added" | "role-passed" | "company" | "agency" | "contact" | "contact-waiting" | "contact-chased" | "contact-closed" | "contact-to-read" | "note";
+            /** Note Title */
+            note_title?: string | null;
+            offer?: components["schemas"]["TimelineOfferFigure"] | null;
             /**
              * People
              * @default []
@@ -3937,13 +3954,27 @@ export interface components {
              * @default []
              */
             roles: components["schemas"]["TimelineRole"][];
+            round?: components["schemas"]["TimelineRound"] | null;
             /**
              * Seq
              * @default 0
              */
             seq: number;
+            stage_move?: components["schemas"]["TimelineStageMove"] | null;
             /** Title */
             title: string;
+        };
+        /** TimelineOfferFigure */
+        TimelineOfferFigure: {
+            /** Amount */
+            amount: number | null;
+            /** Currency */
+            currency: string | null;
+            /**
+             * Per
+             * @enum {string}
+             */
+            per: "year" | "day" | "none";
         };
         /** TimelinePerson */
         TimelinePerson: {
@@ -3960,6 +3991,24 @@ export interface components {
             id: string;
             /** Title */
             title: string;
+        };
+        /** TimelineRound */
+        TimelineRound: {
+            /** Kind */
+            kind: string;
+            /** Round */
+            round: number | null;
+            /** Status */
+            status: string;
+            /** Title */
+            title: string | null;
+        };
+        /** TimelineStageMove */
+        TimelineStageMove: {
+            /** From Name */
+            from_name: string | null;
+            /** To Name */
+            to_name: string;
         };
         /** TitleParams */
         TitleParams: {

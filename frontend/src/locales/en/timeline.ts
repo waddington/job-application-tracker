@@ -1,6 +1,7 @@
 // The Timeline page: its filters, list, lanes and kinds of thing, and the rows Today's recent list
-// shares (docs/rfc/i18n.md §15). Some entries' titles are in `titles`; the rest, and every detail, still
-// come from the API in English (i18n-timeline-records). Names of roles, companies and people are your data.
+// shares (docs/rfc/i18n.md §15). Entries' titles are in `titles`; other events' titles, and every detail,
+// still come from the API in English (i18n-events-activity). Names of roles, companies, people and stages
+// are your data.
 export default {
   title: "Timeline",
   description:
@@ -59,6 +60,19 @@ export default {
     contactWaiting: "Replied to {{person}}; waiting to hear back",
     contactChased: "Chased {{person}}",
     contactToRead: "{{person}} replied; to read",
+    contactGhosted: "{{person}}: ghosted",
+    contactNotInterested: "{{person}}: not interested",
+    stageMoved: "{{from}} → {{to}}",
+    stageAdded: "Added at {{stage}}",
+    roundBooked: "{{label}} (booked)",
+    roundDue: "{{label}} (due)",
+    roundDone: "{{label}} (done)",
+    offerReplyYear: "Reply due on the offer: {{money}} a year",
+    offerReplyDay: "Reply due on the offer: {{money}} a day",
+    offerReplyNoFigures: "Reply due on the offer: no figures yet",
+    callBooked: "{{label}} (booked)",
+    callDone: "{{label}} (done)",
+    note: "Note: {{note}}",
   },
   allDay: "All day",
   dateTime: "{{date}} {{time}}",

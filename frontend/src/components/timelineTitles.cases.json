@@ -115,5 +115,251 @@
     "kind": "contact-to-read",
     "person": "$t(common:actions.cancel) $& <b>{{person}}</b>",
     "title": "$t(common:actions.cancel) $& <b>{{person}}</b> replied; to read"
+  },
+  {
+    "kind": "contact-closed",
+    "person": "Sam Sample",
+    "closed_as": "ghosted",
+    "title": "Sam Sample: ghosted"
+  },
+  {
+    "kind": "contact-closed",
+    "person": "Sam Sample",
+    "closed_as": "not_interested",
+    "title": "Sam Sample: not interested"
+  },
+  {
+    "kind": "contact-closed",
+    "person": "$t(common:actions.cancel) $& <b>{{person}}</b>",
+    "closed_as": "ghosted",
+    "title": "$t(common:actions.cancel) $& <b>{{person}}</b>: ghosted"
+  },
+  {
+    "kind": "contact-closed",
+    "person": "$t(common:actions.cancel) $& <b>{{person}}</b>",
+    "closed_as": "not_interested",
+    "title": "$t(common:actions.cancel) $& <b>{{person}}</b>: not interested"
+  },
+  { "kind": "note", "note_title": "About Contoso", "title": "Note: About Contoso" },
+  { "kind": "note", "note_title": "", "title": "Note: " },
+  {
+    "kind": "note",
+    "note_title": "$t(common:actions.cancel) $& <b>{{note}}</b>",
+    "title": "Note: $t(common:actions.cancel) $& <b>{{note}}</b>"
+  },
+  {
+    "kind": "stage-event",
+    "seed": { "start": "applied", "move": "screen" },
+    "stage_move": { "from_name": "Applied", "to_name": "Screen" },
+    "title": "Applied → Screen"
+  },
+  {
+    "kind": "stage-event",
+    "seed": { "start": "interested" },
+    "stage_move": { "from_name": null, "to_name": "Interested" },
+    "title": "Added at Interested"
+  },
+  {
+    "kind": "stage-event",
+    "seed": { "start": "applied" },
+    "stage_move": { "from_name": null, "to_name": "Applied" },
+    "title": "Added at Applied"
+  },
+  {
+    "kind": "stage-event",
+    "seed": {
+      "start": "applied",
+      "move": "screen",
+      "from_stage": "<b>{{to}}</b> $&",
+      "to_stage": "$t(common:actions.cancel) {{from}}"
+    },
+    "stage_move": { "from_name": "<b>{{to}}</b> $&", "to_name": "$t(common:actions.cancel) {{from}}" },
+    "title": "<b>{{to}}</b> $& → $t(common:actions.cancel) {{from}}"
+  },
+  {
+    "kind": "stage-event",
+    "seed": { "start": "interested", "to_stage": "<b>{{stage}}</b> $&" },
+    "stage_move": { "from_name": null, "to_name": "<b>{{stage}}</b> $&" },
+    "title": "Added at <b>{{stage}}</b> $&"
+  },
+  {
+    "kind": "interview",
+    "round": { "round": 1, "title": null, "kind": "screen", "status": "booked" },
+    "title": "Round 1 · Screen (booked)"
+  },
+  {
+    "kind": "interview",
+    "round": { "round": 1, "title": null, "kind": "hiring_manager", "status": "booked" },
+    "title": "Round 1 · Hiring manager (booked)"
+  },
+  {
+    "kind": "interview",
+    "round": { "round": 1, "title": null, "kind": "technical", "status": "booked" },
+    "title": "Round 1 · Technical (booked)"
+  },
+  {
+    "kind": "interview",
+    "round": { "round": 1, "title": null, "kind": "coding_task", "status": "due" },
+    "title": "Round 1 · Coding task (due)"
+  },
+  {
+    "kind": "interview",
+    "round": { "round": 1, "title": null, "kind": "system_design", "status": "booked" },
+    "title": "Round 1 · System design (booked)"
+  },
+  {
+    "kind": "interview",
+    "round": { "round": 1, "title": null, "kind": "pairing", "status": "booked" },
+    "title": "Round 1 · Pairing (booked)"
+  },
+  {
+    "kind": "interview",
+    "round": { "round": 1, "title": null, "kind": "behavioural", "status": "booked" },
+    "title": "Round 1 · Behavioural (booked)"
+  },
+  {
+    "kind": "interview",
+    "round": { "round": 1, "title": null, "kind": "onsite", "status": "booked" },
+    "title": "Round 1 · Onsite (booked)"
+  },
+  {
+    "kind": "interview",
+    "round": { "round": 1, "title": null, "kind": "final", "status": "done" },
+    "title": "Round 1 · Final (done)"
+  },
+  {
+    "kind": "interview",
+    "round": { "round": 1, "title": null, "kind": "other", "status": "booked" },
+    "title": "Round 1 · Interview (booked)"
+  },
+  {
+    "kind": "interview",
+    "round": { "round": 2, "title": "System design test", "kind": "technical", "status": "done" },
+    "title": "Round 2 · System design test (done)"
+  },
+  {
+    "kind": "interview",
+    "round": { "round": null, "title": "System design test", "kind": "technical", "status": "due" },
+    "title": "System design test (due)"
+  },
+  {
+    "kind": "interview",
+    "round": { "round": null, "title": null, "kind": "coffee", "status": "booked" },
+    "title": "coffee (booked)"
+  },
+  {
+    "kind": "interview",
+    "round": { "round": 3, "title": "", "kind": "screen", "status": "done" },
+    "title": "Round 3 · Screen (done)"
+  },
+  {
+    "kind": "interview",
+    "round": {
+      "round": 1,
+      "title": "$t(common:actions.cancel) $& <b>{{label}}</b>",
+      "kind": "other",
+      "status": "booked"
+    },
+    "title": "Round 1 · $t(common:actions.cancel) $& <b>{{label}}</b> (booked)"
+  },
+  {
+    "kind": "offer-reply",
+    "seed": { "currency": "GBP", "salary": 85000 },
+    "offer": { "per": "year", "amount": 85000, "currency": "GBP" },
+    "title": "Reply due on the offer: £85,000 a year"
+  },
+  {
+    "kind": "offer-reply",
+    "seed": { "currency": "GBP", "day_rate": 650 },
+    "offer": { "per": "day", "amount": 650, "currency": "GBP" },
+    "title": "Reply due on the offer: £650 a day"
+  },
+  {
+    "kind": "offer-reply",
+    "seed": { "currency": "GBP" },
+    "offer": { "per": "none", "amount": null, "currency": "GBP" },
+    "title": "Reply due on the offer: no figures yet"
+  },
+  {
+    "kind": "offer-reply",
+    "seed": { "currency": "USD", "salary": 120000, "day_rate": 900 },
+    "offer": { "per": "year", "amount": 120000, "currency": "USD" },
+    "title": "Reply due on the offer: $120,000 a year"
+  },
+  {
+    "kind": "offer-reply",
+    "seed": { "currency": "EUR", "salary": 90000, "day_rate": 1100, "employment_type": "contract" },
+    "offer": { "per": "day", "amount": 1100, "currency": "EUR" },
+    "title": "Reply due on the offer: €1,100 a day"
+  },
+  {
+    "kind": "offer-reply",
+    "seed": { "currency": "GBP", "salary": 90000, "employment_type": "contract" },
+    "offer": { "per": "none", "amount": null, "currency": "GBP" },
+    "title": "Reply due on the offer: no figures yet"
+  },
+  {
+    "kind": "offer-reply",
+    "seed": { "currency": "GBP", "day_rate": 650, "employment_type": "permanent" },
+    "offer": { "per": "none", "amount": null, "currency": "GBP" },
+    "title": "Reply due on the offer: no figures yet"
+  },
+  {
+    "kind": "offer-reply",
+    "seed": { "currency": "GBP", "salary": 0 },
+    "offer": { "per": "none", "amount": null, "currency": "GBP" },
+    "title": "Reply due on the offer: no figures yet"
+  },
+  {
+    "kind": "offer-reply",
+    "seed": { "currency": "CHF", "salary": 1234567 },
+    "offer": { "per": "year", "amount": 1234567, "currency": "CHF" },
+    "title": "Reply due on the offer: 1,234,567 CHF a year"
+  },
+  {
+    "kind": "offer-reply",
+    "seed": { "salary": 85000 },
+    "offer": { "per": "year", "amount": 85000, "currency": null },
+    "title": "Reply due on the offer: 85,000 a year"
+  },
+  {
+    "kind": "meeting",
+    "call": { "kind": "call", "title": null, "status": "booked", "contact_name": "Sam Sample" },
+    "title": "Call with Sam Sample (booked)"
+  },
+  {
+    "kind": "meeting",
+    "call": { "kind": "video", "title": null, "status": "done", "contact_name": "Sam Sample" },
+    "title": "Video call with Sam Sample (done)"
+  },
+  {
+    "kind": "meeting",
+    "call": {
+      "kind": "in_person",
+      "title": "Market catch-up",
+      "status": "booked",
+      "contact_name": "Sam Sample"
+    },
+    "title": "Meeting with Sam Sample: Market catch-up (booked)"
+  },
+  {
+    "kind": "meeting",
+    "call": { "kind": "call", "title": "Market catch-up", "status": "done", "contact_name": "Sam Sample" },
+    "title": "Call with Sam Sample: Market catch-up (done)"
+  },
+  {
+    "kind": "meeting",
+    "call": { "kind": "coffee", "title": "", "status": "done", "contact_name": "Sam Sample" },
+    "title": "coffee with Sam Sample (done)"
+  },
+  {
+    "kind": "meeting",
+    "call": {
+      "kind": "call",
+      "title": "$t(common:actions.cancel) $& {{label}}",
+      "status": "booked",
+      "contact_name": "<b>{{name}}</b>"
+    },
+    "title": "Call with <b>{{name}}</b>: $t(common:actions.cancel) $& {{label}} (booked)"
   }
 ]
