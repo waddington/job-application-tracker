@@ -7,6 +7,7 @@ import documents from "./documents";
 import files from "./files";
 import interviews from "./interviews";
 import offers from "./offers";
+import notes from "./notes";
 import people from "./people";
 import roles from "./roles";
 import selftest from "./selftest";
@@ -24,6 +25,7 @@ const en = {
   offers,
   documents,
   files,
+  notes,
   todos,
   selftest,
 } as const;

@@ -19,6 +19,20 @@ def _search(client, q, **params):
     return r.json()
 
 
+def test_hits_carry_the_parts_of_their_titles(client, seeded):
+    app = post(client, "/api/v1/applications", {"role_id": seeded["role"]["id"], "route": "direct"})
+    post(client, f"/api/v1/applications/{app['id']}/interviews", {"round": 2, "title": "Zebra chat", "kind": "pairing"})
+    hit = _search(client, "zebra")[0]
+    assert (hit["title"], hit["round"], hit["own_title"], hit["subkind"]) == (
+        "Round 2 · Zebra chat",
+        2,
+        "Zebra chat",
+        "pairing",
+    )
+    company = _search(client, seeded["role"]["title"])[0]
+    assert (company["round"], company["own_title"], company["subkind"], company["done"]) == (None, None, None, False)
+
+
 def test_search_across_everything(client, seeded):
     role, agency, recruiter = seeded["role"]["id"], seeded["agency"]["id"], seeded["recruiter"]["id"]
     app = post(

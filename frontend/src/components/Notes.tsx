@@ -12,6 +12,7 @@ import {
 } from "@mantine/core";
 import { IconChevronDown, IconChevronRight, IconPencil, IconPlus, IconTrash } from "@tabler/icons-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { useDeleteNote, useNote, useNotes, type Note, type NoteSummary } from "../api/noteHooks";
 import { formatDateTime } from "../utils/time";
@@ -19,18 +20,20 @@ import { Markdown } from "./Markdown";
 import { NoteEditorModal } from "./NoteEditorModal";
 
 function NoteBody({ id }: { id: string }) {
+  const { t } = useTranslation("notes");
   const { data } = useNote(id);
   if (!data) return <Loader size="xs" />;
   return data.body.trim() ? (
     <Markdown>{data.body}</Markdown>
   ) : (
     <Text size="sm" c="dimmed">
-      (empty)
+      {t("item.empty")}
     </Text>
   );
 }
 
 function NoteItem({ note, onEdit }: { note: NoteSummary; onEdit: (id: string) => void }) {
+  const { t } = useTranslation("notes");
   const [open, setOpen] = useState(false);
   const remove = useDeleteNote();
   const Chevron = open ? IconChevronDown : IconChevronRight;
@@ -58,28 +61,25 @@ function NoteItem({ note, onEdit }: { note: NoteSummary; onEdit: (id: string) =>
           )}
         </UnstyledButton>
         <Group gap={2} wrap="nowrap">
-          <Tooltip label="Edit">
+          <Tooltip label={t("item.edit")}>
             <ActionIcon
               variant="subtle"
               color="gray"
               onClick={() => onEdit(note.id)}
-              aria-label={`Edit ${note.title}`}
+              aria-label={t("item.editNamed", { title: note.title })}
             >
               <IconPencil size={16} />
             </ActionIcon>
           </Tooltip>
-          <Tooltip label="Delete">
+          <Tooltip label={t("item.delete")}>
             <ActionIcon
               variant="subtle"
               color="gray"
               loading={remove.isPending}
               onClick={() => {
-                if (
-                  window.confirm(`Delete "${note.title}"? The file is removed too (it stays in git history).`)
-                )
-                  remove.mutate(note.id);
+                if (window.confirm(t("item.deleteConfirm", { title: note.title }))) remove.mutate(note.id);
               }}
-              aria-label={`Delete ${note.title}`}
+              aria-label={t("item.deleteNamed", { title: note.title })}
             >
               <IconTrash size={16} />
             </ActionIcon>
@@ -122,27 +122,24 @@ export function NotesList({ notes, empty }: { notes: NoteSummary[]; empty: strin
 
 /** Notes attached to one thing (an application, company, agency…), for its page. */
 export function NotesCard({ entity }: { entity: string }) {
+  const { t } = useTranslation("notes");
   const { data: notes } = useNotes({ entity });
   const [adding, setAdding] = useState(false);
   return (
     <Card withBorder>
       <Stack gap="sm">
         <Group justify="space-between">
-          <Title order={4}>Notes</Title>
+          <Title order={4}>{t("card.title")}</Title>
           <Button
             size="xs"
             variant="light"
             leftSection={<IconPlus size={14} />}
             onClick={() => setAdding(true)}
           >
-            Add note
+            {t("card.add")}
           </Button>
         </Group>
-        {notes ? (
-          <NotesList notes={notes} empty="No notes yet. Calls, prep, impressions: all in Markdown." />
-        ) : (
-          <Loader size="sm" />
-        )}
+        {notes ? <NotesList notes={notes} empty={t("card.none")} /> : <Loader size="sm" />}
       </Stack>
       {adding && (
         <NoteEditorModal opened onClose={() => setAdding(false)} note={null} defaultLinks={[entity]} />

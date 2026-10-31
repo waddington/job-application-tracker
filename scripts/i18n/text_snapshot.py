@@ -319,6 +319,23 @@ with sync_playwright() as p:
         lambda: page.get_by_role("dialog").get_by_label("Label", exact=True).fill("", timeout=3000),
         lambda: page.get_by_role("dialog").get_by_role("button", name="Add version").click(timeout=3000),
     )
+    page.keyboard.press("Escape")
+    time.sleep(0.4)
+
+    # Notes: General only, a note opened, the editor with its error and preview. Search: no words,
+    # words that find things (a round, a call), and words that don't. None saved.
+    visit(page, "/notes")
+    step("notes+general", lambda: page.get_by_text("General only", exact=True).click(timeout=3000))
+    visit(page, "/notes")
+    step("notes+new", lambda: page.get_by_role("button", name="New note").click(timeout=3000))
+    dialog = page.get_by_role("dialog")
+    step("notes+new-errors", lambda: dialog.get_by_role("button", name="Add note").click(timeout=3000))
+    step("notes+new-preview", lambda: dialog.get_by_role("tab", name="Preview").click(timeout=3000))
+    page.keyboard.press("Escape")
+    time.sleep(0.4)
+    for path in ["/search", "/search?q=round", "/search?q=call", "/search?q=done", "/search?q=zzzzzz"]:
+        visit(page, path)
+        snap[path] = grab(page)
     browser.close()
 
 with open(OUT, "w") as f:

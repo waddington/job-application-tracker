@@ -63,6 +63,11 @@ class Candidate:
     # otherwise "contoso" would list every interview and call for every Contoso application.
     subtitle_searchable: bool = True
     archived: bool = False  # an archived application: shown, but after everything else
+    # What the frontend builds a title from, in your language: an interview's or a call's parts.
+    round: int | None = None
+    own_title: str | None = None
+    subkind: str | None = None
+    done: bool = False  # a to-do that's done (its subtitle says so in English)
 
 
 @dataclass
@@ -76,6 +81,10 @@ class Hit:
     title_match: bool
     updated: datetime | None
     archived: bool = False
+    round: int | None = None
+    own_title: str | None = None
+    subkind: str | None = None
+    done: bool = False
 
 
 def _snippet(text: str, words: list[str]) -> str | None:
@@ -114,6 +123,10 @@ def match(candidate: Candidate, words: list[str]) -> Hit | None:
         title_match,
         candidate.updated,
         candidate.archived,
+        candidate.round,
+        candidate.own_title,
+        candidate.subkind,
+        candidate.done,
     )
 
 
@@ -239,6 +252,9 @@ def _activity(session: Session, places: Places) -> Iterator[Candidate]:
             fields=[i.prep or "", i.debrief or "", i.questions or "", i.task_instructions or "", i.location or ""],
             subtitle_searchable=False,
             updated=i.updated_at,
+            round=i.round,
+            own_title=i.title,
+            subkind=i.kind,
         )
     # Calls and meetings with people: what they were about and how they went.
     for m in session.scalars(select(Meeting)):
@@ -253,6 +269,8 @@ def _activity(session: Session, places: Places) -> Iterator[Candidate]:
             fields=[m.agenda or "", m.notes or "", m.location or ""],
             subtitle_searchable=False,
             updated=m.updated_at,
+            own_title=m.title,
+            subkind=m.kind,
         )
     # Your to-dos, open and done: they open where they belong.
     for t in session.scalars(select(Todo)):
@@ -264,6 +282,7 @@ def _activity(session: Session, places: Places) -> Iterator[Candidate]:
             subtitle="Done" if t.done_at else None,
             subtitle_searchable=False,
             updated=t.updated_at,
+            done=t.done_at is not None,
         )
     for o in session.scalars(select(Offer)):
         yield Candidate(

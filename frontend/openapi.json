@@ -7613,6 +7613,11 @@
             "title": "Archived",
             "type": "boolean"
           },
+          "done": {
+            "default": false,
+            "title": "Done",
+            "type": "boolean"
+          },
           "id": {
             "title": "Id",
             "type": "string"
@@ -7625,6 +7630,28 @@
             "title": "Link",
             "type": "string"
           },
+          "own_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Own Title"
+          },
+          "round": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Round"
+          },
           "snippet": {
             "anyOf": [
               {
@@ -7635,6 +7662,17 @@
               }
             ],
             "title": "Snippet"
+          },
+          "subkind": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subkind"
           },
           "subtitle": {
             "anyOf": [

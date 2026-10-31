@@ -1,5 +1,6 @@
 import { Button, Group, Modal, MultiSelect, Stack, Tabs, Text, Textarea, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
+import { useTranslation } from "react-i18next";
 
 import { useAgencies, useApplications, useCompanies, useContacts } from "../api/hooks";
 import { useSaveNote, type Note } from "../api/noteHooks";
@@ -13,24 +14,31 @@ interface Values {
 
 /** Everything a note can be attached to, grouped for a MultiSelect ("application:<id>" etc.). */
 function useLinkOptions() {
+  const { t } = useTranslation("notes");
   const { data: apps } = useApplications({});
   const { data: companies } = useCompanies();
   const { data: agencies } = useAgencies();
   const { data: contacts } = useContacts();
   return [
     {
-      group: "Applications",
+      group: t("editor.groups.applications"),
       items: (apps ?? []).map((a) => ({
         value: `application:${a.id}`,
-        label: `${a.company_name} · ${a.role_title}`,
+        label: t("editor.application", { company: a.company_name, role: a.role_title }),
       })),
     },
     {
-      group: "Companies",
+      group: t("editor.groups.companies"),
       items: (companies ?? []).map((c) => ({ value: `company:${c.id}`, label: c.name })),
     },
-    { group: "Agencies", items: (agencies ?? []).map((a) => ({ value: `agency:${a.id}`, label: a.name })) },
-    { group: "People", items: (contacts ?? []).map((c) => ({ value: `contact:${c.id}`, label: c.name })) },
+    {
+      group: t("editor.groups.agencies"),
+      items: (agencies ?? []).map((a) => ({ value: `agency:${a.id}`, label: a.name })),
+    },
+    {
+      group: t("editor.groups.people"),
+      items: (contacts ?? []).map((c) => ({ value: `contact:${c.id}`, label: c.name })),
+    },
   ].filter((g) => g.items.length);
 }
 
@@ -49,11 +57,12 @@ export function NoteEditorModal({
   note: Note | null;
   defaultLinks?: string[];
 }) {
+  const { t } = useTranslation(["notes", "common"]);
   const save = useSaveNote();
   const options = useLinkOptions();
   const form = useForm<Values>({
     initialValues: { title: note?.title ?? "", body: note?.body ?? "", links: note?.links ?? defaultLinks },
-    validate: { title: (v) => (v.trim() ? null : "Give it a title") },
+    validate: { title: (v) => (v.trim() ? null : t("editor.titleError")) },
   });
   // Keep links the pickers don't know about (e.g. a role or interview), so saving never drops them.
   const known = new Set(options.flatMap((g) => g.items.map((i) => i.value)));
@@ -72,24 +81,29 @@ export function NoteEditorModal({
   );
 
   return (
-    <Modal opened={opened} onClose={onClose} title={note ? "Edit note" : "New note"} size="xl">
+    <Modal
+      opened={opened}
+      onClose={onClose}
+      title={note ? t("editor.editTitle") : t("editor.newTitle")}
+      size="xl"
+    >
       <form onSubmit={submit}>
         <Stack>
           <TextInput
-            label="Title"
-            placeholder="Call with Alex about the Contoso role"
+            label={t("editor.title")}
+            placeholder={t("editor.titlePlaceholder")}
             data-autofocus
             {...form.getInputProps("title")}
           />
           <Tabs defaultValue="write" keepMounted={false}>
             <Tabs.List>
-              <Tabs.Tab value="write">Write</Tabs.Tab>
-              <Tabs.Tab value="preview">Preview</Tabs.Tab>
+              <Tabs.Tab value="write">{t("editor.write")}</Tabs.Tab>
+              <Tabs.Tab value="preview">{t("editor.preview")}</Tabs.Tab>
             </Tabs.List>
             <Tabs.Panel value="write" pt="xs">
               <Textarea
-                aria-label="Note"
-                placeholder={"Markdown works: **bold**, - lists, [links](https://example.com), | tables |"}
+                aria-label={t("editor.note")}
+                placeholder={t("editor.notePlaceholder")}
                 autosize
                 minRows={8}
                 maxRows={24}
@@ -102,15 +116,15 @@ export function NoteEditorModal({
                 <Markdown>{form.values.body}</Markdown>
               ) : (
                 <Text size="sm" c="dimmed">
-                  Nothing to preview yet.
+                  {t("editor.nothingToPreview")}
                 </Text>
               )}
             </Tabs.Panel>
           </Tabs>
           <MultiSelect
-            label="Attached to"
-            description="Leave empty for a general note"
-            placeholder="Applications, companies, people…"
+            label={t("editor.attachedTo")}
+            description={t("editor.attachedHint")}
+            placeholder={t("editor.attachedPlaceholder")}
             searchable
             clearable
             data={options}
@@ -119,10 +133,10 @@ export function NoteEditorModal({
           />
           <Group justify="flex-end">
             <Button variant="default" onClick={onClose}>
-              Cancel
+              {t("common:actions.cancel")}
             </Button>
             <Button type="submit" loading={save.isPending}>
-              {note ? "Save" : "Add note"}
+              {note ? t("common:actions.save") : t("editor.add")}
             </Button>
           </Group>
         </Stack>

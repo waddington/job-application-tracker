@@ -116,7 +116,8 @@ The app is being made translatable, English only for now; the plan and its order
 - Calls: the calls card on a person's page, the call form, Happened and a call's line;
 - Offers: the Offers page, the Offer card on an application and the offer form;
 - Documents: the Documents page and the CV files card;
-- Files and links: the Files and Links cards.
+- Files and links: the Files and Links cards;
+- Notes and search: notes, the note editor, the Notes page and the search results page.
 
 The files are listed in `TRANSLATED` in `frontend/eslint.config.js`. Until an area has moved,
 keep writing its text as before. Once it has:
