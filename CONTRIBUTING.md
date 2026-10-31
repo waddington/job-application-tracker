@@ -114,7 +114,8 @@ The app is being made translatable, English only for now; the plan and its order
 - People and companies: Recruiters, a person's page and form, Merge, companies and agencies;
 - Interviews: the Interviews page, rounds on an application, the round form and Reschedule;
 - Calls: the calls card on a person's page, the call form, Happened and a call's line;
-- Offers: the Offers page, the Offer card on an application and the offer form.
+- Offers: the Offers page, the Offer card on an application and the offer form;
+- Documents: the Documents page and the CV files card.
 
 The files are listed in `TRANSLATED` in `frontend/eslint.config.js`. Until an area has moved,
 keep writing its text as before. Once it has:

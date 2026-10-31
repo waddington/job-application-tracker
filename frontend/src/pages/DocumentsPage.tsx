@@ -28,10 +28,11 @@ import {
 import { Link } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { CvFilesCard } from "../components/CvFiles";
 import {
-  KIND_LABEL,
+  documentKind,
   useAddVersion,
   useCreateDocument,
   useDeleteDocument,
@@ -47,13 +48,14 @@ import { formatDate } from "../utils/time";
 type Kind = "cv" | "cover_letter" | "other";
 
 function NewDocumentModal({ onClose }: { onClose: () => void }) {
+  const { t } = useTranslation("documents");
   const create = useCreateDocument();
   const form = useForm({
     initialValues: { kind: "cv" as Kind, name: "" },
-    validate: { name: (v) => (v.trim() ? null : "Name it, e.g. Backend CV") },
+    validate: { name: (v) => (v.trim() ? null : t("newDocument.nameError")) },
   });
   return (
-    <Modal opened onClose={onClose} title="New document">
+    <Modal opened onClose={onClose} title={t("newDocument.title")}>
       <form
         onSubmit={form.onSubmit((v) =>
           create.mutate({ kind: v.kind, name: v.name.trim() }, { onSuccess: onClose }),
@@ -61,18 +63,23 @@ function NewDocumentModal({ onClose }: { onClose: () => void }) {
       >
         <Stack>
           <SegmentedControl
-            aria-label="Kind"
+            aria-label={t("newDocument.kind")}
             data={[
-              { value: "cv", label: "CV" },
-              { value: "cover_letter", label: "Cover letter" },
-              { value: "other", label: "Other" },
+              { value: "cv", label: t("kinds.cv") },
+              { value: "cover_letter", label: t("kinds.cover_letter") },
+              { value: "other", label: t("kinds.other") },
             ]}
             {...form.getInputProps("kind")}
           />
-          <TextInput label="Name" placeholder="Backend CV" data-autofocus {...form.getInputProps("name")} />
+          <TextInput
+            label={t("newDocument.name")}
+            placeholder={t("newDocument.namePlaceholder")}
+            data-autofocus
+            {...form.getInputProps("name")}
+          />
           <Group justify="flex-end">
             <Button type="submit" loading={create.isPending}>
-              Create
+              {t("newDocument.create")}
             </Button>
           </Group>
         </Stack>
@@ -82,41 +89,44 @@ function NewDocumentModal({ onClose }: { onClose: () => void }) {
 }
 
 function AddVersionModal({ doc, onClose }: { doc: DocumentItem; onClose: () => void }) {
+  const { t } = useTranslation("documents");
   const add = useAddVersion(doc.id);
   const [file, setFile] = useState<File | null>(null);
   const form = useForm({
-    initialValues: { label: `v${doc.versions.length + 1}`, notes: "" },
-    validate: { label: (v) => (v.trim() ? null : "Label it, e.g. v3 (fintech)") },
+    initialValues: { label: t("newVersion.defaultLabel", { number: doc.versions.length + 1 }), notes: "" },
+    validate: { label: (v) => (v.trim() ? null : t("newVersion.labelError")) },
   });
   return (
-    <Modal opened onClose={onClose} title={`New version of ${doc.name}`}>
+    <Modal opened onClose={onClose} title={t("newVersion.title", { name: doc.name })}>
       <form
         onSubmit={form.onSubmit((v) =>
           add.mutate({ label: v.label.trim(), notes: v.notes.trim(), file }, { onSuccess: onClose }),
         )}
       >
         <Stack>
-          <TextInput label="Label" data-autofocus {...form.getInputProps("label")} />
+          <TextInput label={t("newVersion.label")} data-autofocus {...form.getInputProps("label")} />
           <TextInput
-            label="What changed"
-            placeholder="Leads with payments work"
+            label={t("newVersion.changed")}
+            placeholder={t("newVersion.changedPlaceholder")}
             {...form.getInputProps("notes")}
           />
           <Group>
             <FileButton onChange={setFile} accept=".pdf,.doc,.docx,.odt,.md,.txt">
               {(props) => (
                 <Button {...props} variant="default" leftSection={<IconUpload size={14} />}>
-                  {file ? "Change file" : "Choose the file"}
+                  {file ? t("newVersion.changeFile") : t("newVersion.chooseFile")}
                 </Button>
               )}
             </FileButton>
             <Text size="sm" c="dimmed">
-              {file ? `${file.name} (${humanSize(file.size)})` : "Optional, but handy"}
+              {file
+                ? t("newVersion.file", { name: file.name, size: humanSize(file.size) })
+                : t("newVersion.fileOptional")}
             </Text>
           </Group>
           <Group justify="flex-end">
             <Button type="submit" loading={add.isPending}>
-              Add version
+              {t("newVersion.add")}
             </Button>
           </Group>
         </Stack>
@@ -126,7 +136,9 @@ function AddVersionModal({ doc, onClose }: { doc: DocumentItem; onClose: () => v
 }
 
 function VersionRow({ version }: { version: DocumentVersion }) {
+  const { t } = useTranslation("documents");
   const remove = useDeleteVersion();
+  const date = formatDate(dayjs(version.created_at).format("YYYY-MM-DD"));
   return (
     <Group justify="space-between" wrap="nowrap">
       <div style={{ minWidth: 0 }}>
@@ -136,13 +148,12 @@ function VersionRow({ version }: { version: DocumentVersion }) {
           </Text>
           {version.used_in > 0 && (
             <Badge size="xs" variant="light">
-              sent {version.used_in}×
+              {t("version.sentTimes", { times: version.used_in })}
             </Badge>
           )}
         </Group>
         <Text size="xs" c="dimmed">
-          {formatDate(dayjs(version.created_at).format("YYYY-MM-DD"))}
-          {version.notes ? ` · ${version.notes}` : ""}
+          {version.notes ? t("version.dateNotes", { date, notes: version.notes }) : date}
         </Text>
         {version.file && (
           <Anchor
@@ -152,20 +163,20 @@ function VersionRow({ version }: { version: DocumentVersion }) {
             rel="noreferrer noopener"
             size="xs"
           >
-            {version.file.original_name} ({humanSize(version.file.size)})
+            {t("version.file", { name: version.file.original_name, size: humanSize(version.file.size) })}
           </Anchor>
         )}
       </div>
-      <Tooltip
-        label={version.used_in ? "Sent with applications: remove it from them first" : "Delete version"}
-      >
+      <Tooltip label={version.used_in ? t("version.sentBlocks") : t("version.delete")}>
         <ActionIcon
           variant="subtle"
           color="gray"
           disabled={version.used_in > 0}
           loading={remove.isPending}
-          onClick={() => window.confirm(`Delete ${version.label}?`) && remove.mutate(version.id)}
-          aria-label={`Delete ${version.label}`}
+          onClick={() =>
+            window.confirm(t("version.deleteConfirm", { label: version.label })) && remove.mutate(version.id)
+          }
+          aria-label={t("version.deleteNamed", { label: version.label })}
         >
           <IconTrash size={16} />
         </ActionIcon>
@@ -175,12 +186,13 @@ function VersionRow({ version }: { version: DocumentVersion }) {
 }
 
 function WhereUsed({ id }: { id: string }) {
+  const { t } = useTranslation("documents");
   const { data } = useDocument(id);
   if (!data) return <Loader size="xs" />;
   if (!data.used_in.length) {
     return (
       <Text size="sm" c="dimmed">
-        Not sent with any application yet.
+        {t("used.none")}
       </Text>
     );
   }
@@ -189,11 +201,16 @@ function WhereUsed({ id }: { id: string }) {
       {data.used_in.map((u) => (
         <Text key={u.link_id} size="sm">
           <Anchor component={Link} to={`/applications/${u.application_id}`} size="sm">
-            {u.company_name} · {u.role_title}
+            {t("used.application", { company: u.company_name, role: u.role_title })}
           </Anchor>{" "}
           <Text span size="xs" c="dimmed">
-            {u.version_label}
-            {u.sent_on ? ` · ${formatDate(u.sent_on)}` : ""} · {u.stage_name}
+            {u.sent_on
+              ? t("used.versionDateStage", {
+                  version: u.version_label,
+                  date: formatDate(u.sent_on),
+                  stage: u.stage_name,
+                })
+              : t("used.versionStage", { version: u.version_label, stage: u.stage_name })}
           </Text>
         </Text>
       ))}
@@ -202,6 +219,7 @@ function WhereUsed({ id }: { id: string }) {
 }
 
 function DocumentCard({ doc }: { doc: DocumentItem }) {
+  const { t } = useTranslation("documents");
   const [adding, setAdding] = useState(false);
   const [showUsage, setShowUsage] = useState(false);
   const remove = useDeleteDocument();
@@ -215,7 +233,7 @@ function DocumentCard({ doc }: { doc: DocumentItem }) {
             <IconFileText size={20} stroke={1.6} />
             <Title order={4}>{doc.name}</Title>
             <Badge variant="light" color="gray">
-              {KIND_LABEL[doc.kind] ?? doc.kind}
+              {documentKind(doc.kind)}
             </Badge>
           </Group>
           <Group gap={4} wrap="nowrap">
@@ -225,17 +243,17 @@ function DocumentCard({ doc }: { doc: DocumentItem }) {
               leftSection={<IconPlus size={14} />}
               onClick={() => setAdding(true)}
             >
-              New version
+              {t("card.newVersion")}
             </Button>
-            <Tooltip label={sent ? "Sent with applications: remove it from them first" : "Delete document"}>
+            <Tooltip label={sent ? t("card.sentBlocks") : t("card.delete")}>
               <ActionIcon
                 variant="subtle"
                 color="gray"
                 disabled={sent > 0}
                 onClick={() =>
-                  window.confirm(`Delete ${doc.name} and all its versions?`) && remove.mutate(doc.id)
+                  window.confirm(t("card.deleteConfirm", { name: doc.name })) && remove.mutate(doc.id)
                 }
-                aria-label={`Delete ${doc.name}`}
+                aria-label={t("card.deleteNamed", { name: doc.name })}
               >
                 <IconTrash size={16} />
               </ActionIcon>
@@ -247,14 +265,14 @@ function DocumentCard({ doc }: { doc: DocumentItem }) {
         ))}
         {!doc.versions.length && (
           <Text size="sm" c="dimmed">
-            No versions yet. Add the file you send.
+            {t("card.noVersions")}
           </Text>
         )}
         <UnstyledButton onClick={() => setShowUsage((s) => !s)} aria-expanded={showUsage}>
           <Group gap={4}>
             <Chevron size={14} />
             <Text size="sm" fw={500}>
-              Where it was used ({sent})
+              {t("card.whereUsed", { sent })}
             </Text>
           </Group>
         </UnstyledButton>
@@ -267,6 +285,7 @@ function DocumentCard({ doc }: { doc: DocumentItem }) {
 
 /** CVs and cover letters, with every version and where each was sent (PRD FR14). */
 export function DocumentsPage() {
+  const { t } = useTranslation("documents");
   const { data: documents, isLoading } = useDocuments();
   const [creating, setCreating] = useState(false);
   return (
@@ -274,10 +293,10 @@ export function DocumentsPage() {
       <Group justify="space-between">
         <Group gap="sm">
           <IconFileText size={26} stroke={1.6} />
-          <Title order={2}>Documents</Title>
+          <Title order={2}>{t("page.title")}</Title>
         </Group>
         <Button leftSection={<IconPlus size={16} />} onClick={() => setCreating(true)}>
-          New document
+          {t("page.new")}
         </Button>
       </Group>
       <CvFilesCard />
@@ -288,8 +307,7 @@ export function DocumentsPage() {
       ) : (
         <Card withBorder p="xl">
           <Text ta="center" c="dimmed">
-            Add your CV and cover letters here, with a new version each time you tailor one. Then record which
-            version you sent from each application.
+            {t("page.empty")}
           </Text>
         </Card>
       )}
