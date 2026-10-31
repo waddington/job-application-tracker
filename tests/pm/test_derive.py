@@ -187,7 +187,7 @@ class RefreshTests(unittest.TestCase):
     def test_refresh_collects_once_then_drops_itself_from_the_address(self):
         with TemporaryDirectory() as tmp:
             board = self.dashboard(tmp)
-            with mock.patch("tools.pm.live.collect", return_value=Snapshot(live=Live(), taken_at=9e12)) as call:
+            with mock.patch("tools.pm.live.collect", return_value=Snapshot(live=Live(), taken_at=4e9)) as call:
                 self.assertEqual(
                     board.handle("/board", {"refresh": ["1"], "phase": ["P1"]})[::2], (303, "/board?phase=P1")
                 )
