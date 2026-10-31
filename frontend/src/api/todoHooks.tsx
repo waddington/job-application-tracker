@@ -2,6 +2,7 @@ import { Button, Group, Text } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { i18n } from "../i18n";
 import { useToday } from "../utils/useToday";
 import { api, unwrap, type Schemas } from "./client";
 import { notifyError } from "./notifyError";
@@ -123,7 +124,7 @@ export function useDeleteTodo() {
       const { error } = await api.DELETE("/api/v1/todos/{todo_id}", {
         params: { path: { todo_id: todo.id } },
       });
-      if (error) throw new Error("Couldn't delete the to-do");
+      if (error) throw new Error(i18n.t("errors:own.deleteTodo"));
     },
     onSuccess: (_data, todo) => {
       refresh();

@@ -67,7 +67,7 @@ export function useDeleteOffer() {
   return useMutation({
     mutationFn: async (id: string) => {
       const { error } = await api.DELETE("/api/v1/offers/{offer_id}", { params: { path: { offer_id: id } } });
-      if (error) throw new Error("Couldn't delete the offer");
+      if (error) throw new Error(i18n.t("errors:own.deleteOffer"));
     },
     onSuccess: refresh,
     onError: notifyError,

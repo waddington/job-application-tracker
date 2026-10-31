@@ -83,8 +83,8 @@ def check_unique(
     details: Iterable[tuple[str, str]],
     *,
     contact: Contact | None = None,
-) -> str | None:
-    """A message saying who already has an email address or LinkedIn profile, or None.
+) -> tuple[str, str] | None:
+    """Who already has an email address or LinkedIn profile, as (their name, the value), or None.
 
     Only details new to `contact` are checked, so people who already shared one (from before
     this rule) can still be edited, and merged.
@@ -102,10 +102,7 @@ def check_unique(
     if not clashes:
         return None
     value, other = clashes[0]
-    return (
-        f"{other.name} already has {value}. One person per email address and LinkedIn profile: "
-        f"open {other.name} instead, or merge the two."
-    )
+    return other.name, value
 
 
 def merge(session: Session, keep: Contact, gone: Contact, notes: NoteStore) -> None:
