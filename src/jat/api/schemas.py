@@ -675,10 +675,6 @@ class MoveIn(In):
     to_stage: str
     occurred_at: AwareDatetime | None = None
     note: str | None = None
-    app_note: Literal["no_reply"] | None = Field(
-        default=None,
-        description="A note the app words itself, in place of `note`: the server saves its text and its message.",
-    )
 
 
 class ActivityIn(In):
@@ -687,11 +683,6 @@ class ActivityIn(In):
     occurred_at: AwareDatetime | None = None
     data: dict[str, Any] = Field(
         default={}, description="Saved with the event, except a `msg`, which is ignored: only the app writes messages."
-    )
-    app_text: Literal["followed_up"] | None = Field(
-        default=None,
-        description="Text the app words itself, in place of `kind` and `summary`: the server saves its own "
-        "`manual` event, with its text and its message.",
     )
 
 

@@ -109,8 +109,14 @@ export function ChaseActions({ row }: { row: ApplicationRow }) {
               if (!window.confirm(t("chase.markConfirm", { company: row.company_name, stage: ghosted.name })))
                 return;
               move.mutate(
-                // The server words this note and saves its message (docs/rfc/i18n.md).
-                { id: row.id, to_stage: ghosted.id, stageName: ghosted.name, appNote: "no_reply" },
+                // The note is for an older server; this one words it and saves its message (docs/rfc/i18n.md).
+                {
+                  id: row.id,
+                  to_stage: ghosted.id,
+                  stageName: ghosted.name,
+                  note: "No reply",
+                  appNote: "no_reply",
+                },
                 {
                   onSuccess: () =>
                     notifications.show({

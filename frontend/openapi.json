@@ -4,19 +4,6 @@
       "ActivityIn": {
         "additionalProperties": false,
         "properties": {
-          "app_text": {
-            "anyOf": [
-              {
-                "const": "followed_up",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Text the app words itself, in place of `kind` and `summary`: the server saves its own `manual` event, with its text and its message.",
-            "title": "App Text"
-          },
           "data": {
             "additionalProperties": true,
             "default": {},
@@ -5650,19 +5637,6 @@
       "MoveIn": {
         "additionalProperties": false,
         "properties": {
-          "app_note": {
-            "anyOf": [
-              {
-                "const": "no_reply",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "A note the app words itself, in place of `note`: the server saves its text and its message.",
-            "title": "App Note"
-          },
           "note": {
             "anyOf": [
               {
@@ -11760,6 +11734,25 @@
               "title": "App Id",
               "type": "string"
             }
+          },
+          {
+            "description": "Text the app words itself: the server saves a `manual` event with its own text and message.",
+            "in": "query",
+            "name": "app_text",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "const": "followed_up",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Text the app words itself: the server saves a `manual` event with its own text and message.",
+              "title": "App Text"
+            }
           }
         ],
         "requestBody": {
@@ -12101,6 +12094,25 @@
             "schema": {
               "title": "App Id",
               "type": "string"
+            }
+          },
+          {
+            "description": "A note the app words itself: the server saves its own text and message, not `note`.",
+            "in": "query",
+            "name": "app_note",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "const": "no_reply",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "A note the app words itself: the server saves its own text and message, not `note`.",
+              "title": "App Note"
             }
           }
         ],

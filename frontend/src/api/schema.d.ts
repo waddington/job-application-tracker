@@ -1284,11 +1284,6 @@ export interface components {
         /** ActivityIn */
         ActivityIn: {
             /**
-             * App Text
-             * @description Text the app words itself, in place of `kind` and `summary`: the server saves its own `manual` event, with its text and its message.
-             */
-            app_text?: "followed_up" | null;
-            /**
              * Data
              * @description Saved with the event, except a `msg`, which is ignored: only the app writes messages.
              * @default {}
@@ -2855,11 +2850,6 @@ export interface components {
         };
         /** MoveIn */
         MoveIn: {
-            /**
-             * App Note
-             * @description A note the app words itself, in place of `note`: the server saves its text and its message.
-             */
-            app_note?: "no_reply" | null;
             /** Note */
             note?: string | null;
             /** Occurred At */
@@ -4790,7 +4780,10 @@ export interface operations {
     };
     add_activity_api_v1_applications__app_id__activities_post: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Text the app words itself: the server saves a `manual` event with its own text and message. */
+                app_text?: "followed_up" | null;
+            };
             header?: never;
             path: {
                 app_id: string;
@@ -5021,7 +5014,10 @@ export interface operations {
     };
     move_app_api_v1_applications__app_id__move_post: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description A note the app words itself: the server saves its own text and message, not `note`. */
+                app_note?: "no_reply" | null;
+            };
             header?: never;
             path: {
                 app_id: string;

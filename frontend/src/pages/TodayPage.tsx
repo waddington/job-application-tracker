@@ -80,8 +80,12 @@ function useFollowedUp() {
   const update = useUpdateApplication();
   return useMutation({
     mutationFn: async (row: ApplicationRow) => {
-      // The server words this and saves its message (docs/rfc/i18n.md).
-      await log.mutateAsync({ id: row.id, body: { kind: "manual", app_text: "followed_up", data: {} } });
+      // The body is for an older server; this one words it and saves its message (docs/rfc/i18n.md).
+      await log.mutateAsync({
+        id: row.id,
+        body: { kind: "manual", summary: "Followed up", data: {} },
+        appText: "followed_up",
+      });
       await update.mutateAsync({ id: row.id, body: { follow_up_on: null } });
     },
   });

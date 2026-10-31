@@ -8,8 +8,11 @@ from types import SimpleNamespace
 from typing import get_args
 
 import pytest
+from sqlalchemy import text
 
 from jat.api import schemas as S
+from jat.db import db_path
+from jat.db.engine import make_engine
 from jat.db.models import Event, Interview, Offer
 from jat.domain import applications as svc
 from jat.domain import offers
@@ -401,11 +404,36 @@ def test_every_offer_status_has_its_messages():
 
 def test_following_up_saves_what_it_always_did_and_its_message(client, seeded):
     app_id = _app(client, seeded)
-    r = client.post(f"/api/v1/applications/{app_id}/activities", json={"kind": "manual", "app_text": "followed_up"})
+    r = client.post(
+        f"/api/v1/applications/{app_id}/activities",
+        params={"app_text": "followed_up"},
+        json={"kind": "manual", "summary": "Followed up", "data": {}},
+    )
     assert r.status_code == 201, r.text
     [case] = _case("event.followedUp")
     _assert_written(r.json(), case)
     assert r.json()["kind"] == "manual"
+
+
+def test_the_same_words_with_no_marker_are_typed_text(client, seeded):
+    app_id = _app(client, seeded)
+    body = {"kind": "manual", "summary": "Followed up", "data": {}}
+    r = client.post(f"/api/v1/applications/{app_id}/activities", json=body)
+    assert r.status_code == 201, r.text
+    assert (r.json()["summary"], r.json()["msg"], r.json()["data"]) == ("Followed up", None, {})
+
+
+@pytest.mark.parametrize(
+    ("url", "body"),
+    [
+        ("activities", {"kind": "manual", "app_text": "followed_up"}),
+        ("move", {"to_stage": "screen", "app_note": "no_reply"}),
+    ],
+    ids=["activity", "move"],
+)
+def test_the_marker_stays_out_of_the_body_which_an_older_server_refuses_extras_in(client, seeded, url, body):
+    app_id = _app(client, seeded)
+    assert client.post(f"/api/v1/applications/{app_id}/{url}", json=body).status_code == 422
 
 
 def test_app_text_keeps_the_key_and_its_words_together(client, seeded):
@@ -413,10 +441,10 @@ def test_app_text_keeps_the_key_and_its_words_together(client, seeded):
     app_id = _app(client, seeded)
     r = client.post(
         f"/api/v1/applications/{app_id}/activities",
+        params={"app_text": "followed_up"},
         json={
             "kind": "call",
             "summary": "Not what was said",
-            "app_text": "followed_up",
             "data": {"msg": {"key": "event.heardBack", "params": {}}, "topic": "pay"},
         },
     )
@@ -427,23 +455,27 @@ def test_app_text_keeps_the_key_and_its_words_together(client, seeded):
 
 
 @pytest.mark.parametrize(
-    ("url", "body"),
+    ("url", "params", "body"),
     [
-        ("activities", {"kind": "manual", "app_text": "linkAdded"}),
-        ("activities", {"kind": "manual", "app_text": "event.followedUp"}),
-        ("move", {"to_stage": "screen", "app_note": "anything"}),
+        ("activities", {"app_text": "linkAdded"}, {"kind": "manual"}),
+        ("activities", {"app_text": "event.followedUp"}, {"kind": "manual"}),
+        ("move", {"app_note": "anything"}, {"to_stage": "screen"}),
     ],
     ids=["unknown activity", "a key", "unknown note"],
 )
-def test_only_the_allowed_app_text_is_accepted(client, seeded, url, body):
+def test_only_the_allowed_app_text_is_accepted(client, seeded, url, params, body):
     app_id = _app(client, seeded)
-    assert client.post(f"/api/v1/applications/{app_id}/{url}", json=body).status_code == 422
+    assert client.post(f"/api/v1/applications/{app_id}/{url}", params=params, json=body).status_code == 422
 
 
-def test_no_reply_saves_its_note_and_message_and_keeps_undo_data(client, seeded):
+def test_no_reply_saves_its_own_note_and_message_and_keeps_undo_data(client, seeded):
     app_id = _app(client, seeded)
     client.patch(f"/api/v1/applications/{app_id}", json={"awaiting_reply_since": "2030-01-01"})
-    r = client.post(f"/api/v1/applications/{app_id}/move", json={"to_stage": "ghosted", "app_note": "no_reply"})
+    r = client.post(
+        f"/api/v1/applications/{app_id}/move",
+        params={"app_note": "no_reply"},
+        json={"to_stage": "ghosted", "note": "Not what was said"},
+    )
     assert r.status_code == 200, r.text
     event = _last(client, app_id)
     _assert_written(event, _case("event.noReply")[0])
@@ -578,6 +610,18 @@ def test_a_role_change_that_cant_reach_the_application_says_why(client, seeded, 
     _assert_written(_last(client, app_id), case)
 
 
+def test_removing_a_recruiter_whos_gone_keeps_its_english_and_has_no_message(client, seeded, app):
+    app_id = _app(client, seeded)
+    engine = make_engine(db_path(app.state.jat.data_dir), foreign_keys=False)
+    with engine.begin() as conn:  # the API and SET NULL won't leave this, but old or hand-edited data can
+        conn.execute(text("UPDATE applications SET recruiter_id = 'gone' WHERE id = :id"), {"id": app_id})
+    engine.dispose()
+    assert client.patch(f"/api/v1/applications/{app_id}", json={"recruiter_id": None}).status_code == 200
+    event = _last(client, app_id)
+    assert event["summary"] == "Recruiter removed (None)"
+    assert event["msg"] is None and "msg" not in event["data"]
+
+
 def test_application_created_needs_no_message_because_nothing_shows_it(client, seeded):
     """Its stage move starts from nowhere: both timelines word that themselves, and search skips stage moves."""
     app_id = post(client, "/api/v1/applications", {"role_id": seeded["role"]["id"]})["id"]
@@ -617,7 +661,11 @@ def test_a_message_splits_into_title_and_detail_as_the_frontend_does(client, see
 
 def test_a_stage_move_sends_its_whole_note_as_the_detail(client, seeded):
     app_id = _app(client, seeded)
-    client.post(f"/api/v1/applications/{app_id}/move", json={"to_stage": "ghosted", "app_note": "no_reply"})
+    client.post(
+        f"/api/v1/applications/{app_id}/move",
+        params={"app_note": "no_reply"},
+        json={"to_stage": "ghosted", "note": "No reply"},
+    )
     event_id = _last(client, app_id)["id"]
     item = _item(client, event_id)
     assert item["detail"] == "No reply" and item["msg"] == {"key": "event.noReply", "params": {}}

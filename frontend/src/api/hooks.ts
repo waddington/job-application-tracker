@@ -168,10 +168,9 @@ export function useMoveApplication() {
     }) =>
       unwrap(
         await api.POST("/api/v1/applications/{app_id}/move", {
-          params: { path: { app_id: args.id } },
-          body: args.appNote
-            ? { to_stage: args.to_stage, app_note: args.appNote }
-            : { to_stage: args.to_stage, note: args.note ?? null },
+          // In the query, which an older server ignores: it saves `note` as typed, and the button still works.
+          params: { path: { app_id: args.id }, query: args.appNote ? { app_note: args.appNote } : {} },
+          body: { to_stage: args.to_stage, note: args.note ?? null },
         }),
       ),
     // Move the card straight away (the board would otherwise snap back until the refetch).
@@ -221,10 +220,11 @@ export function useUpdateApplication() {
 export function useLogActivity() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (args: { id: string; body: Schemas["ActivityIn"] }) =>
+    mutationFn: async (args: { id: string; body: Schemas["ActivityIn"]; appText?: "followed_up" }) =>
       unwrap(
         await api.POST("/api/v1/applications/{app_id}/activities", {
-          params: { path: { app_id: args.id } },
+          // In the query, which an older server ignores: it saves the body as before.
+          params: { path: { app_id: args.id }, query: args.appText ? { app_text: args.appText } : {} },
           body: args.body,
         }),
       ),

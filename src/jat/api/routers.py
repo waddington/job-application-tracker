@@ -891,10 +891,19 @@ def delete_app(app_id: str, session: SessionDep):
 
 
 @apps.post("/{app_id}/move", response_model=S.ApplicationDetail)
-def move_app(app_id: str, body: S.MoveIn, session: SessionDep, workflow: WorkflowDep):
+def move_app(
+    app_id: str,
+    body: S.MoveIn,
+    session: SessionDep,
+    workflow: WorkflowDep,
+    app_note: Annotated[
+        Literal["no_reply"] | None,
+        Query(description="A note the app words itself: the server saves its own text and message, not `note`."),
+    ] = None,
+):
     app = get_or_404(session, Application, app_id)
     try:
-        if body.app_note == "no_reply":  # the only one: the frontend can't pair a key with text of its own
+        if app_note == "no_reply":  # the only one: the frontend can't pair a key with text of its own
             svc.move(
                 session,
                 workflow,
@@ -928,11 +937,21 @@ def app_events(app_id: str, session: SessionDep):
 
 
 @apps.post("/{app_id}/activities", response_model=S.EventOut, status_code=201)
-def add_activity(app_id: str, body: S.ActivityIn, session: SessionDep):
+def add_activity(
+    app_id: str,
+    body: S.ActivityIn,
+    session: SessionDep,
+    app_text: Annotated[
+        Literal["followed_up"] | None,
+        Query(
+            description="Text the app words itself: the server saves a `manual` event with its own text and message."
+        ),
+    ] = None,
+):
     app = get_or_404(session, Application, app_id)
     # What you log is your own words, shown as typed: only the app writes a message (svc.log_message).
     data = {k: v for k, v in body.data.items() if k != "msg"}
-    if body.app_text == "followed_up":  # the only one: the server holds the key and the text together
+    if app_text == "followed_up":  # the only one: the server holds the key and the text together
         return svc.log_message(
             session,
             app,

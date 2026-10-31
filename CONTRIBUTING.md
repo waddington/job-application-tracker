@@ -146,7 +146,7 @@ keep writing its text as before. Once it has:
   `svc.message` where the event isn't logged activity. A new message needs its key in `EventMsg`
   (`api/schemas.py`), its text in `locales/en/events.ts` and `eventText.ts`, and a case in
   `eventMessages.cases.json`. The frontend never sends a key: for English it wants saved, it names an allowed
-  `app_text` or `app_note`, and the server holds the words and the key.
+  `app_text` or `app_note` in the query, and the server holds the words and the key.
 - **Values** go in `{{placeholders}}`, never glued on with `+` or a template string, so a
   translation can put them anywhere in the sentence.
 - **Plurals** are `_one` / `_other` keys used with `count`, never `n === 1 ? … : …`. So no
