@@ -541,7 +541,7 @@ test.describe("New application, with people who already exist", () => {
   };
   const submit = async (page: Page, dialog: Locator, role: string) => {
     await dialog.getByRole("button", { name: "Add application" }).click();
-    await expect(page.getByText("Application added")).toBeVisible();
+    await expect(page.getByText("Application added").first()).toBeVisible();
     await expect(page.getByRole("heading", { name: role })).toBeVisible();
   };
 
