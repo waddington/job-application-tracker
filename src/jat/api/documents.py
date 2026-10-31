@@ -12,7 +12,7 @@ import mimetypes
 import re
 import unicodedata
 
-from fastapi import APIRouter, File, Form, HTTPException, Request, Response, UploadFile
+from fastapi import APIRouter, File, Form, Request, Response, UploadFile
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -320,7 +320,7 @@ def send_document(app_id: str, body: S.SentDocumentIn, session: SessionDep):
     if version is None:
         version_id = body.document_version_id
         raise CodedError(
-            422, f"document_version_id: {version_id} not found", "document_version_not_found", {"id": version_id}
+            422, f"document_version_id: {version_id} not found", "document_version_id_not_found", {"id": version_id}
         )
     exists = session.scalar(
         select(ApplicationDocument).where(
@@ -340,7 +340,9 @@ def send_document(app_id: str, body: S.SentDocumentIn, session: SessionDep):
 def unsend_document(app_id: str, link_id: str, session: SessionDep):
     link = get_or_404(session, ApplicationDocument, link_id)
     if link.application_id != app_id:
-        raise HTTPException(404, f"ApplicationDocument {link_id} not found")
+        raise CodedError(
+            404, f"ApplicationDocument {link_id} not found", "application_document_not_found", {"id": link_id}
+        )
     session.delete(link)
     session.flush()
     return Response(status_code=204)

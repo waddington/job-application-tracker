@@ -91,7 +91,7 @@ export function useDeleteAttachment() {
       const { error } = await api.DELETE("/api/v1/attachments/{attachment_id}", {
         params: { path: { attachment_id: id } },
       });
-      if (error) throw new Error(i18n.t("errors:deleteFileFailed"));
+      if (error) throw new Error(i18n.t("errors:own.deleteFile"));
     },
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ["attachments"] });

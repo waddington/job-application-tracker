@@ -31,9 +31,14 @@ from . import schemas as S
 from .crud import crud_router, values
 from .deps import SessionDep, WorkflowDep, get_or_404, get_workflow, require
 from .documents import sent_documents
-from .errors import ERROR_RESPONSES
+from .errors import ERROR_RESPONSES, CodedError
 
 router = APIRouter(prefix="/api/v1", responses=ERROR_RESPONSES)
+
+
+def _refused(exc: WorkflowError) -> HTTPException:
+    """A 422 for a stage move or a new application's stage, with its code."""
+    return CodedError(422, str(exc), exc.code, exc.params) if exc.code else HTTPException(422, str(exc))
 
 
 # --- simple entities -------------------------------------------------------------------------
@@ -45,7 +50,7 @@ def _validate_role(session: Session, data: dict) -> None:
     require(session, Meeting, data.get("meeting_id"), "meeting_id")
     meeting = session.get(Meeting, data["meeting_id"]) if data.get("meeting_id") else None
     if meeting is not None and data.get("contact_id") and meeting.contact_id != data["contact_id"]:
-        raise HTTPException(422, "meeting_id: that call was with someone else")
+        raise CodedError(422, "meeting_id: that call was with someone else", "role_call_other_person")
     if "decision" in data:  # passing on it, or changing your mind
         data["decided_on"] = date.today() if data["decision"] else None
         if not data["decision"]:
@@ -66,7 +71,9 @@ def _before_company_delete(session: Session, company: Company) -> None:
     """A company with applications can't go (delete or move those first); its roles go with it."""
     n = _count_applications(session, Role.company_id == company.id)
     if n:
-        raise HTTPException(409, _still_used(company.name, n))
+        raise CodedError(
+            409, _still_used(company.name, n), "company_has_applications", {"name": company.name, "count": n}
+        )
     for role in session.scalars(select(Role).where(Role.company_id == company.id)):
         session.delete(role)
     session.flush()  # roles first: the ORM doesn't know companies own roles, so it can't order them
@@ -75,7 +82,7 @@ def _before_company_delete(session: Session, company: Company) -> None:
 def _before_role_delete(session: Session, role: Role) -> None:
     n = _count_applications(session, Application.role_id == role.id)
     if n:
-        raise HTTPException(409, _still_used(role.title, n))
+        raise CodedError(409, _still_used(role.title, n), "role_has_applications", {"name": role.title, "count": n})
 
 
 router.include_router(
@@ -195,8 +202,13 @@ def _validate_contact(session: Session, data: dict) -> None:
 
 def _unique_details(session: Session, details: list[S.ContactDetailIn], contact: Contact | None = None) -> None:
     """One person per email address and LinkedIn profile: 409 naming who already has it."""
-    if message := people_svc.check_unique(session, [(d.kind, d.value) for d in details], contact=contact):
-        raise HTTPException(409, message)
+    if clash := people_svc.check_unique(session, [(d.kind, d.value) for d in details], contact=contact):
+        name, value = clash
+        message = (
+            f"{name} already has {value}. One person per email address and LinkedIn profile: "
+            f"open {name} instead, or merge the two."
+        )
+        raise CodedError(409, message, "contact_detail_taken", {"name": name, "value": value})
 
 
 @contacts.get("", response_model=list[S.ContactOut])
@@ -286,7 +298,7 @@ def merge_contact(contact_id: str, body: S.MergeIn, request: Request, session: S
     keep = get_or_404(session, Contact, contact_id)
     gone = get_or_404(session, Contact, body.from_id)
     if keep.id == gone.id:
-        raise HTTPException(422, "Pick someone else to merge in: that's the same person.")
+        raise CodedError(422, "Pick someone else to merge in: that's the same person.", "merge_same_person")
     people_svc.merge(session, keep, gone, notes)
     return _contact_out(session, session.get(Contact, contact_id))
 
@@ -402,7 +414,7 @@ def _with_rounds(session: Session, rows: list[S.ApplicationRow]) -> list[S.Appli
 def _load_row(session: Session, workflow: Workflow, app_id: str) -> S.ApplicationRow:
     found = session.execute(_rows_query().where(Application.id == app_id)).first()
     if found is None:
-        raise HTTPException(status_code=404, detail=f"Application {app_id} not found")
+        raise CodedError(404, f"Application {app_id} not found", "application_not_found", {"id": app_id})
     return _with_rounds(session, [_row(workflow, *found, today=date.today())])[0]
 
 
@@ -601,18 +613,23 @@ def _check_route(session: Session, merged: dict) -> dict:
     recruiter = session.get(Contact, recruiter_id) if recruiter_id else None
     updates: dict = {}
     if route == "direct" and agency_id:
-        raise HTTPException(422, "A direct application can't have an agency; change the route first.")
+        raise CodedError(422, "A direct application can't have an agency; change the route first.", "direct_has_agency")
     if route == "direct" and recruiter is not None and recruiter.agency_id:
-        raise HTTPException(
-            422, f"{recruiter.name} works for an agency, so this isn't a direct application; change the route."
+        raise CodedError(
+            422,
+            f"{recruiter.name} works for an agency, so this isn't a direct application; change the route.",
+            "direct_recruiter_has_agency",
+            {"name": recruiter.name},
         )
     if route == "agency":
         if not agency_id and recruiter is not None and recruiter.agency_id:
             agency_id = updates["agency_id"] = recruiter.agency_id
         if not agency_id and not recruiter_id:
-            raise HTTPException(422, "An agency application needs an agency or a recruiter.")
+            raise CodedError(422, "An agency application needs an agency or a recruiter.", "agency_route_needs_agency")
     if recruiter is not None and recruiter.agency_id and agency_id and recruiter.agency_id != agency_id:
-        raise HTTPException(422, "The recruiter works for a different agency than the one given.")
+        raise CodedError(
+            422, "The recruiter works for a different agency than the one given.", "recruiter_other_agency"
+        )
     return updates
 
 
@@ -629,7 +646,7 @@ def create_app_(body: S.ApplicationIn, session: SessionDep, workflow: WorkflowDe
     try:
         app = svc.create_application(session, workflow, stage=stage, **data)
     except WorkflowError as exc:
-        raise HTTPException(status_code=422, detail=str(exc)) from exc
+        raise _refused(exc) from exc
     return _detail(session, workflow, app.id)
 
 
@@ -695,10 +712,14 @@ def quick_create(body: S.QuickApplicationIn, session: SessionDep, workflow: Work
         agency_id = agency.id if agency else None
         recruiter_id = recruiter.id if recruiter else None
     elif body.agency_id or body.agency_name:
-        raise HTTPException(422, "Only applications through a recruiter can have an agency.")
+        raise CodedError(422, "Only applications through a recruiter can have an agency.", "agency_needs_agency_route")
     elif body.recruiter_id or (body.recruiter_name or "").strip():
         if body.route != "direct":
-            raise HTTPException(422, "A referral can't have a recruiter; link the referrer as a person instead.")
+            raise CodedError(
+                422,
+                "A referral can't have a recruiter; link the referrer as a person instead.",
+                "referral_has_recruiter",
+            )
         # Someone at the company reached out (an in-house recruiter or head of talent).
         if body.recruiter_id:
             recruiter = get_or_404(session, Contact, body.recruiter_id)
@@ -726,7 +747,7 @@ def quick_create(body: S.QuickApplicationIn, session: SessionDep, workflow: Work
             session, workflow, role_id=role.id, stage=body.stage, applied_on=body.applied_on, tags=body.tags, **data
         )
     except WorkflowError as exc:
-        raise HTTPException(status_code=422, detail=str(exc)) from exc
+        raise _refused(exc) from exc
     return _detail(session, workflow, app.id)
 
 
@@ -811,7 +832,7 @@ def move_app(app_id: str, body: S.MoveIn, session: SessionDep, workflow: Workflo
     try:
         svc.move(session, workflow, app, body.to_stage, occurred_at=body.occurred_at, note=body.note)
     except svc.TransitionError as exc:
-        raise HTTPException(status_code=422, detail=str(exc)) from exc
+        raise _refused(exc) from exc
     return _detail(session, workflow, app_id)
 
 
@@ -821,7 +842,7 @@ def undo_app(app_id: str, session: SessionDep, workflow: WorkflowDep):
     try:
         svc.undo_last_move(session, app)
     except svc.TransitionError as exc:
-        raise HTTPException(status_code=422, detail=str(exc)) from exc
+        raise _refused(exc) from exc
     return _detail(session, workflow, app_id)
 
 

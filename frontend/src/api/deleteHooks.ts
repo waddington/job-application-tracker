@@ -1,8 +1,10 @@
 import { notifications } from "@mantine/notifications";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { i18n } from "../i18n";
 import { api, ApiError } from "./client";
 import { invalidateApplicationViews, keys } from "./hooks";
+import { errorText } from "./notifyError";
 
 export type Deletable = "application" | "company" | "agency" | "contact" | "role";
 
@@ -55,6 +57,6 @@ export function useDeleteEntity(kind: Deletable, onDeleted?: () => void) {
       invalidateApplicationViews(qc);
     },
     onError: (error: Error) =>
-      notifications.show({ color: "red", title: "Couldn't delete it", message: error.message }),
+      notifications.show({ color: "red", title: i18n.t("errors:own.deleteIt"), message: errorText(error) }),
   });
 }

@@ -59,7 +59,7 @@ export function useDeleteNote() {
   return useMutation({
     mutationFn: async (id: string) => {
       const { error } = await api.DELETE("/api/v1/notes/{note_id}", { params: { path: { note_id: id } } });
-      if (error) throw new Error(i18n.t("errors:deleteNoteFailed"));
+      if (error) throw new Error(i18n.t("errors:own.deleteNote"));
     },
     onSuccess: refresh,
     onError: notifyError,

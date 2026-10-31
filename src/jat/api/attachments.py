@@ -16,7 +16,7 @@ from ..domain import applications as svc
 from ..storage import eml
 from ..storage.files import FileError, FileStore, TooLarge
 from . import schemas as S
-from .deps import ENTITY_MODELS, SessionDep, get_or_404
+from .deps import ENTITY_MODELS, ENTITY_NOT_FOUND, SessionDep, get_or_404
 from .errors import CodedError
 
 router = APIRouter(prefix="/attachments", tags=["attachments"])
@@ -70,7 +70,8 @@ def _check_entity(session: Session, entity_type: str | None, entity_id: str | No
         raise HTTPException(422, f"entity_type must be one of {', '.join(ENTITY_MODELS)}")
     target = session.get(model, entity_id)
     if target is None:
-        raise HTTPException(422, f"entity_id: {entity_type} {entity_id} not found")
+        detail = f"entity_id: {entity_type} {entity_id} not found"
+        raise CodedError(422, detail, ENTITY_NOT_FOUND[entity_type], {"id": entity_id})
     return target
 
 
