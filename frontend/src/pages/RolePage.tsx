@@ -59,7 +59,6 @@ function Fact({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-/** A role's page: what it is, where it came from, what you decided, and everything kept on it. */
 /** The call a role came up in, named in your language. */
 function callOf(role: RoleSummary) {
   if (!role.meeting_kind) return null;
@@ -70,6 +69,7 @@ function callOf(role: RoleSummary) {
   });
 }
 
+/** A role's page: what it is, where it came from, what you decided, and everything kept on it. */
 export function RolePage() {
   const { t } = useTranslation("roles");
   const { roleId } = useParams({ from: "/roles/$roleId" });

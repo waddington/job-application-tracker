@@ -42,6 +42,34 @@ const PERSON = {
 beforeEach(() => localStorage.clear());
 afterEach(() => vi.unstubAllGlobals());
 
+describe("a call's line", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("names who and where as written, even with a < in it", async () => {
+    mockApi({
+      "/api/v1/workflow": WORKFLOW,
+      "/api/v1/contacts": [{ ...alex, closed_as: "ghosted" }],
+      "/api/v1/next-actions": {
+        follow_ups: [],
+        stale: [],
+        upcoming: [],
+        awaiting_outcome: [],
+        offer_deadlines: [],
+        waiting: [],
+        waiting_people: [],
+        meetings: [meeting({ agency_name: "<Acme> & Co" })],
+        meetings_to_close: [],
+        today: "2026-10-02",
+      },
+      "/api/v1/health": {},
+    });
+    renderAt("/");
+    const who = await screen.findByRole("link", { name: /Alex Morgan/ });
+    await waitFor(() => expect(who.querySelector("[aria-label], [title], svg")).not.toBeNull());
+    expect(who.textContent).toContain("Alex Morgan · <Acme> & Co");
+  });
+});
+
 describe("calls and meetings", () => {
   it("books a call with someone from their page", async () => {
     const calls = mockApi({

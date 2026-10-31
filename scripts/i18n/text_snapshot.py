@@ -252,7 +252,7 @@ with sync_playwright() as p:
     page.keyboard.press("Escape")
     time.sleep(0.4)
 
-    # Calls: on a person's page, the form with each way of meeting and its errors, and a past
+    # Calls: on a person's page, the form with each way of meeting and its link error, and a
     # call's menu and edit form. Each closed unsaved.
     visit(page, "/recruiters")
     visit(page, page.evaluate(LINKS, "/people/")[0])

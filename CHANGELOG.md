@@ -7,7 +7,7 @@ Numbers in brackets are pull requests.
 
 ## 1.2.22 (2026-10-31)
 
-- **Developers:** Calls and meetings read their text from the translation files, ready for other languages. The English is unchanged (#156).
+- **Developers:** Calls and meetings read their text from the translation files, ready for other languages. The English is unchanged. A role's summary in the API gains `meeting_kind`, `meeting_title` and `meeting_contact_name` (#156).
 
 ## 1.2.21 (2026-10-31)
 
