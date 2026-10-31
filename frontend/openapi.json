@@ -8988,7 +8988,7 @@
   },
   "info": {
     "title": "Job Application Tracker",
-    "version": "1.2.32"
+    "version": "1.2.33"
   },
   "openapi": "3.1.0",
   "paths": {
