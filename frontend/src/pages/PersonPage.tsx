@@ -25,6 +25,7 @@ import { ContactCard } from "../components/ContactCard";
 import { ContactFormModal } from "../components/ContactFormModal";
 import { DeleteButton } from "../components/DeleteButton";
 import { roundStatus } from "../components/Interviews";
+import { roundLabel } from "../utils/rounds";
 import { LinksCard } from "../components/Links";
 import { TodosCard } from "../components/Todos";
 import { MeetingsCard } from "../components/Meetings";
@@ -176,7 +177,7 @@ export function PersonPage() {
                     <Group key={i.id} justify="space-between" wrap="nowrap">
                       <div>
                         <Anchor component={Link} to={`/applications/${i.application_id}`} size="sm" fw={600}>
-                          {i.label}
+                          {roundLabel(i)}
                         </Anchor>
                         <Text size="xs" c="dimmed">
                           {i.company_name} · {i.role_title}

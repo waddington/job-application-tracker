@@ -2,8 +2,10 @@ import { Badge, Button, Group, Modal, Stack, Text, Textarea, Tooltip } from "@ma
 import { DateTimePicker } from "@mantine/dates";
 import dayjs from "dayjs";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { useSaveInterview, type Interview } from "../api/interviewHooks";
+import { roundLabel } from "../utils/rounds";
 import { formatDateTime } from "../utils/time";
 
 const PICKER = "YYYY-MM-DD HH:mm:ss";
@@ -16,16 +18,20 @@ export function RescheduledBadge({
   interview: Pick<Interview, "rescheduled_count" | "rescheduled_from">;
   size?: "xs" | "sm";
 }) {
+  const { t } = useTranslation("interviews");
   const n = interview.rescheduled_count;
   if (!n) return null;
   const badge = (
     <Badge size={size} variant="light" color="yellow">
-      Rescheduled{n > 1 ? ` ×${n}` : ""}
+      {n > 1 ? t("reschedule.badgeTimes", { times: n }) : t("reschedule.badge")}
     </Badge>
   );
   if (!interview.rescheduled_from) return badge;
   return (
-    <Tooltip label={`Moved from ${formatDateTime(interview.rescheduled_from)}`} withArrow>
+    <Tooltip
+      label={t("reschedule.movedFrom", { when: formatDateTime(interview.rescheduled_from) })}
+      withArrow
+    >
       {badge}
     </Tooltip>
   );
@@ -36,6 +42,7 @@ export function RescheduledBadge({
  * timeline). Its end moves with it, so it lasts as long as before.
  */
 export function RescheduleModal({ interview, onClose }: { interview: Interview; onClose: () => void }) {
+  const { t } = useTranslation(["interviews", "common"]);
   const save = useSaveInterview();
   const [when, setWhen] = useState<string | null>(
     interview.starts_at ? dayjs(interview.starts_at).format(PICKER) : null,
@@ -63,7 +70,7 @@ export function RescheduleModal({ interview, onClose }: { interview: Interview; 
     <Modal
       opened
       onClose={onClose}
-      title={`Reschedule ${interview.label}`}
+      title={t("reschedule.named", { label: roundLabel(interview) })}
       // While saving, nothing closes it: if the save fails, what you typed is still here.
       closeOnEscape={!save.isPending}
       closeOnClickOutside={!save.isPending}
@@ -71,13 +78,18 @@ export function RescheduleModal({ interview, onClose }: { interview: Interview; 
     >
       <Stack>
         <Text size="sm" c="dimmed">
-          {interview.company_name} · {interview.role_title}
-          {interview.starts_at ? ` · was ${formatDateTime(interview.starts_at)}` : ""}
+          {interview.starts_at
+            ? t("reschedule.whereWas", {
+                company: interview.company_name,
+                role: interview.role_title,
+                when: formatDateTime(interview.starts_at),
+              })
+            : t("reschedule.where", { company: interview.company_name, role: interview.role_title })}
         </Text>
-        <DateTimePicker label="New time" value={when} onChange={setWhen} data-autofocus />
+        <DateTimePicker label={t("reschedule.newTime")} value={when} onChange={setWhen} data-autofocus />
         <Textarea
-          label="Why? (optional)"
-          placeholder="They had a clash, you asked to move it…"
+          label={t("reschedule.why")}
+          placeholder={t("reschedule.whyPlaceholder")}
           maxLength={500}
           autosize
           minRows={2}
@@ -89,10 +101,10 @@ export function RescheduleModal({ interview, onClose }: { interview: Interview; 
         />
         <Group justify="flex-end">
           <Button variant="default" onClick={onClose} disabled={save.isPending}>
-            Cancel
+            {t("common:actions.cancel")}
           </Button>
           <Button onClick={submit} disabled={!moved} loading={save.isPending}>
-            Reschedule
+            {t("reschedule.action")}
           </Button>
         </Group>
       </Stack>

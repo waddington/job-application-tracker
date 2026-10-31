@@ -215,6 +215,40 @@ with sync_playwright() as p:
         lambda: page.get_by_role("dialog").get_by_label("The other record").click(timeout=3000),
         lambda: page.get_by_role("option").first.click(timeout=3000),
     )
+    page.keyboard.press("Escape")
+    page.keyboard.press("Escape")
+    time.sleep(0.4)
+
+    # Interviews: Reschedule and the round form from the page, with the form's errors and a
+    # take-home's extra fields, and adding a round on an application. Each closed unsaved.
+    visit(page, "/interviews")
+    step(
+        "interviews+reschedule",
+        lambda: page.get_by_role("button", name="Reschedule").first.click(timeout=3000),
+    )
+    page.keyboard.press("Escape")
+    time.sleep(0.4)
+    step("interviews+edit", lambda: page.locator("[aria-label^='Edit Round']").first.click(timeout=3000))
+    dialog = page.get_by_role("dialog")
+    step("interviews+edit-type", lambda: dialog.get_by_label("Type", exact=True).click(timeout=3000))
+    page.keyboard.press("Escape")
+    step("interviews+edit-format", lambda: dialog.get_by_label("Format", exact=True).click(timeout=3000))
+    step(
+        "interviews+edit-take-home",
+        lambda: page.get_by_role("option", name="Take-home").click(timeout=3000),
+    )
+    step(
+        "interviews+edit-errors",
+        lambda: dialog.get_by_label("Meeting link", exact=True).fill("not a link", timeout=3000),
+        lambda: dialog.get_by_label("Round", exact=True).fill("", timeout=3000),
+        lambda: dialog.get_by_role("button", name="Save").click(timeout=3000),
+    )
+    page.keyboard.press("Escape")
+    time.sleep(0.4)
+    visit(page, "/interviews")
+    visit(page, page.evaluate(LINKS, "/applications/")[0])
+    snap["interviews+application"] = grab(page)
+    step("interviews+add", lambda: page.get_by_role("button", name="Add round").first.click(timeout=3000))
     browser.close()
 
 with open(OUT, "w") as f:

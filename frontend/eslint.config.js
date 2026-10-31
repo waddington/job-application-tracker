@@ -50,6 +50,11 @@ const TRANSLATED = [
   "src/components/ContactCard.tsx",
   "src/components/MergePerson.tsx",
   "src/components/TimelineButton.tsx",
+  // i18n-interviews
+  "src/pages/InterviewsPage.tsx",
+  "src/components/Interviews.tsx",
+  "src/components/InterviewFormModal.tsx",
+  "src/components/Reschedule.tsx",
 ];
 
 export default tseslint.config(

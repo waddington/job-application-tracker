@@ -110,7 +110,9 @@ The app is being made translatable, English only for now; the plan and its order
 - Today, with its to-dos, the reply and chase buttons, How did it go?, At a glance and How it
   works;
 - Applications: the list and board, the quick view, the application page and New application;
-- Roles: the Roles page, a role's page, the role form, Apply / Interested / Pass and role lines.
+- Roles: the Roles page, a role's page, the role form, Apply / Interested / Pass and role lines;
+- People and companies: Recruiters, a person's page and form, Merge, companies and agencies;
+- Interviews: the Interviews page, rounds on an application, the round form and Reschedule.
 
 The files are listed in `TRANSLATED` in `frontend/eslint.config.js`. Until an area has moved,
 keep writing its text as before. Once it has:

@@ -8469,7 +8469,7 @@
   },
   "info": {
     "title": "Job Application Tracker",
-    "version": "1.2.20"
+    "version": "1.2.21"
   },
   "openapi": "3.1.0",
   "paths": {

@@ -7,18 +7,18 @@ import { invalidateApplicationViews } from "./hooks";
 export type Interview = Schemas["InterviewOut"];
 export type InterviewKind = Schemas["InterviewIn"]["kind"];
 
-export const KIND_OPTIONS: { value: NonNullable<InterviewKind>; label: string }[] = [
-  { value: "screen", label: "Screen" },
-  { value: "hiring_manager", label: "Hiring manager" },
-  { value: "technical", label: "Technical" },
-  { value: "coding_task", label: "Coding task" },
-  { value: "system_design", label: "System design" },
-  { value: "pairing", label: "Pairing" },
-  { value: "behavioural", label: "Behavioural" },
-  { value: "onsite", label: "Onsite" },
-  { value: "final", label: "Final" },
-  { value: "other", label: "Other" },
-];
+export const KIND_OPTIONS = [
+  { value: "screen", key: "interviews:kinds.screen" },
+  { value: "hiring_manager", key: "interviews:kinds.hiring_manager" },
+  { value: "technical", key: "interviews:kinds.technical" },
+  { value: "coding_task", key: "interviews:kinds.coding_task" },
+  { value: "system_design", key: "interviews:kinds.system_design" },
+  { value: "pairing", key: "interviews:kinds.pairing" },
+  { value: "behavioural", key: "interviews:kinds.behavioural" },
+  { value: "onsite", key: "interviews:kinds.onsite" },
+  { value: "final", key: "interviews:kinds.final" },
+  { value: "other", key: "interviews:kinds.other" },
+] as const satisfies readonly { value: NonNullable<InterviewKind>; key: string }[];
 
 export interface InterviewFilters {
   application_id?: string;

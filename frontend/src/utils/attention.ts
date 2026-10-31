@@ -7,6 +7,7 @@ import type { Offer } from "../api/offerHooks";
 import type { Todo } from "../api/todoHooks";
 import { i18n } from "../i18n";
 import { formatDay as format } from "./format";
+import { roundLabel } from "./rounds";
 
 /**
  * What an application needs, and how long ago things happened, for its "At a glance" card.
@@ -152,21 +153,21 @@ export function glance({ app, stage, interviews, offers, todos, today, now }: Gl
       if (!at) {
         comingUp.push({
           key: `round-${round.id}`,
-          label: t("today:glance.notBooked", { label: round.label }),
+          label: t("today:glance.notBooked", { label: roundLabel(round) }),
           when: t("today:glance.noDate"),
           tone: "gray",
         });
       } else if (Date.parse(at) < now) {
         attention.push({
           key: `round-${round.id}`,
-          label: t("today:glance.howDidItGo", { label: round.label }),
+          label: t("today:glance.howDidItGo", { label: roundLabel(round) }),
           when: since(daysBetween(dayOf(at), today)),
           tone: "orange",
         });
       } else {
         comingUp.push({
           key: `round-${round.id}`,
-          label: round.label,
+          label: roundLabel(round),
           when: t("today:glance.roundWhen", {
             until: until(daysBetween(today, dayOf(at))),
             at: format(at, "dayMonthTime", i18n.language),

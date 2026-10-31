@@ -383,7 +383,10 @@ describe("today: where things stand", () => {
             application_id: "a1",
             company_name: "Contoso",
             role_title: "Backend Engineer",
-            label: "Round 3",
+            round: 3,
+            title: "System design test",
+            kind: "system_design",
+            label: "Round 3 · System design test",
             starts_at: null,
             deadline_at: null,
           },
@@ -412,7 +415,7 @@ describe("today: where things stand", () => {
 
     const ahead = bucket("Coming up");
     expect(within(ahead).getByText("Renew my portfolio")).toBeInTheDocument();
-    expect(within(ahead).getByText("Round 3")).toBeInTheDocument();
+    expect(within(ahead).getByText("Round 3 · System design test")).toBeInTheDocument();
     expect(within(ahead).getByText("Not booked yet")).toBeInTheDocument();
 
     const theirs = bucket("Waiting on them");

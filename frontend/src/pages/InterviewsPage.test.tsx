@@ -76,6 +76,34 @@ beforeEach(() => localStorage.clear());
 afterEach(() => vi.unstubAllGlobals());
 
 describe("interviews", () => {
+  it("says when each round is and who with, in whole sentences", async () => {
+    const at = "2030-10-02T13:00:00";
+    mockApi({
+      "/api/v1/workflow": WORKFLOW,
+      "GET /api/v1/applications/a1": detail,
+      "/api/v1/interviews": [
+        interview({ id: "w1", round: 1, starts_at: at }),
+        interview({ id: "w2", round: 2, starts_at: at, interviewer_ids: [] }),
+        interview({ id: "w3", round: 3, starts_at: null, deadline_at: at }),
+        interview({ id: "w4", round: 4, starts_at: null, deadline_at: at, interviewer_ids: [] }),
+        interview({ id: "w5", round: 5, starts_at: null }),
+        interview({ id: "w6", round: 6, starts_at: null, interviewer_ids: [] }),
+      ],
+      "/api/v1/contacts": contacts,
+      "/api/v1/roles": [],
+      "/api/v1/health": {},
+    });
+    renderAt("/applications/a1");
+    const card = (await screen.findByRole("heading", { name: "Interviews" })).closest(".mantine-Card-root")!;
+    const has = (text: string) => within(card as HTMLElement).findByText(text);
+    await has("2 Oct 2030, 13:00 · with Riley Chen");
+    await has("2 Oct 2030, 13:00");
+    await has("Due 2 Oct 2030, 13:00 · with Riley Chen");
+    await has("Due 2 Oct 2030, 13:00");
+    await has("Not booked yet · with Riley Chen");
+    await has("Not booked yet");
+  });
+
   it("lists an application's rounds and adds the next one", async () => {
     const calls = mockApi({
       "/api/v1/workflow": WORKFLOW,
@@ -130,7 +158,14 @@ describe("interviews", () => {
           stage: "offer",
           stage_name: "Offer",
           stage_kind: "success",
-          current_round: { ...round2, id: "i9", label: "Round 3 · Final", status: "done" },
+          current_round: {
+            ...round2,
+            id: "i9",
+            round: 3,
+            title: "Final",
+            label: "Round 3 · Final",
+            status: "done",
+          },
         }),
       ],
       "/api/v1/health": {},

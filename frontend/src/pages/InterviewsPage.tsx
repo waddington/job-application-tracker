@@ -15,30 +15,34 @@ import {
 import { IconCalendarEvent, IconPencil } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { useInterviews, type Interview } from "../api/interviewHooks";
 import { InterviewFormModal } from "../components/InterviewFormModal";
 import { roundStatus } from "../components/Interviews";
 import { RescheduledBadge, RescheduleModal } from "../components/Reschedule";
+import { roundLabel } from "../utils/rounds";
 import { formatDateTime } from "../utils/time";
 
 /** Edit a round, or move a booked one to another time. */
 function RoundActions({ interview }: { interview: Interview }) {
+  const { t } = useTranslation("interviews");
   const [open, setOpen] = useState<"edit" | "reschedule" | null>(null);
+  const label = roundLabel(interview);
   return (
     <Group gap={4} wrap="nowrap" justify="flex-end">
       {interview.status === "scheduled" && interview.starts_at && (
         <Button
           size="compact-xs"
           variant="light"
-          aria-label={`Reschedule ${interview.label}`}
+          aria-label={t("reschedule.named", { label })}
           onClick={() => setOpen("reschedule")}
         >
-          Reschedule
+          {t("reschedule.action")}
         </Button>
       )}
-      <Tooltip label="Edit">
-        <ActionIcon variant="subtle" aria-label={`Edit ${interview.label}`} onClick={() => setOpen("edit")}>
+      <Tooltip label={t("edit")}>
+        <ActionIcon variant="subtle" aria-label={t("editNamed", { label })} onClick={() => setOpen("edit")}>
           <IconPencil size={16} />
         </ActionIcon>
       </Tooltip>
@@ -57,6 +61,7 @@ function RoundActions({ interview }: { interview: Interview }) {
 }
 
 function InterviewTable({ interviews, empty }: { interviews: Interview[]; empty: string }) {
+  const { t } = useTranslation("interviews");
   if (!interviews.length) {
     return (
       <Text size="sm" c="dimmed">
@@ -68,10 +73,10 @@ function InterviewTable({ interviews, empty }: { interviews: Interview[]; empty:
     <Table highlightOnHover>
       <Table.Thead>
         <Table.Tr>
-          <Table.Th>When</Table.Th>
-          <Table.Th>Round</Table.Th>
-          <Table.Th>Application</Table.Th>
-          <Table.Th>Status</Table.Th>
+          <Table.Th>{t("page.when")}</Table.Th>
+          <Table.Th>{t("page.round")}</Table.Th>
+          <Table.Th>{t("page.application")}</Table.Th>
+          <Table.Th>{t("page.status")}</Table.Th>
           <Table.Th />
         </Table.Tr>
       </Table.Thead>
@@ -82,12 +87,16 @@ function InterviewTable({ interviews, empty }: { interviews: Interview[]; empty:
             <Table.Tr key={i.id}>
               <Table.Td>
                 <Text size="sm">
-                  {when ? `${!i.starts_at ? "Due " : ""}${formatDateTime(when)}` : "Not booked yet"}
+                  {!when
+                    ? t("notBooked")
+                    : i.starts_at
+                      ? formatDateTime(when)
+                      : t("due", { when: formatDateTime(when) })}
                 </Text>
               </Table.Td>
               <Table.Td>
                 <Text size="sm" fw={600}>
-                  {i.label}
+                  {roundLabel(i)}
                 </Text>
               </Table.Td>
               <Table.Td>
@@ -119,6 +128,7 @@ function InterviewTable({ interviews, empty }: { interviews: Interview[]; empty:
 
 /** Every interview round across applications: what's coming up, then everything else, newest first. */
 export function InterviewsPage() {
+  const { t } = useTranslation("interviews");
   // "Upcoming" starts at your local midnight, so this morning's interview still counts today.
   const midnight = new Date();
   midnight.setHours(0, 0, 0, 0);
@@ -133,7 +143,7 @@ export function InterviewsPage() {
     <Stack maw={1100}>
       <Group gap="sm">
         <IconCalendarEvent size={26} stroke={1.6} />
-        <Title order={2}>Interviews</Title>
+        <Title order={2}>{t("page.title")}</Title>
       </Group>
       {isLoading ? (
         <Loader />
@@ -141,18 +151,15 @@ export function InterviewsPage() {
         <>
           <Card withBorder>
             <Title order={4} mb="sm">
-              Coming up
+              {t("page.comingUp")}
             </Title>
-            <InterviewTable
-              interviews={upcoming ?? []}
-              empty="Nothing booked. Add interview rounds from an application's page."
-            />
+            <InterviewTable interviews={upcoming ?? []} empty={t("page.comingUpEmpty")} />
           </Card>
           <Card withBorder>
             <Title order={4} mb="sm">
-              Earlier and cancelled
+              {t("page.earlier")}
             </Title>
-            <InterviewTable interviews={rest} empty="None yet." />
+            <InterviewTable interviews={rest} empty={t("page.earlierEmpty")} />
           </Card>
         </>
       )}

@@ -40,6 +40,9 @@ const STAGE = { id: "applied", name: "Applied", stale_after_days: 10 } as Workfl
 const round = (overrides: Record<string, unknown>) =>
   ({
     id: "i1",
+    round: 2,
+    title: "System design",
+    kind: "technical",
     label: "Round 2 · System design",
     status: "scheduled",
     starts_at: null,
@@ -114,7 +117,7 @@ describe("glance", () => {
       app: app({ follow_up_on: "2026-10-20" }),
       interviews: [
         round({ starts_at: "2026-10-15T14:00:00" }),
-        round({ id: "i2", label: "Round 3 · Final" }),
+        round({ id: "i2", round: 3, title: "Final", kind: "technical", label: "Round 3 · Final" }),
       ],
       todos: [todo({ id: "t2", text: "Prep questions", due_on: "2026-10-14" }) as unknown as Todo],
     });
