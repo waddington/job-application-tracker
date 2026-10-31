@@ -7,13 +7,14 @@ import {
   Outlet,
   RouterProvider,
 } from "@tanstack/react-router";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import dayjs from "dayjs";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { CATEGORIES, categoryOf, type TimelineItem } from "../api/timelineHooks";
 import { i18n } from "../i18n";
+import { PSEUDO } from "../i18n/language";
 import { ItemContext, TimelinePage, TimelineRow } from "./TimelinePage";
 
 // The Timeline page's text comes from locales/en/timeline.ts (i18n-timeline-page). The before/after
@@ -116,6 +117,20 @@ describe("a row", () => {
     await wrapped(<TimelineRow item={item({ kind: "company", company_name: "Example Co" })} />);
     expect(await screen.findByText("Added company Example Co")).toBeTruthy();
     expect(screen.queryByText("the API's title")).toBeNull();
+  });
+
+  it("words the title again when the language changes", async () => {
+    const english = "Added company Example Co";
+    await wrapped(<TimelineRow item={item({ kind: "company", company_name: "Example Co" })} />);
+    expect(await screen.findByText(english)).toBeTruthy();
+    try {
+      await act(() => i18n.changeLanguage(PSEUDO));
+      await waitFor(() => expect(screen.queryByText(english)).toBeNull());
+      expect(screen.getByText(/Example Co/)).toBeTruthy();
+    } finally {
+      await act(() => i18n.changeLanguage("en"));
+    }
+    expect(await screen.findByText(english)).toBeTruthy();
   });
 
   it("leaves the API's title and detail as they came", async () => {

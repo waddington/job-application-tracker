@@ -63,10 +63,22 @@ describe("the API's title shows", () => {
     expect(timelineTitle(item)).toBe(API_TITLE);
   });
 
-  it.each(["role", "role-added", "role-passed", "company", "agency", "contact", "contact-chased"])(
-    "for %s when the name its sentence needs is missing",
-    (kind) => {
-      expect(timelineTitle(itemOf({ kind }))).toBe(API_TITLE);
-    },
-  );
+  it.each([
+    "role",
+    "role-added",
+    "role-passed",
+    "company",
+    "agency",
+    "contact",
+    "contact-waiting",
+    "contact-chased",
+    "contact-to-read",
+  ])("for %s when the name its sentence needs is missing", (kind) => {
+    expect(timelineTitle(itemOf({ kind }))).toBe(API_TITLE);
+  });
+
+  it("for a pitched role with a person but no role title", () => {
+    const item = itemOf({ kind: "role", person: "Sam Sample", company: "Contoso" });
+    expect(timelineTitle(item)).toBe(API_TITLE);
+  });
 });
