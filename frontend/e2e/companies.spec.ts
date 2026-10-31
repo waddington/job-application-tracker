@@ -101,6 +101,29 @@ const settled = (page: Page, dialog: Locator) =>
     )
     .toBe(true);
 
+/**
+ * A double click at its worst: both clicks before the page can react, and both saves reaching the
+ * server together. A person's double click only sometimes lands like this, so the test sets it up.
+ */
+const doubleSave = async (page: Page, url: string, button: Locator) => {
+  let release = () => {};
+  const together = new Promise<void>((done) => (release = done));
+  let held = 0;
+  await page.route(url, async (route) => {
+    if (route.request().method() === "PATCH") {
+      held += 1;
+      if (held === 1) setTimeout(release, 1_000); // a fix sends just one
+      if (held === 2) release();
+      await together;
+    }
+    await route.continue();
+  });
+  await button.evaluate((b: HTMLElement) => {
+    b.click();
+    b.click();
+  });
+};
+
 const openCompanies = async (page: Page) => {
   await page.goto("/companies");
   await expect(heading(page, "Companies")).toBeVisible();
@@ -575,11 +598,14 @@ test.describe("renaming a company", () => {
   // KNOWN BUG (fix-double-save-locked on the roadmap): expected to fail until it is fixed.
   test.fail("a double click on Save closes it, with no error", async ({ page, request }) => {
     const here = await company(request, "Save Once Co");
-    await slow(page, `**${API}/companies/${here.id}`, "PATCH");
     await openCompany(page, here.id, "Save Once Co");
     const dialog = await editDialog(page, "Save Once Co");
     await dialog.getByLabel("Name").fill("Saved Once Co");
-    await dialog.getByRole("button", { name: "Save", exact: true }).dblclick();
+    await doubleSave(
+      page,
+      `**${API}/companies/${here.id}`,
+      dialog.getByRole("button", { name: "Save", exact: true }),
+    );
     await expect(dialog).toBeHidden();
     await expect(heading(page, "Saved Once Co")).toBeVisible();
   });
@@ -974,11 +1000,14 @@ test.describe("renaming an agency", () => {
   // KNOWN BUG (fix-double-save-locked on the roadmap): expected to fail until it is fixed.
   test.fail("a double click on Save closes it, with no error", async ({ page, request }) => {
     const here = await agency(request, "Save Once Agency");
-    await slow(page, `**${API}/agencies/${here.id}`, "PATCH");
     await openAgency(page, here.id, "Save Once Agency");
     const dialog = await editDialog(page, "Save Once Agency");
     await dialog.getByLabel("Name").fill("Saved Once Agency");
-    await dialog.getByRole("button", { name: "Save", exact: true }).dblclick();
+    await doubleSave(
+      page,
+      `**${API}/agencies/${here.id}`,
+      dialog.getByRole("button", { name: "Save", exact: true }),
+    );
     await expect(dialog).toBeHidden();
     await expect(heading(page, "Saved Once Agency")).toBeVisible();
   });
