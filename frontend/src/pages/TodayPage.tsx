@@ -80,9 +80,8 @@ function useFollowedUp() {
   const update = useUpdateApplication();
   return useMutation({
     mutationFn: async (row: ApplicationRow) => {
-      // Saved on the timeline in English until events carry message keys (docs/rfc/i18n.md,
-      // i18n-events).
-      await log.mutateAsync({ id: row.id, body: { kind: "manual", summary: "Followed up", data: {} } });
+      // The server words this and saves its message (docs/rfc/i18n.md).
+      await log.mutateAsync({ id: row.id, body: { kind: "manual", app_text: "followed_up", data: {} } });
       await update.mutateAsync({ id: row.id, body: { follow_up_on: null } });
     },
   });

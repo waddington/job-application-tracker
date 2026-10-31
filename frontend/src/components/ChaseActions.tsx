@@ -109,9 +109,8 @@ export function ChaseActions({ row }: { row: ApplicationRow }) {
               if (!window.confirm(t("chase.markConfirm", { company: row.company_name, stage: ghosted.name })))
                 return;
               move.mutate(
-                // The note is saved on the timeline in English until events carry message keys
-                // (docs/rfc/i18n.md, i18n-events).
-                { id: row.id, to_stage: ghosted.id, stageName: ghosted.name, note: "No reply" },
+                // The server words this note and saves its message (docs/rfc/i18n.md).
+                { id: row.id, to_stage: ghosted.id, stageName: ghosted.name, appNote: "no_reply" },
                 {
                   onSuccess: () =>
                     notifications.show({

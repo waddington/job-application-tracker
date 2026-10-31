@@ -532,14 +532,17 @@ def _name(session: Session, model, id_: str | None) -> str | None:
     return obj.name if obj is not None else None
 
 
-def _recruiter_change(session: Session, old_id: str | None, new_id: str | None) -> str:
-    """ "Recruiter changed from Alex Morgan to Sam Patel" (or set, or removed)."""
+def _recruiter_change(session: Session, old_id: str | None, new_id: str | None) -> tuple[str, str | None, dict]:
+    """ "Recruiter changed from Alex Morgan to Sam Patel" (or set, or removed), and which sentence that is.
+
+    A person who's gone reads "Recruiter removed (None)": that has no message, and stays as it's saved.
+    """
     old, new = _name(session, Contact, old_id), _name(session, Contact, new_id)
     if old and new:
-        return f"Recruiter changed from {old} to {new}"
+        return f"Recruiter changed from {old} to {new}", "Changed", {"old": old, "new": new}
     if new:
-        return f"Recruiter set to {new}"
-    return f"Recruiter removed ({old})"
+        return f"Recruiter set to {new}", "Set", {"new": new}
+    return f"Recruiter removed ({old})", "Removed" if old else None, {"old": old}
 
 
 def _role_recruiter_changed(session: Session, role: Role, before: dict, workflow: Workflow) -> None:
@@ -574,23 +577,57 @@ def _role_recruiter_changed(session: Session, role: Role, before: dict, workflow
         was = {"route": app.route, "agency_id": app.agency_id, "recruiter_id": app.recruiter_id}
         if not fits:
             if app.recruiter_id is not None and app.recruiter_id == old_id:  # still the old person: say why
+                old = _name(session, Contact, old_id)
                 svc.note_change(
                     session,
                     app,
-                    f"The role's person changed from {_name(session, Contact, old_id)} to {new.name}; "
-                    f"this application still has {_name(session, Contact, old_id)} ({_route_words(session, app)})",
+                    f"The role's person changed from {old} to {new.name}; "
+                    f"this application still has {old} ({_route_words(session, app)})",
                     data={"from_role": role.id},
+                    msg=_person_kept_message(session, app, old, new.name),
                 )
             continue
         app.recruiter_id = new_id
         if app.route == "agency" and app.agency_id is None:
             app.agency_id = new.agency_id
+        summary, what, params = _recruiter_change(session, was["recruiter_id"], new_id)
         svc.note_change(
             session,
             app,
-            f"{_recruiter_change(session, was['recruiter_id'], new_id)}, on the role",
+            f"{summary}, on the role",
             data={"recruiter_change": was, "from_role": role.id},
+            msg=svc.message(_ON_ROLE[what], params) if what in _ON_ROLE else None,
         )
+
+
+# A role's new person always has a name here, so "removed" can't happen.
+_ON_ROLE: dict[str | None, svc.EventMsgKey] = {
+    "Changed": "event.recruiterChangedOnRole",
+    "Set": "event.recruiterSetOnRole",
+}
+_THROUGH_AGENCY: dict[str | None, svc.EventMsgKey] = {
+    "Changed": "event.recruiterChangedAgency",
+    "Set": "event.recruiterSetAgency",
+    "Removed": "event.recruiterRemovedAgency",
+}
+_PLAIN: dict[str | None, svc.EventMsgKey] = {
+    "Changed": "event.recruiterChanged",
+    "Set": "event.recruiterSet",
+    "Removed": "event.recruiterRemoved",
+}
+
+
+def _person_kept_message(session: Session, app: Application, old: str | None, new: str) -> dict | None:
+    """The sentence for `_route_words`. Referrals never get here, and a person who's gone has no message."""
+    if not old or app.route == "referral":
+        return None
+    params = {"old": old, "new": new}
+    if app.route != "agency":
+        return svc.message("event.rolePersonKeptDirect", params)
+    agency = _name(session, Agency, app.agency_id)
+    if not agency:
+        return svc.message("event.rolePersonKeptUnnamedAgency", params)
+    return svc.message("event.rolePersonKeptAgency", {**params, "agency": agency})
 
 
 def _route_words(session: Session, app: Application) -> str:
@@ -785,10 +822,15 @@ def update_app(app_id: str, body: S.ApplicationPatch, session: SessionDep, workf
     current = {"route": app.route, "agency_id": app.agency_id, "recruiter_id": app.recruiter_id}
     data.update(_check_route(session, {**current, **data}))
     if "recruiter_id" in data and data["recruiter_id"] != current["recruiter_id"]:
-        summary = _recruiter_change(session, current["recruiter_id"], data["recruiter_id"])
+        summary, what, params = _recruiter_change(session, current["recruiter_id"], data["recruiter_id"])
+        key = _PLAIN.get(what)
         if data.get("agency_id") and data["agency_id"] != current["agency_id"]:
-            summary += f" (through {_name(session, Agency, data['agency_id'])})"
-        svc.note_change(session, app, summary, data={"recruiter_change": current})
+            agency = _name(session, Agency, data["agency_id"])
+            summary += f" (through {agency})"
+            params = {**params, "agency": agency}
+            key = _THROUGH_AGENCY.get(what) if agency else None
+        msg = svc.message(key, params) if key else None
+        svc.note_change(session, app, summary, data={"recruiter_change": current}, msg=msg)
     was_waiting = app.awaiting_reply_since
     was_to_read = app.reply_to_read_since
     _one_reply_state(data)
@@ -804,17 +846,39 @@ def update_app(app_id: str, body: S.ApplicationPatch, session: SessionDep, workf
     )
     session.flush()
     if "reply_to_read_since" in data and (was_to_read is None) != (app.reply_to_read_since is None):
-        summary = "They replied; to read" if app.reply_to_read_since else "Read their reply"
-        svc.log_activity(session, app, "manual", summary=summary, data={"reply_to_read": bool(app.reply_to_read_since)})
+        summary, key = (
+            ("They replied; to read", "event.replyToRead")
+            if app.reply_to_read_since
+            else ("Read their reply", "event.replyRead")
+        )
+        svc.log_message(
+            session,
+            app,
+            "manual",
+            key=key,
+            params={},
+            summary=summary,
+            data={"reply_to_read": bool(app.reply_to_read_since)},
+        )
     # Waiting cleared because they replied is said above; anything else about waiting, here.
     if (
         "awaiting_reply_since" in data
         and (was_waiting is None) != (app.awaiting_reply_since is None)
         and not app.reply_to_read_since
     ):
-        summary = "Replied; waiting to hear back" if app.awaiting_reply_since else "Heard back"
-        svc.log_activity(
-            session, app, "manual", summary=summary, data={"awaiting_reply": bool(app.awaiting_reply_since)}
+        summary, key = (
+            ("Replied; waiting to hear back", "event.repliedWaiting")
+            if app.awaiting_reply_since
+            else ("Heard back", "event.heardBack")
+        )
+        svc.log_message(
+            session,
+            app,
+            "manual",
+            key=key,
+            params={},
+            summary=summary,
+            data={"awaiting_reply": bool(app.awaiting_reply_since)},
         )
     return _detail(session, workflow, app_id)
 
@@ -830,7 +894,18 @@ def delete_app(app_id: str, session: SessionDep):
 def move_app(app_id: str, body: S.MoveIn, session: SessionDep, workflow: WorkflowDep):
     app = get_or_404(session, Application, app_id)
     try:
-        svc.move(session, workflow, app, body.to_stage, occurred_at=body.occurred_at, note=body.note)
+        if body.app_note == "no_reply":  # the only one: the frontend can't pair a key with text of its own
+            svc.move(
+                session,
+                workflow,
+                app,
+                body.to_stage,
+                occurred_at=body.occurred_at,
+                note="No reply",
+                msg=svc.message("event.noReply", {}),
+            )
+        else:
+            svc.move(session, workflow, app, body.to_stage, occurred_at=body.occurred_at, note=body.note)
     except svc.TransitionError as exc:
         raise _refused(exc) from exc
     return _detail(session, workflow, app_id)
@@ -857,6 +932,17 @@ def add_activity(app_id: str, body: S.ActivityIn, session: SessionDep):
     app = get_or_404(session, Application, app_id)
     # What you log is your own words, shown as typed: only the app writes a message (svc.log_message).
     data = {k: v for k, v in body.data.items() if k != "msg"}
+    if body.app_text == "followed_up":  # the only one: the server holds the key and the text together
+        return svc.log_message(
+            session,
+            app,
+            "manual",
+            key="event.followedUp",
+            params={},
+            summary="Followed up",
+            occurred_at=body.occurred_at,
+            data=data,
+        )
     return svc.log_activity(session, app, body.kind, summary=body.summary, occurred_at=body.occurred_at, data=data)
 
 

@@ -6,6 +6,8 @@ import { App } from "../App";
 import { i18n } from "../i18n";
 import { PSEUDO } from "../i18n/language";
 import en from "../locales/en";
+import type { SearchHit } from "../api/searchHooks";
+import { hitTitle } from "../pages/SearchPage";
 import { makeRouter } from "../router";
 import { mockApi, row, WORKFLOW } from "../test/mockApi";
 import cases from "./eventMessages.cases.json";
@@ -35,7 +37,7 @@ const event = (id: string, summary: string, msg: EventMsg | null, kind = "manual
   msg,
 });
 
-function showTimeline() {
+function showTimeline(extra: object[] = []) {
   mockApi({
     "/api/v1/workflow": WORKFLOW,
     "GET /api/v1/applications/a1": {
@@ -46,6 +48,7 @@ function showTimeline() {
           params: { title: "Contoso careers" },
         }),
         event("e2", "Spoke to Alex", null, "call"),
+        ...extra,
       ],
       contacts: [],
       allowed_next: [],
@@ -77,6 +80,39 @@ describe("the application timeline", () => {
     expect(await screen.findByText(translated)).toBeInTheDocument();
     expect(screen.queryByText("Link added: Contoso careers")).not.toBeInTheDocument();
     expect(screen.getByText("Spoke to Alex")).toBeInTheDocument();
+  });
+});
+
+describe("a search result for a timeline entry", () => {
+  const hit = (msg: EventMsg | null) =>
+    ({ kind: "timeline", id: "e", title: "Heard back", msg }) as unknown as SearchHit;
+  const heardBack: EventMsg = { key: "event.heardBack", params: {} };
+
+  it("reads the same in English, and in your language from its message", async () => {
+    expect(hitTitle(hit(heardBack))).toBe("Heard back");
+    await i18n.changeLanguage(PSEUDO);
+    expect(hitTitle(hit(heardBack))).toBe(i18n.t("events:heardBack"));
+    expect(hitTitle(hit(heardBack))).not.toBe("Heard back");
+  });
+
+  it("stays as saved with no message", async () => {
+    await i18n.changeLanguage(PSEUDO);
+    expect(hitTitle(hit(null))).toBe("Heard back");
+  });
+});
+
+describe("a stage move's note on the application timeline", () => {
+  it("shows its message", async () => {
+    await i18n.changeLanguage(PSEUDO);
+    const undo = {
+      ...event("e3", "Undo: back to applied", { key: "event.undoMove", params: { stage: "applied" } }),
+      kind: "stage_change",
+      from_stage: "screen",
+      to_stage: "applied",
+    };
+    showTimeline([undo]);
+    expect(await screen.findByText(i18n.t("events:undoMove", { stage: "applied" }))).toBeInTheDocument();
+    expect(screen.queryByText("Undo: back to applied")).not.toBeInTheDocument();
   });
 });
 

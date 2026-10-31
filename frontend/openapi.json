@@ -4,6 +4,19 @@
       "ActivityIn": {
         "additionalProperties": false,
         "properties": {
+          "app_text": {
+            "anyOf": [
+              {
+                "const": "followed_up",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Text the app words itself, in place of `kind` and `summary`: the server saves its own `manual` event, with its text and its message.",
+            "title": "App Text"
+          },
           "data": {
             "additionalProperties": true,
             "default": {},
@@ -3827,7 +3840,10 @@
                     "event.emailNoSubjectUnknownSender": "#/components/schemas/EmailNoSubjectUnknownSenderMsg",
                     "event.emailUnknownSender": "#/components/schemas/EmailUnknownSenderMsg",
                     "event.fileAdded": "#/components/schemas/FileAddedMsg",
+                    "event.followedUp": "#/components/schemas/FollowedUpMsg",
+                    "event.heardBack": "#/components/schemas/HeardBackMsg",
                     "event.linkAdded": "#/components/schemas/LinkAddedMsg",
+                    "event.noReply": "#/components/schemas/NoReplyMsg",
                     "event.noteAdded": "#/components/schemas/NoteAddedMsg",
                     "event.offerAcceptedDay": "#/components/schemas/OfferAcceptedDayMsg",
                     "event.offerAcceptedNoFigures": "#/components/schemas/OfferAcceptedNoFiguresMsg",
@@ -3847,6 +3863,20 @@
                     "event.offerWithdrawnDay": "#/components/schemas/OfferWithdrawnDayMsg",
                     "event.offerWithdrawnNoFigures": "#/components/schemas/OfferWithdrawnNoFiguresMsg",
                     "event.offerWithdrawnYear": "#/components/schemas/OfferWithdrawnYearMsg",
+                    "event.recruiterChanged": "#/components/schemas/RecruiterChangedMsg",
+                    "event.recruiterChangedAgency": "#/components/schemas/RecruiterChangedAgencyMsg",
+                    "event.recruiterChangedOnRole": "#/components/schemas/RecruiterChangedOnRoleMsg",
+                    "event.recruiterRemoved": "#/components/schemas/RecruiterRemovedMsg",
+                    "event.recruiterRemovedAgency": "#/components/schemas/RecruiterRemovedAgencyMsg",
+                    "event.recruiterSet": "#/components/schemas/RecruiterSetMsg",
+                    "event.recruiterSetAgency": "#/components/schemas/RecruiterSetAgencyMsg",
+                    "event.recruiterSetOnRole": "#/components/schemas/RecruiterSetOnRoleMsg",
+                    "event.repliedWaiting": "#/components/schemas/RepliedWaitingMsg",
+                    "event.replyRead": "#/components/schemas/ReplyReadMsg",
+                    "event.replyToRead": "#/components/schemas/ReplyToReadMsg",
+                    "event.rolePersonKeptAgency": "#/components/schemas/RolePersonKeptAgencyMsg",
+                    "event.rolePersonKeptDirect": "#/components/schemas/RolePersonKeptDirectMsg",
+                    "event.rolePersonKeptUnnamedAgency": "#/components/schemas/RolePersonKeptUnnamedAgencyMsg",
                     "event.roundAdded": "#/components/schemas/RoundAddedMsg",
                     "event.roundBackOn": "#/components/schemas/RoundBackOnMsg",
                     "event.roundCancelled": "#/components/schemas/RoundCancelledMsg",
@@ -3854,7 +3884,8 @@
                     "event.roundRemoved": "#/components/schemas/RoundRemovedMsg",
                     "event.roundRescheduled": "#/components/schemas/RoundRescheduledMsg",
                     "event.roundRescheduledReason": "#/components/schemas/RoundRescheduledReasonMsg",
-                    "event.roundScheduled": "#/components/schemas/RoundScheduledMsg"
+                    "event.roundScheduled": "#/components/schemas/RoundScheduledMsg",
+                    "event.undoMove": "#/components/schemas/UndoMoveMsg"
                   },
                   "propertyName": "key"
                 },
@@ -3966,6 +3997,60 @@
                   },
                   {
                     "$ref": "#/components/schemas/OfferRemovedNoFiguresMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/FollowedUpMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/NoReplyMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ReplyToReadMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ReplyReadMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RepliedWaitingMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/HeardBackMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/UndoMoveMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RecruiterChangedMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RecruiterSetMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RecruiterRemovedMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RecruiterChangedAgencyMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RecruiterSetAgencyMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RecruiterRemovedAgencyMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RecruiterChangedOnRoleMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RecruiterSetOnRoleMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RolePersonKeptAgencyMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RolePersonKeptUnnamedAgencyMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RolePersonKeptDirectMsg"
                   }
                 ]
               },
@@ -4177,6 +4262,42 @@
           "links"
         ],
         "title": "FlowOut",
+        "type": "object"
+      },
+      "FollowedUpMsg": {
+        "properties": {
+          "key": {
+            "const": "event.followedUp",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/NoParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "FollowedUpMsg",
+        "type": "object"
+      },
+      "HeardBackMsg": {
+        "properties": {
+          "key": {
+            "const": "event.heardBack",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/NoParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "HeardBackMsg",
         "type": "object"
       },
       "InterviewIn": {
@@ -5529,6 +5650,19 @@
       "MoveIn": {
         "additionalProperties": false,
         "properties": {
+          "app_note": {
+            "anyOf": [
+              {
+                "const": "no_reply",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A note the app words itself, in place of `note`: the server saves its text and its message.",
+            "title": "App Note"
+          },
           "note": {
             "anyOf": [
               {
@@ -5684,6 +5818,24 @@
       "NoParams": {
         "properties": {},
         "title": "NoParams",
+        "type": "object"
+      },
+      "NoReplyMsg": {
+        "properties": {
+          "key": {
+            "const": "event.noReply",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/NoParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "NoReplyMsg",
         "type": "object"
       },
       "NoteAddedMsg": {
@@ -7380,6 +7532,307 @@
         "title": "QuickApplicationIn",
         "type": "object"
       },
+      "RecruiterChangeAgencyParams": {
+        "properties": {
+          "agency": {
+            "title": "Agency",
+            "type": "string"
+          },
+          "new": {
+            "title": "New",
+            "type": "string"
+          },
+          "old": {
+            "title": "Old",
+            "type": "string"
+          }
+        },
+        "required": [
+          "old",
+          "new",
+          "agency"
+        ],
+        "title": "RecruiterChangeAgencyParams",
+        "type": "object"
+      },
+      "RecruiterChangeParams": {
+        "properties": {
+          "new": {
+            "title": "New",
+            "type": "string"
+          },
+          "old": {
+            "title": "Old",
+            "type": "string"
+          }
+        },
+        "required": [
+          "old",
+          "new"
+        ],
+        "title": "RecruiterChangeParams",
+        "type": "object"
+      },
+      "RecruiterChangedAgencyMsg": {
+        "properties": {
+          "key": {
+            "const": "event.recruiterChangedAgency",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/RecruiterChangeAgencyParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "RecruiterChangedAgencyMsg",
+        "type": "object"
+      },
+      "RecruiterChangedMsg": {
+        "properties": {
+          "key": {
+            "const": "event.recruiterChanged",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/RecruiterChangeParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "RecruiterChangedMsg",
+        "type": "object"
+      },
+      "RecruiterChangedOnRoleMsg": {
+        "properties": {
+          "key": {
+            "const": "event.recruiterChangedOnRole",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/RecruiterChangeParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "RecruiterChangedOnRoleMsg",
+        "type": "object"
+      },
+      "RecruiterRemovedAgencyMsg": {
+        "properties": {
+          "key": {
+            "const": "event.recruiterRemovedAgency",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/RecruiterRemovedAgencyParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "RecruiterRemovedAgencyMsg",
+        "type": "object"
+      },
+      "RecruiterRemovedAgencyParams": {
+        "properties": {
+          "agency": {
+            "title": "Agency",
+            "type": "string"
+          },
+          "old": {
+            "title": "Old",
+            "type": "string"
+          }
+        },
+        "required": [
+          "old",
+          "agency"
+        ],
+        "title": "RecruiterRemovedAgencyParams",
+        "type": "object"
+      },
+      "RecruiterRemovedMsg": {
+        "properties": {
+          "key": {
+            "const": "event.recruiterRemoved",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/RecruiterRemovedParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "RecruiterRemovedMsg",
+        "type": "object"
+      },
+      "RecruiterRemovedParams": {
+        "properties": {
+          "old": {
+            "title": "Old",
+            "type": "string"
+          }
+        },
+        "required": [
+          "old"
+        ],
+        "title": "RecruiterRemovedParams",
+        "type": "object"
+      },
+      "RecruiterSetAgencyMsg": {
+        "properties": {
+          "key": {
+            "const": "event.recruiterSetAgency",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/RecruiterSetAgencyParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "RecruiterSetAgencyMsg",
+        "type": "object"
+      },
+      "RecruiterSetAgencyParams": {
+        "properties": {
+          "agency": {
+            "title": "Agency",
+            "type": "string"
+          },
+          "new": {
+            "title": "New",
+            "type": "string"
+          }
+        },
+        "required": [
+          "new",
+          "agency"
+        ],
+        "title": "RecruiterSetAgencyParams",
+        "type": "object"
+      },
+      "RecruiterSetMsg": {
+        "properties": {
+          "key": {
+            "const": "event.recruiterSet",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/RecruiterSetParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "RecruiterSetMsg",
+        "type": "object"
+      },
+      "RecruiterSetOnRoleMsg": {
+        "properties": {
+          "key": {
+            "const": "event.recruiterSetOnRole",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/RecruiterSetParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "RecruiterSetOnRoleMsg",
+        "type": "object"
+      },
+      "RecruiterSetParams": {
+        "properties": {
+          "new": {
+            "title": "New",
+            "type": "string"
+          }
+        },
+        "required": [
+          "new"
+        ],
+        "title": "RecruiterSetParams",
+        "type": "object"
+      },
+      "RepliedWaitingMsg": {
+        "properties": {
+          "key": {
+            "const": "event.repliedWaiting",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/NoParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "RepliedWaitingMsg",
+        "type": "object"
+      },
+      "ReplyReadMsg": {
+        "properties": {
+          "key": {
+            "const": "event.replyRead",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/NoParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "ReplyReadMsg",
+        "type": "object"
+      },
+      "ReplyToReadMsg": {
+        "properties": {
+          "key": {
+            "const": "event.replyToRead",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/NoParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "ReplyToReadMsg",
+        "type": "object"
+      },
       "RoleIn": {
         "additionalProperties": false,
         "properties": {
@@ -7997,6 +8450,60 @@
           }
         },
         "title": "RolePatch",
+        "type": "object"
+      },
+      "RolePersonKeptAgencyMsg": {
+        "properties": {
+          "key": {
+            "const": "event.rolePersonKeptAgency",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/RecruiterChangeAgencyParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "RolePersonKeptAgencyMsg",
+        "type": "object"
+      },
+      "RolePersonKeptDirectMsg": {
+        "properties": {
+          "key": {
+            "const": "event.rolePersonKeptDirect",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/RecruiterChangeParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "RolePersonKeptDirectMsg",
+        "type": "object"
+      },
+      "RolePersonKeptUnnamedAgencyMsg": {
+        "properties": {
+          "key": {
+            "const": "event.rolePersonKeptUnnamedAgency",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/RecruiterChangeParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "RolePersonKeptUnnamedAgencyMsg",
         "type": "object"
       },
       "RoleSummary": {
@@ -8799,6 +9306,239 @@
             "title": "Link",
             "type": "string"
           },
+          "msg": {
+            "anyOf": [
+              {
+                "discriminator": {
+                  "mapping": {
+                    "event.coverLetterSent": "#/components/schemas/CoverLetterSentMsg",
+                    "event.cvSent": "#/components/schemas/CvSentMsg",
+                    "event.documentSent": "#/components/schemas/DocumentSentMsg",
+                    "event.email": "#/components/schemas/EmailMsg",
+                    "event.emailNoSubject": "#/components/schemas/EmailNoSubjectMsg",
+                    "event.emailNoSubjectUnknownSender": "#/components/schemas/EmailNoSubjectUnknownSenderMsg",
+                    "event.emailUnknownSender": "#/components/schemas/EmailUnknownSenderMsg",
+                    "event.fileAdded": "#/components/schemas/FileAddedMsg",
+                    "event.followedUp": "#/components/schemas/FollowedUpMsg",
+                    "event.heardBack": "#/components/schemas/HeardBackMsg",
+                    "event.linkAdded": "#/components/schemas/LinkAddedMsg",
+                    "event.noReply": "#/components/schemas/NoReplyMsg",
+                    "event.noteAdded": "#/components/schemas/NoteAddedMsg",
+                    "event.offerAcceptedDay": "#/components/schemas/OfferAcceptedDayMsg",
+                    "event.offerAcceptedNoFigures": "#/components/schemas/OfferAcceptedNoFiguresMsg",
+                    "event.offerAcceptedYear": "#/components/schemas/OfferAcceptedYearMsg",
+                    "event.offerBackDay": "#/components/schemas/OfferBackDayMsg",
+                    "event.offerBackNoFigures": "#/components/schemas/OfferBackNoFiguresMsg",
+                    "event.offerBackYear": "#/components/schemas/OfferBackYearMsg",
+                    "event.offerDeclinedDay": "#/components/schemas/OfferDeclinedDayMsg",
+                    "event.offerDeclinedNoFigures": "#/components/schemas/OfferDeclinedNoFiguresMsg",
+                    "event.offerDeclinedYear": "#/components/schemas/OfferDeclinedYearMsg",
+                    "event.offerReceivedDay": "#/components/schemas/OfferReceivedDayMsg",
+                    "event.offerReceivedNoFigures": "#/components/schemas/OfferReceivedNoFiguresMsg",
+                    "event.offerReceivedYear": "#/components/schemas/OfferReceivedYearMsg",
+                    "event.offerRemovedDay": "#/components/schemas/OfferRemovedDayMsg",
+                    "event.offerRemovedNoFigures": "#/components/schemas/OfferRemovedNoFiguresMsg",
+                    "event.offerRemovedYear": "#/components/schemas/OfferRemovedYearMsg",
+                    "event.offerWithdrawnDay": "#/components/schemas/OfferWithdrawnDayMsg",
+                    "event.offerWithdrawnNoFigures": "#/components/schemas/OfferWithdrawnNoFiguresMsg",
+                    "event.offerWithdrawnYear": "#/components/schemas/OfferWithdrawnYearMsg",
+                    "event.recruiterChanged": "#/components/schemas/RecruiterChangedMsg",
+                    "event.recruiterChangedAgency": "#/components/schemas/RecruiterChangedAgencyMsg",
+                    "event.recruiterChangedOnRole": "#/components/schemas/RecruiterChangedOnRoleMsg",
+                    "event.recruiterRemoved": "#/components/schemas/RecruiterRemovedMsg",
+                    "event.recruiterRemovedAgency": "#/components/schemas/RecruiterRemovedAgencyMsg",
+                    "event.recruiterSet": "#/components/schemas/RecruiterSetMsg",
+                    "event.recruiterSetAgency": "#/components/schemas/RecruiterSetAgencyMsg",
+                    "event.recruiterSetOnRole": "#/components/schemas/RecruiterSetOnRoleMsg",
+                    "event.repliedWaiting": "#/components/schemas/RepliedWaitingMsg",
+                    "event.replyRead": "#/components/schemas/ReplyReadMsg",
+                    "event.replyToRead": "#/components/schemas/ReplyToReadMsg",
+                    "event.rolePersonKeptAgency": "#/components/schemas/RolePersonKeptAgencyMsg",
+                    "event.rolePersonKeptDirect": "#/components/schemas/RolePersonKeptDirectMsg",
+                    "event.rolePersonKeptUnnamedAgency": "#/components/schemas/RolePersonKeptUnnamedAgencyMsg",
+                    "event.roundAdded": "#/components/schemas/RoundAddedMsg",
+                    "event.roundBackOn": "#/components/schemas/RoundBackOnMsg",
+                    "event.roundCancelled": "#/components/schemas/RoundCancelledMsg",
+                    "event.roundDone": "#/components/schemas/RoundDoneMsg",
+                    "event.roundRemoved": "#/components/schemas/RoundRemovedMsg",
+                    "event.roundRescheduled": "#/components/schemas/RoundRescheduledMsg",
+                    "event.roundRescheduledReason": "#/components/schemas/RoundRescheduledReasonMsg",
+                    "event.roundScheduled": "#/components/schemas/RoundScheduledMsg",
+                    "event.undoMove": "#/components/schemas/UndoMoveMsg"
+                  },
+                  "propertyName": "key"
+                },
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/LinkAddedMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/NoteAddedMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/FileAddedMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/EmailMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/EmailNoSubjectMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/EmailUnknownSenderMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/EmailNoSubjectUnknownSenderMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CvSentMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CoverLetterSentMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/DocumentSentMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundScheduledMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundAddedMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundCancelledMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundBackOnMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundDoneMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundRemovedMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundRescheduledMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundRescheduledReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferReceivedYearMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferReceivedDayMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferReceivedNoFiguresMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferBackYearMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferBackDayMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferBackNoFiguresMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferAcceptedYearMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferAcceptedDayMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferAcceptedNoFiguresMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferDeclinedYearMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferDeclinedDayMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferDeclinedNoFiguresMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferWithdrawnYearMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferWithdrawnDayMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferWithdrawnNoFiguresMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferRemovedYearMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferRemovedDayMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferRemovedNoFiguresMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/FollowedUpMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/NoReplyMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ReplyToReadMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ReplyReadMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RepliedWaitingMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/HeardBackMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/UndoMoveMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RecruiterChangedMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RecruiterSetMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RecruiterRemovedMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RecruiterChangedAgencyMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RecruiterSetAgencyMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RecruiterRemovedAgencyMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RecruiterChangedOnRoleMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RecruiterSetOnRoleMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RolePersonKeptAgencyMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RolePersonKeptUnnamedAgencyMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RolePersonKeptDirectMsg"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Msg"
+          },
           "own_title": {
             "anyOf": [
               {
@@ -8996,6 +9736,19 @@
           "status"
         ],
         "title": "SnapshotResult",
+        "type": "object"
+      },
+      "StageParams": {
+        "properties": {
+          "stage": {
+            "title": "Stage",
+            "type": "string"
+          }
+        },
+        "required": [
+          "stage"
+        ],
+        "title": "StageParams",
         "type": "object"
       },
       "StageStatsOut": {
@@ -9200,6 +9953,17 @@
             "title": "At",
             "type": "string"
           },
+          "bare_kind": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bare Kind"
+          },
           "call": {
             "anyOf": [
               {
@@ -9296,6 +10060,239 @@
             ],
             "title": "Kind",
             "type": "string"
+          },
+          "msg": {
+            "anyOf": [
+              {
+                "discriminator": {
+                  "mapping": {
+                    "event.coverLetterSent": "#/components/schemas/CoverLetterSentMsg",
+                    "event.cvSent": "#/components/schemas/CvSentMsg",
+                    "event.documentSent": "#/components/schemas/DocumentSentMsg",
+                    "event.email": "#/components/schemas/EmailMsg",
+                    "event.emailNoSubject": "#/components/schemas/EmailNoSubjectMsg",
+                    "event.emailNoSubjectUnknownSender": "#/components/schemas/EmailNoSubjectUnknownSenderMsg",
+                    "event.emailUnknownSender": "#/components/schemas/EmailUnknownSenderMsg",
+                    "event.fileAdded": "#/components/schemas/FileAddedMsg",
+                    "event.followedUp": "#/components/schemas/FollowedUpMsg",
+                    "event.heardBack": "#/components/schemas/HeardBackMsg",
+                    "event.linkAdded": "#/components/schemas/LinkAddedMsg",
+                    "event.noReply": "#/components/schemas/NoReplyMsg",
+                    "event.noteAdded": "#/components/schemas/NoteAddedMsg",
+                    "event.offerAcceptedDay": "#/components/schemas/OfferAcceptedDayMsg",
+                    "event.offerAcceptedNoFigures": "#/components/schemas/OfferAcceptedNoFiguresMsg",
+                    "event.offerAcceptedYear": "#/components/schemas/OfferAcceptedYearMsg",
+                    "event.offerBackDay": "#/components/schemas/OfferBackDayMsg",
+                    "event.offerBackNoFigures": "#/components/schemas/OfferBackNoFiguresMsg",
+                    "event.offerBackYear": "#/components/schemas/OfferBackYearMsg",
+                    "event.offerDeclinedDay": "#/components/schemas/OfferDeclinedDayMsg",
+                    "event.offerDeclinedNoFigures": "#/components/schemas/OfferDeclinedNoFiguresMsg",
+                    "event.offerDeclinedYear": "#/components/schemas/OfferDeclinedYearMsg",
+                    "event.offerReceivedDay": "#/components/schemas/OfferReceivedDayMsg",
+                    "event.offerReceivedNoFigures": "#/components/schemas/OfferReceivedNoFiguresMsg",
+                    "event.offerReceivedYear": "#/components/schemas/OfferReceivedYearMsg",
+                    "event.offerRemovedDay": "#/components/schemas/OfferRemovedDayMsg",
+                    "event.offerRemovedNoFigures": "#/components/schemas/OfferRemovedNoFiguresMsg",
+                    "event.offerRemovedYear": "#/components/schemas/OfferRemovedYearMsg",
+                    "event.offerWithdrawnDay": "#/components/schemas/OfferWithdrawnDayMsg",
+                    "event.offerWithdrawnNoFigures": "#/components/schemas/OfferWithdrawnNoFiguresMsg",
+                    "event.offerWithdrawnYear": "#/components/schemas/OfferWithdrawnYearMsg",
+                    "event.recruiterChanged": "#/components/schemas/RecruiterChangedMsg",
+                    "event.recruiterChangedAgency": "#/components/schemas/RecruiterChangedAgencyMsg",
+                    "event.recruiterChangedOnRole": "#/components/schemas/RecruiterChangedOnRoleMsg",
+                    "event.recruiterRemoved": "#/components/schemas/RecruiterRemovedMsg",
+                    "event.recruiterRemovedAgency": "#/components/schemas/RecruiterRemovedAgencyMsg",
+                    "event.recruiterSet": "#/components/schemas/RecruiterSetMsg",
+                    "event.recruiterSetAgency": "#/components/schemas/RecruiterSetAgencyMsg",
+                    "event.recruiterSetOnRole": "#/components/schemas/RecruiterSetOnRoleMsg",
+                    "event.repliedWaiting": "#/components/schemas/RepliedWaitingMsg",
+                    "event.replyRead": "#/components/schemas/ReplyReadMsg",
+                    "event.replyToRead": "#/components/schemas/ReplyToReadMsg",
+                    "event.rolePersonKeptAgency": "#/components/schemas/RolePersonKeptAgencyMsg",
+                    "event.rolePersonKeptDirect": "#/components/schemas/RolePersonKeptDirectMsg",
+                    "event.rolePersonKeptUnnamedAgency": "#/components/schemas/RolePersonKeptUnnamedAgencyMsg",
+                    "event.roundAdded": "#/components/schemas/RoundAddedMsg",
+                    "event.roundBackOn": "#/components/schemas/RoundBackOnMsg",
+                    "event.roundCancelled": "#/components/schemas/RoundCancelledMsg",
+                    "event.roundDone": "#/components/schemas/RoundDoneMsg",
+                    "event.roundRemoved": "#/components/schemas/RoundRemovedMsg",
+                    "event.roundRescheduled": "#/components/schemas/RoundRescheduledMsg",
+                    "event.roundRescheduledReason": "#/components/schemas/RoundRescheduledReasonMsg",
+                    "event.roundScheduled": "#/components/schemas/RoundScheduledMsg",
+                    "event.undoMove": "#/components/schemas/UndoMoveMsg"
+                  },
+                  "propertyName": "key"
+                },
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/LinkAddedMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/NoteAddedMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/FileAddedMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/EmailMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/EmailNoSubjectMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/EmailUnknownSenderMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/EmailNoSubjectUnknownSenderMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CvSentMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CoverLetterSentMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/DocumentSentMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundScheduledMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundAddedMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundCancelledMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundBackOnMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundDoneMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundRemovedMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundRescheduledMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundRescheduledReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferReceivedYearMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferReceivedDayMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferReceivedNoFiguresMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferBackYearMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferBackDayMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferBackNoFiguresMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferAcceptedYearMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferAcceptedDayMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferAcceptedNoFiguresMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferDeclinedYearMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferDeclinedDayMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferDeclinedNoFiguresMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferWithdrawnYearMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferWithdrawnDayMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferWithdrawnNoFiguresMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferRemovedYearMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferRemovedDayMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OfferRemovedNoFiguresMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/FollowedUpMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/NoReplyMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ReplyToReadMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ReplyReadMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RepliedWaitingMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/HeardBackMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/UndoMoveMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RecruiterChangedMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RecruiterSetMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RecruiterRemovedMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RecruiterChangedAgencyMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RecruiterSetAgencyMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RecruiterRemovedAgencyMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RecruiterChangedOnRoleMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RecruiterSetOnRoleMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RolePersonKeptAgencyMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RolePersonKeptUnnamedAgencyMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RolePersonKeptDirectMsg"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Msg"
           },
           "note_title": {
             "anyOf": [
@@ -9771,6 +10768,24 @@
           }
         },
         "title": "TodoPatch",
+        "type": "object"
+      },
+      "UndoMoveMsg": {
+        "properties": {
+          "key": {
+            "const": "event.undoMove",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/StageParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "UndoMoveMsg",
         "type": "object"
       },
       "ValidationIssue": {

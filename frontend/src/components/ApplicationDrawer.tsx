@@ -269,7 +269,7 @@ export function ApplicationTimeline({ app }: { app: ApplicationDetail }) {
             {event.summary && event.kind !== "stage_change" && <Text size="sm">{eventText(event)}</Text>}
             {event.summary && event.kind === "stage_change" && event.from_stage && (
               <Text size="sm" c="dimmed">
-                {event.summary}
+                {eventText(event)}
               </Text>
             )}
             <Text size="xs" c="dimmed">

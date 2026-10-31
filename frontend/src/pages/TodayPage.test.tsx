@@ -104,7 +104,7 @@ describe("today: what to do", () => {
     );
     // Chasing counts as activity, so it doesn't land in "Gone quiet" straight away.
     expect(calls.find((c) => c.path.endsWith("/a2/activities"))?.body).toMatchObject({
-      summary: "Followed up",
+      app_text: "followed_up",
     });
     const outcome = screen
       .getByRole("heading", { name: "How did it go?" })
@@ -185,7 +185,10 @@ describe("today: what to do", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Mark Litware as Ghosted" }));
     await waitFor(() =>
-      expect(calls.find((c) => c.method === "POST")?.body).toEqual({ to_stage: "ghosted", note: "No reply" }),
+      expect(calls.find((c) => c.method === "POST")?.body).toEqual({
+        to_stage: "ghosted",
+        app_note: "no_reply",
+      }),
     );
   });
 

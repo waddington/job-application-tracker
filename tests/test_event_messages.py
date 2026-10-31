@@ -22,6 +22,9 @@ from .factories import post
 CASES = json.loads(
     (Path(__file__).parent.parent / "frontend/src/components/eventMessages.cases.json").read_text(encoding="utf-8")
 )
+TIMELINE_EVENTS = json.loads(
+    (Path(__file__).parent.parent / "frontend/src/components/timelineEvents.cases.json").read_text(encoding="utf-8")
+)
 KEYS = {get_args(m.model_fields["key"].annotation)[0] for m in get_args(get_args(S.EventMsg)[0])}
 PDF = b"%PDF-1.4\n% made-up file\n"
 
@@ -394,6 +397,254 @@ def test_every_offer_status_has_its_messages():
     whats = {"received", "back under consideration", "removed"} | set(get_args(S.OfferStatus)) - {"pending"}
     assert {what for what, _ in offers._MESSAGES} == whats
     assert set(offers._MESSAGES.values()) == {k for k in KEYS if k.startswith("event.offer")}
+
+
+def test_following_up_saves_what_it_always_did_and_its_message(client, seeded):
+    app_id = _app(client, seeded)
+    r = client.post(f"/api/v1/applications/{app_id}/activities", json={"kind": "manual", "app_text": "followed_up"})
+    assert r.status_code == 201, r.text
+    [case] = _case("event.followedUp")
+    _assert_written(r.json(), case)
+    assert r.json()["kind"] == "manual"
+
+
+def test_app_text_keeps_the_key_and_its_words_together(client, seeded):
+    """A client can't save a key beside text of its own, or a kind other than the app's."""
+    app_id = _app(client, seeded)
+    r = client.post(
+        f"/api/v1/applications/{app_id}/activities",
+        json={
+            "kind": "call",
+            "summary": "Not what was said",
+            "app_text": "followed_up",
+            "data": {"msg": {"key": "event.heardBack", "params": {}}, "topic": "pay"},
+        },
+    )
+    assert r.status_code == 201, r.text
+    event = r.json()
+    assert (event["kind"], event["summary"], event["msg"]["key"]) == ("manual", "Followed up", "event.followedUp")
+    assert event["data"]["topic"] == "pay"
+
+
+@pytest.mark.parametrize(
+    ("url", "body"),
+    [
+        ("activities", {"kind": "manual", "app_text": "linkAdded"}),
+        ("activities", {"kind": "manual", "app_text": "event.followedUp"}),
+        ("move", {"to_stage": "screen", "app_note": "anything"}),
+    ],
+    ids=["unknown activity", "a key", "unknown note"],
+)
+def test_only_the_allowed_app_text_is_accepted(client, seeded, url, body):
+    app_id = _app(client, seeded)
+    assert client.post(f"/api/v1/applications/{app_id}/{url}", json=body).status_code == 422
+
+
+def test_no_reply_saves_its_note_and_message_and_keeps_undo_data(client, seeded):
+    app_id = _app(client, seeded)
+    client.patch(f"/api/v1/applications/{app_id}", json={"awaiting_reply_since": "2030-01-01"})
+    r = client.post(f"/api/v1/applications/{app_id}/move", json={"to_stage": "ghosted", "app_note": "no_reply"})
+    assert r.status_code == 200, r.text
+    event = _last(client, app_id)
+    _assert_written(event, _case("event.noReply")[0])
+    assert event["data"]["was_waiting_since"] == "2030-01-01"
+
+
+def test_a_note_typed_on_a_move_has_no_message(client, seeded):
+    app_id = _app(client, seeded)
+    client.post(f"/api/v1/applications/{app_id}/move", json={"to_stage": "screen", "note": "No reply"})
+    event = _last(client, app_id)
+    assert event["summary"] == "No reply" and event["msg"] is None
+
+
+def test_undo_writes_its_message_with_the_stage_id_its_summary_shows(client, seeded):
+    app_id = _app(client, seeded)
+    client.post(f"/api/v1/applications/{app_id}/move", json={"to_stage": "screen"})
+    assert client.post(f"/api/v1/applications/{app_id}/undo").status_code == 200
+    event = _last(client, app_id)
+    _assert_written(event, _case("event.undoMove")[0])
+    assert "undo_of" in event["data"]
+
+
+def test_an_undo_with_a_note_is_someones_own_words():
+    app = SimpleNamespace(id="a", stage="screen", last_activity_at=datetime.now(UTC))
+    last = SimpleNamespace(id="m", to_stage="screen", from_stage="applied", data={})
+    added = []
+    session = SimpleNamespace(add=added.append, flush=lambda: None)
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(svc, "_undoable", lambda *_: [last])
+        patch.setattr(svc, "_recorded", lambda *_: [])
+        patch.setattr(svc.replies, "take_back_move", lambda *_: None)
+        event = svc.undo_last_move(session, app, note="Clicked the wrong one")
+    assert event.summary == "Clicked the wrong one" and "msg" not in event.data
+
+
+@pytest.mark.parametrize(
+    ("change", "key"),
+    [
+        ({"reply_to_read_since": THEN[:10]}, "event.replyToRead"),
+        ({"awaiting_reply_since": THEN[:10]}, "event.repliedWaiting"),
+    ],
+    ids=["to read", "waiting"],
+)
+def test_reply_and_waiting_write_their_messages(client, seeded, change, key):
+    app_id = _app(client, seeded)
+    assert client.patch(f"/api/v1/applications/{app_id}", json=change).status_code == 200
+    event = _last(client, app_id)
+    _assert_written(event, _case(key)[0])
+    assert {"reply_to_read", "awaiting_reply"} & set(event["data"])
+
+
+@pytest.mark.parametrize(
+    ("field", "key"),
+    [("reply_to_read_since", "event.replyRead"), ("awaiting_reply_since", "event.heardBack")],
+    ids=["read", "heard back"],
+)
+def test_clearing_a_reply_or_waiting_writes_its_message(client, seeded, field, key):
+    app_id = _app(client, seeded)
+    client.patch(f"/api/v1/applications/{app_id}", json={field: THEN[:10]})
+    assert client.patch(f"/api/v1/applications/{app_id}", json={field: None}).status_code == 200
+    _assert_written(_last(client, app_id), _case(key)[0])
+
+
+def _people(client, case):
+    """The case's agency, a second agency for its old person, and its people at the agency they need."""
+    other = post(client, "/api/v1/agencies", {"name": "Contoso Staffing"})["id"]
+    params = case["params"]
+    agency = post(client, "/api/v1/agencies", {"name": params["agency"]})["id"] if "agency" in params else other
+    old = (
+        post(client, "/api/v1/contacts", {"name": params["old"], "agency_id": other})["id"] if "old" in params else None
+    )
+    new = (
+        post(client, "/api/v1/contacts", {"name": params["new"], "agency_id": agency})["id"]
+        if "new" in params
+        else None
+    )
+    return other, agency, old, new
+
+
+@pytest.mark.parametrize(
+    "case",
+    [c for c in CASES if c["key"].startswith("event.recruiter") and "OnRole" not in c["key"]],
+    ids=lambda c: c["summary"],
+)
+def test_a_recruiter_change_writes_its_message(client, seeded, case):
+    other, agency, old, new = _people(client, case)
+    body = {"role_id": seeded["role"]["id"], "route": "agency", "agency_id": other, "recruiter_id": old}
+    app_id = post(client, "/api/v1/applications", body)["id"]
+    change = {"recruiter_id": new} | ({"agency_id": agency} if "agency" in case["params"] else {})
+    r = client.patch(f"/api/v1/applications/{app_id}", json=change)
+    assert r.status_code == 200, r.text
+    event = _last(client, app_id)
+    _assert_written(event, case)
+    assert event["data"]["bookkeeping"] is True and "recruiter_change" in event["data"]
+
+
+@pytest.mark.parametrize("case", [c for c in CASES if "OnRole" in c["key"]], ids=lambda c: c["summary"])
+def test_a_role_change_that_reaches_the_application_writes_its_message(client, seeded, case):
+    other, _, old, _ = _people(client, {"params": {"old": case["params"].get("old", "Taylor Reed")}})
+    new = post(client, "/api/v1/contacts", {"name": case["params"]["new"], "agency_id": other})["id"]
+    recruiter = old if "old" in case["params"] else None
+    role = post(client, "/api/v1/roles", {"company_id": seeded["company"]["id"], "title": "Tester", "contact_id": old})[
+        "id"
+    ]
+    body = {"role_id": role, "route": "agency", "agency_id": other, "recruiter_id": recruiter}
+    app_id = post(client, "/api/v1/applications", body)["id"]
+    assert client.patch(f"/api/v1/roles/{role}", json={"contact_id": new}).status_code == 200
+    _assert_written(_last(client, app_id), case)
+
+
+@pytest.mark.parametrize("case", [c for c in CASES if "PersonKept" in c["key"]], ids=lambda c: c["summary"])
+def test_a_role_change_that_cant_reach_the_application_says_why(client, seeded, case):
+    params = case["params"]
+    agency = post(client, "/api/v1/agencies", {"name": params.get("agency", "Contoso Staffing")})["id"]
+    elsewhere = post(client, "/api/v1/agencies", {"name": "Elsewhere Ltd"})["id"]
+    company = seeded["company"]["id"]
+    if case["key"].endswith("Direct"):
+        old = post(client, "/api/v1/contacts", {"name": params["old"], "company_id": company})["id"]
+        new = post(client, "/api/v1/contacts", {"name": params["new"], "agency_id": elsewhere})["id"]
+        app = {"route": "direct", "recruiter_id": old}
+    elif case["key"].endswith("KeptAgency"):
+        old = post(client, "/api/v1/contacts", {"name": params["old"], "agency_id": agency})["id"]
+        new = post(client, "/api/v1/contacts", {"name": params["new"], "agency_id": elsewhere})["id"]
+        app = {"route": "agency", "agency_id": agency, "recruiter_id": old}
+    else:
+        old = post(client, "/api/v1/contacts", {"name": params["old"]})["id"]
+        new = post(client, "/api/v1/contacts", {"name": params["new"]})["id"]
+        app = {"route": "agency", "recruiter_id": old}
+    role = post(client, "/api/v1/roles", {"company_id": company, "title": "Tester", "contact_id": old})["id"]
+    app_id = post(client, "/api/v1/applications", {"role_id": role, **app})["id"]
+    assert client.patch(f"/api/v1/roles/{role}", json={"contact_id": new}).status_code == 200
+    _assert_written(_last(client, app_id), case)
+
+
+def test_application_created_needs_no_message_because_nothing_shows_it(client, seeded):
+    """Its stage move starts from nowhere: both timelines word that themselves, and search skips stage moves."""
+    app_id = post(client, "/api/v1/applications", {"role_id": seeded["role"]["id"]})["id"]
+    [event] = client.get(f"/api/v1/applications/{app_id}").json()["events"]
+    assert (event["summary"], event["from_stage"], event["msg"]) == ("Application created", None, None)
+    item = next(i for i in client.get("/api/v1/timeline").json()["items"] if i["application_id"] == app_id)
+    assert item["kind"] == "stage-event" and item["detail"] is None
+    assert not [h for h in client.get("/api/v1/search", params={"q": "created"}).json() if h["kind"] == "timeline"]
+
+
+def _saved(app, app_id, summary, data, kind="manual", **fields):
+    with app.state.sessions.begin() as session:
+        event = Event(application_id=app_id, kind=kind, summary=summary, data=data, **fields)
+        session.add(event)
+        session.flush()
+        return event.id
+
+
+def _item(client, event_id):
+    return next(i for i in client.get("/api/v1/timeline").json()["items"] if i["id"] == f"event:{event_id}")
+
+
+@pytest.mark.parametrize("case", CASES, ids=lambda c: c["summary"])
+def test_the_timeline_sends_the_message_its_title_comes_from(client, seeded, app, case):
+    msg = {"key": case["key"], "params": case["params"]}
+    item = _item(client, _saved(app, _app(client, seeded), case["summary"], {"msg": msg}))
+    assert item["kind"] == "other-event" and item["msg"] == msg
+    assert item["title"] == case["summary"] and item["detail"] is None
+
+
+@pytest.mark.parametrize("case", TIMELINE_EVENTS["split"], ids=lambda c: repr(c["summary"]))
+def test_a_message_splits_into_title_and_detail_as_the_frontend_does(client, seeded, app, case):
+    msg = {"key": "event.linkAdded", "params": case["params"]}
+    item = _item(client, _saved(app, _app(client, seeded), case["summary"], {"msg": msg}))
+    assert (item["title"], item["detail"]) == (case["title"], case["detail"])
+
+
+def test_a_stage_move_sends_its_whole_note_as_the_detail(client, seeded):
+    app_id = _app(client, seeded)
+    client.post(f"/api/v1/applications/{app_id}/move", json={"to_stage": "ghosted", "app_note": "no_reply"})
+    event_id = _last(client, app_id)["id"]
+    item = _item(client, event_id)
+    assert item["detail"] == "No reply" and item["msg"] == {"key": "event.noReply", "params": {}}
+
+
+@pytest.mark.parametrize("case", TIMELINE_EVENTS["bare"], ids=lambda c: c["kind"])
+def test_an_event_with_no_words_says_its_kind(client, seeded, case):
+    app_id = _app(client, seeded)
+    post(client, f"/api/v1/applications/{app_id}/activities", {"kind": case["kind"]})
+    item = _item(client, _last(client, app_id)["id"])
+    assert (item["title"], item["bare_kind"]) == (case["title"], case["kind"])
+
+
+def test_a_bad_message_is_null_on_the_timeline_and_in_search(client, seeded, app):
+    app_id = _app(client, seeded)
+    event_id = _saved(app, app_id, "Handwritten budget note", {"msg": {"key": "event.nope", "params": {}}})
+    assert _item(client, event_id)["msg"] is None
+    [hit] = client.get("/api/v1/search", params={"q": "handwritten"}).json()
+    assert hit["msg"] is None and hit["title"] == "Handwritten budget note"
+
+
+def test_search_finds_the_saved_english_and_sends_the_message(client, seeded, app):
+    case = _case("event.linkAdded")[0]
+    msg = {"key": case["key"], "params": case["params"]}
+    _saved(app, _app(client, seeded), case["summary"], {"msg": msg})
+    hits = [h for h in client.get("/api/v1/search", params={"q": "contoso careers"}).json() if h["kind"] == "timeline"]
+    assert [(h["title"], h["msg"]) for h in hits] == [(case["summary"], msg)]
 
 
 @pytest.mark.parametrize("amount", [2**53, 2**53 + 1], ids=str)

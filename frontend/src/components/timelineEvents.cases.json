@@ -1,0 +1,61 @@
+{
+  "split": [
+    {
+      "params": { "title": "First\nSecond" },
+      "summary": "Link added: First\nSecond",
+      "title": "Link added: First",
+      "detail": "Second"
+    },
+    {
+      "params": { "title": "First\r\n  Second\nThird \t\n" },
+      "summary": "Link added: First\r\n  Second\nThird \t\n",
+      "title": "Link added: First",
+      "detail": "Second\nThird"
+    },
+    {
+      "params": { "title": "First\rSecond" },
+      "summary": "Link added: First\rSecond",
+      "title": "Link added: First",
+      "detail": null
+    },
+    {
+      "params": { "title": "First\rDropped\nSecond" },
+      "summary": "Link added: First\rDropped\nSecond",
+      "title": "Link added: First",
+      "detail": "Second"
+    },
+    {
+      "params": { "title": "First Dropped\u000bToo\u001c\u0085\nSecond" },
+      "summary": "Link added: First Dropped\u000bToo\u001c\u0085\nSecond",
+      "title": "Link added: First",
+      "detail": "Second"
+    },
+    {
+      "params": { "title": "First\n \t\n" },
+      "summary": "Link added: First\n \t\n",
+      "title": "Link added: First",
+      "detail": null
+    },
+    {
+      "params": { "title": "First\n\u001f\u0085 Second　\u001c" },
+      "summary": "Link added: First\n\u001f\u0085 Second　\u001c",
+      "title": "Link added: First",
+      "detail": "Second"
+    },
+    {
+      "params": { "title": "First\n﻿Second﻿" },
+      "summary": "Link added: First\n﻿Second﻿",
+      "title": "Link added: First",
+      "detail": "﻿Second﻿"
+    }
+  ],
+  "bare": [
+    { "kind": "call", "title": "Call" },
+    { "kind": "email", "title": "Email" },
+    { "kind": "message", "title": "Message" },
+    { "kind": "note", "title": "Note" },
+    { "kind": "file", "title": "File" },
+    { "kind": "interview", "title": "Interview" },
+    { "kind": "manual", "title": "Manual" }
+  ]
+}

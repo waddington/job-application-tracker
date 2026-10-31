@@ -12,6 +12,7 @@ from ..db.models import NoteIndex
 from ..domain import search as svc
 from .deps import SessionDep
 from .notes import _UNREADABLE, _sync
+from .schemas import EventMsg, read_event_msg
 
 router = APIRouter(tags=["search"])
 
@@ -32,6 +33,7 @@ class SearchHit(BaseModel):
     own_title: str | None = None  # what an interview or call is called, as you wrote it
     subkind: str | None = None  # an interview's or a call's kind
     done: bool = False  # a to-do that's done
+    msg: EventMsg | None = None  # a timeline entry's saved message; it's found by its English `title`
 
 
 @router.get("/search", response_model=list[SearchHit])
@@ -68,6 +70,7 @@ def search(
             own_title=h.own_title,
             subkind=h.subkind,
             done=h.done,
+            msg=read_event_msg(h.event_data),
         )
         for h in svc.search(session, q, notes=notes, limit=limit)
     ]

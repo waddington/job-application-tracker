@@ -159,11 +159,19 @@ export function useMoveApplication() {
   const qc = useQueryClient();
   const refresh = useApplicationInvalidation();
   return useMutation({
-    mutationFn: async (args: { id: string; to_stage: string; note?: string; stageName?: string }) =>
+    mutationFn: async (args: {
+      id: string;
+      to_stage: string;
+      note?: string;
+      appNote?: "no_reply";
+      stageName?: string;
+    }) =>
       unwrap(
         await api.POST("/api/v1/applications/{app_id}/move", {
           params: { path: { app_id: args.id } },
-          body: { to_stage: args.to_stage, note: args.note ?? null },
+          body: args.appNote
+            ? { to_stage: args.to_stage, app_note: args.appNote }
+            : { to_stage: args.to_stage, note: args.note ?? null },
         }),
       ),
     // Move the card straight away (the board would otherwise snap back until the refetch).
