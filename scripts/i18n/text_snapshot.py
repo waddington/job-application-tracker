@@ -165,6 +165,56 @@ with sync_playwright() as p:
         page.keyboard.press("Escape")
         page.keyboard.press("Escape")
         time.sleep(0.4)
+
+    # People and companies: Recruiters' views and dialogs, company and agency pages, edit and merge.
+    visit(page, "/recruiters")
+    for name in ["Agencies", "Companies", "Independent", "All"]:
+        step("recruiters+" + name.lower(), lambda name=name: view(name))
+    step("recruiters+new-agency", lambda: page.get_by_role("button", name="New agency").click(timeout=3000))
+    step(
+        "recruiters+new-agency-errors",
+        lambda: page.get_by_role("dialog").get_by_role("button", name="Add agency").click(timeout=3000),
+    )
+    page.keyboard.press("Escape")
+    time.sleep(0.4)
+    step("recruiters+new-person", lambda: page.get_by_role("button", name="New person").click(timeout=3000))
+    step(
+        "recruiters+new-person-errors",
+        lambda: page.get_by_role("dialog").get_by_role("button", name="Add person").click(timeout=3000),
+    )
+    page.keyboard.press("Escape")
+    time.sleep(0.4)
+    for n, href in enumerate(page.evaluate(LINKS, "/agencies/")[:2]):
+        visit(page, href)
+        snap[f"agency#{n}"] = grab(page)
+    step("agency+edit", lambda: page.get_by_role("button", name="Edit", exact=True).click(timeout=3000))
+    page.keyboard.press("Escape")
+    visit(page, "/companies")
+    step("companies+new", lambda: page.get_by_role("button", name="New company").click(timeout=3000))
+    step(
+        "companies+new-errors",
+        lambda: page.get_by_role("dialog").get_by_role("button", name="Add company").click(timeout=3000),
+    )
+    page.keyboard.press("Escape")
+    time.sleep(0.4)
+    for n, row in enumerate(page.locator("tbody tr").all()[:3]):
+        visit(page, "/companies")
+        page.locator("tbody tr").nth(n).click(timeout=3000)
+        page.wait_for_load_state("networkidle")
+        snap[f"company#{n}"] = grab(page)
+    step("company+edit", lambda: page.get_by_role("button", name="Edit", exact=True).click(timeout=3000))
+    page.keyboard.press("Escape")
+    visit(page, "/recruiters")
+    visit(page, page.evaluate(LINKS, "/people/")[0])
+    step("person+edit", lambda: page.get_by_role("button", name="Edit", exact=True).click(timeout=3000))
+    page.keyboard.press("Escape")
+    time.sleep(0.4)
+    step(
+        "person+merge",
+        lambda: page.get_by_role("button", name="Merge…").click(timeout=3000),
+        lambda: page.get_by_role("dialog").get_by_label("The other record").click(timeout=3000),
+        lambda: page.get_by_role("option").first.click(timeout=3000),
+    )
     browser.close()
 
 with open(OUT, "w") as f:
