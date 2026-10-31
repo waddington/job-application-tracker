@@ -5,7 +5,8 @@ from __future__ import annotations
 from datetime import datetime
 from html import escape
 
-from . import derive
+from . import charts, derive
+from .charts import day
 from .live import Snapshot
 from .roadmap import STATUSES, Roadmap, Task
 from .style import CSS, THEME_BUTTON, THEME_HEAD
@@ -106,10 +107,6 @@ def task_line(roadmap: Roadmap, task: Task, show_status: bool = True) -> str:
         f'<span class="small muted"><code>{escape(task.id)}</code> · {escape(task.phase)} · {task.estimate_h:g} h'
         f"{' · ' + links if links else ''}</span></li>"
     )
-
-
-def day(when: datetime) -> str:
-    return f"{when.day} {when:%b}"
 
 
 def percent(part: int, whole: int) -> int:
@@ -336,8 +333,15 @@ def board(roadmap: Roadmap, snapshot: Snapshot, phase: str | None = None) -> str
     return phase_filter(roadmap, "/board", phase) + f'<div class="board">{"".join(cols)}</div>'
 
 
-def roadmap_page(roadmap: Roadmap, snapshot: Snapshot) -> str:
-    out = []
+def roadmap_page(roadmap: Roadmap, snapshot: Snapshot, now: datetime | None = None) -> str:
+    now = now or datetime.now().astimezone()
+    current = derive.current_phase(roadmap)
+    out = [
+        f"""<div class="stack"><div class="panel"><h2>Timeline</h2><p class="small muted" style="margin:0 0 8px">
+Each phase from its first PR to its latest. Fill shows tasks done, a tick is a task merged, and the line is today.</p>
+{charts.timeline_html(roadmap, now)}</div>
+<div class="rm-grid">{charts.burnup_panel(roadmap, snapshot, now)}{charts.status_table(roadmap)}</div></div>"""
+    ]
     for p in roadmap.phases:
         pct = round(100 * p.done_h / p.estimate_h) if p.estimate_h else 0
         rows = []
@@ -358,11 +362,11 @@ def roadmap_page(roadmap: Roadmap, snapshot: Snapshot) -> str:
                 f'<span class="muted">{escape(t.status_source)}</span></td></tr>'
             )
         out.append(
-            f'<div class="panel" style="margin-bottom:16px"><h2>{escape(p.id)} · {escape(p.name)} '
-            f'<span class="muted">· {p.done_h:g}/{p.estimate_h:g} h · {pct}%</span></h2>'
+            f'<details class="panel gap"{" open" if p is current else ""}><summary><h2>{escape(p.id)} · '
+            f'{escape(p.name)} <span class="muted">· {p.done_h:g}/{p.estimate_h:g} h · {pct}%</span></h2></summary>'
             f'<p class="muted" style="margin:0">{escape(p.goal)}</p><div class="bar"><i style="width:{pct}%"></i></div>'
             f'<div class="table-wrap"><table><tr><th>Status</th><th>Task</th><th>Estimate</th><th>Depends on</th>'
-            f"<th>Owner</th><th>Links</th></tr>{''.join(rows)}</table></div></div>"
+            f"<th>Owner</th><th>Links</th></tr>{''.join(rows)}</table></div></details>"
         )
     return "".join(out)
 

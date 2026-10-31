@@ -15,6 +15,9 @@ from .roadmap import BRANCH_PREFIX, Live, PullRequest
 
 SEP = "\x1f"
 PR_LIMIT = 1000
+ROADMAP_PATH = "docs/ROADMAP.yaml"
+TASK_LINE = re.compile(r"^\s+- \{id: .*$", re.M)
+_scope_seen: dict[str, int] = {}
 SOURCE_SUFFIXES = {".py", ".ts", ".tsx", ".css", ".astro", ".mjs", ".js"}
 GENERATED = {"schema.d.ts"}
 PY_TEST = re.compile(r"^\s*(?:async\s+)?def test_", re.M)
@@ -47,6 +50,7 @@ class Snapshot:
     tests: int = 0  # tests defined in tracked files
     git_at: float = 0.0  # when each source last answered
     github_at: float = 0.0
+    scope: list[tuple[str, int]] = field(default_factory=list)  # (when, tasks on the roadmap)
 
 
 def _run(args: list[str], cwd: Path, timeout: float = 15) -> str:
@@ -125,6 +129,27 @@ def parse_worktrees(output: str) -> list[Worktree]:
     return trees
 
 
+def count_scope(roadmap_text: str) -> int:
+    """How many tasks a version of the roadmap file holds, leaving out bugs."""
+    return sum("type: bug" not in line for line in TASK_LINE.findall(roadmap_text))
+
+
+def scope_history(root: Path, main: str) -> list[tuple[str, int]]:
+    """(when, tasks) for each version of the roadmap to reach main, oldest first. A version never
+    changes, so each is only read once."""
+    log = _run(["git", "log", "--first-parent", "--reverse", f"--format=%h{SEP}%cI", main, "--", ROADMAP_PATH], root)
+    history = []
+    for line in log.splitlines():
+        parts = line.split(SEP)
+        if len(parts) != 2:
+            continue
+        sha, when = parts
+        if sha not in _scope_seen:
+            _scope_seen[sha] = count_scope(_run(["git", "show", f"{sha}:{ROADMAP_PATH}"], root))
+        history.append((when, _scope_seen[sha]))
+    return history
+
+
 def _main_ref(root: Path) -> str:
     for ref in ("origin/main", "main"):
         try:
@@ -160,6 +185,7 @@ def collect(root: Path, repo: str) -> Snapshot:
         snapshot.commits = parse_commits(log)
         snapshot.worktrees = parse_worktrees(_run(["git", "worktree", "list", "--porcelain"], root))
         snapshot.lines, snapshot.tests = count_code(root, _run(["git", "ls-files"], root).splitlines())
+        snapshot.scope = scope_history(root, main)
     except (subprocess.SubprocessError, OSError, ValueError) as exc:
         snapshot.git_ok = False
         live.warnings.append(f"git failed: {exc}")
@@ -196,6 +222,7 @@ def keep_last_good(new: Snapshot, old: Snapshot | None) -> Snapshot:
         return new
     if not new.git_ok:
         new.git_at = old.git_at
+        new.scope = new.scope or old.scope
         new.commits = new.commits or old.commits
         new.worktrees = new.worktrees or old.worktrees
         new.lines, new.tests = (new.lines, new.tests) if new.lines else (old.lines, old.tests)
