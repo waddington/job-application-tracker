@@ -105,11 +105,38 @@ ol.feed li:first-child{border-top:0}.feed .time{color:var(--ink-3);font-size:11p
 details>summary{cursor:pointer;font-weight:600}.gap{margin-bottom:16px}
 .clip{display:block;max-width:440px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+.stack{display:grid;gap:16px;margin-bottom:16px}.rm-grid{display:grid;gap:16px;align-items:start;
+grid-template-columns:repeat(auto-fit,minmax(min(420px,100%),1fr))}td.num,th.num{text-align:right;white-space:nowrap}
+.tl-row{display:grid;grid-template-columns:minmax(120px,220px) minmax(0,1fr);gap:12px;align-items:center;height:26px}
+.tl-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+.tl-head{height:20px}.tl-scale{position:relative;height:16px}.tl-mark{position:absolute;font-size:11px;color:var(--ink-3);
+white-space:nowrap}
+.tl-track{position:relative;height:100%;border-top:1px solid var(--line)}
+.span{position:absolute;top:7px;height:12px;background:var(--line-2);border-radius:2px;overflow:hidden}
+.span i{display:block;height:100%;background:var(--done)}
+.tick{position:absolute;top:4px;height:18px;width:1px;background:var(--ink-2);opacity:.55}
+.today{position:absolute;top:0;bottom:0;width:2px;background:var(--accent)}
+svg.chart{display:block;width:100%;height:auto}svg.chart .grid{stroke:var(--line)}
+svg.chart .axis{fill:var(--ink-3);font-size:12px}svg.chart polyline{fill:none;stroke-width:2}
+svg.chart .ln-merged{stroke:var(--done)}svg.chart .ln-scope{stroke:var(--ink-3)}
+svg.chart .ln-forecast{stroke:var(--done);stroke-width:2;stroke-dasharray:5 5}
+svg.chart .today-line{stroke:var(--accent)}
+.legend .key-merged{background:var(--done)}.legend .key-scope{background:var(--ink-3)}
+.legend .key-forecast{background:repeating-linear-gradient(90deg,var(--done) 0 3px,transparent 3px 5px)}
+details.panel>summary h2{display:inline;margin:0}
+@media (max-width:700px){.tl-row{grid-template-columns:90px minmax(0,1fr);gap:8px}
+svg.chart .axis{font-size:26px}.tl-mark:nth-child(even){display:none}}
 @media (max-width:1000px){.ov-grid{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:700px){.top{position:static;padding:0 16px}main{padding:16px}
 .board{grid-template-columns:repeat(6,85vw)}.phase-row{grid-template-columns:36px minmax(0,1fr) 40px}
 .phase-row .segs{grid-column:1/-1;order:1}.phase-row .dates{display:none}}
 """
+
+# The page reloads itself every minute: what you've unfolded stays unfolded.
+KEEP_FOLDS = """<script>(function(){var k="pm-folds",s={};try{s=JSON.parse(localStorage.getItem(k))||{}}catch(e){}
+document.querySelectorAll("details[id]").forEach(function(d){if(d.id in s)d.open=s[d.id];
+d.addEventListener("toggle",function(){s[d.id]=d.open;try{localStorage.setItem(k,JSON.stringify(s))}catch(e){}})})})()
+</script>"""
 
 # Runs before the first paint, so a saved theme never flashes the other one.
 THEME_HEAD = """<script>(function(){var t=null;try{t=localStorage.getItem("pm-theme")}catch(e){}

@@ -91,3 +91,87 @@ def commits_today(snapshot: Snapshot, now: datetime) -> tuple[int, int, list[int
         if timedelta(0) <= now - when <= timedelta(hours=1):
             last_hour += 1
     return sum(by_hour), last_hour, by_hour
+
+
+@dataclass
+class Burnup:
+    start: datetime
+    now: datetime
+    merged: list[tuple[datetime, int]]
+    scope: list[tuple[datetime, int]]
+    done: int
+    total: int
+    undated: int  # done with no merged PR to date them: counted from the start
+    forecast: datetime | None
+    recent: int  # merged within the pace window
+
+
+PACE_DAYS = 14
+
+
+def project_start(roadmap: Roadmap, times: list[datetime], now: datetime) -> datetime:
+    known = [t for t in (parse_time(roadmap.start), *times) if t]
+    return min(known) if known else now
+
+
+def burnup(roadmap: Roadmap, snapshot: Snapshot, now: datetime) -> Burnup:
+    """Tasks merged over time against the roadmap's size over time. The roadmap holds no planned dates,
+    so the only thing to compare with is the pace so far, which gives a forecast rather than a plan."""
+    tasks = work_tasks(roadmap)
+    done = [t for t in tasks if t.status == "done"]
+    dated = sorted(when for t in done if t.pr and (when := parse_time(t.pr.merged_at)))
+    undated = len(done) - len(dated)
+    history = [(when, n) for raw, n in snapshot.scope if (when := parse_time(raw))]
+    start = project_start(roadmap, [*dated, *(when for when, _ in history)], now)
+
+    merged = [(start, undated)]
+    merged += [(when, undated + i) for i, when in enumerate(dated, 1)]
+    merged.append((now, len(done)))
+    scope = [(start, history[0][1] if history else len(tasks)), *history, (now, len(tasks))]
+
+    recent = sum(timedelta(0) <= now - when <= timedelta(days=PACE_DAYS) for when in dated)
+    left = len(tasks) - len(done)
+    forecast = now + timedelta(days=left * PACE_DAYS / recent) if left > 0 and recent else None
+    # A source that has never answered says nothing, rather than a flat line that looks like data.
+    if not snapshot.github_ok and not snapshot.live.prs:
+        merged, undated, forecast = [], 0, None
+    if not snapshot.git_ok and not history:
+        scope = []
+    return Burnup(start, now, merged, scope, len(done), len(tasks), undated, forecast, recent)
+
+
+@dataclass
+class TimelineRow:
+    phase: Phase
+    start: datetime | None
+    end: datetime | None
+    done: int
+    merges: list[tuple[datetime, str]]  # when each task landed, and its name
+
+
+@dataclass
+class Timeline:
+    start: datetime
+    end: datetime
+    now: datetime
+    rows: list[TimelineRow]
+
+
+def timeline(roadmap: Roadmap, now: datetime) -> Timeline:
+    """Each phase across time, from its PRs. The end leaves a little room past today."""
+    rows = []
+    for phase in roadmap.phases:
+        dates = phase_dates(phase)
+        merges = [(when, t.name) for t in phase.tasks if t.pr and (when := parse_time(t.pr.merged_at))]
+        rows.append(
+            TimelineRow(
+                phase,
+                dates[0] if dates else None,
+                dates[1] if dates else None,
+                sum(t.status == "done" for t in phase.tasks),
+                sorted(merges, key=lambda m: m[0]),
+            )
+        )
+    start = project_start(roadmap, [r.start for r in rows if r.start], now)
+    room = max((now - start) * 0.04, timedelta(days=1))
+    return Timeline(start, now + room, now, rows)

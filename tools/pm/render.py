@@ -5,10 +5,11 @@ from __future__ import annotations
 from datetime import datetime
 from html import escape
 
-from . import derive
+from . import charts, derive
+from .charts import day
 from .live import Snapshot
 from .roadmap import STATUSES, Roadmap, Task
-from .style import CSS, THEME_BUTTON, THEME_HEAD
+from .style import CSS, KEEP_FOLDS, THEME_BUTTON, THEME_HEAD
 
 NAV = (("/", "Overview"), ("/board", "Board"), ("/roadmap", "Roadmap"))
 
@@ -45,7 +46,7 @@ def page(title: str, active: str, body: str, roadmap: Roadmap, snapshot: Snapsho
 <span class="live{"" if healthy else " down"}"><span class="live-dot"></span>Checked {taken}</span>
 <a href="?refresh=1">Refresh</a><span class="sources" aria-label="Data sources">{sources(roadmap, snapshot)}</span>
 {THEME_BUTTON}</div></header>
-<main id="view" tabindex="-1">{problems(roadmap, snapshot)}{body}</main></body></html>"""
+<main id="view" tabindex="-1">{problems(roadmap, snapshot)}{body}</main>{KEEP_FOLDS}</body></html>"""
 
 
 def problems(roadmap: Roadmap, snapshot: Snapshot) -> str:
@@ -106,10 +107,6 @@ def task_line(roadmap: Roadmap, task: Task, show_status: bool = True) -> str:
         f'<span class="small muted"><code>{escape(task.id)}</code> · {escape(task.phase)} · {task.estimate_h:g} h'
         f"{' · ' + links if links else ''}</span></li>"
     )
-
-
-def day(when: datetime) -> str:
-    return f"{when.day} {when:%b}"
 
 
 def percent(part: int, whole: int) -> int:
@@ -262,7 +259,8 @@ live from branches and PRs</p>{pipeline_table(roadmap, snapshot)}</div></div>
     bugs = "".join(task_line(roadmap, t) for t in roadmap.open_bugs())
     if bugs:
         header += (
-            f'<details class="panel errors gap"><summary>Open bugs · {len(roadmap.open_bugs())}</summary>'
+            '<details id="open-bugs" class="panel errors gap">'
+            f"<summary>Open bugs · {len(roadmap.open_bugs())}</summary>"
             f'<ul class="plain">{bugs}</ul></details>'
         )
     nxt = "".join(task_line(roadmap, t, False) for t in roadmap.next_up()[:8])
@@ -336,8 +334,16 @@ def board(roadmap: Roadmap, snapshot: Snapshot, phase: str | None = None) -> str
     return phase_filter(roadmap, "/board", phase) + f'<div class="board">{"".join(cols)}</div>'
 
 
-def roadmap_page(roadmap: Roadmap, snapshot: Snapshot) -> str:
-    out = []
+def roadmap_page(roadmap: Roadmap, snapshot: Snapshot, now: datetime | None = None) -> str:
+    now = now or datetime.now().astimezone()
+    current = derive.current_phase(roadmap)
+    out = [
+        f"""<div class="stack"><details id="section-timeline" class="panel" open><summary><h2>Timeline</h2></summary>
+<p class="small muted" style="margin:8px 0">
+Each phase from its first PR to its latest. Fill shows tasks done, a tick is a task merged, and the line is today.</p>
+{charts.timeline_html(roadmap, now)}</details>
+<div class="rm-grid">{charts.burnup_panel(roadmap, snapshot, now)}{charts.status_table(roadmap)}</div></div>"""
+    ]
     for p in roadmap.phases:
         pct = round(100 * p.done_h / p.estimate_h) if p.estimate_h else 0
         rows = []
@@ -358,11 +364,12 @@ def roadmap_page(roadmap: Roadmap, snapshot: Snapshot) -> str:
                 f'<span class="muted">{escape(t.status_source)}</span></td></tr>'
             )
         out.append(
-            f'<div class="panel" style="margin-bottom:16px"><h2>{escape(p.id)} · {escape(p.name)} '
-            f'<span class="muted">· {p.done_h:g}/{p.estimate_h:g} h · {pct}%</span></h2>'
+            f'<details id="phase-{escape(p.id)}" class="panel gap"{" open" if p is current else ""}>'
+            f"<summary><h2>{escape(p.id)} · "
+            f'{escape(p.name)} <span class="muted">· {p.done_h:g}/{p.estimate_h:g} h · {pct}%</span></h2></summary>'
             f'<p class="muted" style="margin:0">{escape(p.goal)}</p><div class="bar"><i style="width:{pct}%"></i></div>'
             f'<div class="table-wrap"><table><tr><th>Status</th><th>Task</th><th>Estimate</th><th>Depends on</th>'
-            f"<th>Owner</th><th>Links</th></tr>{''.join(rows)}</table></div></div>"
+            f"<th>Owner</th><th>Links</th></tr>{''.join(rows)}</table></div></details>"
         )
     return "".join(out)
 
