@@ -7,63 +7,44 @@ from html import escape
 
 from .live import Snapshot
 from .roadmap import STATUSES, Roadmap, Task
+from .style import CSS, THEME_BUTTON, THEME_HEAD
 
 NAV = (("/", "Overview"), ("/board", "Board"), ("/roadmap", "Roadmap"))
 
-CSS = """
-:root{--bg:#f7f7f5;--panel:#fff;--text:#1d1d1b;--muted:#6b6b66;--line:#e3e2dd;--accent:#2f6fde;
---bug:#c92a4b;--planned:#8a8a85;--building:#d98b1a;--review:#7a4fd6;--done:#2e9d5b;--blocked:#d64545;}
-@media (prefers-color-scheme:dark){:root{--bg:#141413;--panel:#1d1d1b;--text:#ecebe6;--muted:#9c9b95;
---line:#33322f;--accent:#6d9cf0;}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);
-font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
-a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
-header{display:flex;flex-wrap:wrap;gap:16px;align-items:center;padding:12px 16px;
-border-bottom:1px solid var(--line);background:var(--panel)}
-header h1{font-size:16px;margin:0}header nav{display:flex;gap:12px}
-header nav a.active{font-weight:600;color:var(--text)}header .meta{margin-left:auto;color:var(--muted);font-size:12px}
-main{padding:16px;max-width:1400px;margin:0 auto}
-.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
-.panel h2{font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:0 0 8px}
-.stats{display:flex;flex-wrap:wrap;gap:24px}.stat b{display:block;font-size:22px}
-.stat span{color:var(--muted);font-size:12px}
-.bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden;margin:6px 0}
-.bar i{display:block;height:100%;background:var(--done)}
-.pill{display:inline-block;padding:0 8px;border-radius:10px;font-size:12px;color:#fff;white-space:nowrap}
-.pill.bug{background:var(--bug)}.pill.planned{background:var(--planned)}.pill.building{background:var(--building)}
-.pill.review{background:var(--review)}.pill.done{background:var(--done)}.pill.blocked{background:var(--blocked)}
-ul.plain{list-style:none;margin:0;padding:0}ul.plain li{padding:6px 0;border-top:1px solid var(--line)}
-ul.plain li:first-child{border-top:0}
-.muted{color:var(--muted)}.small{font-size:12px}code{font-size:12px}
-.board{display:grid;gap:12px;grid-template-columns:repeat(6,minmax(180px,1fr));overflow-x:auto}
-.col h2{display:flex;justify-content:space-between}
-.card{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--planned);
-border-radius:6px;padding:8px 10px;margin-bottom:8px}
-.card.bug{border-left-color:var(--bug)}.card.building{border-left-color:var(--building)}.card.review{border-left-color:var(--review)}
-.card.done{border-left-color:var(--done)}.card.blocked{border-left-color:var(--blocked)}
-table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:6px 8px;border-top:1px solid var(--line);
-vertical-align:top}th{color:var(--muted);font-weight:500;font-size:12px}
-.errors{border-color:var(--blocked)}.errors li{color:var(--blocked)}
-.filters{margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap}
-.filters a{padding:2px 10px;border:1px solid var(--line);border-radius:12px}
-.filters a.active{background:var(--accent);color:#fff;border-color:var(--accent)}
-@media (max-width:700px){.board{grid-template-columns:repeat(6,85vw)}}
-"""
+
+def sources(roadmap: Roadmap, snapshot: Snapshot) -> str:
+    """A light per source of live data: green when it answered, red when it didn't."""
+    lights = (("git", snapshot.git_ok), ("GitHub", snapshot.github_ok), ("roadmap", not roadmap.errors))
+    return "".join(
+        f'<span class="src{"" if ok else " bad"}" title="{name}: {"ok" if ok else "not available"}">'
+        f"<i></i>{name}</span>"
+        for name, ok in lights
+    )
 
 
 def page(title: str, active: str, body: str, roadmap: Roadmap, snapshot: Snapshot) -> str:
     nav = "".join(
-        f'<a href="{href}" class="{"active" if href == active else ""}">{label}</a>' for href, label in NAV
+        f'<a href="{href}" class="tab active" aria-current="page">{label}</a>'
+        if href == active
+        else f'<a href="{href}" class="tab">{label}</a>'
+        for href, label in NAV
     )
     taken = datetime.fromtimestamp(snapshot.taken_at).strftime("%H:%M:%S") if snapshot.taken_at else "never"
     project = escape(roadmap.project or "Project")
+    healthy = snapshot.git_ok and snapshot.github_ok and not roadmap.errors
     return f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="refresh" content="60"><title>{escape(title)} · {project} PM</title><style>{CSS}</style></head>
-<body><header><h1>{project} · PM</h1><nav>{nav}</nav>
-<div class="meta">live data {taken} · <a href="?refresh=1">refresh</a></div></header>
-<main>{problems(roadmap, snapshot)}{body}</main></body></html>"""
+<meta http-equiv="refresh" content="60"><title>{escape(title)} · {project} PM</title>
+<link rel="icon" href="data:,">{THEME_HEAD}<style>{CSS}</style></head>
+<body><a class="skip" href="#view">Skip to content</a><header class="top"><div class="brand">
+<svg class="mark" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5"/>
+<path d="M8 1.5A6.5 6.5 0 0 1 14.5 8H8z"/></svg>
+<span class="brand-name">{project}</span><span class="brand-sub">build control</span></div>
+<nav class="tabs" aria-label="Views">{nav}</nav><div class="top-right">
+<span class="live{"" if healthy else " down"}"><span class="live-dot"></span>Updated {taken}</span>
+<a href="?refresh=1">Refresh</a><span class="sources" aria-label="Data sources">{sources(roadmap, snapshot)}</span>
+{THEME_BUTTON}</div></header>
+<main id="view" tabindex="-1">{problems(roadmap, snapshot)}{body}</main></body></html>"""
 
 
 def problems(roadmap: Roadmap, snapshot: Snapshot) -> str:
@@ -231,8 +212,8 @@ def roadmap_page(roadmap: Roadmap, snapshot: Snapshot) -> str:
             f'<div class="panel" style="margin-bottom:16px"><h2>{escape(p.id)} · {escape(p.name)} '
             f'<span class="muted">· {p.done_h:g}/{p.estimate_h:g} h · {pct}%</span></h2>'
             f'<p class="muted" style="margin:0">{escape(p.goal)}</p><div class="bar"><i style="width:{pct}%"></i></div>'
-            f"<table><tr><th>Status</th><th>Task</th><th>Estimate</th><th>Depends on</th><th>Owner</th>"
-            f'<th>Links</th></tr>{"".join(rows)}</table></div>'
+            f'<div class="table-wrap"><table><tr><th>Status</th><th>Task</th><th>Estimate</th><th>Depends on</th>'
+            f'<th>Owner</th><th>Links</th></tr>{"".join(rows)}</table></div></div>'
         )
     return "".join(out)
 

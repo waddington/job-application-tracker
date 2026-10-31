@@ -1,7 +1,22 @@
 import json
 import unittest
+from pathlib import Path
+from unittest import mock
 
-from tools.pm.live import SEP, parse_branches, parse_commits, parse_prs, parse_worktrees
+from tools.pm.live import SEP, collect, parse_branches, parse_commits, parse_prs, parse_worktrees
+
+
+class SourceTests(unittest.TestCase):
+    def test_a_tool_that_fails_is_marked_and_warned_about(self):
+        with mock.patch("tools.pm.live._run", side_effect=OSError("no tool")):
+            snapshot = collect(Path("."), "owner/demo")
+        self.assertEqual((snapshot.git_ok, snapshot.github_ok), (False, False))
+        self.assertEqual(len(snapshot.live.warnings), 2)
+
+    def test_tools_that_answer_are_ok(self):
+        with mock.patch("tools.pm.live._run", return_value=""):
+            snapshot = collect(Path("."), "owner/demo")
+        self.assertEqual((snapshot.git_ok, snapshot.github_ok), (True, True))
 
 
 class ParseTests(unittest.TestCase):

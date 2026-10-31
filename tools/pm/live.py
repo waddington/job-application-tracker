@@ -35,6 +35,8 @@ class Snapshot:
     commits: list[Commit] = field(default_factory=list)
     worktrees: list[Worktree] = field(default_factory=list)
     taken_at: float = 0.0
+    git_ok: bool = True
+    github_ok: bool = True
 
 
 def _run(args: list[str], cwd: Path, timeout: float = 15) -> str:
@@ -116,14 +118,25 @@ def collect(root: Path, repo: str) -> Snapshot:
         snapshot.commits = parse_commits(log)
         snapshot.worktrees = parse_worktrees(_run(["git", "worktree", "list", "--porcelain"], root))
     except (subprocess.SubprocessError, OSError) as exc:
+        snapshot.git_ok = False
         live.warnings.append(f"git unavailable: {exc}")
     try:
-        args = ["gh", "pr", "list", "--state", "all", "--limit", "200",
-                "--json", "number,title,state,headRefName,url,isDraft,updatedAt"]
+        args = [
+            "gh",
+            "pr",
+            "list",
+            "--state",
+            "all",
+            "--limit",
+            "200",
+            "--json",
+            "number,title,state,headRefName,url,isDraft,updatedAt",
+        ]
         if repo:
             args += ["--repo", repo]
         live.prs = parse_prs(_run(args, root, timeout=30))
     except (subprocess.SubprocessError, OSError, ValueError, KeyError) as exc:
+        snapshot.github_ok = False
         live.warnings.append(f"GitHub PRs unavailable (is `gh` installed and logged in?): {exc}")
     return snapshot
 

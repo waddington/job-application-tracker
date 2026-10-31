@@ -57,6 +57,49 @@ class RenderTests(unittest.TestCase):
         self.assertEqual(data["next_up"], [])
 
 
+class LookTests(unittest.TestCase):
+    def html(self, active="/board", **flags):
+        roadmap, snapshot = state()
+        for name, value in flags.items():
+            setattr(snapshot, name, value)
+        return render.page("T", active, "body", roadmap, snapshot)
+
+    def test_the_current_tab_is_marked(self):
+        html = self.html()
+        self.assertIn('<a href="/board" class="tab active" aria-current="page">Board</a>', html)
+        self.assertIn('<a href="/" class="tab">Overview</a>', html)
+        self.assertEqual(html.count("aria-current"), 1)
+
+    def test_every_source_is_lit_when_all_answer(self):
+        html = self.html()
+        for name in ("git", "GitHub", "roadmap"):
+            self.assertIn(f"<i></i>{name}</span>", html)
+        self.assertNotIn('class="src bad"', html)
+        self.assertNotIn('class="live down"', html)
+
+    def test_a_source_that_fails_shows_red(self):
+        for flag, name in (("git_ok", "git"), ("github_ok", "GitHub")):
+            html = self.html(**{flag: False})
+            self.assertIn(f'<span class="src bad" title="{name}: not available">', html)
+            self.assertIn('class="live down"', html)
+
+    def test_a_broken_roadmap_shows_red(self):
+        roadmap, snapshot = state()
+        roadmap.errors.append("bad file")
+        html = render.page("T", "/", "body", roadmap, snapshot)
+        self.assertIn('<span class="src bad" title="roadmap: not available">', html)
+
+    def test_the_theme_is_set_before_the_page_paints_and_can_be_switched(self):
+        html = self.html()
+        self.assertLess(html.index('setAttribute("data-theme",t)'), html.index("<style>"))
+        self.assertIn('id="theme"', html)
+
+    def test_it_loads_nothing_from_the_web(self):
+        html = self.html()
+        self.assertNotIn("https://", html)
+        self.assertNotIn("http://", html)
+
+
 class BugTests(unittest.TestCase):
     def roadmap(self, **live):
         data = {
