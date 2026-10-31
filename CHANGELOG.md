@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.2.18 (2026-10-31)
+
+- **Developers:** browser tests for the frame: menu, theme, language, help, the connection dot, the backup download, not found and phone width. Nothing in the app changes (#142).
+
 ## 1.2.17 (2026-10-31)
 
 - **Developers:** browser tests for Timeline and search: filters, the address, lanes, finding each kind of thing, and keeping up with changes. Nothing in the app changes (#141).
