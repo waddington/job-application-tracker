@@ -338,9 +338,10 @@ def roadmap_page(roadmap: Roadmap, snapshot: Snapshot, now: datetime | None = No
     now = now or datetime.now().astimezone()
     current = derive.current_phase(roadmap)
     out = [
-        f"""<div class="stack"><div class="panel"><h2>Timeline</h2><p class="small muted" style="margin:0 0 8px">
+        f"""<div class="stack"><details id="section-timeline" class="panel" open><summary><h2>Timeline</h2></summary>
+<p class="small muted" style="margin:8px 0">
 Each phase from its first PR to its latest. Fill shows tasks done, a tick is a task merged, and the line is today.</p>
-{charts.timeline_html(roadmap, now)}</div>
+{charts.timeline_html(roadmap, now)}</details>
 <div class="rm-grid">{charts.burnup_panel(roadmap, snapshot, now)}{charts.status_table(roadmap)}</div></div>"""
     ]
     for p in roadmap.phases:

@@ -218,10 +218,12 @@ class PageTests(unittest.TestCase):
 
     def test_the_page_opens_with_the_charts_and_only_the_current_phase_unfolded(self):
         html = render.roadmap_page(road([merged(1, "worktree-a", 10)]), Snapshot(live=Live()), NOW)
-        self.assertLess(html.index("Timeline"), html.index("<details"))
+        self.assertLess(html.index("Phase status"), html.index('id="phase-B"'))
+        for section in ("timeline", "burnup", "status"):  # each can be collapsed, and starts open
+            self.assertIn(f'<details id="section-{section}" class="panel" open>', html)
         self.assertIn("Burn-up", html)
         self.assertIn("Phase status", html)
-        self.assertEqual(html.count("<details"), 3)
+        self.assertEqual(html.count('id="phase-'), 3)
         self.assertEqual(html.count('class="panel gap" open>'), 1)
 
 

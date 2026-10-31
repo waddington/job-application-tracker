@@ -143,8 +143,8 @@ def burnup_panel(roadmap: Roadmap, snapshot, now: datetime) -> str:
     spans = "".join(f'<span><i class="{key}"></i>{label}</span>' for shown, key, label in keys if shown)
     legend = f'<div class="legend">{spans}</div>'
     return (
-        f'<div class="panel"><h2>Burn-up</h2>{burnup_svg(b)}{legend}'
-        f'<p class="small muted" style="margin:8px 0 0">{pace}{undated}</p></div>'
+        f'<details id="section-burnup" class="panel" open><summary><h2>Burn-up</h2></summary>{burnup_svg(b)}{legend}'
+        f'<p class="small muted" style="margin:8px 0 0">{pace}{undated}</p></details>'
     )
 
 
@@ -169,6 +169,7 @@ def status_table(roadmap: Roadmap) -> str:
         for h in ("Done", "In review", "Building", "Planned", "Blocked", "Bugs", "Hours", "% of tasks")
     )
     return (
-        f'<div class="panel"><h2>Phase status</h2><div class="table-wrap"><table><tr><th>Phase</th>{heads}'
-        f"<th>Dates</th></tr>{''.join(rows)}</table></div></div>"
+        '<details id="section-status" class="panel" open><summary><h2>Phase status</h2></summary>'
+        f'<div class="table-wrap"><table><tr><th>Phase</th>{heads}'
+        f"<th>Dates</th></tr>{''.join(rows)}</table></div></details>"
     )
