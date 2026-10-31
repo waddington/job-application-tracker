@@ -8502,7 +8502,7 @@
   },
   "info": {
     "title": "Job Application Tracker",
-    "version": "1.2.24"
+    "version": "1.2.25"
   },
   "openapi": "3.1.0",
   "paths": {
