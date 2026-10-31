@@ -42,7 +42,7 @@ export function RoundBadge({
   stageKind: string;
   size?: "xs" | "sm";
 }) {
-  useTranslation("interviews"); // follows the language: roundLabel reads it outside render
+  useTranslation("interviews"); // re-renders on a language change: roundLabel goes through i18n.t
   if (!round || stageKind !== "active") return null;
   const when = round.starts_at ?? round.deadline_at;
   const upcoming = round.status === "scheduled" && when;
