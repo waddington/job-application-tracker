@@ -432,6 +432,8 @@ Before trusting anything here, re-read `docs/ROADMAP.yaml` and run `gh pr list`.
 - Not started, waiting on Kai: `deps-*` and `security-alerts` (the Dependabot fixes, below), P10.
 
 **Kai's latest word on how to work:**
+- "I want smaller PRs, PRs created as drafts as early as possible, work directly on the files in the worktree dont use
+  patch scripts": the rules are in CLAUDE.md *Git*.
 - "all deletes should have a confirmation dialog/modal". Recorded as `fix-deletes-no-confirm` and
   `fix-call-delete-no-confirm`; not fixed.
 - "why are you making changes via tmp files and not working in the worktree directly": edit worktree files directly
@@ -464,7 +466,9 @@ isn't a bug.
 
 **The loop for the next i18n area** (`i18n-interviews-offers`, then `i18n-files-notes`, `i18n-insights`, `i18n-timeline`,
 `i18n-errors`, `i18n-events`, `i18n-finish`; one per go-ahead):
-- Read the area and the last entry in `docs/rfc/i18n.md`. Worktree `worktree-<id>`; push early.
+- Read the area and the last entry in `docs/rfc/i18n.md`. If it won't fit in about 500 changed lines (1,000 at most,
+  CLAUDE.md *Git*), split its roadmap task first; `i18n-people` was 898, so expect `i18n-interviews-offers` to split into
+  interviews and offers. Worktree `worktree-<id>`; set the task `building`, push, and open a draft PR straight away.
 - Move strings to `frontend/src/locales/en/<namespace>.ts`; add the files to `TRANSLATED` in `frontend/eslint.config.js`.
   Your words go into `<Trans>` as components, never `values`. A regex with `//` gets its own line, for the unused-key
   scanner. Pass `TFunction<"namespace">`, not `ReturnType<typeof useTranslation>["t"]` (too deep for TypeScript).
@@ -472,8 +476,8 @@ isn't a bug.
   main's build with the branch's: it must say 0 view parts differ, and no view "couldn't open".
 - A `*Text.test.tsx` pins what the snapshot can't reach: plurals, hover titles, errors, confirmations.
 - `pr-<task>.md` in `<tmp>/deps/` is the PR body; `python3 <tmp>/deps/finish_i18n.py <task> "<what>" "<title>"` bumps, writes
-  the changelog, marks the roadmap done and opens the PR.
-- Review, fix, run everything, `merge.sh <pr>`, then `ship.sh <version> <pr> <task>` from the main checkout. Add the
+  the changelog, marks the roadmap done, sets the draft PR's title and body, and marks it ready.
+- Review, fix, run everything (the full list is in CLAUDE.md *Git*), `merge.sh <pr>`, then `ship.sh <version> <pr> <task>` from the main checkout. Add the
   RFC's Built entry in the PR. Don't stop after the merge without checking the release exists.
 
 **The loop's scripts,** in `<tmp>` = `/home/kai/.claude/jobs/cf5328f4/tmp`: `deps/e2e.sh <spec>` (format, typecheck, lint,
@@ -584,7 +588,8 @@ hiding empty columns on phones (`.col.empty`).
 
 1. `git fetch -q && git worktree add -q .claude/worktrees/<name> -b worktree-<name> origin/main`,
    then EnterWorktree with `path`. Add the roadmap task (P7, `building`), commit, push with
-   `-u`. In a new worktree, `pnpm --dir frontend install` before frontend commands.
+   `-u`, and open it with `gh pr create --draft`. In a new worktree, `pnpm --dir frontend install`
+   before frontend commands. Stay near 500 changed lines (CLAUDE.md *Git*); split the task if not.
 2. Backend: model + migration (check `tests/test_db.py`), API, tests; new tables/columns in
    `tests/factories.py` `populate()`; regenerate OpenAPI and types. Commit and push.
 3. Frontend: hooks (invalidate every query key that shows the data), components, pages,
@@ -595,7 +600,8 @@ hiding empty columns on phones (`.col.empty`).
    `jat.openapi`, `gen:api`). Link check.
 5. Live check: seed demo data, build the branch's frontend, serve on a spare port, drive it
    with Playwright, Read the screenshots (also at 375 px when rows gain buttons).
-6. PR with `--body-file` (what Kai asked, quoted; what changed; checks). Start a background
+6. Fill in the draft PR's body (what Kai asked, quoted; what changed; checks) and run
+   `gh pr ready`. Start a background
    `general-purpose` reviewer: `gh pr diff N` once, Read files in the worktree, report
    must_fix/should_fix/nit with file:line. For anything touching Kai's real data, tell it to
    focus on data safety. Tell Kai what's happening meanwhile.
