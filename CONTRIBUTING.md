@@ -119,7 +119,9 @@ The app is being made translatable, English only for now; the plan and its order
 - Files and links: the Files and Links cards;
 - Notes and search: notes, the note editor, the Notes page and the search results page;
 - Insights: the page, stage and route tables, the scorecard, weekly activity, The whole picture,
-  Recruiter conversations, CVs and cover letters and the Sankey.
+  Recruiter conversations, CVs and cover letters and the Sankey;
+- Timeline: the page's own text, filters, kinds of thing and lanes (an entry's title and detail still
+  come from the API in English).
 
 The files are listed in `TRANSLATED` in `frontend/eslint.config.js`. Until an area has moved,
 keep writing its text as before. Once it has:
