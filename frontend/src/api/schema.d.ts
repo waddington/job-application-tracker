@@ -3385,14 +3385,25 @@ export interface components {
         SearchHit: {
             /** Archived */
             archived: boolean;
+            /**
+             * Done
+             * @default false
+             */
+            done: boolean;
             /** Id */
             id: string;
             /** Kind */
             kind: string;
             /** Link */
             link: string;
+            /** Own Title */
+            own_title?: string | null;
+            /** Round */
+            round?: number | null;
             /** Snippet */
             snippet: string | null;
+            /** Subkind */
+            subkind?: string | null;
             /** Subtitle */
             subtitle: string | null;
             /** Title */

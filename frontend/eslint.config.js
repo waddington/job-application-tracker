@@ -66,6 +66,11 @@ const TRANSLATED = [
   // i18n-attachments-links
   "src/components/Attachments.tsx",
   "src/components/Links.tsx",
+  // i18n-notes-search
+  "src/pages/NotesPage.tsx",
+  "src/pages/SearchPage.tsx",
+  "src/components/Notes.tsx",
+  "src/components/NoteEditorModal.tsx",
 ];
 
 export default tseslint.config(

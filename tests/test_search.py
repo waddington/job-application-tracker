@@ -19,6 +19,41 @@ def _search(client, q, **params):
     return r.json()
 
 
+def test_hits_carry_the_parts_of_their_titles(client, seeded):
+    app = post(client, "/api/v1/applications", {"role_id": seeded["role"]["id"], "route": "direct"})
+    post(client, f"/api/v1/applications/{app['id']}/interviews", {"round": 2, "title": "Zebra chat", "kind": "pairing"})
+    hit = _search(client, "zebra")[0]
+    assert (hit["title"], hit["round"], hit["own_title"], hit["subkind"]) == (
+        "Round 2 · Zebra chat",
+        2,
+        "Zebra chat",
+        "pairing",
+    )
+    role = _search(client, seeded["role"]["title"])[0]
+    assert (role["round"], role["own_title"], role["subkind"], role["done"]) == (None, None, None, False)
+
+
+def test_hits_for_calls_and_done_to_dos_carry_their_parts(client, seeded):
+    post(
+        client,
+        "/api/v1/meetings",
+        {
+            "contact_id": seeded["recruiter"]["id"],
+            "title": "Yak talk",
+            "kind": "video",
+            "starts_at": "2030-01-01T10:00:00Z",
+        },
+    )
+    call = _search(client, "yak")[0]
+    assert (call["title"], call["own_title"], call["subkind"]) == ("Video call: Yak talk", "Yak talk", "video")
+
+    todo = post(client, "/api/v1/todos", {"text": "Walrus prep"})
+    assert _search(client, "walrus")[0]["done"] is False
+    assert client.patch(f"/api/v1/todos/{todo['id']}", json={"done": True}).status_code == 200
+    hit = _search(client, "walrus")[0]
+    assert hit["done"] is True and hit["subtitle"] == "Done"
+
+
 def test_search_across_everything(client, seeded):
     role, agency, recruiter = seeded["role"]["id"], seeded["agency"]["id"], seeded["recruiter"]["id"]
     app = post(

@@ -27,6 +27,11 @@ class SearchHit(BaseModel):
     snippet: str | None  # text around the first match, when it isn't in the title
     updated: datetime | None
     archived: bool  # an archived application (listed last)
+    # What the frontend builds a title from, in your language; `title` stays in English.
+    round: int | None = None  # an interview's round
+    own_title: str | None = None  # what an interview or call is called, as you wrote it
+    subkind: str | None = None  # an interview's or a call's kind
+    done: bool = False  # a to-do that's done
 
 
 @router.get("/search", response_model=list[SearchHit])
@@ -59,6 +64,10 @@ def search(
             snippet=h.snippet,
             updated=h.updated,
             archived=h.archived,
+            round=h.round,
+            own_title=h.own_title,
+            subkind=h.subkind,
+            done=h.done,
         )
         for h in svc.search(session, q, notes=notes, limit=limit)
     ]
