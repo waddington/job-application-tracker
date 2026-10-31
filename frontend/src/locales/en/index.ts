@@ -4,13 +4,25 @@ import applications from "./applications";
 import calls from "./calls";
 import common from "./common";
 import interviews from "./interviews";
+import offers from "./offers";
 import people from "./people";
 import roles from "./roles";
 import selftest from "./selftest";
 import today from "./today";
 import todos from "./todos";
 
-const en = { common, today, applications, roles, people, interviews, calls, todos, selftest } as const;
+const en = {
+  common,
+  today,
+  applications,
+  roles,
+  people,
+  interviews,
+  calls,
+  offers,
+  todos,
+  selftest,
+} as const;
 
 export default en;
 export type Namespace = keyof typeof en;

@@ -560,7 +560,7 @@ test.describe("comparing", () => {
       ["Employer pension", "6%", "—"],
       ["Equity", "Options", "—"],
       ["Holiday", "28 days", "—"],
-      ["IR35", "—", "inside"],
+      ["IR35", "—", "Inside"],
       ["Length", "—", "6 months"],
       ["Benefits", "Dental", "—"],
       ["Notes", "Near home", "—"],

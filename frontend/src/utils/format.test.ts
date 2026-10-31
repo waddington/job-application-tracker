@@ -10,7 +10,6 @@ import {
   formatShortWeekday,
   type DatePattern,
 } from "./format";
-import { money } from "../api/offerHooks";
 import { formatDate, formatDateTime } from "./time";
 
 // Each helper must give exactly what the app shows today in English, so cutting a page over
@@ -102,22 +101,6 @@ describe("formatNumber", () => {
 });
 
 describe("formatMoney", () => {
-  const cases: [number | null | undefined, string | null | undefined][] = [
-    [85000, "GBP"],
-    [650, "gbp"],
-    [120000, "USD"],
-    [90000, "EUR"],
-    [150000, "CHF"],
-    [85000, null],
-    [85000, ""],
-    [null, "GBP"],
-    [undefined, "GBP"],
-  ];
-
-  it.each(cases)("%s %s matches api/offerHooks money()", (n, currency) => {
-    expect(formatMoney(n, currency, "en")).toBe(money(n, currency));
-  });
-
   it("keeps the symbol in front, or the code after", () => {
     expect(formatMoney(85000, "GBP", "en")).toBe("£85,000");
     expect(formatMoney(150000, "CHF", "en")).toBe("150,000 CHF");
