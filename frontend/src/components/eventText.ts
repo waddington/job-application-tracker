@@ -1,6 +1,8 @@
 import type { ApiEvent } from "../api/client";
 import { i18n } from "../i18n";
 import type { TextKey } from "../locales/en";
+import { formatMoney } from "../utils/format";
+import { roundLabel } from "../utils/rounds";
 
 export type EventMsg = NonNullable<ApiEvent["msg"]>;
 
@@ -16,7 +18,48 @@ export const EVENT_TEXT = {
   "event.cvSent": "events:cvSent",
   "event.coverLetterSent": "events:coverLetterSent",
   "event.documentSent": "events:documentSent",
+  "event.roundScheduled": "events:roundScheduled",
+  "event.roundAdded": "events:roundAdded",
+  "event.roundCancelled": "events:roundCancelled",
+  "event.roundBackOn": "events:roundBackOn",
+  "event.roundDone": "events:roundDone",
+  "event.roundRemoved": "events:roundRemoved",
+  "event.roundRescheduled": "events:roundRescheduled",
+  "event.roundRescheduledReason": "events:roundRescheduledReason",
+  "event.offerReceivedYear": "events:offerReceivedYear",
+  "event.offerReceivedDay": "events:offerReceivedDay",
+  "event.offerReceivedNoFigures": "events:offerReceivedNoFigures",
+  "event.offerBackYear": "events:offerBackYear",
+  "event.offerBackDay": "events:offerBackDay",
+  "event.offerBackNoFigures": "events:offerBackNoFigures",
+  "event.offerAcceptedYear": "events:offerAcceptedYear",
+  "event.offerAcceptedDay": "events:offerAcceptedDay",
+  "event.offerAcceptedNoFigures": "events:offerAcceptedNoFigures",
+  "event.offerDeclinedYear": "events:offerDeclinedYear",
+  "event.offerDeclinedDay": "events:offerDeclinedDay",
+  "event.offerDeclinedNoFigures": "events:offerDeclinedNoFigures",
+  "event.offerWithdrawnYear": "events:offerWithdrawnYear",
+  "event.offerWithdrawnDay": "events:offerWithdrawnDay",
+  "event.offerWithdrawnNoFigures": "events:offerWithdrawnNoFigures",
+  "event.offerRemovedYear": "events:offerRemovedYear",
+  "event.offerRemovedDay": "events:offerRemovedDay",
+  "event.offerRemovedNoFigures": "events:offerRemovedNoFigures",
 } as const satisfies Record<EventMsg["key"], TextKey>;
+
+/** A message saves raw parts where a language builds its own: a round's name, an offer's money. */
+function textParams(msg: EventMsg): object {
+  if (isRound(msg)) return { ...msg.params, label: roundLabel(msg.params) };
+  if (isMoney(msg)) return { money: formatMoney(msg.params.amount, msg.params.currency, i18n.language) };
+  return msg.params;
+}
+
+function isRound(msg: EventMsg): msg is Extract<EventMsg, { params: { kind: string } }> {
+  return "kind" in msg.params;
+}
+
+function isMoney(msg: EventMsg): msg is Extract<EventMsg, { params: { amount: number } }> {
+  return "amount" in msg.params;
+}
 
 /**
  * What an event says: its message in your language, or the saved English `summary` for what has no
@@ -26,5 +69,5 @@ export function eventText(event: Pick<ApiEvent, "summary" | "msg">): string | nu
   const msg = event.msg;
   if (!msg || !Object.hasOwn(EVENT_TEXT, msg.key)) return event.summary;
   // The key and its params come as a pair from the API's union; t() can't follow that across a lookup.
-  return (i18n.t as unknown as (key: string, params: object) => string)(EVENT_TEXT[msg.key], msg.params);
+  return (i18n.t as unknown as (key: string, params: object) => string)(EVENT_TEXT[msg.key], textParams(msg));
 }

@@ -7,13 +7,14 @@ import {
   Outlet,
   RouterProvider,
 } from "@tanstack/react-router";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import dayjs from "dayjs";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { CATEGORIES, categoryOf, type TimelineItem } from "../api/timelineHooks";
 import { i18n } from "../i18n";
+import { PSEUDO } from "../i18n/language";
 import { ItemContext, TimelinePage, TimelineRow } from "./TimelinePage";
 
 // The Timeline page's text comes from locales/en/timeline.ts (i18n-timeline-page). The before/after
@@ -112,6 +113,26 @@ describe("a row", () => {
     expect(await screen.findByText("5 Mar")).toBeTruthy();
   });
 
+  it("words the title itself when it has text for that kind", async () => {
+    await wrapped(<TimelineRow item={item({ kind: "company", company_name: "Example Co" })} />);
+    expect(await screen.findByText("Added company Example Co")).toBeTruthy();
+    expect(screen.queryByText("the API's title")).toBeNull();
+  });
+
+  it("words the title again when the language changes", async () => {
+    const english = "Added company Example Co";
+    await wrapped(<TimelineRow item={item({ kind: "company", company_name: "Example Co" })} />);
+    expect(await screen.findByText(english)).toBeTruthy();
+    try {
+      await act(() => i18n.changeLanguage(PSEUDO));
+      await waitFor(() => expect(screen.queryByText(english)).toBeNull());
+      expect(screen.getByText(/Example Co/)).toBeTruthy();
+    } finally {
+      await act(() => i18n.changeLanguage("en"));
+    }
+    expect(await screen.findByText(english)).toBeTruthy();
+  });
+
   it("leaves the API's title and detail as they came", async () => {
     await wrapped(<TimelineRow item={item({ title: "Moved to <Screen>", detail: "{{not}} a value" })} />);
     expect(await screen.findByText("Moved to <Screen>")).toBeTruthy();
@@ -206,6 +227,25 @@ describe("the lanes", () => {
     const dot = screen.getByRole("button", { name: "5 Mar 2026 09:07 · Call: the API's title" });
     fireEvent.mouseEnter(dot);
     expect(await screen.findByText("5 Mar 2026 09:07 · the API's title")).toBeTruthy();
+  });
+
+  it("words a dot's title itself when it has text for that kind", async () => {
+    serve([
+      item({
+        id: "d",
+        kind: "role-added",
+        role_id: "r1",
+        role_title: "Engineer",
+        company_name: "Example Co",
+        category: "added",
+      }),
+    ]);
+    await wrapped(<TimelinePage />, "/?view=lanes&period=all");
+    const dot = await screen.findByRole("button", {
+      name: "5 Mar 2026 09:07 · Added: Added role Engineer at Example Co",
+    });
+    fireEvent.mouseEnter(dot);
+    expect(await screen.findByText("5 Mar 2026 09:07 · Added role Engineer at Example Co")).toBeTruthy();
   });
 
   it("leaves the time off an all-day dot", async () => {

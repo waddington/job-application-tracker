@@ -5,6 +5,14 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.2.34 (2026-10-31)
+
+- **Developers:** new round and offer events also save their message as a key and values (`data.msg`, so it appears in `export/events.jsonl`), and the application timeline shows it from the translation files, ready for other languages. The saved English and old events are unchanged (#171).
+
+## 1.2.33 (2026-10-31)
+
+- **Developers:** Timeline titles for roles, companies, agencies and people read their text from the translation files, ready for other languages. The English is unchanged (#170).
+
 ## 1.2.32 (2026-10-31)
 
 - **Developers:** API errors can carry a `code` and `params` beside the unchanged English `detail`, starting with backup and to-do errors, and the app's error toasts read their text from the translation files, ready for other languages. Responses are the same as before except for those new fields; in `openapi.json`, every `/api/v1` route now declares one `ErrorOut` default response in place of the generated 422, so a regenerated client loses the `HTTPValidationError` type name (#169).

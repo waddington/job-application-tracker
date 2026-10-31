@@ -36,23 +36,59 @@ def annual_value(offer: Offer) -> tuple[int | None, str | None]:
     return None, None
 
 
+def _figure(offer: Offer) -> tuple[str, int | None]:
+    """Which figure the headline shows: ("year", salary), ("day", day rate) or ("none", None)."""
+    if _by_day_rate(offer):
+        return ("day", offer.day_rate) if offer.day_rate else ("none", None)
+    return ("year", offer.salary) if offer.salary else ("none", None)
+
+
 def headline(offer: Offer) -> str:
     """The headline figure for the timeline: "£85,000 a year" or "£650 a day"."""
+    per, amount = _figure(offer)
+    if amount is None:
+        return "no figures yet"
     symbol = {"GBP": "£", "USD": "$", "EUR": "€"}.get((offer.currency or "").upper())
-    money = (lambda n: f"{symbol}{n:,}") if symbol else (lambda n: f"{n:,} {offer.currency or ''}".strip())
-    if _by_day_rate(offer):
-        return f"{money(offer.day_rate)} a day" if offer.day_rate else "no figures yet"
-    if offer.salary:
-        return f"{money(offer.salary)} a year"
-    return "no figures yet"
+    money = f"{symbol}{amount:,}" if symbol else f"{amount:,} {offer.currency or ''}".strip()
+    return f"{money} a {per}"
+
+
+_MESSAGES: dict[tuple[str, str], svc.EventMsgKey] = {
+    ("received", "year"): "event.offerReceivedYear",
+    ("received", "day"): "event.offerReceivedDay",
+    ("received", "none"): "event.offerReceivedNoFigures",
+    ("back under consideration", "year"): "event.offerBackYear",
+    ("back under consideration", "day"): "event.offerBackDay",
+    ("back under consideration", "none"): "event.offerBackNoFigures",
+    ("accepted", "year"): "event.offerAcceptedYear",
+    ("accepted", "day"): "event.offerAcceptedDay",
+    ("accepted", "none"): "event.offerAcceptedNoFigures",
+    ("declined", "year"): "event.offerDeclinedYear",
+    ("declined", "day"): "event.offerDeclinedDay",
+    ("declined", "none"): "event.offerDeclinedNoFigures",
+    ("withdrawn", "year"): "event.offerWithdrawnYear",
+    ("withdrawn", "day"): "event.offerWithdrawnDay",
+    ("withdrawn", "none"): "event.offerWithdrawnNoFigures",
+    ("removed", "year"): "event.offerRemovedYear",
+    ("removed", "day"): "event.offerRemovedDay",
+    ("removed", "none"): "event.offerRemovedNoFigures",
+}
+
+# The largest whole number a browser reads exactly (Number.MAX_SAFE_INTEGER).
+_LARGEST_EXACT_IN_BROWSER = 2**53 - 1
 
 
 def record(session: Session, app: Application, offer: Offer, what: str) -> None:
-    """Put an offer change on the application's timeline ("Offer received: £85,000 a year")."""
-    svc.log_activity(
-        session,
-        app,
-        "manual",
-        summary=f"Offer {what}: {headline(offer)}",
-        data={"offer_id": offer.id, "status": offer.status},
-    )
+    """Put an offer change on the application's timeline ("Offer received: £85,000 a year").
+
+    The message saves the amount and currency, and the frontend formats them with `formatMoney`. A
+    browser can't read a bigger amount exactly, so its text would differ: that one saves only the English.
+    """
+    summary = f"Offer {what}: {headline(offer)}"
+    data = {"offer_id": offer.id, "status": offer.status}
+    per, amount = _figure(offer)
+    if amount is not None and amount > _LARGEST_EXACT_IN_BROWSER:
+        svc.log_activity(session, app, "manual", summary=summary, data=data)
+        return
+    params = {} if amount is None else {"amount": amount, "currency": offer.currency}
+    svc.log_message(session, app, "manual", key=_MESSAGES[what, per], params=params, summary=summary, data=data)

@@ -66,5 +66,249 @@
     "key": "event.documentSent",
     "params": { "name": "Portfolio", "label": "v1" },
     "summary": "Document sent: Portfolio v1"
+  },
+  {
+    "key": "event.roundScheduled",
+    "params": { "round": 2, "title": "System design test", "kind": "system_design" },
+    "summary": "Round 2 · System design test scheduled"
+  },
+  {
+    "key": "event.roundScheduled",
+    "params": { "round": 1, "title": null, "kind": "screen" },
+    "summary": "Round 1 · Screen scheduled"
+  },
+  {
+    "key": "event.roundScheduled",
+    "params": { "round": 1, "title": null, "kind": "hiring_manager" },
+    "summary": "Round 1 · Hiring manager scheduled"
+  },
+  {
+    "key": "event.roundScheduled",
+    "params": { "round": 1, "title": null, "kind": "technical" },
+    "summary": "Round 1 · Technical scheduled"
+  },
+  {
+    "key": "event.roundScheduled",
+    "params": { "round": 1, "title": null, "kind": "coding_task" },
+    "summary": "Round 1 · Coding task scheduled"
+  },
+  {
+    "key": "event.roundScheduled",
+    "params": { "round": 1, "title": null, "kind": "system_design" },
+    "summary": "Round 1 · System design scheduled"
+  },
+  {
+    "key": "event.roundScheduled",
+    "params": { "round": 1, "title": null, "kind": "pairing" },
+    "summary": "Round 1 · Pairing scheduled"
+  },
+  {
+    "key": "event.roundScheduled",
+    "params": { "round": 1, "title": null, "kind": "behavioural" },
+    "summary": "Round 1 · Behavioural scheduled"
+  },
+  {
+    "key": "event.roundScheduled",
+    "params": { "round": 1, "title": null, "kind": "onsite" },
+    "summary": "Round 1 · Onsite scheduled"
+  },
+  {
+    "key": "event.roundScheduled",
+    "params": { "round": 1, "title": null, "kind": "final" },
+    "summary": "Round 1 · Final scheduled"
+  },
+  {
+    "key": "event.roundScheduled",
+    "params": { "round": 99, "title": null, "kind": "other" },
+    "summary": "Round 99 · Interview scheduled"
+  },
+  {
+    "key": "event.roundScheduled",
+    "params": { "round": 3, "title": "", "kind": "final" },
+    "summary": "Round 3 · Final scheduled"
+  },
+  {
+    "key": "event.roundAdded",
+    "params": { "round": 1, "title": "Recruiter screen", "kind": "screen" },
+    "summary": "Round 1 · Recruiter screen added"
+  },
+  {
+    "key": "event.roundCancelled",
+    "params": { "round": 1, "title": "Pairing session", "kind": "pairing" },
+    "summary": "Round 1 · Pairing session cancelled"
+  },
+  {
+    "key": "event.roundBackOn",
+    "params": { "round": 2, "title": "Pairing session", "kind": "pairing" },
+    "summary": "Round 2 · Pairing session back on"
+  },
+  {
+    "key": "event.roundDone",
+    "params": { "round": 2, "title": null, "kind": "technical" },
+    "summary": "Round 2 · Technical done"
+  },
+  {
+    "key": "event.roundDone",
+    "params": { "round": null, "title": "Coffee chat", "kind": "other" },
+    "summary": "Coffee chat done"
+  },
+  {
+    "key": "event.roundRemoved",
+    "params": { "round": null, "title": null, "kind": "other" },
+    "summary": "Interview removed"
+  },
+  {
+    "key": "event.roundRemoved",
+    "params": {
+      "round": 4,
+      "title": "{{what}} {{label}} {{round}} $t(common:actions.cancel) $& <b>A & B</b>",
+      "kind": "final"
+    },
+    "summary": "Round 4 · {{what}} {{label}} {{round}} $t(common:actions.cancel) $& <b>A & B</b> removed"
+  },
+  {
+    "key": "event.roundRescheduled",
+    "params": { "round": 2, "title": "Pairing session", "kind": "pairing" },
+    "summary": "Round 2 · Pairing session rescheduled"
+  },
+  {
+    "key": "event.roundRescheduledReason",
+    "params": { "round": 2, "title": null, "kind": "technical", "reason": "They had a clash" },
+    "summary": "Round 2 · Technical rescheduled: They had a clash"
+  },
+  {
+    "key": "event.roundRescheduledReason",
+    "params": {
+      "round": 2,
+      "title": "{{reason}}",
+      "kind": "technical",
+      "reason": "{{label}} $t(common:actions.cancel) $& <b>A & B</b>: é"
+    },
+    "summary": "Round 2 · {{reason}} rescheduled: {{label}} $t(common:actions.cancel) $& <b>A & B</b>: é"
+  },
+  {
+    "key": "event.offerReceivedYear",
+    "params": { "amount": 85000, "currency": "GBP" },
+    "summary": "Offer received: £85,000 a year"
+  },
+  {
+    "key": "event.offerReceivedYear",
+    "params": { "amount": 1234567, "currency": "USD" },
+    "summary": "Offer received: $1,234,567 a year"
+  },
+  {
+    "key": "event.offerReceivedYear",
+    "params": { "amount": 999, "currency": "EUR" },
+    "summary": "Offer received: €999 a year"
+  },
+  {
+    "key": "event.offerReceivedYear",
+    "params": { "amount": 150000, "currency": "CHF" },
+    "summary": "Offer received: 150,000 CHF a year"
+  },
+  {
+    "key": "event.offerReceivedYear",
+    "params": { "amount": 85000, "currency": null },
+    "summary": "Offer received: 85,000 a year"
+  },
+  {
+    "key": "event.offerReceivedYear",
+    "params": { "amount": 9007199254740991, "currency": "GBP" },
+    "summary": "Offer received: £9,007,199,254,740,991 a year"
+  },
+  {
+    "key": "event.offerReceivedDay",
+    "params": { "amount": 650, "currency": "GBP" },
+    "summary": "Offer received: £650 a day"
+  },
+  {
+    "key": "event.offerReceivedDay",
+    "params": { "amount": 1200, "currency": null },
+    "summary": "Offer received: 1,200 a day"
+  },
+  {
+    "key": "event.offerReceivedNoFigures",
+    "params": {},
+    "summary": "Offer received: no figures yet"
+  },
+  {
+    "key": "event.offerBackYear",
+    "params": { "amount": 85000, "currency": "GBP" },
+    "summary": "Offer back under consideration: £85,000 a year"
+  },
+  {
+    "key": "event.offerBackDay",
+    "params": { "amount": 650, "currency": "EUR" },
+    "summary": "Offer back under consideration: €650 a day"
+  },
+  {
+    "key": "event.offerBackNoFigures",
+    "params": {},
+    "summary": "Offer back under consideration: no figures yet"
+  },
+  {
+    "key": "event.offerAcceptedYear",
+    "params": { "amount": 85000, "currency": "USD" },
+    "summary": "Offer accepted: $85,000 a year"
+  },
+  {
+    "key": "event.offerAcceptedDay",
+    "params": { "amount": 650, "currency": "SEK" },
+    "summary": "Offer accepted: 650 SEK a day"
+  },
+  {
+    "key": "event.offerAcceptedNoFigures",
+    "params": {},
+    "summary": "Offer accepted: no figures yet"
+  },
+  {
+    "key": "event.offerDeclinedYear",
+    "params": { "amount": 80000, "currency": "GBP" },
+    "summary": "Offer declined: £80,000 a year"
+  },
+  {
+    "key": "event.offerDeclinedDay",
+    "params": { "amount": 1000, "currency": "GBP" },
+    "summary": "Offer declined: £1,000 a day"
+  },
+  {
+    "key": "event.offerDeclinedNoFigures",
+    "params": {},
+    "summary": "Offer declined: no figures yet"
+  },
+  {
+    "key": "event.offerWithdrawnYear",
+    "params": { "amount": 80000, "currency": "GBP" },
+    "summary": "Offer withdrawn: £80,000 a year"
+  },
+  {
+    "key": "event.offerWithdrawnDay",
+    "params": { "amount": 650, "currency": "GBP" },
+    "summary": "Offer withdrawn: £650 a day"
+  },
+  {
+    "key": "event.offerWithdrawnNoFigures",
+    "params": {},
+    "summary": "Offer withdrawn: no figures yet"
+  },
+  {
+    "key": "event.offerRemovedYear",
+    "params": { "amount": 85000, "currency": "gbp" },
+    "summary": "Offer removed: £85,000 a year"
+  },
+  {
+    "key": "event.offerRemovedYear",
+    "params": { "amount": 85000, "currency": "chf" },
+    "summary": "Offer removed: 85,000 chf a year"
+  },
+  {
+    "key": "event.offerRemovedDay",
+    "params": { "amount": 650, "currency": "GBP" },
+    "summary": "Offer removed: £650 a day"
+  },
+  {
+    "key": "event.offerRemovedNoFigures",
+    "params": {},
+    "summary": "Offer removed: no figures yet"
   }
 ]
