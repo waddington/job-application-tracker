@@ -40,6 +40,9 @@ afterEach(() => {
 describe("How did it go?", () => {
   const round = {
     id: "i1",
+    round: 2,
+    title: "System design test",
+    kind: "system_design",
     label: "Round 2 · System design test",
     company_name: "Contoso",
     role_title: "Senior Backend Engineer",

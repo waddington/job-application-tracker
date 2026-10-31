@@ -130,7 +130,7 @@ describe("interviews", () => {
           stage: "offer",
           stage_name: "Offer",
           stage_kind: "success",
-          current_round: { ...round2, id: "i9", label: "Round 3 · Final", status: "done" },
+          current_round: { ...round2, id: "i9", round: 3, title: "Final", label: "Round 3 · Final", status: "done" },
         }),
       ],
       "/api/v1/health": {},

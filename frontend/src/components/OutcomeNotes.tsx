@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import { useSaveInterview, type Interview } from "../api/interviewHooks";
 import { useSaveMeeting, type Meeting } from "../api/meetingHooks";
+import { roundLabel } from "../utils/rounds";
 
 type Field = { key: string; label: string; placeholder: string; initial: string | null };
 
@@ -94,7 +95,7 @@ export function InterviewOutcome({ interview }: { interview: Interview }) {
         size="compact-xs"
         variant="light"
         color="teal"
-        aria-label={t("outcome.doneWho", { label: interview.label })}
+        aria-label={t("outcome.doneWho", { label: roundLabel(interview) })}
         onClick={() => setMarking("done")}
       >
         {t("outcome.done")}
@@ -103,7 +104,7 @@ export function InterviewOutcome({ interview }: { interview: Interview }) {
         size="compact-xs"
         variant="subtle"
         color="gray"
-        aria-label={t("outcome.didntHappenWho", { label: interview.label })}
+        aria-label={t("outcome.didntHappenWho", { label: roundLabel(interview) })}
         onClick={() => setMarking("cancelled")}
       >
         {t("outcome.didntHappen")}
@@ -112,8 +113,8 @@ export function InterviewOutcome({ interview }: { interview: Interview }) {
         <OutcomeNotesModal
           title={
             marking === "done"
-              ? t("outcome.howDidItGo", { label: interview.label })
-              : t("outcome.didntHappenTitle", { label: interview.label })
+              ? t("outcome.howDidItGo", { label: roundLabel(interview) })
+              : t("outcome.didntHappenTitle", { label: roundLabel(interview) })
           }
           subtitle={where}
           fields={

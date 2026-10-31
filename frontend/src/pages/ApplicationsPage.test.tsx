@@ -248,7 +248,7 @@ describe("applications page", () => {
           id: "a2",
           company_name: "Fabrikam",
           stage: "interviewing",
-          current_round: { round: 2, label: "Round 2" },
+          current_round: { round: 2, kind: "technical", label: "Round 2 · Technical" },
         }),
         row({ id: "a3", company_name: "Litware", stage: "interviewing" }),
       ],

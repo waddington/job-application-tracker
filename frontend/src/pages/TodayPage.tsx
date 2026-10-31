@@ -56,6 +56,7 @@ import { PersonChase, waitingOrChased } from "../components/PersonChase";
 import { StageBadge } from "../components/StageBadge";
 import { i18n } from "../i18n";
 import { formatDay } from "../utils/format";
+import { roundLabel } from "../utils/rounds";
 import { ago, formatDate, formatDateTime } from "../utils/time";
 import { useToday } from "../utils/useToday";
 import { TimelineRow } from "./TimelinePage";
@@ -239,7 +240,7 @@ function InterviewLine({ interview, action }: { interview: Interview; action?: R
       who={
         <>
           <Text fw={600} size="sm" truncate="end">
-            {interview.label}
+            {roundLabel(interview)}
           </Text>
           <Anchor component={Link} to={`/applications/${interview.application_id}`} size="xs">
             {t("rows.where", { company: interview.company_name, role: interview.role_title })}
