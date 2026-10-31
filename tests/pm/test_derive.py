@@ -161,7 +161,13 @@ class FollowUpTests(unittest.TestCase):
             "phases": [{"id": "P", "name": "n", "goal": "g", "tasks": [{"id": "a", "name": "A", "status": "done"}]}],
         }
         prs = [pr(1, "worktree-a"), pr(2, "worktree-a", "OPEN", merged="")]
-        self.assertEqual(apply_live(from_data(data), Live(prs=prs)).task("a").status, "done")
+        road = apply_live(from_data(data), Live(prs=prs))
+        task = road.task("a")
+        self.assertEqual((task.status, task.pr.number), ("done", 1))
+        self.assertEqual([t.id for t in derive.pipeline(road)], ["a"])
+        self.assertEqual(
+            derive.phase_dates(road.phases[0])[1] - derive.phase_dates(road.phases[0])[0], timedelta(days=1)
+        )
 
 
 class FreshnessTests(unittest.TestCase):

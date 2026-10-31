@@ -272,8 +272,9 @@ def apply_live(roadmap: Roadmap, live: Live) -> Roadmap:
         task.branch = task.branch_name if task.branch_name in live.branches_ahead else None
         if task.planned_status == "blocked":
             continue
-        merged_before = any(p.branch == task.branch_name and p.state == "MERGED" for p in live.prs)
-        if task.planned_status == "done" and merged_before:
+        merged = [p for p in live.prs if p.branch == task.branch_name and p.state == "MERGED"]
+        if task.planned_status == "done" and merged:
+            task.pr = max(merged, key=lambda p: p.number)  # the PR that finished it, not the follow-up
             continue
         if task.pr and task.pr.state == "OPEN":
             task.status, task.status_source = "review", f"PR #{task.pr.number} open"
