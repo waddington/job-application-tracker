@@ -63,6 +63,9 @@ const TRANSLATED = [
   // i18n-documents
   "src/pages/DocumentsPage.tsx",
   "src/components/CvFiles.tsx",
+  // i18n-attachments-links
+  "src/components/Attachments.tsx",
+  "src/components/Links.tsx",
 ];
 
 export default tseslint.config(

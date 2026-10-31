@@ -18,7 +18,7 @@ import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
 import { useAdoptCvFile, useCvFiles, useDocuments, type CvFile } from "../api/documentHooks";
-import { i18n } from "../i18n";
+import { humanSize } from "./Attachments";
 
 const NOT_A_CV = "jat.notACv";
 
@@ -30,12 +30,6 @@ function readDismissed(): Set<string> {
   }
 }
 
-const kb = (size: number) =>
-  size < 1024
-    ? i18n.t("documents:cvFiles.size.bytes", { size })
-    : size < 1024 * 1024
-      ? i18n.t("documents:cvFiles.size.kb", { size: Math.round(size / 1024) })
-      : i18n.t("documents:cvFiles.size.mb", { size: (size / 1048576).toFixed(1) });
 const stem = (name: string) => name.replace(/\.[^.]+$/, "").slice(0, 100);
 
 /** Make a file a version: of an existing document, or a new one. */
@@ -179,7 +173,7 @@ function CvFileRow({ file, onDismiss }: { file: CvFile; onDismiss: () => void })
         <Text size="sm" fw={600}>
           {file.name}{" "}
           <Text span size="xs" c="dimmed" fw={400}>
-            {kb(file.size)}
+            {humanSize(file.size)}
           </Text>
         </Text>
         {file.version && (

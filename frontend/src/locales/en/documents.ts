@@ -62,11 +62,6 @@ export default {
     title: "CV files you've attached",
     intro:
       "Files that look like a CV (named like one, or the same file in several places) attached to applications, roles or people, like a CV you sent a recruiter. Make each a version so Insights can compare how they do; the same file counts as the same version.",
-    size: {
-      bytes: "{{size}} B",
-      kb: "{{size}} KB",
-      mb: "{{size}} MB",
-    },
     thisIs: "This is {{document}} · {{version}}.",
     // <where> is a link to the role or person.
     onRole: "On role <where/>",

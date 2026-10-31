@@ -25,6 +25,7 @@ import {
   IconX,
 } from "@tabler/icons-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import {
   useAddLink,
@@ -52,7 +53,10 @@ const host = (url: string) => {
   }
 };
 
+const WEB_LINK = /^https?:\/\/\S+$/;
+
 function LinkRow({ link }: { link: LinkItem }) {
+  const { t } = useTranslation("files");
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(link.title ?? "");
   const update = useUpdateLink();
@@ -77,8 +81,8 @@ function LinkRow({ link }: { link: LinkItem }) {
               if (e.key === "Enter") save();
               if (e.key === "Escape") setEditing(false);
             }}
-            aria-label="Link title"
-            placeholder="Leave empty for a default"
+            aria-label={t("links.linkTitle")}
+            placeholder={t("links.defaultPlaceholder")}
             style={{ flex: 1 }}
             onBlur={save}
             autoFocus
@@ -110,17 +114,22 @@ function LinkRow({ link }: { link: LinkItem }) {
               color="teal"
               onClick={save}
               loading={update.isPending}
-              aria-label="Save title"
+              aria-label={t("links.saveTitle")}
             >
               <IconCheck size={16} />
             </ActionIcon>
-            <ActionIcon variant="subtle" color="gray" onClick={() => setEditing(false)} aria-label="Cancel">
+            <ActionIcon
+              variant="subtle"
+              color="gray"
+              onClick={() => setEditing(false)}
+              aria-label={t("links.cancel")}
+            >
               <IconX size={16} />
             </ActionIcon>
           </>
         ) : (
           <>
-            <Tooltip label="Rename">
+            <Tooltip label={t("links.rename")}>
               <ActionIcon
                 variant="subtle"
                 color="gray"
@@ -128,18 +137,18 @@ function LinkRow({ link }: { link: LinkItem }) {
                   setTitle(link.title ?? "");
                   setEditing(true);
                 }}
-                aria-label={`Rename ${label}`}
+                aria-label={t("links.renameNamed", { label })}
               >
                 <IconPencil size={16} />
               </ActionIcon>
             </Tooltip>
-            <Tooltip label="Remove">
+            <Tooltip label={t("links.remove")}>
               <ActionIcon
                 variant="subtle"
                 color="gray"
                 loading={remove.isPending}
                 onClick={() => remove.mutate(link.id)}
-                aria-label={`Remove ${label}`}
+                aria-label={t("links.removeNamed", { label })}
               >
                 <IconTrash size={16} />
               </ActionIcon>
@@ -153,12 +162,13 @@ function LinkRow({ link }: { link: LinkItem }) {
 
 /** External links on one thing: the job ad, a Google Doc brief, a take-home repo… */
 export function LinksCard({ entityType, entityId }: { entityType: EntityType; entityId: string }) {
+  const { t } = useTranslation("files");
   const { data: links } = useLinks(entityType, entityId);
   const add = useAddLink();
   const form = useForm({
     initialValues: { url: "", title: "" },
     validate: {
-      url: (v) => (/^https?:\/\/\S+$/.test(v.trim()) ? null : "Paste a link starting with https://"),
+      url: (v) => (WEB_LINK.test(v.trim()) ? null : t("links.urlError")),
     },
   });
   const submit = form.onSubmit((v) =>
@@ -171,33 +181,33 @@ export function LinksCard({ entityType, entityId }: { entityType: EntityType; en
   return (
     <Card withBorder>
       <Stack gap="sm">
-        <Title order={4}>Links</Title>
+        <Title order={4}>{t("links.title")}</Title>
         {(links ?? []).map((link) => (
           <LinkRow key={link.id} link={link} />
         ))}
         {links && !links.length && (
           <Text size="sm" c="dimmed">
-            Job ads, Google Docs, repos: anything with a URL.
+            {t("links.empty")}
           </Text>
         )}
         <form onSubmit={submit}>
           <Group align="flex-start" gap="xs" wrap="nowrap">
             <TextInput
               size="xs"
-              placeholder="https://docs.google.com/…"
-              aria-label="Link URL"
+              placeholder={t("links.urlPlaceholder")}
+              aria-label={t("links.url")}
               style={{ flex: 2 }}
               {...form.getInputProps("url")}
             />
             <TextInput
               size="xs"
-              placeholder="Title (optional)"
-              aria-label="Link title (optional)"
+              placeholder={t("links.titlePlaceholder")}
+              aria-label={t("links.titleOptional")}
               style={{ flex: 1 }}
               {...form.getInputProps("title")}
             />
             <Button size="xs" type="submit" variant="light" loading={add.isPending}>
-              Add
+              {t("links.add")}
             </Button>
           </Group>
         </form>
