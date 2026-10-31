@@ -28,6 +28,7 @@ import uuid
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import yaml
 from sqlalchemy import select
@@ -36,6 +37,9 @@ from sqlalchemy.orm import Session
 from ..db.models import NoteIndex
 from ..db.types import new_id, utcnow
 
+if TYPE_CHECKING:
+    from ..api.errors import ErrorCode, ErrorParams
+
 log = logging.getLogger(__name__)
 
 ENTITY_TYPES = ("application", "company", "role", "agency", "contact", "interview", "document")
@@ -43,7 +47,12 @@ _FRONTMATTER = re.compile(r"\A---\r?\n(.*?)\r?\n---\r?\n?", re.DOTALL)
 
 
 class NoteError(ValueError):
-    pass
+    """The message is English, for the CLI and logs. The API sends the code and params beside it."""
+
+    def __init__(self, message: str, code: ErrorCode, params: ErrorParams | None = None) -> None:
+        super().__init__(message)
+        self.code: ErrorCode = code
+        self.params = params
 
 
 @dataclass
@@ -82,7 +91,13 @@ def _as_datetime(value, fallback: datetime) -> datetime:
 def check_link(link: str) -> str:
     kind, _, target = link.partition(":")
     if kind not in ENTITY_TYPES or not target:
-        raise NoteError(f"links: {link!r} should look like 'application:<id>' ({', '.join(ENTITY_TYPES)})")
+        kinds = ", ".join(ENTITY_TYPES)
+        raise NoteError(
+            f"links: {link!r} should look like 'application:<id>' ({kinds})",
+            "note_link_invalid",
+            # quoted_link is Python's quoting of the value, which the English shows.
+            {"link": link, "quoted_link": repr(link), "kinds": kinds},
+        )
     return link
 
 
@@ -151,7 +166,7 @@ class NoteStore:
     def _abs(self, rel_path: str) -> Path:
         path = (self.root / rel_path).resolve()
         if not path.is_relative_to(self.root) or path.suffix != ".md":
-            raise NoteError(f"{rel_path} isn't a note under notes/")
+            raise NoteError(f"{rel_path} isn't a note under notes/", "note_path_invalid", {"path": rel_path})
         return path
 
     def _write(self, path: Path, content: str) -> None:
