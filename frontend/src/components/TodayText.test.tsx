@@ -200,8 +200,13 @@ describe("a reply habit, and waiting longer than usual", () => {
     [1, "Usually replies within 1 working day · waiting 1 working day longer than usual"],
     [3, "Usually replies within 1 working day · waiting 3 working days longer than usual"],
   ])("%s day(s) late", (late, text) => {
-    const { container } = wrap(<ReplyHabit contact={habit(late)} />);
-    expect(container.querySelector("p")!.textContent).toBe(text);
+    vi.useFakeTimers({ now: new Date("2026-10-28T12:00:00"), toFake: ["Date"] });
+    try {
+      const { container } = wrap(<ReplyHabit contact={habit(late)} />);
+      expect(container.querySelector("p")!.textContent).toBe(text);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 

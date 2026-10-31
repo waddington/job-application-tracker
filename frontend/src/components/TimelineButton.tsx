@@ -1,6 +1,7 @@
 import { Button } from "@mantine/core";
 import { IconTimeline } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
 
 export type TimelineAbout = "contact" | "company" | "agency";
 
@@ -11,6 +12,7 @@ export function timelineSearch(kind: TimelineAbout, id: string) {
 
 /** Opens the Timeline filtered to one person, company or agency, over all time. */
 export function TimelineButton({ kind, id, name }: { kind: TimelineAbout; id: string; name: string }) {
+  const { t } = useTranslation("people");
   return (
     <Button
       component={Link}
@@ -19,9 +21,9 @@ export function TimelineButton({ kind, id, name }: { kind: TimelineAbout; id: st
       variant="default"
       size="xs"
       leftSection={<IconTimeline size={14} />}
-      aria-label={`Timeline for ${name}`}
+      aria-label={t("places.timelineFor", { name })}
     >
-      Timeline
+      {t("places.timeline")}
     </Button>
   );
 }

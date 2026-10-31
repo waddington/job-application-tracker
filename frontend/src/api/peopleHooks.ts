@@ -1,6 +1,7 @@
 import { notifications } from "@mantine/notifications";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { i18n } from "../i18n";
 import { api, unwrap, type Schemas } from "./client";
 import { keys } from "./hooks";
 
@@ -137,19 +138,21 @@ export function useMergeContact() {
 export type Relation = Schemas["ApplicationContactIn"]["relation"];
 
 /** How a person is involved in an application (the "As" choices). */
-export const RELATIONS: { value: Relation; label: string }[] = [
-  { value: "recruiter", label: "Recruiter (agency)" },
-  { value: "internal_recruiter", label: "Internal recruiter / talent" },
-  { value: "hiring_manager", label: "Hiring manager" },
-  { value: "interviewer", label: "Interviewer" },
-  { value: "referrer", label: "Referrer" },
-  { value: "other", label: "Other" },
-];
+const RELATION_TEXT = {
+  recruiter: () => i18n.t("people:relations.recruiter"),
+  internal_recruiter: () => i18n.t("people:relations.internal_recruiter"),
+  hiring_manager: () => i18n.t("people:relations.hiring_manager"),
+  interviewer: () => i18n.t("people:relations.interviewer"),
+  referrer: () => i18n.t("people:relations.referrer"),
+  other: () => i18n.t("people:relations.other"),
+} satisfies Record<Relation, () => string>;
 
-const RELATION_LABELS = new Map<string, string>(RELATIONS.map((r) => [r.value, r.label]));
+/** The choices when linking someone to an application, in the current language. */
+export const relationOptions = () =>
+  (Object.keys(RELATION_TEXT) as Relation[]).map((value) => ({ value, label: RELATION_TEXT[value]() }));
 
 export function relationLabel(relation: string): string {
-  return RELATION_LABELS.get(relation) ?? relation;
+  return Object.hasOwn(RELATION_TEXT, relation) ? RELATION_TEXT[relation as Relation]() : relation;
 }
 
 /** One person's page: details, the applications they're part of and their interviews. */

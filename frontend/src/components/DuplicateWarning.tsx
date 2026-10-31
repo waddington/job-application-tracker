@@ -1,11 +1,12 @@
 import { Alert, Anchor, List, Text } from "@mantine/core";
 import { IconCopy } from "@tabler/icons-react";
+import type { TFunction } from "i18next";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import type { Duplicate } from "../api/client";
 import { formatDate } from "../utils/time";
 
-type T = ReturnType<typeof useTranslation>["t"];
+type T = TFunction<"common">;
 
 function via(d: Duplicate, t: T): string {
   if (d.route === "agency") {

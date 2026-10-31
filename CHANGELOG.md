@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.2.20 (2026-10-31)
+
+- **Developers:** people and companies read their text from the translation files, ready for other languages. The English is unchanged (#145).
+
 ## 1.2.19 (2026-10-31)
 
 - **Developers:** browser tests for the application list: a notification left over from the application before no longer fails the test after it. Nothing in the app changes (#143).

@@ -36,7 +36,7 @@ import { AttachmentsCard } from "../components/Attachments";
 import { LinksCard } from "../components/Links";
 import { TodosCard } from "../components/Todos";
 import { NotesCard } from "../components/Notes";
-import { relationLabel, RELATIONS, type Relation } from "../api/peopleHooks";
+import { relationLabel, relationOptions, type Relation } from "../api/peopleHooks";
 import { ContactFormModal } from "../components/ContactFormModal";
 import { DeleteButton } from "../components/DeleteButton";
 import { OffersCard } from "../components/Offers";
@@ -188,7 +188,7 @@ function PeopleCard({ app }: { app: ApplicationDetail }) {
           />
           <Select
             label={t("people.as")}
-            data={RELATIONS}
+            data={relationOptions()}
             value={relation}
             onChange={setRelation}
             allowDeselect={false}

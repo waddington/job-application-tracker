@@ -31,6 +31,7 @@ import {
 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { ReplyHabit } from "../components/ReplyHabit";
 import type { Contact } from "../api/client";
@@ -42,17 +43,20 @@ import { ContactFormModal } from "../components/ContactFormModal";
 import { closedLabel, UndoClosed } from "../components/PersonChase";
 import { formatDate } from "../utils/time";
 
+const WEB_LINK = /^https?:\/\//;
+
 function NewAgencyModal({ opened, onClose }: { opened: boolean; onClose: () => void }) {
+  const { t } = useTranslation(["people", "common"]);
   const create = useCreateAgency();
   const form = useForm({
     initialValues: { name: "", website: "" },
     validate: {
-      name: (v) => (v.trim() ? null : "Name the agency"),
-      website: (v) => (!v || /^https?:\/\//.test(v) ? null : "Links start with http:// or https://"),
+      name: (v) => (v.trim() ? null : t("recruiters.nameAgency")),
+      website: (v) => (!v || WEB_LINK.test(v) ? null : t("places.linkStart")),
     },
   });
   return (
-    <Modal opened={opened} onClose={onClose} title="New agency">
+    <Modal opened={opened} onClose={onClose} title={t("recruiters.newAgency")}>
       <form
         onSubmit={form.onSubmit((v) =>
           create.mutate(
@@ -67,11 +71,15 @@ function NewAgencyModal({ opened, onClose }: { opened: boolean; onClose: () => v
         )}
       >
         <Stack>
-          <TextInput label="Name" data-autofocus {...form.getInputProps("name")} />
-          <TextInput label="Website" placeholder="https://…" {...form.getInputProps("website")} />
+          <TextInput label={t("common:editName.name")} data-autofocus {...form.getInputProps("name")} />
+          <TextInput
+            label={t("common:editName.website")}
+            placeholder={t("common:editName.websitePlaceholder")}
+            {...form.getInputProps("website")}
+          />
           <Group justify="flex-end">
             <Button type="submit" loading={create.isPending}>
-              Add agency
+              {t("recruiters.addAgency")}
             </Button>
           </Group>
         </Stack>
@@ -92,6 +100,8 @@ type Where = { kind: "agency" | "company"; id: string; name: string } | null;
 
 /** One person, small: name, title, their agency or company as a chip, every way to reach them. */
 function PersonTile({ contact, where, onEdit }: { contact: Contact; where: Where; onEdit: () => void }) {
+  const { t } = useTranslation("people");
+  const ghosted = contact.closed_as === "ghosted";
   return (
     <Card withBorder padding="xs">
       <Stack gap={4}>
@@ -105,7 +115,15 @@ function PersonTile({ contact, where, onEdit }: { contact: Contact; where: Where
               c="inherit"
               truncate="end"
               display="block"
-              title={`${contact.name}${contact.favourite ? " (favourite)" : ""}${contact.closed_as === "ghosted" ? " (ghosted)" : ""}`}
+              title={
+                contact.favourite && ghosted
+                  ? t("recruiters.nameFavouriteGhosted", { name: contact.name })
+                  : contact.favourite
+                    ? t("recruiters.nameFavourite", { name: contact.name })
+                    : ghosted
+                      ? t("recruiters.nameGhosted", { name: contact.name })
+                      : contact.name
+              }
             >
               <FavouriteMark on={contact.favourite} />
               <GhostMark closedAs={contact.closed_as} />
@@ -119,13 +137,13 @@ function PersonTile({ contact, where, onEdit }: { contact: Contact; where: Where
           </div>
           <Group gap={0} wrap="nowrap">
             <FavouriteToggle contact={contact} />
-            <Tooltip label="Edit">
+            <Tooltip label={t("person.edit")}>
               <ActionIcon
                 variant="subtle"
                 color="gray"
                 size="sm"
                 onClick={onEdit}
-                aria-label={`Edit ${contact.name}`}
+                aria-label={t("person.editWho", { name: contact.name })}
               >
                 <IconPencil size={14} />
               </ActionIcon>
@@ -152,7 +170,7 @@ function PersonTile({ contact, where, onEdit }: { contact: Contact; where: Where
             )}
             {contact.reply_to_read_since && (
               <Badge size="sm" variant="light" color="orange" style={{ textTransform: "none" }}>
-                Reply to read
+                {t("recruiters.replyToRead")}
               </Badge>
             )}
             {contact.closed_as && (
@@ -163,13 +181,17 @@ function PersonTile({ contact, where, onEdit }: { contact: Contact; where: Where
                 style={{ textTransform: "none" }}
                 rightSection={<UndoClosed contact={contact} />}
               >
-                {closedLabel(contact.closed_as)}
-                {contact.closed_on ? ` · ${formatDate(contact.closed_on)}` : ""}
+                {contact.closed_on
+                  ? t("chase.closedOn", {
+                      what: closedLabel(contact.closed_as),
+                      date: formatDate(contact.closed_on),
+                    })
+                  : closedLabel(contact.closed_as)}
               </Badge>
             )}
             {contact.awaiting_reply_since && (
               <Badge size="sm" variant="light" color="grape" style={{ textTransform: "none" }}>
-                Waiting
+                {t("recruiters.waiting")}
               </Badge>
             )}
           </Group>
@@ -188,7 +210,7 @@ function PersonTile({ contact, where, onEdit }: { contact: Contact; where: Where
                   target={d.kind === "email" || d.kind === "phone" ? undefined : "_blank"}
                   rel={d.kind === "email" || d.kind === "phone" ? undefined : "noreferrer noopener"}
                   truncate="end"
-                  title={d.label ? `${d.value} (${d.label})` : d.value}
+                  title={d.label ? t("person.detailLabelled", { value: d.value, label: d.label }) : d.value}
                 >
                   {d.kind === "linkedin" || d.kind === "url"
                     ? d.value.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")
@@ -210,6 +232,7 @@ function PersonTile({ contact, where, onEdit }: { contact: Contact; where: Where
 type Show = "all" | "agency" | "company" | "independent" | "favourites" | "ghosted";
 
 export function RecruitersPage() {
+  const { t } = useTranslation("people");
   const { data: agencies, isLoading: agenciesLoading } = useAgencies();
   const { data: contacts } = useContacts();
   const { data: apps } = useApplications({});
@@ -269,44 +292,46 @@ export function RecruitersPage() {
       <Group justify="space-between">
         <Group gap="sm">
           <IconUsers size={26} stroke={1.6} />
-          <Title order={2}>Recruiters</Title>
+          <Title order={2}>{t("recruiters.title")}</Title>
         </Group>
         <Group gap="sm">
           <Button variant="default" leftSection={<IconPlus size={16} />} onClick={() => setNewAgency(true)}>
-            New agency
+            {t("recruiters.newAgency")}
           </Button>
           <Button leftSection={<IconPlus size={16} />} onClick={() => setEditing(null)}>
-            New person
+            {t("recruiters.newPerson")}
           </Button>
         </Group>
       </Group>
       <Group gap="sm" wrap="wrap">
         <TextInput
-          placeholder="Search names, agencies, companies, emails, numbers"
+          placeholder={t("recruiters.search")}
           leftSection={<IconSearch size={16} />}
           value={q}
           onChange={(e) => setQ(e.currentTarget.value)}
           w={360}
           maw="100%"
-          aria-label="Search recruiters"
+          aria-label={t("recruiters.searchLabel")}
         />
         <SegmentedControl
           size="xs"
           value={show}
           onChange={(v) => setShow(v as Show)}
-          aria-label="Show"
+          aria-label={t("recruiters.show")}
           data={[
-            { value: "all", label: "All" },
-            { value: "agency", label: "Agencies" },
-            { value: "company", label: "Companies" },
-            { value: "independent", label: "Independent" },
+            { value: "all", label: t("recruiters.all") },
+            { value: "agency", label: t("recruiters.agencies") },
+            { value: "company", label: t("recruiters.companies") },
+            { value: "independent", label: t("recruiters.independent") },
             {
               value: "favourites",
-              label: `Favourites · ${(contacts ?? []).filter((c) => c.favourite).length}`,
+              label: t("recruiters.favourites", { n: (contacts ?? []).filter((c) => c.favourite).length }),
             },
             {
               value: "ghosted",
-              label: `Ghosted · ${(contacts ?? []).filter((c) => c.closed_as === "ghosted").length}`,
+              label: t("recruiters.ghosted", {
+                n: (contacts ?? []).filter((c) => c.closed_as === "ghosted").length,
+              }),
             },
           ]}
         />
@@ -314,7 +339,7 @@ export function RecruitersPage() {
       {agencyList.length > 0 && (
         <Group gap={6} align="center">
           <Text size="xs" c="dimmed" fw={600} tt="uppercase">
-            Agencies
+            {t("recruiters.agencies")}
           </Text>
           {agencyList.map((a) => {
             const people = peopleByAgency.get(a.id) ?? 0;
@@ -328,10 +353,15 @@ export function RecruitersPage() {
                 color="blue"
                 size="md"
                 style={{ cursor: "pointer", textTransform: "none" }}
-                aria-label={`${a.name}: ${people} ${people === 1 ? "person" : "people"}${active ? `, ${active} in progress` : ""}`}
+                aria-label={
+                  active
+                    ? t("recruiters.agencyLabelActive", { name: a.name, count: people, active })
+                    : t("recruiters.agencyLabel", { name: a.name, count: people })
+                }
               >
-                {a.name} · {people}
-                {active ? ` · ${active} in progress` : ""}
+                {active
+                  ? t("recruiters.agencyBadgeActive", { name: a.name, n: people, active })
+                  : t("recruiters.agencyBadge", { name: a.name, n: people })}
               </Badge>
             );
           })}
@@ -342,16 +372,15 @@ export function RecruitersPage() {
       ) : !shown.length ? (
         <Card withBorder p="xl">
           <Text ta="center" c="dimmed">
-            {needle || show !== "all"
-              ? "No matches."
-              : "No one yet. Add a person, or an agency, or add them when you create an application."}
+            {needle || show !== "all" ? t("recruiters.noMatches") : t("recruiters.empty")}
           </Text>
         </Card>
       ) : (
         <>
           <Text size="xs" c="dimmed">
-            {shown.length} {shown.length === 1 ? "person" : "people"},{" "}
-            {shown.some((c) => c.favourite) ? "favourites first, then A to Z" : "A to Z"}
+            {shown.some((c) => c.favourite)
+              ? t("recruiters.countFavourites", { count: shown.length })
+              : t("recruiters.count", { count: shown.length })}
           </Text>
           <SimpleGrid cols={{ base: 1, xs: 2, md: 3, xl: 4 }} spacing="sm" verticalSpacing="sm">
             {shown.map((c) => (

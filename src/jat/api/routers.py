@@ -520,7 +520,7 @@ def _name(session: Session, model, id_: str | None) -> str | None:
 
 
 def _recruiter_change(session: Session, old_id: str | None, new_id: str | None) -> str:
-    """ "Recruiter changed from Dan Clouting to Liam Royden" (or set, or removed)."""
+    """ "Recruiter changed from Alex Morgan to Sam Patel" (or set, or removed)."""
     old, new = _name(session, Contact, old_id), _name(session, Contact, new_id)
     if old and new:
         return f"Recruiter changed from {old} to {new}"
