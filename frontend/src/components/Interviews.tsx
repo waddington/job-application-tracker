@@ -60,7 +60,7 @@ export function RoundBadge({
         style={{ textTransform: "none", maxWidth: "100%" }}
         styles={{ label: { whiteSpace: "normal", overflow: "visible", textAlign: "left" } }}
       >
-        {upcoming ? `${label} · ${shortDate(when)}` : label}
+        {upcoming ? i18n.t("interviews:badgeWhen", { label, when: shortDate(when) }) : label}
       </Badge>
     </Tooltip>
   );
@@ -80,6 +80,11 @@ function InterviewItem({
   const when = interview.starts_at ?? interview.deadline_at;
   const people = interview.interviewer_ids.map((id) => names.get(id)).filter(Boolean);
   const label = roundLabel(interview);
+  const whenText = !when
+    ? t("notBooked")
+    : interview.starts_at
+      ? formatDateTime(when)
+      : t("due", { when: formatDateTime(when) });
   return (
     <Card withBorder padding="sm">
       <Group justify="space-between" align="flex-start" wrap="nowrap">
@@ -92,16 +97,9 @@ function InterviewItem({
             <RescheduledBadge interview={interview} size="xs" />
           </Group>
           <Text size="sm" c="dimmed">
-            {[
-              !when
-                ? t("notBooked")
-                : interview.starts_at
-                  ? formatDateTime(when)
-                  : t("due", { when: formatDateTime(when) }),
-              people.length ? t("card.with", { people: people.join(", ") }) : null,
-            ]
-              .filter(Boolean)
-              .join(" · ")}
+            {people.length
+              ? t("card.whenWith", { when: whenText, people: people.join(", ") })
+              : whenText}
           </Text>
           {interview.meeting_url && (
             <Anchor href={interview.meeting_url} target="_blank" rel="noreferrer" size="sm">

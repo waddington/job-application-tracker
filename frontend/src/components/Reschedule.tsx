@@ -78,10 +78,13 @@ export function RescheduleModal({ interview, onClose }: { interview: Interview; 
     >
       <Stack>
         <Text size="sm" c="dimmed">
-          {interview.company_name} · {interview.role_title}
           {interview.starts_at
-            ? ` · ${t("reschedule.was", { when: formatDateTime(interview.starts_at) })}`
-            : ""}
+            ? t("reschedule.whereWas", {
+                company: interview.company_name,
+                role: interview.role_title,
+                when: formatDateTime(interview.starts_at),
+              })
+            : t("reschedule.where", { company: interview.company_name, role: interview.role_title })}
         </Text>
         <DateTimePicker label={t("reschedule.newTime")} value={when} onChange={setWhen} data-autofocus />
         <Textarea

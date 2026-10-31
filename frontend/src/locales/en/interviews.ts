@@ -4,6 +4,8 @@
 export default {
   // A round's name: "Round 2 · System design test". {{what}} is your description, else its kind.
   label: "Round {{round}} · {{what}}",
+  // The round badge on cards and rows, when it's booked: "Round 2 · Technical · Thu 2 Oct".
+  badgeWhen: "{{label}} · {{when}}",
   // A round with no description goes by its kind ("other" reads "Interview" here).
   kindNames: {
     screen: "Screen",
@@ -57,7 +59,7 @@ export default {
   card: {
     title: "Interviews",
     addRound: "Add round {{round}}",
-    with: "with {{people}}",
+    whenWith: "{{when}} · with {{people}}",
     joinLink: "Join link",
     empty:
       'No interviews yet. Add each round as it\'s booked: "Round 1 · Recruiter screen", "Round 2 · Engineering manager chat"…',
@@ -106,7 +108,8 @@ export default {
     // More than once: "Rescheduled ×2".
     badgeTimes: "Rescheduled ×{{times}}",
     movedFrom: "Moved from {{when}}",
-    was: "was {{when}}",
+    where: "{{company}} · {{role}}",
+    whereWas: "{{company}} · {{role}} · was {{when}}",
     newTime: "New time",
     why: "Why? (optional)",
     whyPlaceholder: "They had a clash, you asked to move it…",

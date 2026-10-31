@@ -240,7 +240,7 @@ with sync_playwright() as p:
     step(
         "interviews+edit-errors",
         lambda: dialog.get_by_label("Meeting link", exact=True).fill("not a link", timeout=3000),
-        lambda: dialog.get_by_label("Round", exact=True).fill("100", timeout=3000),
+        lambda: dialog.get_by_label("Round", exact=True).fill("", timeout=3000),
         lambda: dialog.get_by_role("button", name="Save").click(timeout=3000),
     )
     page.keyboard.press("Escape")

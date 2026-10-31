@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { MantineProvider } from "@mantine/core";
 import { describe, expect, it, vi } from "vitest";
 
@@ -7,7 +7,7 @@ import { roundStatus } from "./Interviews";
 import { RescheduledBadge } from "./Reschedule";
 
 // Interviews' text comes from locales/en/interviews.ts (i18n-interviews). A before/after snapshot
-// of the pages and dialogs showed no change; these pin what the demo data can't reach.
+// of the pages and dialogs showed no change; these pin some of what the demo data can't reach.
 
 const round = (over: Partial<Parameters<typeof roundLabel>[0]> = {}) => ({
   round: 2,
@@ -72,5 +72,15 @@ describe("the Rescheduled badge", () => {
     expect(screen.getByText("Rescheduled")).toBeTruthy();
     badge(3);
     expect(screen.getByText("Rescheduled ×3")).toBeTruthy();
+  });
+
+  it("says when it moved from, on hover", async () => {
+    render(
+      <MantineProvider>
+        <RescheduledBadge interview={{ rescheduled_count: 1, rescheduled_from: "2026-10-02T13:00:00" }} />
+      </MantineProvider>,
+    );
+    fireEvent.mouseEnter(screen.getByText("Rescheduled").closest(".mantine-Badge-root")!);
+    expect(await screen.findByText("Moved from 2 Oct 2026, 13:00")).toBeTruthy();
   });
 });
