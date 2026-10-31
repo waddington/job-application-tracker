@@ -17,7 +17,9 @@ import {
 import { IconTimeline } from "@tabler/icons-react";
 import { Link, useNavigate, useRouter, useRouterState } from "@tanstack/react-router";
 import dayjs from "dayjs";
+import type { TFunction } from "i18next";
 import { Fragment, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { PersonName } from "../components/GhostMark";
 import { useAgencies, useCompanies, useContacts } from "../api/hooks";
@@ -29,23 +31,24 @@ import {
   type TimelineFilters,
   type TimelineItem,
 } from "../api/timelineHooks";
+import { formatDay } from "../utils/format";
 
 const PERIODS = [
-  { value: "30", label: "Last 30 days" },
-  { value: "90", label: "Last 3 months" },
-  { value: "365", label: "Last year" },
-  { value: "all", label: "All time" },
-];
+  { value: "30", label: "timeline:period.days30" },
+  { value: "90", label: "timeline:period.days90" },
+  { value: "365", label: "timeline:period.days365" },
+  { value: "all", label: "timeline:period.all" },
+] as const;
 
 // A role's row runs from the pitch (and the call it came from) through its application to the
 // outcome, or to passing on it; a person's row has their calls and everything they're part of.
 type LaneBy = "role" | "person" | "company" | "agency";
-const LANE_BY: { value: LaneBy; label: string }[] = [
-  { value: "role", label: "Role" },
-  { value: "person", label: "Person" },
-  { value: "company", label: "Company" },
-  { value: "agency", label: "Agency" },
-];
+const LANE_BY = [
+  { value: "role", label: "timeline:lanes.by.role", empty: "timeline:lanes.empty.role" },
+  { value: "person", label: "timeline:lanes.by.person", empty: "timeline:lanes.empty.person" },
+  { value: "company", label: "timeline:lanes.by.company", empty: "timeline:lanes.empty.company" },
+  { value: "agency", label: "timeline:lanes.by.agency", empty: "timeline:lanes.empty.agency" },
+] as const satisfies readonly { value: LaneBy; label: string; empty: string }[];
 
 // Companies, agencies and people being added is bookkeeping: off unless you ask for it.
 const DEFAULT_CATEGORIES = CATEGORIES.filter((c) => c.value !== "added").map((c) => c.value as string);
@@ -57,26 +60,32 @@ export const dayOf = (item: TimelineItem) =>
 /** Is it still ahead of `now`? (Compare instants, not strings: the formats differ.) */
 const isAhead = (item: TimelineItem, now: string) => new Date(item.at).getTime() > new Date(now).getTime();
 
-const timeOf = (item: TimelineItem) => (item.all_day ? "All day" : dayjs(item.at).format("HH:mm"));
+const timeOf = (item: TimelineItem, t: TFunction<"timeline">, lang: string) =>
+  item.all_day ? t("allDay") : formatDay(item.at, "time", lang);
 
-function dayHeading(day: string): string {
+function dayHeading(day: string, t: TFunction<"timeline">, lang: string): string {
   const d = dayjs(day);
   const today = dayjs().startOf("day");
   const diff = d.diff(today, "day");
-  const label = d.format(d.year() === today.year() ? "ddd D MMM" : "ddd D MMM YYYY");
-  if (diff === 0) return `Today · ${label}`;
-  if (diff === -1) return `Yesterday · ${label}`;
-  if (diff === 1) return `Tomorrow · ${label}`;
-  return label;
+  const date = formatDay(
+    d,
+    d.year() === today.year() ? "shortWeekdayDayMonth" : "shortWeekdayDayMonthYear",
+    lang,
+  );
+  if (diff === 0) return t("day.today", { date });
+  if (diff === -1) return t("day.yesterday", { date });
+  if (diff === 1) return t("day.tomorrow", { date });
+  return date;
 }
 
 /** What it's about: company and role, agency, people, each a link to its page. */
 export function ItemContext({ item }: { item: TimelineItem }) {
+  const { t } = useTranslation("timeline");
   const parts = [];
   if (item.application_id) {
     parts.push(
       <Anchor key="app" component={Link} to={`/applications/${item.application_id}`} size="xs">
-        {item.role_title} at {item.company_name}
+        {t("context.roleAt", { role: item.role_title ?? "", company: item.company_name ?? "" })}
       </Anchor>,
     );
   } else if (item.company_id) {
@@ -95,7 +104,7 @@ export function ItemContext({ item }: { item: TimelineItem }) {
   if (item.agency_id) {
     parts.push(
       <Anchor key="ag" component={Link} to={`/agencies/${item.agency_id}`} size="xs">
-        via {item.agency_name}
+        {t("context.via", { agency: item.agency_name ?? "" })}
       </Anchor>,
     );
   }
@@ -121,7 +130,7 @@ export function ItemContext({ item }: { item: TimelineItem }) {
       ))}
       {item.archived && (
         <Badge size="xs" variant="outline" color="gray">
-          Archived
+          {t("context.archived")}
         </Badge>
       )}
     </Group>
@@ -129,16 +138,18 @@ export function ItemContext({ item }: { item: TimelineItem }) {
 }
 
 export function TimelineRow({ item, showDate }: { item: TimelineItem; showDate?: boolean }) {
+  const { t, i18n } = useTranslation("timeline");
+  const lang = i18n.language;
   const cat = categoryOf(item.category);
+  const date = formatDay(dayOf(item), "dayMonth", lang);
+  const dated = item.all_day ? date : t("dateTime", { date, time: timeOf(item, t, lang) });
   return (
     <Group gap="sm" wrap="nowrap" align="flex-start" py={6}>
       <Text size="xs" c="dimmed" w={showDate ? 92 : 52} style={{ flexShrink: 0 }} pt={2}>
-        {showDate
-          ? `${dayjs(dayOf(item)).format("D MMM")} ${item.all_day ? "" : timeOf(item)}`
-          : timeOf(item)}
+        {showDate ? dated : timeOf(item, t, lang)}
       </Text>
       <Badge size="sm" variant="light" color={cat.color} w={112} style={{ flexShrink: 0 }}>
-        {cat.one}
+        {i18n.t(cat.one)}
       </Badge>
       <Stack gap={2} style={{ minWidth: 0 }}>
         <Text size="sm" fw={500}>
@@ -156,6 +167,7 @@ export function TimelineRow({ item, showDate }: { item: TimelineItem; showDate?:
 }
 
 function ListView({ items, now }: { items: TimelineItem[]; now: string }) {
+  const { t, i18n } = useTranslation("timeline");
   const ahead = items.filter((i) => isAhead(i, now)).reverse(); // soonest first
   const past = items.filter((i) => !isAhead(i, now));
   const days = new Map<string, TimelineItem[]>();
@@ -168,7 +180,7 @@ function ListView({ items, now }: { items: TimelineItem[]; now: string }) {
       {ahead.length > 0 && (
         <Card withBorder padding="md">
           <Title order={3} size="h5" mb={4}>
-            Coming up
+            {t("comingUp")}
           </Title>
           {ahead.map((item) => (
             <TimelineRow key={item.id} item={item} showDate />
@@ -178,7 +190,7 @@ function ListView({ items, now }: { items: TimelineItem[]; now: string }) {
       {[...days].map(([day, dayItems]) => (
         <Box key={day}>
           <Title order={3} size="h6" c="dimmed" mb={2}>
-            {dayHeading(day)}
+            {dayHeading(day, t, i18n.language)}
           </Title>
           {dayItems.map((item) => (
             <TimelineRow key={item.id} item={item} />
@@ -207,7 +219,9 @@ interface Lane {
   items: TimelineItem[];
 }
 
-function lanesOf(items: TimelineItem[], by: LaneBy): Lane[] {
+function lanesOf(items: TimelineItem[], by: LaneBy, t: TFunction<"timeline">): Lane[] {
+  const roleRow = (company: string | null | undefined, role: string | null | undefined) =>
+    t("lanes.roleRow", { company: company ?? "", role: role ?? "" });
   const lanes = new Map<string, Lane>();
   const add = (key: string | null | undefined, label: string, href: string, item: TimelineItem) => {
     if (!key) return;
@@ -218,10 +232,10 @@ function lanesOf(items: TimelineItem[], by: LaneBy): Lane[] {
   for (const item of items) {
     if (by === "role") {
       if (item.role_id)
-        add(item.role_id, `${item.company_name} · ${item.role_title}`, `/roles/${item.role_id}`, item);
+        add(item.role_id, roleRow(item.company_name, item.role_title), `/roles/${item.role_id}`, item);
       // A call joins the row of every role that came up on it.
       for (const r of item.roles ?? [])
-        if (r.id !== item.role_id) add(r.id, `${r.company_name} · ${r.title}`, `/roles/${r.id}`, item);
+        if (r.id !== item.role_id) add(r.id, roleRow(r.company_name, r.title), `/roles/${r.id}`, item);
     }
     if (by === "company")
       add(item.company_id, item.company_name ?? "", `/companies/${item.company_id}`, item);
@@ -244,7 +258,9 @@ function LanesView({ items, now, since }: { items: TimelineItem[]; now: string; 
   const [by, setBy] = useState<LaneBy>("role");
   const [all, setAll] = useState(false);
   const router = useRouter();
-  const lanes = useMemo(() => lanesOf(items, by), [items, by]);
+  const { t, i18n } = useTranslation("timeline");
+  const lang = i18n.language;
+  const lanes = useMemo(() => lanesOf(items, by, t), [items, by, t]);
   if (!items.length) return null;
 
   const times = items.map((i) => dayjs(i.at).valueOf());
@@ -256,13 +272,13 @@ function LanesView({ items, now, since }: { items: TimelineItem[]; now: string; 
   const short = span < 62 * 86_400_000;
   const ticks: dayjs.Dayjs[] = [];
   for (
-    let t = dayjs(start)
+    let tick = dayjs(start)
       .startOf(short ? "week" : "month")
       .add(1, short ? "week" : "month");
-    t.valueOf() < end;
-    t = t.add(1, short ? "week" : "month")
+    tick.valueOf() < end;
+    tick = tick.add(1, short ? "week" : "month")
   ) {
-    ticks.push(t);
+    ticks.push(tick);
   }
   const shown = all ? lanes : lanes.slice(0, LANE_LIMIT);
   const label = 220;
@@ -270,18 +286,18 @@ function LanesView({ items, now, since }: { items: TimelineItem[]; now: string; 
   return (
     <Stack gap="sm">
       <Group gap="xs">
-        <Text size="sm">One row per</Text>
+        <Text size="sm">{t("lanes.rowPer")}</Text>
         <SegmentedControl
           size="xs"
           value={by}
           onChange={(v) => setBy(v as LaneBy)}
-          data={LANE_BY}
-          aria-label="One row per"
+          data={LANE_BY.map((b) => ({ value: b.value, label: i18n.t(b.label) }))}
+          aria-label={t("lanes.rowPer")}
         />
       </Group>
       {lanes.length === 0 ? (
         <Text c="dimmed" size="sm">
-          Nothing here is linked to {by === "agency" ? "an agency" : `a ${by}`}.
+          {i18n.t(LANE_BY.find((b) => b.value === by)!.empty)}
         </Text>
       ) : (
         <Card withBorder padding="sm" style={{ overflowX: "auto" }}>
@@ -289,18 +305,18 @@ function LanesView({ items, now, since }: { items: TimelineItem[]; now: string; 
             <Box style={{ display: "flex" }}>
               <Box w={label} style={{ flexShrink: 0 }} />
               <Box style={{ position: "relative", flex: 1, height: 18 }}>
-                {ticks.map((t) => (
+                {ticks.map((tick) => (
                   <Text
-                    key={t.valueOf()}
+                    key={tick.valueOf()}
                     size="xs"
                     c="dimmed"
                     style={{
                       position: "absolute",
-                      left: `${pct(t.toISOString())}%`,
+                      left: `${pct(tick.toISOString())}%`,
                       transform: "translateX(-50%)",
                     }}
                   >
-                    {t.format(short ? "D MMM" : "MMM YYYY")}
+                    {formatDay(tick, short ? "dayMonth" : "monthYear", lang)}
                   </Text>
                 ))}
               </Box>
@@ -354,13 +370,20 @@ function LanesView({ items, now, since }: { items: TimelineItem[]; now: string; 
                     >
                       {lane.items.map((item) => {
                         const cat = categoryOf(item.category);
-                        const when = `${dayjs(dayOf(item)).format("D MMM YYYY")}${item.all_day ? "" : ` ${timeOf(item)}`}`;
+                        const date = formatDay(dayOf(item), "dayMonthYear", lang);
+                        const when = item.all_day
+                          ? date
+                          : t("dateTime", { date, time: timeOf(item, t, lang) });
                         return (
                           <li key={item.id}>
-                            <Tooltip label={`${when} · ${item.title}`} withArrow>
+                            <Tooltip label={t("lanes.dotHover", { when, title: item.title })} withArrow>
                               <Box
                                 component="button"
-                                aria-label={`${when} · ${cat.one}: ${item.title}`}
+                                aria-label={t("lanes.dot", {
+                                  when,
+                                  kind: i18n.t(cat.one),
+                                  title: item.title,
+                                })}
                                 onClick={() => router.history.push(hrefOf(item))}
                                 style={{
                                   position: "absolute",
@@ -393,7 +416,7 @@ function LanesView({ items, now, since }: { items: TimelineItem[]; now: string; 
       )}
       {lanes.length > LANE_LIMIT && (
         <Button variant="subtle" size="xs" onClick={() => setAll(!all)} style={{ alignSelf: "flex-start" }}>
-          {all ? `Show the ${LANE_LIMIT} most recent` : `Show all ${lanes.length} rows`}
+          {all ? t("lanes.showRecent", { count: LANE_LIMIT }) : t("lanes.showAll", { count: lanes.length })}
         </Button>
       )}
       <Group gap="md">
@@ -405,12 +428,12 @@ function LanesView({ items, now, since }: { items: TimelineItem[]; now: string; 
               style={{ borderRadius: "50%", background: `var(--mantine-color-${c.color}-6)` }}
             />
             <Text size="xs" c="dimmed">
-              {c.label}
+              {i18n.t(c.label)}
             </Text>
           </Group>
         ))}
         <Text size="xs" c="dimmed">
-          Hollow dots are ahead; the dashed line is now.
+          {t("lanes.legend")}
         </Text>
       </Group>
     </Stack>
@@ -445,6 +468,7 @@ function useTimelineSearch() {
 }
 
 export function TimelinePage() {
+  const { t, i18n } = useTranslation("timeline");
   const { view, period, about: asked, set } = useTimelineSearch();
   const [categories, setCategories] = useState<string[]>(DEFAULT_CATEGORIES);
   const { data: companies } = useCompanies();
@@ -453,11 +477,17 @@ export function TimelinePage() {
 
   const aboutOptions = [
     {
-      group: "Companies",
+      group: t("about.companies"),
       items: (companies ?? []).map((c) => ({ value: `company:${c.id}`, label: c.name })),
     },
-    { group: "Agencies", items: (agencies ?? []).map((a) => ({ value: `agency:${a.id}`, label: a.name })) },
-    { group: "People", items: (contacts ?? []).map((c) => ({ value: `contact:${c.id}`, label: c.name })) },
+    {
+      group: t("about.agencies"),
+      items: (agencies ?? []).map((a) => ({ value: `agency:${a.id}`, label: a.name })),
+    },
+    {
+      group: t("about.people"),
+      items: (contacts ?? []).map((c) => ({ value: `contact:${c.id}`, label: c.name })),
+    },
   ].filter((g) => g.items.length);
   // Someone who's gone (deleted, or merged into someone else) filters nothing, rather than
   // filtering everything away under an empty box.
@@ -487,35 +517,34 @@ export function TimelinePage() {
     <Stack>
       <Group justify="space-between" align="flex-end">
         <div>
-          <Title order={2}>Timeline</Title>
+          <Title order={2}>{t("title")}</Title>
           <Text c="dimmed" size="sm">
-            Everything that happened: calls, roles pitched, applications, interviews and offers. Lanes show
-            one row per role, from the pitch to the outcome.
+            {t("description")}
           </Text>
         </div>
         <SegmentedControl
           value={view}
           onChange={(v) => set({ about, view: v })}
           data={[
-            { value: "list", label: "List" },
-            { value: "lanes", label: "Lanes" },
+            { value: "list", label: t("views.list") },
+            { value: "lanes", label: t("views.lanes") },
           ]}
-          aria-label="View"
+          aria-label={t("views.label")}
         />
       </Group>
 
       <Group gap="sm" align="flex-end">
         <Select
-          label="Period"
-          data={PERIODS}
+          label={t("period.label")}
+          data={PERIODS.map((p) => ({ value: p.value, label: i18n.t(p.label) }))}
           value={period}
           onChange={(v) => set({ about, period: v ?? "90" })}
           allowDeselect={false}
           w={170}
         />
         <Select
-          label="About"
-          placeholder="Everyone and everything"
+          label={t("about.label")}
+          placeholder={t("about.placeholder")}
           data={aboutOptions}
           value={about}
           onChange={(v) => set({ about: v })}
@@ -528,7 +557,7 @@ export function TimelinePage() {
       <Stack gap={4}>
         <Group gap="xs">
           <Text size="sm" fw={500} id="timeline-show">
-            Show
+            {t("show.label")}
           </Text>
           <Button
             size="compact-xs"
@@ -536,7 +565,7 @@ export function TimelinePage() {
             onClick={() => setCategories(CATEGORIES.map((c) => c.value))}
             disabled={categories.length === CATEGORIES.length}
           >
-            Everything
+            {t("show.everything")}
           </Button>
           <Button
             size="compact-xs"
@@ -547,7 +576,7 @@ export function TimelinePage() {
               DEFAULT_CATEGORIES.every((c) => categories.includes(c))
             }
           >
-            Usual
+            {t("show.usual")}
           </Button>
           <Button
             size="compact-xs"
@@ -555,14 +584,14 @@ export function TimelinePage() {
             onClick={() => setCategories([])}
             disabled={nothingTicked}
           >
-            None
+            {t("show.none")}
           </Button>
         </Group>
         <Chip.Group multiple value={categories} onChange={setCategories}>
           <Group gap={6} role="group" aria-labelledby="timeline-show">
             {CATEGORIES.map((c) => (
               <Chip key={c.value} value={c.value} size="xs" color={c.color} variant="outline">
-                {c.label}
+                {i18n.t(c.label)}
               </Chip>
             ))}
           </Group>
@@ -571,18 +600,18 @@ export function TimelinePage() {
 
       {nothingTicked ? (
         <Text c="dimmed" size="sm" py="xl" ta="center">
-          Tick at least one kind of thing to show.
+          {t("empty.nothingTicked")}
         </Text>
       ) : isLoading ? (
         <Loader />
       ) : items.length === 0 ? (
         <Stack align="center" gap="xs" py="xl">
           <IconTimeline size={32} stroke={1.4} />
-          <Text fw={600}>Nothing here yet</Text>
+          <Text fw={600}>{t("empty.title")}</Text>
           <Text c="dimmed" size="sm">
             {about || period !== "all" || categories.length < DEFAULT_CATEGORIES.length
-              ? "Try a longer period, tick more kinds, or clear a filter."
-              : "Add an application, or log a call with someone, and it shows up here."}
+              ? t("empty.filtered")
+              : t("empty.start")}
           </Text>
         </Stack>
       ) : view === "list" ? (

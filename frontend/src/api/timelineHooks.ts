@@ -14,19 +14,74 @@ export interface TimelineFilters {
   application_id?: string;
 }
 
-export const CATEGORIES: { value: TimelineCategory; label: string; one: string; color: string }[] = [
-  { value: "stage", label: "Stage moves", one: "Stage", color: "blue" },
-  { value: "message", label: "Messages", one: "Message", color: "cyan" },
-  { value: "meeting", label: "Calls and meetings", one: "Call", color: "pink" },
-  { value: "interview", label: "Interviews", one: "Interview", color: "violet" },
-  { value: "offer", label: "Offers", one: "Offer", color: "teal" },
-  { value: "role", label: "Roles pitched or passed", one: "Role", color: "lime" },
-  { value: "note", label: "Notes", one: "Note", color: "yellow" },
-  { value: "document", label: "Documents sent", one: "Document", color: "grape" },
-  { value: "file", label: "Files", one: "File", color: "orange" },
-  { value: "added", label: "Companies, agencies and people added", one: "Added", color: "gray" },
-  { value: "other", label: "Other", one: "Other", color: "dark" },
-];
+export const CATEGORIES = [
+  {
+    value: "stage",
+    label: "timeline:categories.stage.label",
+    one: "timeline:categories.stage.one",
+    color: "blue",
+  },
+  {
+    value: "message",
+    label: "timeline:categories.message.label",
+    one: "timeline:categories.message.one",
+    color: "cyan",
+  },
+  {
+    value: "meeting",
+    label: "timeline:categories.meeting.label",
+    one: "timeline:categories.meeting.one",
+    color: "pink",
+  },
+  {
+    value: "interview",
+    label: "timeline:categories.interview.label",
+    one: "timeline:categories.interview.one",
+    color: "violet",
+  },
+  {
+    value: "offer",
+    label: "timeline:categories.offer.label",
+    one: "timeline:categories.offer.one",
+    color: "teal",
+  },
+  {
+    value: "role",
+    label: "timeline:categories.role.label",
+    one: "timeline:categories.role.one",
+    color: "lime",
+  },
+  {
+    value: "note",
+    label: "timeline:categories.note.label",
+    one: "timeline:categories.note.one",
+    color: "yellow",
+  },
+  {
+    value: "document",
+    label: "timeline:categories.document.label",
+    one: "timeline:categories.document.one",
+    color: "grape",
+  },
+  {
+    value: "file",
+    label: "timeline:categories.file.label",
+    one: "timeline:categories.file.one",
+    color: "orange",
+  },
+  {
+    value: "added",
+    label: "timeline:categories.added.label",
+    one: "timeline:categories.added.one",
+    color: "gray",
+  },
+  {
+    value: "other",
+    label: "timeline:categories.other.label",
+    one: "timeline:categories.other.one",
+    color: "dark",
+  },
+] as const satisfies readonly { value: TimelineCategory; label: string; one: string; color: string }[];
 
 export const categoryOf = (value: TimelineCategory) => CATEGORIES.find((c) => c.value === value)!;
 
