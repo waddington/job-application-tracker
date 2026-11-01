@@ -7,7 +7,7 @@ Numbers in brackets are pull requests.
 
 ## 1.2.43 (2026-11-01)
 
-- **Developers:** UNCODEDPLACEHOLDER read their text from the translation files, ready for other languages. The English is unchanged (#181).
+- **Developers:** the API's last uncoded errors gain a `code` and `params` beside the unchanged English `detail`, and validation messages read their text from the translation files by Pydantic's `type`, ready for other languages. Validation responses only gain keys in `ctx`. A few rare validation types stay in Pydantic's English (#181).
 
 ## 1.2.42 (2026-11-01)
 
