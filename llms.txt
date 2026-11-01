@@ -30,7 +30,8 @@ What it does:
   `usual_reply_days` on contacts).
 - Interview rounds in the user's own words ("Round 2 · System design test"), rescheduled from
   the application page, the quick view (the current round, in an active stage), Today or the
-  Interviews page and marked so, with who needed the change and why on the timeline.
+  Interviews page and marked so, with each move's old and new time, who needed the change and
+  why on the application's timeline and the Timeline page.
 - Markdown notes as real files, links, attachments and `.eml` import onto the timeline;
   versioned CVs and cover letters.
 - Timeline across every role, application, company, agency and person, by day or as lanes

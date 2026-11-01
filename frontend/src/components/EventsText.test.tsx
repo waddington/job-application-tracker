@@ -11,7 +11,7 @@ import { hitTitle } from "../pages/SearchPage";
 import { makeRouter } from "../router";
 import { mockApi, row, WORKFLOW } from "../test/mockApi";
 import cases from "./eventMessages.cases.json";
-import { EVENT_TEXT, type EventMsg, eventText } from "./eventText";
+import { EVENT_TEXT, type EventMsg, eventText, movedRoundText, moveLine, type RoundMove } from "./eventText";
 
 // An event's saved English (i18n-events-setup). tests/test_event_messages.py makes the real API write
 // each of these same cases, so the frontend's English and the saved summary can't drift apart.
@@ -80,6 +80,61 @@ describe("the application timeline", () => {
     expect(await screen.findByText(translated)).toBeInTheDocument();
     expect(screen.queryByText("Link added: Contoso careers")).not.toBeInTheDocument();
     expect(screen.getByText("Spoke to Alex")).toBeInTheDocument();
+  });
+});
+
+describe("a reschedule on the application timeline", () => {
+  const round = { round: 1, title: "Pairing", kind: "pairing" };
+  const times = { from_at: "2026-11-03T10:00:00", to_at: "2026-11-05T14:00:00" };
+  const TIMES = "Moved from Tue 3 Nov, 10:00 to Thu 5 Nov, 14:00";
+  const SAVED = "Round 1 · Pairing rescheduled (you both needed the change): {{not}} a value";
+  const saved = (reschedule?: RoundMove) => ({
+    ...event(
+      "e3",
+      SAVED,
+      {
+        key: "event.roundRescheduledByMutualReason",
+        params: { ...round, reason: "{{not}} a value" },
+      } as EventMsg,
+      "interview",
+    ),
+    ...(reschedule ? { reschedule } : {}),
+  });
+
+  it("says the round, then its times, who and why, and your words as written", async () => {
+    showTimeline([saved({ ...times, by: "mutual", reason: "{{not}} a value" })]);
+    expect(await screen.findByText("Round 1 · Pairing rescheduled")).toBeInTheDocument();
+    expect(screen.getByText(`${TIMES} · You both needed the change · {{not}} a value`)).toBeInTheDocument();
+  });
+
+  it.each([
+    ["me", "You needed the change"],
+    ["them", "They needed the change"],
+    ["mutual", "You both needed the change"],
+    ["neither", "Not down to either of you"],
+  ] as const)("words %s as: %s", (by, words) => {
+    expect(moveLine({ ...times, by })).toBe(`${TIMES} · ${words}`);
+  });
+
+  it("leaves out what wasn't said", () => {
+    expect(moveLine(times)).toBe(TIMES);
+    expect(moveLine({ ...times, by: null, reason: null })).toBe(TIMES);
+    expect(moveLine({ ...times, reason: "A clash" })).toBe(`${TIMES} · A clash`);
+    expect(moveLine({ ...times, by: "from a newer server" as "me" })).toBe(TIMES);
+  });
+
+  it("keeps today's text exactly with no move: older events, an older server", async () => {
+    showTimeline([saved()]);
+    expect(await screen.findByText(SAVED)).toBeInTheDocument();
+    expect(screen.queryByText(/^Moved from/)).not.toBeInTheDocument();
+  });
+
+  it("keeps the whole text beside a move when its message isn't a move's", async () => {
+    const summaryOnly = { ...saved({ ...times, reason: "A clash" }), msg: null };
+    showTimeline([summaryOnly]);
+    expect(await screen.findByText(SAVED)).toBeInTheDocument();
+    expect(screen.getByText(`${TIMES} · A clash`)).toBeInTheDocument();
+    expect(movedRoundText(summaryOnly)).toBeNull();
   });
 });
 

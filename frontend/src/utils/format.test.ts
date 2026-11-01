@@ -19,6 +19,7 @@ const TODAY_SHOWS: Record<DatePattern, [string, string]> = {
   // pattern: [the format call it replaces, its output]
   weekdayDayMonth: ["dddd D MMMM", "Thursday 5 March"],
   shortWeekdayDayMonth: ["ddd D MMM", "Thu 5 Mar"],
+  shortWeekdayDayMonthTime: ["ddd D MMM, HH:mm", "Thu 5 Mar, 09:07"],
   shortWeekdayDayMonthYear: ["ddd D MMM YYYY", "Thu 5 Mar 2026"],
   dayMonth: ["D MMM", "5 Mar"],
   dayMonthYear: ["D MMM YYYY", "5 Mar 2026"],

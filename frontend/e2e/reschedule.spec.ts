@@ -81,6 +81,18 @@ const dayMonth = (iso: string | null) => {
   const part = (type: string) => Number(parts.find((p) => p.type === type)?.value);
   return `${part("day")} ${MONTHS[part("month") - 1]}`;
 };
+/** "Tue 3 Nov, 10:00", as a move's line writes it. */
+const dayTime = (iso: string | null | undefined) => {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/London",
+    weekday: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(new Date(iso ?? ""));
+  const part = (type: string) => parts.find((p) => p.type === type)?.value;
+  return `${part("weekday")} ${dayMonth(iso ?? null)}, ${part("hour")}:${part("minute")}`;
+};
 const pickWho = async (page: Page, dialog: Locator, option: string) => {
   await who(dialog).click();
   await page.getByRole("option", { name: option, exact: true }).click();
@@ -99,9 +111,7 @@ test.describe("who needed the change", () => {
     await expect(dialog).toBeHidden();
 
     await page.reload();
-    await expect(
-      page.getByText(`${label} rescheduled (they needed the change): Their manager is away`).first(),
-    ).toBeVisible();
+    await expect(page.getByText(/They needed the change · Their manager is away$/)).toBeVisible();
     const [move] = await moves(request, appId);
     expect(move?.data.reschedule).toMatchObject({ by: "them", reason: "Their manager is away" });
     expect(Date.parse(move?.data.reschedule?.from ?? "")).toBe(Date.parse(round.starts_at ?? ""));
@@ -122,7 +132,7 @@ test.describe("who needed the change", () => {
     await moveDay(page, dialog);
     await submit(dialog);
     await expect(dialog).toBeHidden();
-    await expect(page.getByText(`${label} rescheduled (not down to either of you)`).first()).toBeVisible();
+    await expect(page.getByText(/ · Not down to either of you$/)).toBeVisible();
   });
 
   test("a second reschedule keeps the first one's who and why", async ({ page, request }) => {
@@ -145,11 +155,6 @@ test.describe("who needed the change", () => {
     await submit(dialog);
     await expect(dialog).toBeHidden();
 
-    await page.reload();
-    await expect(
-      page.getByText(`${label} rescheduled (they needed the change): First clash`).first(),
-    ).toBeVisible();
-    await expect(page.getByText(`${label} rescheduled (you needed the change)`).first()).toBeVisible();
     const saved = await moves(request, appId);
     expect(saved.map((m) => m.data.reschedule?.by).sort()).toEqual(["me", "them"]);
     const byThem = saved.find((m) => m.data.reschedule?.by === "them");
@@ -163,8 +168,76 @@ test.describe("who needed the change", () => {
     expect(patched.ok()).toBe(true);
     await page.goto(`/applications/${appId}`);
     await expect(page.getByText(`${label} rescheduled`, { exact: true }).first()).toBeVisible();
-    await expect(page.getByText(/needed the change|not down to either/)).toHaveCount(0);
+    await expect(page.getByText(/^Moved from .+, \d\d:\d\d$/)).toBeVisible();
+    await expect(page.getByText(/needed the change|not down to either/i)).toHaveCount(0);
     await expect(page.locator(".mantine-Card-root").getByText("Rescheduled", { exact: true })).toBeVisible();
+  });
+});
+
+test.describe("each move on the timelines", () => {
+  const expectBoth = async (page: Page, appId: string, label: string, lines: string[]) => {
+    await page.goto(`/applications/${appId}`);
+    for (const line of lines) await expect(page.getByText(line, { exact: true })).toBeVisible();
+    await expect(page.getByText(`${label} rescheduled`, { exact: true })).toHaveCount(lines.length);
+    await page.goto("/timeline");
+    for (const line of lines) await expect(page.getByText(line, { exact: true })).toBeVisible();
+    await expect(page.getByText(`${label} rescheduled`, { exact: true })).toHaveCount(lines.length);
+    await expect(page.getByText(new RegExp(`^${label} rescheduled .`))).toHaveCount(0);
+  };
+
+  test("both timelines show the move after a reload", async ({ page, request }) => {
+    const { appId, label } = await bookedRound(request, "Both Timelines Co", "Both timelines");
+    await page.goto(`/applications/${appId}`);
+    const dialog = await openDialog(page, label);
+    await moveDay(page, dialog);
+    await pickWho(page, dialog, "Them");
+    await dialog.getByLabel("Why? (optional)").fill("Both timelines clash");
+    await submit(dialog);
+    await expect(dialog).toBeHidden();
+    await page.reload();
+
+    const [move] = await moves(request, appId);
+    const saved = move?.data.reschedule;
+    await expectBoth(page, appId, label, [
+      `Moved from ${dayTime(saved?.from)} to ${dayTime(saved?.to)} · They needed the change · Both timelines clash`,
+    ]);
+    await page.reload();
+    await expect(page.getByText(/ · They needed the change · Both timelines clash$/)).toBeVisible();
+  });
+
+  test("a second move keeps the first's details", async ({ page, request }) => {
+    const { appId, round, label } = await bookedRound(request, "Second Move Co", "Second move");
+    const move = async (data: object, count: number) => {
+      const patched = await request.patch(`${API}/interviews/${round.id}`, { data });
+      expect(patched.ok()).toBe(true);
+      expect(((await patched.json()) as Round).rescheduled_count).toBe(count);
+    };
+    const first = inDays(8);
+    const second = inDays(10);
+    await move(
+      { starts_at: first, reschedule_by: "mutual", reschedule_reason: "Second move first clash" },
+      1,
+    );
+    await move({ starts_at: second, reschedule_by: "me" }, 2);
+    await expectBoth(page, appId, label, [
+      `Moved from ${dayTime(round.starts_at)} to ${dayTime(first)} · You both needed the change · Second move first clash`,
+      `Moved from ${dayTime(first)} to ${dayTime(second)} · You needed the change`,
+    ]);
+  });
+
+  test("an old-style round shows only the old text", async ({ page, request }) => {
+    const { appId, label } = await bookedRound(request, "Old Style Co", "Old style");
+    const old = `${label} rescheduled: An old clash`;
+    // What the app saved before moves were recorded: words, and no record of the move.
+    await post(request, `applications/${appId}/activities`, { kind: "interview", summary: old });
+    for (const path of [`/applications/${appId}`, "/timeline"]) {
+      await page.goto(path);
+      const words = page.getByText(old, { exact: true });
+      await expect(words).toBeVisible();
+      await expect(words.locator("..")).not.toContainText("Moved from");
+    }
+    await page.goto(`/applications/${appId}`);
+    await expect(page.getByText(/^Moved from/)).toHaveCount(0);
   });
 });
 

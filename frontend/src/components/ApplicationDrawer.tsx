@@ -32,7 +32,7 @@ import { Trans, useTranslation } from "react-i18next";
 import { PersonMarks } from "./GhostMark";
 import type { ApiEvent, ApplicationDetail } from "../api/client";
 import { errorText } from "../api/notifyError";
-import { eventText } from "./eventText";
+import { eventText, movedRoundText, moveLine } from "./eventText";
 import {
   stageLookup,
   useApplication,
@@ -283,10 +283,17 @@ export function ApplicationTimeline({ app }: { app: ApplicationDetail }) {
         const Icon = ACTIVITY_ICONS[event.kind] ?? IconNote;
         return (
           <Timeline.Item key={event.id} bullet={<Icon size={12} />} title={eventTitle(event, names)}>
-            {event.summary && event.kind !== "stage_change" && <Text size="sm">{eventText(event)}</Text>}
+            {event.summary && event.kind !== "stage_change" && (
+              <Text size="sm">{movedRoundText(event) ?? eventText(event)}</Text>
+            )}
             {event.summary && event.kind === "stage_change" && event.from_stage && (
               <Text size="sm" c="dimmed">
                 {eventText(event)}
+              </Text>
+            )}
+            {event.reschedule && (
+              <Text size="sm" c="dimmed" style={{ overflowWrap: "anywhere" }}>
+                {moveLine(event.reschedule)}
               </Text>
             )}
             <Text size="xs" c="dimmed">

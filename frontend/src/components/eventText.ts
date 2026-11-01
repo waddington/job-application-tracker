@@ -1,7 +1,7 @@
 import type { ApiEvent } from "../api/client";
 import { i18n } from "../i18n";
 import type { TextKey } from "../locales/en";
-import { formatMoney } from "../utils/format";
+import { formatDay, formatMoney } from "../utils/format";
 import { roundLabel } from "../utils/rounds";
 
 export type EventMsg = NonNullable<ApiEvent["msg"]>;
@@ -96,4 +96,35 @@ export function eventText(event: Pick<ApiEvent, "summary" | "msg">): string | nu
   if (!msg || !Object.hasOwn(EVENT_TEXT, msg.key)) return event.summary;
   // The key and its params come as a pair from the API's union; t() can't follow that across a lookup.
   return (i18n.t as unknown as (key: string, params: object) => string)(EVENT_TEXT[msg.key], textParams(msg));
+}
+
+export type RoundMove = NonNullable<ApiEvent["reschedule"]>;
+
+// Whole keys, so the unused-key scanner sees them. A newer server's who is left unsaid.
+const MOVE_BY = {
+  me: "interviews:reschedule.move.byMe",
+  them: "interviews:reschedule.move.byThem",
+  mutual: "interviews:reschedule.move.byMutual",
+  neither: "interviews:reschedule.move.byNeither",
+} as const;
+
+/** A move, in sentences: "Moved from Tue 3 Nov, 10:00 to Thu 5 Nov, 14:00 · They needed the change · Why". */
+export function moveLine(move: RoundMove): string {
+  const when = (iso: string) => formatDay(iso, "shortWeekdayDayMonthTime", i18n.language);
+  const parts: string[] = [
+    i18n.t("interviews:reschedule.move.times", { from: when(move.from_at), to: when(move.to_at) }),
+  ];
+  if (move.by && Object.hasOwn(MOVE_BY, move.by)) parts.push(i18n.t(MOVE_BY[move.by]));
+  if (move.reason) parts.push(move.reason); // your own words, as written
+  return parts.join(i18n.t("interviews:reschedule.move.separator"));
+}
+
+/**
+ * The short words above a move's line, "Round 2 · Technical rescheduled", so its who and why aren't said
+ * twice. Null for anything else, which keeps its whole message: no move, or a message that isn't a move's.
+ */
+export function movedRoundText(event: Pick<ApiEvent, "msg" | "reschedule">): string | null {
+  const msg = event.msg;
+  if (!event.reschedule || !msg?.key.startsWith("event.roundRescheduled") || !isRound(msg)) return null;
+  return i18n.t("events:roundRescheduled", { label: roundLabel(msg.params) });
 }
