@@ -26,6 +26,19 @@ Other scripts:
 - `python3 -m tools.pm`: the project's build dashboard (roadmap and PR status) at
   http://127.0.0.1:8767; only interesting if you're working on the tracker itself.
 
+## Updating to a newer version
+
+```bash
+git pull
+uv sync
+pnpm --dir frontend install
+pnpm --dir frontend build
+```
+
+Then restart `jat serve`. It upgrades the database automatically when it starts; your data
+folder is never part of the code repo, so `git pull` can't overwrite it. Node.js and pnpm are
+only needed for installing and updating, not to run the app.
+
 ## Settings
 
 Set these in `.env` in the repo root (copy `.env.example`), or as environment variables.

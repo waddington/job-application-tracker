@@ -65,9 +65,25 @@ nothing shows up in `git log` until you've been idle for a minute.
 If the folder isn't a git repo, snapshots are off and the app still works; the sidebar's
 connection tooltip says "data dir isn't a git repo".
 
+To turn them on, stop the app, make the folder a git repo, and start it again. You get full
+history, and with a remote (below) an off-machine backup for free:
+
+```bash
+git -C ~/job-search-data init
+uv run jat snapshot     # the first commit; after this they happen by themselves
+```
+
 ## Pushing: off-machine backup
 
 Snapshots stay on your machine until you push them. The app **never pushes on its own**.
+First connect the data repo, once, to a **private** remote repository (GitHub, GitLab, your
+own server):
+
+```bash
+git -C ~/job-search-data remote add origin <your-private-repo-url>
+```
+
+Then, whenever you like:
 
 ```bash
 uv run jat push
@@ -121,11 +137,11 @@ The data repo is how your tracker travels.
 
 Both computers need the same version of the app (or the one restoring needs a newer one):
 an export from a newer version is refused with "update the app first". Update the code on
-both ([Updating](install.md#updating-to-a-newer-version)) when you update one.
+both ([Updating](commands.md#updating-to-a-newer-version)) when you update one.
 
 **Set up the second computer once:**
 
-1. Install the app ([Install](install.md#install)).
+1. Install the app ([Install](install.md#get-it-running): the first set of commands).
 2. Clone your private data repo:
 
    ```bash
