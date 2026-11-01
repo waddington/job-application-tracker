@@ -11,6 +11,21 @@ from .yamlish import YamlishError, parse
 # "unknown" only comes from live evidence: commits on a branch while GitHub has never answered.
 STATUSES = ("bug", "planned", "building", "review", "unknown", "done", "blocked")
 SEVERITIES = ("high", "medium", "low")
+# What investigating a bug found, shown on its task page.
+REVIEW_FIELDS = (
+    "ease",
+    "fix_risk",
+    "data_risk",
+    "changes_english",
+    "confirmed_by",
+    "severity_reason",
+    "ease_reason",
+    "root_cause",
+    "fix_outline",
+    "pinned_by",
+    "related_bugs",
+    "review_notes",
+)
 BRANCH_PREFIX = "worktree-"
 MAX_ESTIMATE_H = 10_000
 
@@ -74,6 +89,8 @@ class Task:
     severity: str | None = None
     # A longer description: what happens and how it was found. Names stay short.
     detail: str | None = None
+    # A bug's ratings and findings from an investigation: REVIEW_FIELDS, where set.
+    review: dict[str, object] = field(default_factory=dict)
     estimate_h: float = 0.0
     depends: list[str] = field(default_factory=list)
     prd: str | None = None
@@ -256,6 +273,7 @@ def _task(raw, phase_id: str, errors: list[str]) -> Task | None:
         type=kind,
         severity=str(severity) if severity is not None else None,
         detail=str(raw["detail"]) if raw.get("detail") is not None else None,
+        review={key: raw[key] for key in REVIEW_FIELDS if raw.get(key) not in (None, "", [])},
         estimate_h=estimate,
         depends=[str(d) for d in depends],
         prd=documents["prd"],

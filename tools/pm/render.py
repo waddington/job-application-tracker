@@ -87,11 +87,14 @@ def task_link(task_id: str) -> str:
 
 
 def bug_tag(task: Task) -> str:
-    """BUG and its severity, on a bug wherever it is, even once a fix has moved it along."""
+    """BUG, its severity, how easy the fix is and its hours, on a bug wherever it is, even once a
+    fix has moved it along."""
     if task.type != "bug":
         return ""
     severity = f" · {escape(task.severity)}" if task.severity else ""
-    return f'<span class="pill bug">BUG{severity}</span> '
+    ease = f" · {escape(str(task.review['ease']))} fix" if task.review.get("ease") else ""
+    hours = f" · {task.estimate_h:g} h" if task.review.get("ease") and task.estimate_h else ""
+    return f'<span class="pill bug">BUG{severity}{ease}{hours}</span> '
 
 
 def task_tags(task: Task) -> str:

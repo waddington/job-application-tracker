@@ -55,7 +55,7 @@ main{padding:20px;max-width:1500px;margin:0 auto}
 .bar{height:6px;background:var(--line-2);border-radius:2px;overflow:hidden;margin:6px 0}
 .bar i{display:block;height:100%;background:var(--done)}
 .pill{display:inline-block;padding:0 8px;border-radius:10px;font-size:12px;color:var(--on-pill);white-space:nowrap}
-.pill.bug{background:var(--bug)}.pill.planned{background:var(--planned)}.pill.building{background:var(--building)}
+.pill.bug{background:var(--bug);white-space:normal}.pill.planned{background:var(--planned)}.pill.building{background:var(--building)}
 .pill.review{background:var(--review)}.pill.done{background:var(--done)}.pill.blocked{background:var(--blocked)}
 ul.plain{list-style:none;margin:0;padding:0}ul.plain li{padding:6px 0;border-top:1px solid var(--line)}
 ul.plain li:first-child{border-top:0}
@@ -151,6 +151,7 @@ padding:3px 0}
 .legend .closed{background:var(--planned)}
 .facts{display:grid;grid-template-columns:minmax(90px,130px) minmax(0,1fr);gap:6px 12px;margin:0}
 .facts dt{color:var(--ink-3)}.facts dd{margin:0;overflow-wrap:anywhere}
+@media (max-width:560px){.facts{grid-template-columns:minmax(0,1fr);gap:2px 0}.facts dd{margin-bottom:8px}}
 .track{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));max-width:560px}
 .rm-grid svg.chart .axis{font-size:18px}
 @media (max-width:700px){svg.chart.wide{min-width:640px}svg.chart.wide .axis{font-size:26px}
