@@ -5,6 +5,18 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.2.46 (2026-11-01)
+
+- **Security:** updates undici and fast-uri in the website's dependencies to fix twelve Dependabot alerts. The website looks and works the same (#186).
+
+## 1.2.45 (2026-11-01)
+
+- **Security:** updates vite and seroval to fix eight Dependabot alerts. Nothing changes in how the app works (#188).
+
+## 1.2.44 (2026-11-01)
+
+- **Security:** updates certifi and opentelemetry-api to fix two Dependabot alerts, one of them critical. The app itself doesn't change (#187).
+
 ## 1.2.43 (2026-11-01)
 
 - **Developers:** the API's last uncoded errors gain a `code` and `params` beside the unchanged English `detail`, and validation messages read their text from the translation files by Pydantic's `type`, ready for other languages. Validation responses only gain keys in `ctx`. A few rare validation types stay in Pydantic's English (#181).
