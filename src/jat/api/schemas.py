@@ -6,6 +6,7 @@ from datetime import date, datetime
 from typing import Annotated, Any, ClassVar, Literal
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, HttpUrl, TypeAdapter, ValidationError, model_validator
+from pydantic_core import PydanticCustomError
 
 WorkMode = Literal["remote", "hybrid", "office"]
 EmploymentType = Literal["permanent", "contract", "fixed_term"]
@@ -38,7 +39,8 @@ class Patch(In):
     def _reject_null_required(self):
         bad = sorted(f for f in self.model_fields_set & self.not_null if getattr(self, f) is None)
         if bad:
-            raise ValueError(f"{', '.join(bad)} can't be null")
+            # Its own type, so the frontend can word it; "Value error, " is what the English has always said.
+            raise PydanticCustomError("not_null", "Value error, {fields} can't be null", {"fields": ", ".join(bad)})
         return self
 
 
@@ -180,7 +182,7 @@ class RoleIn(RoleFields):
     @model_validator(mode="after")
     def _salary_range(self):
         if self.salary_min is not None and self.salary_max is not None and self.salary_min > self.salary_max:
-            raise ValueError("salary_min can't be more than salary_max")
+            raise PydanticCustomError("salary_range", "Value error, salary_min can't be more than salary_max")
         return self
 
     company_id: str
@@ -494,7 +496,9 @@ class TodoIn(In):
     @model_validator(mode="after")
     def _both_or_neither(self):
         if (self.entity_type is None) != (self.entity_id is None):
-            raise ValueError("give both entity_type and entity_id, or neither")
+            raise PydanticCustomError(
+                "entity_both_or_neither", "Value error, give both entity_type and entity_id, or neither"
+            )
         return self
 
 
@@ -1200,7 +1204,7 @@ class QuickApplicationIn(In):
     @model_validator(mode="after")
     def _company_given(self):
         if not self.company_id and not (self.company_name or "").strip():
-            raise ValueError("give company_id or company_name")
+            raise PydanticCustomError("company_required", "Value error, give company_id or company_name")
         return self
 
 

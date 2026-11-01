@@ -105,10 +105,10 @@ pnpm --dir frontend gen:api
 ## Text in the UI (translations)
 
 The app is translatable, English only for now; the plan is in
-[`docs/rfc/i18n.md`](docs/rfc/i18n.md). The UI's own text goes through the translation layer. Three
-things stay English: events saved before their message existed, and your own words, stay as saved; and
-a few errors from the server with no code (not found on a stale page, and validation details) show as
-the API sent them (`i18n-uncoded-errors`).
+[`docs/rfc/i18n.md`](docs/rfc/i18n.md). The UI's own text goes through the translation layer. Events
+saved before their message existed, and your own words, stay as saved. A server error shows the text
+for its code, and a 422's problems are worded from Pydantic's `type` and `ctx`
+(`api/validationText.ts`). A problem whose `type` has no text there shows Pydantic's English.
 
 A stage's name always goes through `stageName({ id, name })` (`utils/stageName.ts`) when it's shown: a
 default stage shows translated, a renamed or added one as written. It's for showing only: logic,
@@ -181,8 +181,11 @@ a test and the type check fail until it does.
      in `components/ErrorsText.test.tsx`.
 
   The type check fails if a code has no text or no row, or text has no code. Every route under
-  `/api/v1` already declares `ErrorOut`, so a route needs nothing. Errors people never see can stay
-  plain `HTTPException`s. A domain exception that carries a code (`WorkflowError`, `SnapshotError`…)
+  `/api/v1` already declares `ErrorOut`, so a route needs nothing. A new plain `HTTPException` in
+  `src/jat/api` fails `tests/test_validation_text.py`: give it a code, or if nobody can meet it, add it
+  to `PLAIN_ALLOWED` there and say why. A check in a schema raises `PydanticCustomError` with its own
+  type and the same English, with its line in `validation` in `errors.ts` and a case in
+  `api/validationIssues.cases.json`; a new request field gets a line in `fields`. A domain exception that carries a code (`WorkflowError`, `SnapshotError`…)
   takes it at the raise, and goes in `CODED_EXCEPTIONS` in `tests/test_error_codes.py`. Something
   not found gets its code from `NOT_FOUND` or `REQUIRED_NOT_FOUND` in `api/deps.py`.
 - **Adding a language** (once its translation is reviewed; the `multi-language` task does the

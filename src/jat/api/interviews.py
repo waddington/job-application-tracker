@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, HTTPException, Response
+from fastapi import APIRouter, Response
 from pydantic import AwareDatetime
 from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
@@ -57,7 +57,7 @@ def _outs(session: Session, found) -> list[S.InterviewOut]:
 def _out(session: Session, interview_id: str) -> S.InterviewOut:
     found = session.execute(_query().where(Interview.id == interview_id)).all()
     if not found:
-        raise HTTPException(status_code=404, detail=f"Interview {interview_id} not found")
+        raise CodedError(404, f"Interview {interview_id} not found", "interview_not_found", {"id": interview_id})
     return _outs(session, found)[0]
 
 

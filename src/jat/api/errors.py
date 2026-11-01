@@ -15,6 +15,16 @@ from pydantic import BaseModel
 
 # Underscores, not dots: a dot would split the key in the frontend's text files.
 ErrorCode = Literal[
+    "agencies_in_use",
+    "application_link_not_found",
+    "attachment_entity_incomplete",
+    "attachment_entity_type_invalid",
+    "attachment_entity_type_required",
+    "companies_in_use",
+    "duplicates_needs_company",
+    "roles_in_use",
+    "time_zone_unknown",
+    "todo_entity_incomplete",
     "application_document_not_found",
     "attachment_file_missing",
     "attachment_not_found",
@@ -110,11 +120,13 @@ ErrorParams = dict[str, str | int]
 
 
 class ValidationIssue(BaseModel):
-    """One problem in the framework's own 422."""
+    """One problem in the framework's own 422. `msg` is English; the frontend words it from `type`
+    and `ctx`, the values that went into it (docs/rfc/i18n.md, `i18n-uncoded-errors`)."""
 
     loc: list[str | int]
     msg: str
     type: str
+    ctx: dict[str, Any] | None = None
 
 
 class ErrorOut(BaseModel):

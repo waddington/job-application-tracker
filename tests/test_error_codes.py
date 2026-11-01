@@ -157,9 +157,9 @@ def test_a_coded_error_keeps_its_english_detail(client, seeded):
 
 
 def test_a_plain_error_keeps_its_body(client, seeded):
-    response = client.get("/api/v1/applications/duplicates", params={"role_title": "Engineer"})
-    assert response.status_code == 422
-    assert response.json() == {"detail": "Give company_id or company_name."}
+    response = client.get("/api/v1/backup/archive", headers={"sec-fetch-site": "cross-site"})
+    assert response.status_code == 403
+    assert response.json() == {"detail": "Backups can only be downloaded from the tracker itself."}
 
 
 def test_a_model_with_no_code_stays_plain():

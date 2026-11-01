@@ -220,7 +220,8 @@ describe("the app's text", () => {
   it("has no English keys that no code uses", () => {
     expect(Object.keys(sources).length).toBeGreaterThan(50); // the scan really read the app
     // An error's text is looked up by the code the API sends, and the type check ties those to ErrorCode.
+    // A validation problem's is looked up by its type and field: tests/test_validation_text.py checks those.
     const unused = unusedKeys(en, Object.values(sources), DEFAULT_NS);
-    expect(unused.filter((key) => !key.startsWith("errors:codes."))).toEqual([]);
+    expect(unused.filter((key) => !/^errors:(codes|validation|fields)\./.test(key))).toEqual([]);
   });
 });
