@@ -118,9 +118,10 @@ want. The Obsidian plugins work on plain files but aren't a web app and have no 
   "Round 3 · System design test"). Descriptions come from a suggestion list built from past
   rounds. The board, list and application page show the current or next round next to the
   stage, so "Interviewing" says which interview and what it is.
-- **FR9b:** A booked round can be rescheduled: a new time (it keeps its length) and an
-  optional reason, which goes on the application's timeline. The round remembers how often it
-  moved and the time it moved from, and shows it as *Rescheduled*.
+- **FR9b:** A booked round can be rescheduled: a new time (it keeps its length), who needed the
+  change and an optional reason, which go on that move's timeline entry, so each move keeps its
+  own. The round remembers how often it moved and the time it moved from, and shows it as
+  *Rescheduled*.
 - **FR10:** Coding interviews and take-home tasks also hold instructions, repo or platform
   links, a deadline and attachments.
 
