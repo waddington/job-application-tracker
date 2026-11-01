@@ -11,7 +11,7 @@ import { formatShortWeekday } from "../utils/format";
 import { roundLabel } from "../utils/rounds";
 import { formatDateTime } from "../utils/time";
 import { InterviewFormModal } from "./InterviewFormModal";
-import { RescheduleButton, RescheduledBadge } from "./Reschedule";
+import { RescheduleButton, RescheduledBadge, RoundDaysMoved } from "./Reschedule";
 
 type RoundLike = { status: string; starts_at: string | null; deadline_at: string | null };
 
@@ -99,6 +99,7 @@ function InterviewItem({
           <Text size="sm" c="dimmed">
             {people.length ? t("card.whenWith", { when: whenText, people: people.join(", ") }) : whenText}
           </Text>
+          <RoundDaysMoved interview={interview} />
           {interview.meeting_url && (
             <Anchor href={interview.meeting_url} target="_blank" rel="noreferrer" size="sm">
               {t("card.joinLink")}

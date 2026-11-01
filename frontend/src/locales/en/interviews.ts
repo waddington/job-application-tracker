@@ -119,6 +119,13 @@ export default {
       mutual: "Both of us",
       neither: "Neither of us",
     },
+    // A round's moves added up, from the times saved with each. They can cancel out, then nothing shows.
+    pushedBack_one: "Pushed back {{count}} day in total.",
+    pushedBack_other: "Pushed back {{count}} days in total.",
+    broughtForward_one: "Brought forward {{count}} day in total.",
+    broughtForward_other: "Brought forward {{count}} days in total.",
+    notCounted_one: "{{count}} other move has no saved times, so it isn't counted.",
+    notCounted_other: "{{count}} other moves have no saved times, so they aren't counted.",
     why: "Why? (optional)",
     whyPlaceholder: "They had a clash, you asked to move it…",
     // A move's line on a timeline. {{from}} and {{to}} are built by formatDay; a reason follows as written.

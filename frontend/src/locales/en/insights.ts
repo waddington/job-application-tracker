@@ -136,6 +136,37 @@ export default {
     linkRoles_one: "{{source}} → {{target}}: {{count}} role ({{share}}% of {{source}})",
     linkRoles_other: "{{source}} → {{target}}: {{count}} roles ({{share}}% of {{source}})",
   },
+  rescheduling: {
+    title: "Rescheduling",
+    intro:
+      "Rounds on applications added in this period, whenever they moved. A booked round is one that's had a time.",
+    loadFailed: "Couldn't load the rescheduling numbers.",
+    noneBooked: "No rounds booked in this period.",
+    noneMoved_one: "Your {{count}} booked round hasn't moved.",
+    noneMoved_other: "None of your {{count}} booked rounds has moved.",
+    moved_one: "Of {{count}} booked round, {{moved}} moved.",
+    moved_other: "Of {{count}} booked rounds, {{moved}} moved.",
+    moves_one: "That's {{count}} move.",
+    moves_other: "That's {{count}} moves in all: a round that moves twice is one round and two moves.",
+    byWho: "Who needed the change",
+    movesColumn: "Moves",
+    who: {
+      me: "Me",
+      them: "Them",
+      mutual: "Both of us",
+      neither: "Neither of us",
+      notRecorded: "Not recorded",
+    },
+    notRecordedHint:
+      "Not recorded means the app doesn't know who: the move was made on the round's Edit form, or before the app asked.",
+    listHint_one:
+      "Only companies and recruiters with at least {{count}} moved round show here, as plain counts: fewer could look like a pattern when it isn't one.",
+    listHint_other:
+      "Only companies and recruiters with at least {{count}} moved rounds show here, as plain counts: fewer could look like a pattern when it isn't one.",
+    company: "Company",
+    recruiter: "Recruiter",
+    roundsMoved: "Rounds moved",
+  },
   conversations: {
     title: "Recruiter conversations",
     loadFailed: "Couldn't load recruiter conversations.",

@@ -7,6 +7,7 @@ import { useFlow, useStats, type FlowFilters } from "../api/insightHooks";
 import { ConversationsSection } from "../components/Conversations";
 import { DocumentPerformanceSection } from "../components/DocumentPerformance";
 import { RouteTable, StageTable, WeeklyActivity } from "../components/InsightStats";
+import { ReschedulingCard } from "../components/Rescheduling";
 import { ScorecardCard } from "../components/Scorecard";
 import { SankeyChart } from "../components/SankeyChart";
 import { WholePicture } from "../components/WholePicture";
@@ -23,7 +24,7 @@ type Tab = "whole" | "applications" | "conversations" | "documents";
 /**
  * How the search is going (PRD FR19, FR20): the whole picture (every role, from where it came
  * from to where it is now), applications (the Sankey diagram, stage stats,
- * routes, the scorecard), recruiter conversations (calls and the roles people pitch) and CVs and
+ * routes, the scorecard, rescheduling), recruiter conversations (calls and the roles people pitch) and CVs and
  * cover letters (version against version), then weekly activity.
  */
 export function InsightsPage() {
@@ -113,6 +114,7 @@ export function InsightsPage() {
               </>
             )}
             <ScorecardCard since={range.since} />
+            <ReschedulingCard since={range.since} />
           </Stack>
         </Tabs.Panel>
         <Tabs.Panel value="conversations">
