@@ -133,10 +133,10 @@ const validation = {
   separator: "; ",
   fieldSeparator: ", ",
   // This API's own checks (schemas.py).
-  company_required: "Value error, give company_id or company_name",
-  entity_both_or_neither: "Value error, give both entity_type and entity_id, or neither",
-  not_null: "Value error, {{fields}} can't be null",
-  salary_range: "Value error, salary_min can't be more than salary_max",
+  check_company_required: "Value error, give company_id or company_name",
+  check_entity_both_or_neither: "Value error, give both entity_type and entity_id, or neither",
+  check_not_null: "Value error, {{fields}} can't be null",
+  check_salary_range: "Value error, salary_min can't be more than salary_max",
   // Pydantic's. `expected` is Pydantic's list, with its own "or".
   bool_parsing: "Input should be a valid boolean, unable to interpret input",
   extra_forbidden: "Extra inputs are not permitted",
@@ -164,6 +164,14 @@ const validation = {
   url_parsing_relative: "Input should be a valid URL, relative URL without a base",
   url_scheme: "URL scheme should be 'http' or 'https'",
   url_type: "URL input should be a string or URL",
+  bool_type: "Input should be a valid boolean",
+  date_type: "Input should be a valid date",
+  datetime_type: "Input should be a valid datetime",
+  dict_type: "Input should be a valid dictionary",
+  float_type: "Input should be a valid number",
+  url_parsing_empty: "Input should be a valid URL, input is empty",
+  url_too_long_one: "URL should have at most {{count}} character",
+  url_too_long_other: "URL should have at most {{count}} characters",
 } as const;
 
 // A problem names the field as the API does, so a translation can say it in words. A test keeps this

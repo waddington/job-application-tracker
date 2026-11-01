@@ -21,6 +21,12 @@ class Out(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+def check_failed(check: str, message: str, **values: str) -> PydanticCustomError:
+    """A check of our own, as a plain `ValueError` looks in a 422 (the same `type`, `msg` and `ctx.error`),
+    plus `ctx.check` and the values, so the frontend can word it. `message` follows "Value error, "."""
+    return PydanticCustomError("value_error", f"Value error, {message}", {"error": {}, "check": check, **values})
+
+
 class In(BaseModel):
     """Base for request bodies: unknown fields are an error, not silently ignored."""
 
@@ -39,8 +45,7 @@ class Patch(In):
     def _reject_null_required(self):
         bad = sorted(f for f in self.model_fields_set & self.not_null if getattr(self, f) is None)
         if bad:
-            # Its own type, so the frontend can word it; "Value error, " is what the English has always said.
-            raise PydanticCustomError("not_null", "Value error, {fields} can't be null", {"fields": ", ".join(bad)})
+            raise check_failed("not_null", "{fields} can't be null", fields=", ".join(bad))
         return self
 
 
@@ -182,7 +187,7 @@ class RoleIn(RoleFields):
     @model_validator(mode="after")
     def _salary_range(self):
         if self.salary_min is not None and self.salary_max is not None and self.salary_min > self.salary_max:
-            raise PydanticCustomError("salary_range", "Value error, salary_min can't be more than salary_max")
+            raise check_failed("salary_range", "salary_min can't be more than salary_max")
         return self
 
     company_id: str
@@ -496,9 +501,7 @@ class TodoIn(In):
     @model_validator(mode="after")
     def _both_or_neither(self):
         if (self.entity_type is None) != (self.entity_id is None):
-            raise PydanticCustomError(
-                "entity_both_or_neither", "Value error, give both entity_type and entity_id, or neither"
-            )
+            raise check_failed("entity_both_or_neither", "give both entity_type and entity_id, or neither")
         return self
 
 
@@ -1204,7 +1207,7 @@ class QuickApplicationIn(In):
     @model_validator(mode="after")
     def _company_given(self):
         if not self.company_id and not (self.company_name or "").strip():
-            raise PydanticCustomError("company_required", "Value error, give company_id or company_name")
+            raise check_failed("company_required", "give company_id or company_name")
         return self
 
 

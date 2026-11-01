@@ -15,6 +15,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from jat.api import schemas as S
+from jat.api.deps import NOT_FOUND
 from jat.datadir import CODE_ROOT
 from jat.openapi import build_schema
 
@@ -25,44 +26,49 @@ FRONTEND = CODE_ROOT / "frontend" / "src"
 CASES = json.loads((FRONTEND / "api" / "validationIssues.cases.json").read_text())
 ERRORS_TEXT = (FRONTEND / "locales" / "en" / "errors.ts").read_text()
 
-# (file, function) of every HTTPException that stays plain, and why nobody meets it in a toast.
-PLAIN_ALLOWED = {
+# Every HTTPException call that stays plain, exactly as written, and why nobody meets it in a toast.
+PLAIN_ALLOWED = [
     # A cross-site request for a plain download link: nothing of ours reads the answer.
-    ("backup.py", "download_archive"),
+    (
+        "backup.py",
+        "HTTPException(status_code=403, detail='Backups can only be downloaded from the tracker itself.')",
+    ),
     # Only for a model with no NOT_FOUND code: test_every_model_looked_up_has_a_code says none is used.
-    ("deps.py", "get_or_404"),
+    ("deps.py", "HTTPException(status_code=404, detail=detail)"),
     # Only for a WorkflowError with no code, about config.toml: get_workflow turns those into
     # workflow_invalid before a route starts, and moves only raise coded ones.
-    ("routers.py", "_refused"),
-}
+    ("routers.py", "HTTPException(422, str(exc))"),
+]
 
 
-def _plain_exceptions() -> set[tuple[str, str]]:
-    found = set()
+def _plain_exceptions() -> list[tuple[str, str]]:
+    found = []
     for path in API.rglob("*.py"):
-        tree = ast.parse(path.read_text())
-        for function in ast.walk(tree):
-            if isinstance(function, ast.FunctionDef | ast.AsyncFunctionDef):
-                for node in ast.walk(function):
-                    if isinstance(node, ast.Call) and getattr(node.func, "id", None) == "HTTPException":
-                        found.add((path.name, function.name))
+        for node in ast.walk(ast.parse(path.read_text())):
+            if isinstance(node, ast.Call):
+                name = node.func.attr if isinstance(node.func, ast.Attribute) else getattr(node.func, "id", None)
+                if name == "HTTPException":
+                    found.append((path.name, ast.unparse(node)))
     return found
 
 
 def test_no_new_error_without_a_code():
-    assert _plain_exceptions() == PLAIN_ALLOWED
+    assert sorted(_plain_exceptions()) == sorted(PLAIN_ALLOWED)
 
 
 def test_every_model_looked_up_has_a_code():
-    from jat.api.deps import NOT_FOUND
-    from jat.db import models
-
-    used = set()
+    named, variables, crud_models = set(), set(), set()
     for path in API.rglob("*.py"):
-        used |= set(re.findall(r"get_or_404\(session, ([A-Z]\w+)", path.read_text()))
-    assert used, "the scan found the look-ups"
-    assert used <= set(NOT_FOUND)
-    assert all(hasattr(models, name) for name in used)
+        text = path.read_text()
+        named |= set(re.findall(r"get_or_404\(session, ([A-Z]\w+)", text))
+        variables |= {(path.name, v) for v in re.findall(r"get_or_404\(session, ([a-z]\w+)", text)}
+        for node in ast.walk(ast.parse(text)):
+            if isinstance(node, ast.Call) and getattr(node.func, "id", None) == "crud_router":
+                crud_models |= {k.value.id for k in node.keywords if k.arg == "model"}
+    assert crud_models == {"Agency", "Company", "Role"}, "the scan found the crud routers"
+    # A model passed as a variable is only checked here if it comes from crud_router.
+    assert variables == {("crud.py", "model")}
+    assert named | crud_models <= set(NOT_FOUND)
 
 
 def _block(name: str) -> str:
@@ -84,13 +90,55 @@ def test_every_field_of_a_request_body_has_its_name():
 
 
 def test_this_apis_own_checks_have_text():
-    types = set()
+    checks = set()
     for node in ast.walk(ast.parse((API / "schemas.py").read_text())):
-        if isinstance(node, ast.Call) and getattr(node.func, "id", None) == "PydanticCustomError":
-            types.add(node.args[0].value)
-    assert types == {"company_required", "entity_both_or_neither", "not_null", "salary_range"}
-    assert types <= set(re.findall(r"^\s*(\w+):", _block("validation"), re.M))
+        if isinstance(node, ast.Call) and getattr(node.func, "id", None) == "check_failed":
+            checks.add(f"check_{node.args[0].value}")
+    assert checks == {"check_company_required", "check_entity_both_or_neither", "check_not_null", "check_salary_range"}
+    assert checks <= set(re.findall(r"^\s*(\w+):", _block("validation"), re.M))
     assert "raise ValueError" not in (API / "schemas.py").read_text()
+
+
+@pytest.mark.parametrize(
+    ("method", "url", "body", "msg", "added"),
+    [
+        (
+            "patch",
+            "/api/v1/roles/x",
+            {"title": None, "company_id": None},
+            "Value error, company_id, title can't be null",
+            {"check": "not_null", "fields": "company_id, title"},
+        ),
+        (
+            "post",
+            "/api/v1/roles",
+            {"company_id": "x", "title": "Engineer", "salary_min": 5, "salary_max": 1},
+            "Value error, salary_min can't be more than salary_max",
+            {"check": "salary_range"},
+        ),
+        (
+            "post",
+            "/api/v1/todos",
+            {"text": "Call", "entity_type": "role"},
+            "Value error, give both entity_type and entity_id, or neither",
+            {"check": "entity_both_or_neither"},
+        ),
+        (
+            "post",
+            "/api/v1/applications/quick",
+            {"role_title": "Engineer"},
+            "Value error, give company_id or company_name",
+            {"check": "company_required"},
+        ),
+    ],
+)
+def test_our_checks_answer_as_a_plain_value_error_did(client, seeded, method, url, body, msg, added):
+    # The body a plain `raise ValueError` gave, written out, plus only the added ctx keys.
+    response = getattr(client, method)(url, json=body)
+    assert response.status_code == 422
+    assert response.json() == {
+        "detail": [{"type": "value_error", "loc": ["body"], "msg": msg, "input": body, "ctx": {"error": {}, **added}}]
+    }
 
 
 @pytest.mark.parametrize("case", CASES, ids=lambda c: c["shown"][:60])
@@ -109,7 +157,7 @@ def test_the_cases_cover_every_translated_type(client, seeded):
     seen = set()
     for case in CASES:
         for issue in getattr(client, case["method"])(case["url"], json=case["json"]).json()["detail"]:
-            seen.add(issue["type"])
+            seen.add(f"check_{issue['ctx']['check']}" if issue["type"] == "value_error" else issue["type"])
     keys = set(re.findall(r"^\s*(\w+):", _block("validation"), re.M)) - {"issue", "separator", "fieldSeparator"}
     keys = {re.sub(r"_(one|other)$", "", key) for key in keys}
     keys = {"url_parsing" if key.startswith("url_parsing_") else key for key in keys}

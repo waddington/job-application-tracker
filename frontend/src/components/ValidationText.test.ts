@@ -74,7 +74,7 @@ describe("validation text", () => {
         separator: " | ",
         fieldSeparator: " + ",
         missing: "Fehlt",
-        not_null: "Nicht leer: {{fields}}",
+        check_not_null: "Nicht leer: {{fields}}",
         string_too_short_one: "Mindestens {{count}} Zeichen (one)",
         string_too_short_other: "Mindestens {{count}} Zeichen (other)",
         url_parsing_empty_host: "Kein Host",
@@ -86,7 +86,7 @@ describe("validation text", () => {
       issue(["name"], "string_too_short", "x", { min_length: 1 }),
       issue(["name"], "string_too_short", "x", { min_length: 3 }),
       issue(["website"], "url_parsing", "x", { error: "empty host" }),
-      issue([], "not_null", "x", { fields: "company_id, title" }),
+      issue([], "value_error", "x", { error: {}, check: "not_null", fields: "company_id, title" }),
     ];
     expect(validationText(detail)).toBe(
       "Name-xx = Fehlt | Name-xx = Mindestens 1 Zeichen (one) | Name-xx = Mindestens 3 Zeichen (other) | website = Kein Host |  = Nicht leer: Firma-xx + Titel-xx",

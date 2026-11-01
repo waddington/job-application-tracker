@@ -7,6 +7,7 @@ type Issue = Partial<Schemas["ValidationIssue"]>;
 // sentence of its own. Any other shows Pydantic's English.
 const URL_REASONS: Record<string, string> = {
   "empty host": "url_parsing_empty_host",
+  "input is empty": "url_parsing_empty",
   "invalid international domain name": "url_parsing_bad_domain",
   "invalid IPv4 address": "url_parsing_bad_ipv4",
   "invalid IPv6 address": "url_parsing_bad_ipv6",
@@ -15,7 +16,11 @@ const URL_REASONS: Record<string, string> = {
 };
 
 // The value in `ctx` that picks a plural form.
-const COUNTED: Record<string, string> = { string_too_long: "max_length", string_too_short: "min_length" };
+const COUNTED: Record<string, string> = {
+  string_too_long: "max_length",
+  string_too_short: "min_length",
+  url_too_long: "max_length",
+};
 
 function textOr(key: string, fallback: string, params?: Record<string, unknown>): string {
   // The key is only known at run time, so the cast stops t() wanting every placeholder of every key.
@@ -26,15 +31,21 @@ function fieldName(name: string): string {
   return textOr(`errors:fields.${name}`, name);
 }
 
+function messageKey(type: string, params: Record<string, unknown>): string {
+  // A check of ours says which in `ctx.check`. Without it (an older server) there's only the English.
+  if (type === "value_error") return `check_${String(params.check)}`;
+  if (type === "url_parsing") return URL_REASONS[String(params.error)] ?? "url_parsing_unknown";
+  return type;
+}
+
 function issueMessage({ type = "", msg = "", ctx }: Issue): string {
   const params: Record<string, unknown> = { ...ctx };
   const countedBy = COUNTED[type];
   if (countedBy) params.count = params[countedBy];
-  if (type === "not_null" && typeof params.fields === "string") {
+  if (typeof params.fields === "string") {
     params.fields = params.fields.split(", ").map(fieldName).join(i18n.t("errors:validation.fieldSeparator"));
   }
-  const key = type === "url_parsing" ? URL_REASONS[String(params.error)] : type;
-  return key ? textOr(`errors:validation.${key}`, msg, params) : msg;
+  return textOr(`errors:validation.${messageKey(type, params)}`, msg, params);
 }
 
 /** A 422's problems in your language. In English this is exactly `errorMessage`'s text, and a type with no text here shows Pydantic's `msg`. */

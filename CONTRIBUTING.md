@@ -183,8 +183,8 @@ a test and the type check fail until it does.
   The type check fails if a code has no text or no row, or text has no code. Every route under
   `/api/v1` already declares `ErrorOut`, so a route needs nothing. A new plain `HTTPException` in
   `src/jat/api` fails `tests/test_validation_text.py`: give it a code, or if nobody can meet it, add it
-  to `PLAIN_ALLOWED` there and say why. A check in a schema raises `PydanticCustomError` with its own
-  type and the same English, with its line in `validation` in `errors.ts` and a case in
+  to `PLAIN_ALLOWED` there and say why. A check in a schema raises `check_failed` with its own name, with
+  its `check_<name>` line in `validation` in `errors.ts` and a case in
   `api/validationIssues.cases.json`; a new request field gets a line in `fields`. A domain exception that carries a code (`WorkflowError`, `SnapshotError`…)
   takes it at the raise, and goes in `CODED_EXCEPTIONS` in `tests/test_error_codes.py`. Something
   not found gets its code from `NOT_FOUND` or `REQUIRED_NOT_FOUND` in `api/deps.py`.
