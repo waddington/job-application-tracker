@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.2.45 (2026-11-01)
+
+- **Security:** updates vite and seroval to fix eight Dependabot alerts. Nothing changes in how the app works (#188).
+
 ## 1.2.44 (2026-11-01)
 
 - **Security:** updates certifi and opentelemetry-api to fix two Dependabot alerts, one of them critical. The app itself doesn't change (#187).
