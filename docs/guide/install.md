@@ -1,15 +1,15 @@
 # Install and first run
 
-## What you need
+Hi, and thanks for giving this a try. It all runs on your own computer, with no account to set up.
 
-- **Python 3.12 or newer** and [uv](https://docs.astral.sh/uv/) (it installs everything
-  else on the Python side).
-- **Node.js 22.12 or newer** and [pnpm](https://pnpm.io/), to build the web interface. You
-  only need them when installing or updating, not to run the app.
-- **git**, for automatic snapshots of your data (optional, but strongly recommended).
-- Linux or macOS. Windows isn't supported: the app uses Unix file locking.
+Apologies that there's no proper installer yet - one's on the way. For now you'll need a Mac or
+Linux computer with [git](https://git-scm.com/), [uv](https://docs.astral.sh/uv/),
+[Node.js](https://nodejs.org/) 22.12 or newer and [pnpm](https://pnpm.io/). uv fetches Python
+for you if you need it. After that, it takes about ten minutes.
 
-## Install
+## Get it running
+
+Download the app and build it:
 
 ```bash
 git clone https://github.com/waddington/job-application-tracker.git
@@ -19,91 +19,34 @@ pnpm --dir frontend install
 pnpm --dir frontend build
 ```
 
-Run `jat` commands from this folder (the repo root): that's where it reads `.env`.
+Then set up your data folder and start the app:
 
-## Try it with demo data
+```bash
+cp .env.example .env
+uv run jat init
+uv run jat serve
+```
 
-Demo data is made up (Contoso, Fabrikam, Northwind Talent…), so you can click around
-without touching anything real. It needs a new or empty folder:
+`jat init` will say snapshots are disabled. That's fine for now - more on that below.
+
+Now open http://127.0.0.1:8770 and you're in! Press New application at the top right to add
+your first one, or **?** to see how it works.
+
+When you're done, press Ctrl+C. Next time, just run `uv run jat serve` from the same folder.
+Your data stays in `~/job-search-data`, away from the code.
+
+## When you're ready for more
+
+Fancy a look around with made-up companies and people? Stop the app, run this, then open
+http://127.0.0.1:8770 again. Delete `/tmp/jat-demo` when you're done.
 
 ```bash
 uv run python scripts/seed_demo.py /tmp/jat-demo
 uv run jat --data-dir /tmp/jat-demo serve
 ```
 
-Open http://127.0.0.1:8770. Delete `/tmp/jat-demo` when you're done.
+It's well worth turning on [automatic history, and backups if you want them](your-data.md#snapshots-automatic-local-history)
+at some point. Everything else is in the [guide](README.md), including
+[updating](commands.md#updating-to-a-newer-version) and [getting unstuck](troubleshooting.md).
 
-## Set it up for real
-
-Your data lives in its own folder, **outside the code**, so updating the app never touches
-it. Make that folder a private git repo and the app commits a readable snapshot after each
-burst of changes: full history and an off-machine backup for free.
-
-1. Create the data folder and make it a git repo:
-
-   ```bash
-   mkdir -p ~/job-search-data
-   git -C ~/job-search-data init
-   ```
-
-2. Optionally, connect it to a **private** remote repository (GitHub, GitLab, your own
-   server) so you can push backups there:
-
-   ```bash
-   git -C ~/job-search-data remote add origin <your-private-repo-url>
-   ```
-
-3. Tell the app where the folder is. In the repo root:
-
-   ```bash
-   cp .env.example .env
-   ```
-
-   then edit `.env` so it says `JAT_DATA_DIR=~/job-search-data`. (Or pass
-   `--data-dir ~/job-search-data` to every command instead.) See
-   [how the app finds your data](your-data.md#how-the-app-finds-your-data).
-
-4. Create the folder layout and the database:
-
-   ```bash
-   uv run jat init
-   ```
-
-5. Start the app and open http://127.0.0.1:8770:
-
-   ```bash
-   uv run jat serve
-   ```
-
-   It keeps running until you stop it (Ctrl+C). Stopping it is safe: any pending snapshot
-   is written first.
-
-`uv run jat info` shows which data folder the app is using, whether it's a git repo, and the
-database version. Use it whenever you're not sure.
-
-## Every day
-
-```bash
-uv run jat serve
-```
-
-That's it. The home page is **Today**: your move (what to do now), what's coming up and who
-you're waiting on. Press **New application** (top right) to add your first one, or **?** for how
-it works. See [Using the app](using-the-app.md).
-
-## Updating to a newer version
-
-```bash
-git pull
-uv sync
-pnpm --dir frontend install
-pnpm --dir frontend build
-```
-
-Then restart `jat serve`. It upgrades the database automatically when it starts; your data
-folder is never part of the code repo, so `git pull` can't overwrite it.
-
-## Next
-
-- [Your data](your-data.md): backups, restoring, and a second computer.
-- [Customising](customising.md): your own stages.
+Good luck with the search.

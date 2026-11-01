@@ -72,8 +72,14 @@ const moveOneDay = async (page: Page, dialog: Locator) => {
 };
 const MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(" ");
 const dayMonth = (iso: string | null) => {
-  const d = new Date(iso ?? "");
-  return `${d.getDate()} ${MONTHS[d.getMonth()]}`;
+  // The page runs in Europe/London (playwright.config.ts), whatever this machine's zone is.
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/London",
+    day: "numeric",
+    month: "numeric",
+  }).formatToParts(new Date(iso ?? ""));
+  const part = (type: string) => Number(parts.find((p) => p.type === type)?.value);
+  return `${part("day")} ${MONTHS[part("month") - 1]}`;
 };
 const pickWho = async (page: Page, dialog: Locator, option: string) => {
   await who(dialog).click();

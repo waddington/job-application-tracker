@@ -5,6 +5,14 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.2.48 (2026-11-01)
+
+- **A shorter, friendlier install page:** the [install guide](docs/guide/install.md) now leads with the one path most people need. Updating moved to the [command reference](docs/guide/commands.md#updating-to-a-newer-version), and turning on snapshots and connecting a private remote to [Your data](docs/guide/your-data.md#snapshots-automatic-local-history), which now also says plainly that without git the database is the only copy. On the website, the FAQ answer to "Do I need to be technical?" and the Quick start intro now say what the guide does: uv fetches Python for you (#189).
+
+## 1.2.47 (2026-11-01)
+
+- **Security:** updates undici and zod in the frontend's test and lint tools, fixing five Dependabot alerts and moving past a sixth that had been auto-dismissed. minimatch alert 32 stays open: it affects development tools only, and those tools can't take the fixed version yet. Nothing changes in the app (#190).
+
 ## 1.2.46 (2026-11-01)
 
 - **Security:** updates undici and fast-uri in the website's dependencies to fix twelve Dependabot alerts. The website looks and works the same (#186).
