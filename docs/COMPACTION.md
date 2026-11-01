@@ -8,7 +8,7 @@ and how to carry on afterwards, so the work continues as if nothing happened.
 After compaction, the session follows [Resuming](#resuming-after-compaction), and
 [Re-expanding](#re-expanding-what-the-summary-dropped) when it needs a detail back.
 
-Sections 3, 4 and 5 are a snapshot (2026-10-30, after PR #115; section 5's i18n list is current), and 4a is the live plan, updated during #164 (P8 items 8 to 10);
+Sections 3, 4 and 5 are a snapshot (2026-10-30, after PR #115; section 5's i18n list is current), and 4a is the live plan, updated after #184 (2026-11-01);
 refresh them before each
 compaction in a small docs PR. This repo is public: nothing here may contain Kai's job-search
 data (no real companies, people, salaries or notes).
@@ -127,7 +127,7 @@ next action.
   `docs/social-preview.png`, indigo, layout B since #96: "No account. No cloud. / No AI. No
   tracking." beside the whole-picture Sankey (Kai: the board is what every competitor shows).
   Rebuilt by `python3 scripts/social_preview/make_card.py [--layout a|b]` from `card.html`
-  (layout A is a checklist). 4 stars as of 2026-10-25. Releases: v1.0.0, v1.1.0.
+  (layout A is a checklist). 4 stars as of 2026-10-25.
 - **Website** (`website/`, Astro 7, one landing page, PR #64): published by
   `.github/workflows/website.yml` to GitHub Pages (Source: GitHub Actions) on pushes to main
   touching `website/**`, `docs/screenshots/**`, `docs/social-preview.png`,
@@ -421,7 +421,7 @@ next action.
 
 Keep this whole section word for word in the summary: it is the live plan.
 
-**Versions and main.** Released up to v1.2.43 (#181). All of P9 and P10 are done, and so is the i18n cutover: #167 to #174 and
+**Versions and main.** Released up to v1.2.43 (#181). P9's `e2e-*` tasks and all of P10 are done, and so is the i18n cutover: #167 to #174 and
 #176 (the nine parts of items 11 to 13, v1.2.30 to v1.2.38), #177 `i18n-finish` (v1.2.39), #179 `i18n-default-stages` (v1.2.40),
 #180 `i18n-contribute-language` (v1.2.41), #182 `language-switch-label` (v1.2.42), #181 `i18n-uncoded-errors` (v1.2.43). Dashboard
 and planning, no releases: #175 `delivery-speed`, #178 phase P11, #183 `pm-draft-building`, #184 `bug-ratings`. Tests on main:
@@ -435,7 +435,7 @@ approved to start:
   query, or search moves to the browser. Chinese also needs word splitting.
 - **Speed-up ideas** in `docs/rfc/delivery-speed.md`: "dont actual change behaviour yet this is just investigation for niow". The
   process stays as it is until Kai picks from them, and that includes builders repeating checks.
-- **P11 "Test gaps"** (six tasks): "i want to keep track of those so we can address them another time".
+- **P11 "Test gaps"** (seven tasks): "i want to keep track of those so we can address them another time".
 - **Waiting too:** `multi-language`, `deps-*` and `security-alerts` (the Dependabot fixes, below), `tests-reorganise`.
 
 **Kai's latest word on how to work:**
@@ -470,7 +470,7 @@ approved to start:
   the job: check for open PRs before going quiet.
 - Mid-turn "sitrep" questions get a short honest answer straight away, then carry on.
 
-**Open bugs (phase B; 62, owner Kai; none to fix without a go-ahead).** One fresh agent rated each (#184), reading the code and any
+**Open bugs (phase B; 62; none to fix without a go-ahead).** One fresh agent rated each (#184), reading the code and any
 test but not running the browser suite; each rated one bug alone, so ratings between bugs may disagree. All are still real.
 Each entry has `severity`, `ease`, `estimate_h`, `fix_risk`, `data_risk`, `changes_english`, `root_cause`, `fix_outline`, `pinned_by`,
 `related_bugs`, and the dashboard shows them (a pill, and a Bug review panel on the task page). High 1, medium 18, low 43; trivial
@@ -484,7 +484,9 @@ the PR that fixes it. Branch `worktree-<bug id>`, and the board follows it.
   `fix-person-move-blocks-application`, `fix-note-reopen-stale`.
 - Medium, moderate: `fix-deletes-no-confirm`, `fix-duplicate-role`, `fix-typed-agency-lost`, `fix-double-save-locked`,
   `fix-duplicate-company-name`, `fix-duplicate-agency-name`.
-- The 19 high and medium come to about 25 hours; I told Kai they'd clear everything that can lose saved data or block editing.
+- The 19 high and medium come to about 24 hours. Seven low bugs can also lose data or block editing, about 4 hours more:
+  `fix-merge-dialog-after-back`, `fix-person-saved-before-new-company`, `fix-offer-no-kind-loses-rate`, `fix-round-end-before-start`,
+  `fix-website-rules-differ`, `fix-detail-spaces-refused`, `fix-event-data-not-dict`.
 Told to Kai but unconfirmed, not recorded: the backup hint says `jat init` where the restore docs say `jat restore`. Seen by
 #183's builder, not recorded: with GitHub down the Phase status panel clips "% of tasks" at 1440 px; the burn-up's "today" label
 clips without a forecast; a blank Timeline doesn't say why.
@@ -587,7 +589,7 @@ need no action. To preview a branch, serve it on a spare port from the worktree:
   logo in #150.
 - Formatting rewraps lines, so an Edit written from memory can miss: read the lines first, and check an edit applied
   before committing (a missed one pushed a failing test). Don't push before the tests pass.
-- `pkill -f` matches its own command line if the pattern appears literally there, and kills that shell: anchor it as above.
+- `pkill -f` matches its own command line if the pattern appears literally there, and kills that shell: use `TaskStop`, or anchor the pattern.
 
 **Browser test facts:**
 - `pnpm --dir frontend e2e` builds and runs everything; `pnpm exec playwright test e2e/<file>` runs one (a bare word
@@ -651,7 +653,7 @@ need no action. To preview a branch, serve it on a spare port from the worktree:
   - Today: a to-do on a role shows on its role line and in Coming up; to-dos months ahead still
     count in Coming up.
   - Recruiter conversations' tiles and table still say *Passed*.
-  - Board round columns only split stages named "interview" (fix with `i18n-applications`).
+  - Board round columns only split stages named "interview".
   - `insights-stats.png`, `demo.gif`, `recruiters.png`, `person.png`, `roles.png` show older UI.
 
 ### 6. The delivery loop
@@ -694,7 +696,7 @@ need no action. To preview a branch, serve it on a spare port from the worktree:
 3. Write the English in `locales/en/<ns>.ts` (new namespace → `locales/en/index.ts`), cut the
    components over (`useTranslation("<ns>")`, `t()`, `<Trans>` for markup, `i18n.t("ns:key")`
    outside components; another namespace too → `useTranslation(["ns", "common"])`); text the
-   app *saves* stays English with a comment (`i18n-events`). The lint rule covers every source file but tests.
+   app *saves* stays English, and a new event also saves `data.msg`. The lint rule covers every source file but tests.
 4. Typecheck, lint, tests; rebuild, restart the server, snapshot again, `text_diff.py` must say
    `0 view parts differ` (or only intended changes). Pin what the snapshot can't reach in a
    test (`components/TodayText.test.tsx` is the model). Prove a test catches a slip by breaking
