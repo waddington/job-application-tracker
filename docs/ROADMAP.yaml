@@ -305,7 +305,7 @@ phases:
       - {id: test-gaps-roadmap, name: "Add a roadmap phase for the test gaps the i18n work found (Kai, 2026-11-01)", owner: lead, status: done, estimate_h: 0.5, depends: [], prd: docs/prd/tracker.md, rfc: docs/rfc/i18n.md}
       - {id: language-switch-label, name: "Make the language switch obvious: an outlined button with a globe, the current language and an arrow, in place of a faint icon (Kai, 2026-11-01: option D)", owner: lead, status: done, estimate_h: 0.5, depends: [i18n-switcher], prd: docs/prd/tracker.md, rfc: docs/rfc/i18n.md}
       - {id: bug-ratings, name: "Rate every open bug for severity and how easy the fix is, with one fresh agent per bug, and show the ratings on the roadmap and dashboard; nothing fixed (Kai, 2026-11-01)", owner: lead, status: done, estimate_h: 1, depends: [], prd: docs/prd/tracker.md}
-      - {id: docs-simplify-install, name: "Make the install page short and welcoming: lead with the one path most people need, and move the special cases to the bottom or to the right guide page (Kai, 2026-11-01)", owner: lead, status: building, estimate_h: 1, depends: [], prd: docs/prd/tracker.md}
+      - {id: docs-simplify-install, name: "Make the install page short and welcoming: lead with the one path most people need, and move the special cases to the bottom or to the right guide page (Kai, 2026-11-01)", owner: lead, status: done, estimate_h: 1, depends: [], prd: docs/prd/tracker.md}
 
   - id: P11
     name: Test gaps

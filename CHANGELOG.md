@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.2.44 (2026-11-01)
+
+- **A shorter, friendlier install page:** the [install guide](docs/guide/install.md) now leads with the one path most people need. Updating moved to the [command reference](docs/guide/commands.md#updating-to-a-newer-version), and turning on snapshots and connecting a private remote to [Your data](docs/guide/your-data.md#snapshots-automatic-local-history) (#189).
+
 ## 1.2.43 (2026-11-01)
 
 - **Developers:** the API's last uncoded errors gain a `code` and `params` beside the unchanged English `detail`, and validation messages read their text from the translation files by Pydantic's `type`, ready for other languages. Validation responses only gain keys in `ctx`. A few rare validation types stay in Pydantic's English (#181).
