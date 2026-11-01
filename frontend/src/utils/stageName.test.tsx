@@ -134,7 +134,7 @@ describe("in another language", () => {
     expect(roleBadge(closedRole(undefined, "Withdrawn")).label).toBe("Withdrawn");
   });
 
-  it("shows the Ghosted button translated, but moves by id and keeps the name as written", async () => {
+  it("shows the Ghosted button translated, but moves by id", async () => {
     vi.spyOn(window, "confirm").mockReturnValue(true);
     const calls = mockApi({
       "/api/v1/workflow": {
