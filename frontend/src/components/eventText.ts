@@ -1,3 +1,5 @@
+import dayjs from "dayjs";
+
 import type { ApiEvent } from "../api/client";
 import { i18n } from "../i18n";
 import type { TextKey } from "../locales/en";
@@ -110,7 +112,10 @@ const MOVE_BY = {
 
 /** A move, in sentences: "Moved from Tue 3 Nov, 10:00 to Thu 5 Nov, 14:00 · They needed the change · Why". */
 export function moveLine(move: RoundMove): string {
-  const when = (iso: string) => formatDay(iso, "shortWeekdayDayMonthTime", i18n.language);
+  // The year only when the move crosses one, in your time zone like the times themselves.
+  const crossesYear = dayjs(move.from_at).year() !== dayjs(move.to_at).year();
+  const pattern = crossesYear ? "shortWeekdayDayMonthYearTime" : "shortWeekdayDayMonthTime";
+  const when = (iso: string) => formatDay(iso, pattern, i18n.language);
   const parts: string[] = [
     i18n.t("interviews:reschedule.move.times", { from: when(move.from_at), to: when(move.to_at) }),
   ];

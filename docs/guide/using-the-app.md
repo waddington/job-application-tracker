@@ -450,7 +450,8 @@ or cancelled. On each row:
   choose **Who needed the change?** (*Me*, *Them*, *Both of us* or *Neither of us*) and, if you
   like, say why. Its end moves with it. The application's timeline, the
   [Timeline](#timeline) page and Today's recent activity say "Round 2 · … rescheduled", and under
-  it "Moved from Tue 3 Nov, 10:00 to Thu 5 Nov, 14:00 · They needed the change · why". Every move
+  it "Moved from Tue 3 Nov, 10:00 to Thu 5 Nov, 14:00 · They needed the change · why" (with the
+  years, if it moved into another year). Every move
   keeps its own entry, so a second reschedule doesn't overwrite the first. The same button is on
   the application's page, on Today, and in the quick
   view for its current round while the application is in an active stage.

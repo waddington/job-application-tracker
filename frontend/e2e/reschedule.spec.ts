@@ -185,7 +185,7 @@ test.describe("each move on the timelines", () => {
     await expect(page.getByText(new RegExp(`^${label} rescheduled .`))).toHaveCount(0);
   };
 
-  test("both timelines show the move after a reload", async ({ page, request }) => {
+  test("a fresh page shows the move on both timelines, Today and a lanes dot", async ({ page, request }) => {
     const { appId, label } = await bookedRound(request, "Both Timelines Co", "Both timelines");
     await page.goto(`/applications/${appId}`);
     const dialog = await openDialog(page, label);
@@ -194,15 +194,24 @@ test.describe("each move on the timelines", () => {
     await dialog.getByLabel("Why? (optional)").fill("Both timelines clash");
     await submit(dialog);
     await expect(dialog).toBeHidden();
-    await page.reload();
 
     const [move] = await moves(request, appId);
     const saved = move?.data.reschedule;
-    await expectBoth(page, appId, label, [
-      `Moved from ${dayTime(saved?.from)} to ${dayTime(saved?.to)} · They needed the change · Both timelines clash`,
-    ]);
-    await page.reload();
-    await expect(page.getByText(/ · They needed the change · Both timelines clash$/)).toBeVisible();
+    const line = `Moved from ${dayTime(saved?.from)} to ${dayTime(saved?.to)} · They needed the change · Both timelines clash`;
+    await expectBoth(page, appId, label, [line]);
+
+    await page.goto("/");
+    await page.getByRole("button", { name: "Recent activity" }).click();
+    const recent = page.getByRole("region", { name: "Recent activity" });
+    await expect(recent.getByText(line, { exact: true })).toBeVisible();
+
+    // A dot has room for one sentence: it keeps the who and why, without the times.
+    await page.goto("/timeline?view=lanes");
+    await expect(
+      page.locator(
+        `[aria-label$="Interview: ${label} rescheduled (they needed the change): Both timelines clash"]`,
+      ),
+    ).toHaveCount(1);
   });
 
   test("a second move keeps the first's details", async ({ page, request }) => {

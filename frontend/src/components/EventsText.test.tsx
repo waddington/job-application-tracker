@@ -1,5 +1,6 @@
 import { createMemoryHistory } from "@tanstack/react-router";
 import { cleanup, render, screen } from "@testing-library/react";
+import dayjs from "dayjs";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { App } from "../App";
@@ -114,6 +115,20 @@ describe("a reschedule on the application timeline", () => {
     ["neither", "Not down to either of you"],
   ] as const)("words %s as: %s", (by, words) => {
     expect(moveLine({ ...times, by })).toBe(`${TIMES} · ${words}`);
+  });
+
+  it("gives the year only when a move crosses one, in your time zone", () => {
+    const newYear = { from_at: "2026-12-30T10:00:00", to_at: "2027-01-04T14:00:00" };
+    expect(moveLine(newYear)).toBe("Moved from Wed 30 Dec 2026, 10:00 to Mon 4 Jan 2027, 14:00");
+    expect(moveLine(times)).toBe(TIMES);
+    // With an offset, as the API sends them: the year is the one in your zone, whatever the machine's is.
+    const local = (iso: string) => dayjs(iso).format();
+    expect(moveLine({ from_at: local("2026-12-31T23:30:00"), to_at: local("2027-01-01T00:30:00") })).toBe(
+      "Moved from Thu 31 Dec 2026, 23:30 to Fri 1 Jan 2027, 00:30",
+    );
+    expect(moveLine({ from_at: local("2027-01-01T00:30:00"), to_at: local("2027-01-02T00:30:00") })).toBe(
+      "Moved from Fri 1 Jan, 00:30 to Sat 2 Jan, 00:30",
+    );
   });
 
   it("leaves out what wasn't said", () => {
