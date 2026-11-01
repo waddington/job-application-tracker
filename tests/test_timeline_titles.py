@@ -19,7 +19,7 @@ from .factories import post
 CASES = json.loads(
     (Path(__file__).parent.parent / "frontend/src/components/timelineTitles.cases.json").read_text(encoding="utf-8")
 )
-# The only titles still from the API: a summary's first line, or the event's kind (i18n-events-activity).
+# Other events word their titles from `msg` or `bare_kind` (test_event_messages.py), not from these cases.
 FROM_THE_API = {"other-event"}
 RAW_FIELDS = ("stage_move", "round", "offer", "call", "note_title", "closed_as")
 TODAY = str(date.today())

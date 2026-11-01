@@ -120,8 +120,8 @@ The app is being made translatable, English only for now; the plan and its order
 - Notes and search: notes, the note editor, the Notes page and the search results page;
 - Insights: the page, stage and route tables, the scorecard, weekly activity, The whole picture,
   Recruiter conversations, CVs and cover letters and the Sankey;
-- Timeline: the page's own text, filters, kinds of thing and lanes, and entries' titles, also in
-  Today's recent list (only other events' titles, and every detail, still come from the API in English).
+- Timeline: the page's own text, filters, kinds of thing and lanes, and entries' titles and details, also
+  in Today's recent list (only events saved before their message existed, and your own words, stay as saved).
 - Errors: the shared "That didn't work" toast, and the errors that have a code so far (backup,
   to-dos, applications, people, calls, stage moves, documents, attachments and notes).
 
@@ -142,10 +142,11 @@ keep writing its text as before. Once it has:
   `t("common:actions.cancel")`. A `t()` from `useTranslation("todos")` refuses another
   namespace's keys, and its own namespace's keys with a prefix.
 - **Text the app saves** (an event's summary, a stage move's note) stays English: it's what's
-  exported and searched. Links, notes, files, emails, documents sent, rounds and offers also save a message with
-  `svc.log_message`. A new message needs its key in `EventMsg` (`api/schemas.py`), its text in
-  `locales/en/events.ts` and `eventText.ts`, and a case in `eventMessages.cases.json`. The rest
-  move with `i18n-events`.
+  exported and searched. Everything the app words itself also saves a message, with `svc.log_message`, or
+  `svc.message` where the event isn't logged activity. A new message needs its key in `EventMsg`
+  (`api/schemas.py`), its text in `locales/en/events.ts` and `eventText.ts`, and a case in
+  `eventMessages.cases.json`. The frontend never sends a key: for English it wants saved, it names an allowed
+  `app_text` or `app_note` in the query, and the server holds the words and the key.
 - **Values** go in `{{placeholders}}`, never glued on with `+` or a template string, so a
   translation can put them anywhere in the sentence.
 - **Plurals** are `_one` / `_other` keys used with `count`, never `n === 1 ? … : …`. So no

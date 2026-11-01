@@ -20,6 +20,7 @@ import {
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Trans, useTranslation } from "react-i18next";
 
+import { eventText } from "../components/eventText";
 import { PersonMarks } from "../components/GhostMark";
 import { useSearchResults, type SearchHit } from "../api/searchHooks";
 import { i18n } from "../i18n";
@@ -85,6 +86,7 @@ export function hitTitle(hit: SearchHit): string {
     const kind = hit.subkind as keyof typeof CALL_KINDS;
     return hit.own_title ? i18n.t(CALL_ABOUT[kind], { about: hit.own_title }) : i18n.t(CALL_KINDS[kind]);
   }
+  if (hit.kind === "timeline") return eventText({ summary: hit.title, msg: hit.msg }) ?? hit.title;
   return hit.title;
 }
 

@@ -911,6 +911,125 @@ class OfferRemovedNoFiguresMsg(BaseModel):
     params: NoParams
 
 
+class FollowedUpMsg(BaseModel):
+    key: Literal["event.followedUp"]
+    params: NoParams
+
+
+class NoReplyMsg(BaseModel):
+    key: Literal["event.noReply"]
+    params: NoParams
+
+
+class ReplyToReadMsg(BaseModel):
+    key: Literal["event.replyToRead"]
+    params: NoParams
+
+
+class ReplyReadMsg(BaseModel):
+    key: Literal["event.replyRead"]
+    params: NoParams
+
+
+class RepliedWaitingMsg(BaseModel):
+    key: Literal["event.repliedWaiting"]
+    params: NoParams
+
+
+class HeardBackMsg(BaseModel):
+    key: Literal["event.heardBack"]
+    params: NoParams
+
+
+class StageParams(BaseModel):
+    stage: str
+
+
+class UndoMoveMsg(BaseModel):
+    key: Literal["event.undoMove"]
+    params: StageParams
+
+
+class RecruiterChangeParams(BaseModel):
+    old: str
+    new: str
+
+
+class RecruiterSetParams(BaseModel):
+    new: str
+
+
+class RecruiterRemovedParams(BaseModel):
+    old: str
+
+
+class RecruiterChangeAgencyParams(RecruiterChangeParams):
+    agency: str
+
+
+class RecruiterSetAgencyParams(RecruiterSetParams):
+    agency: str
+
+
+class RecruiterRemovedAgencyParams(RecruiterRemovedParams):
+    agency: str
+
+
+class RecruiterChangedMsg(BaseModel):
+    key: Literal["event.recruiterChanged"]
+    params: RecruiterChangeParams
+
+
+class RecruiterSetMsg(BaseModel):
+    key: Literal["event.recruiterSet"]
+    params: RecruiterSetParams
+
+
+class RecruiterRemovedMsg(BaseModel):
+    key: Literal["event.recruiterRemoved"]
+    params: RecruiterRemovedParams
+
+
+class RecruiterChangedAgencyMsg(BaseModel):
+    key: Literal["event.recruiterChangedAgency"]
+    params: RecruiterChangeAgencyParams
+
+
+class RecruiterSetAgencyMsg(BaseModel):
+    key: Literal["event.recruiterSetAgency"]
+    params: RecruiterSetAgencyParams
+
+
+class RecruiterRemovedAgencyMsg(BaseModel):
+    key: Literal["event.recruiterRemovedAgency"]
+    params: RecruiterRemovedAgencyParams
+
+
+class RecruiterChangedOnRoleMsg(BaseModel):
+    key: Literal["event.recruiterChangedOnRole"]
+    params: RecruiterChangeParams
+
+
+class RecruiterSetOnRoleMsg(BaseModel):
+    key: Literal["event.recruiterSetOnRole"]
+    params: RecruiterSetParams
+
+
+class RolePersonKeptAgencyMsg(BaseModel):
+    key: Literal["event.rolePersonKeptAgency"]
+    params: RecruiterChangeAgencyParams
+
+
+class RolePersonKeptUnnamedAgencyMsg(BaseModel):
+    key: Literal["event.rolePersonKeptUnnamedAgency"]
+    params: RecruiterChangeParams
+
+
+class RolePersonKeptDirectMsg(BaseModel):
+    key: Literal["event.rolePersonKeptDirect"]
+    params: RecruiterChangeParams
+
+
 # A saved event's text as data (`data.msg`): a new key here without text in the frontend fails `pnpm typecheck`.
 EventMsg = Annotated[
     LinkAddedMsg
@@ -948,10 +1067,38 @@ EventMsg = Annotated[
     | OfferWithdrawnNoFiguresMsg
     | OfferRemovedYearMsg
     | OfferRemovedDayMsg
-    | OfferRemovedNoFiguresMsg,
+    | OfferRemovedNoFiguresMsg
+    | FollowedUpMsg
+    | NoReplyMsg
+    | ReplyToReadMsg
+    | ReplyReadMsg
+    | RepliedWaitingMsg
+    | HeardBackMsg
+    | UndoMoveMsg
+    | RecruiterChangedMsg
+    | RecruiterSetMsg
+    | RecruiterRemovedMsg
+    | RecruiterChangedAgencyMsg
+    | RecruiterSetAgencyMsg
+    | RecruiterRemovedAgencyMsg
+    | RecruiterChangedOnRoleMsg
+    | RecruiterSetOnRoleMsg
+    | RolePersonKeptAgencyMsg
+    | RolePersonKeptUnnamedAgencyMsg
+    | RolePersonKeptDirectMsg,
     Field(discriminator="key"),
 ]
 _EVENT_MSG: TypeAdapter[Any] = TypeAdapter(EventMsg)
+
+
+def read_event_msg(data: Any) -> Any:
+    """An event's saved message. Data may not match (hand-edited, or from a newer version): that's null, never a 500."""
+    if not isinstance(data, dict) or "msg" not in data:
+        return None
+    try:
+        return _EVENT_MSG.validate_python(data["msg"])
+    except ValidationError:
+        return None
 
 
 class EventOut(Out):
@@ -968,11 +1115,7 @@ class EventOut(Out):
 
     @model_validator(mode="after")
     def _read_msg(self) -> EventOut:
-        """Saved data may not match (hand-edited, or from a newer version): that's null, never a 500."""
-        try:
-            self.msg = _EVENT_MSG.validate_python(self.data["msg"]) if "msg" in self.data else None
-        except ValidationError:
-            self.msg = None
+        self.msg = read_event_msg(self.data)
         return self
 
 

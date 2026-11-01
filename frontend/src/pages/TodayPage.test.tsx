@@ -103,9 +103,10 @@ describe("today: what to do", () => {
       }),
     );
     // Chasing counts as activity, so it doesn't land in "Gone quiet" straight away.
-    expect(calls.find((c) => c.path.endsWith("/a2/activities"))?.body).toMatchObject({
-      summary: "Followed up",
-    });
+    // Exactly the body an older server accepts; it ignores the query, a new one saves the message from it.
+    const logged = calls.find((c) => c.path.includes("/a2/activities"));
+    expect(logged?.path).toMatch(/\/a2\/activities\?app_text=followed_up$/);
+    expect(logged?.body).toEqual({ kind: "manual", summary: "Followed up", data: {} });
     const outcome = screen
       .getByRole("heading", { name: "How did it go?" })
       .closest('[role="group"]') as HTMLElement;
@@ -185,8 +186,12 @@ describe("today: what to do", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Mark Litware as Ghosted" }));
     await waitFor(() =>
-      expect(calls.find((c) => c.method === "POST")?.body).toEqual({ to_stage: "ghosted", note: "No reply" }),
+      expect(calls.find((c) => c.method === "POST")?.body).toEqual({
+        to_stage: "ghosted",
+        note: "No reply",
+      }),
     );
+    expect(calls.find((c) => c.method === "POST")?.path).toMatch(/\/a3\/move\?app_note=no_reply$/);
   });
 
   it("only offers Ghosted where the workflow allows that move", async () => {

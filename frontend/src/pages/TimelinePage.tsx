@@ -22,7 +22,7 @@ import { Fragment, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { PersonName } from "../components/GhostMark";
-import { timelineTitle } from "../components/timelineTitle";
+import { timelineDetail, timelineTitle } from "../components/timelineTitle";
 import { useAgencies, useCompanies, useContacts } from "../api/hooks";
 import {
   CATEGORIES,
@@ -144,6 +144,7 @@ export function TimelineRow({ item, showDate }: { item: TimelineItem; showDate?:
   const cat = categoryOf(item.category);
   const date = formatDay(dayOf(item), "dayMonth", lang);
   const dated = item.all_day ? date : t("dateTime", { date, time: timeOf(item, t, lang) });
+  const detail = timelineDetail(item);
   return (
     <Group gap="sm" wrap="nowrap" align="flex-start" py={6}>
       <Text size="xs" c="dimmed" w={showDate ? 92 : 52} style={{ flexShrink: 0 }} pt={2}>
@@ -156,9 +157,9 @@ export function TimelineRow({ item, showDate }: { item: TimelineItem; showDate?:
         <Text size="sm" fw={500}>
           {timelineTitle(item)}
         </Text>
-        {item.detail && (
+        {detail && (
           <Text size="xs" c="dimmed" lineClamp={2}>
-            {item.detail}
+            {detail}
           </Text>
         )}
         <ItemContext item={item} />

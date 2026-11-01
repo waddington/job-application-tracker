@@ -117,8 +117,9 @@ def move(
     *,
     occurred_at: datetime | None = None,
     note: str | None = None,
+    msg: dict[str, Any] | None = None,
 ) -> Event:
-    """Move an application to `to_stage` if the workflow allows it."""
+    """Move an application to `to_stage` if the workflow allows it. `msg` is `note` as a message (`message`)."""
     try:
         allowed_move = workflow.can_move(app.stage, to_stage)
     except WorkflowError as exc:  # e.g. a stage removed from config.toml
@@ -145,6 +146,7 @@ def move(
         data={
             **({"was_waiting_since": app.awaiting_reply_since.isoformat()} if app.awaiting_reply_since else {}),
             **({"was_to_read_since": app.reply_to_read_since.isoformat()} if app.reply_to_read_since else {}),
+            **({"msg": msg} if msg else {}),
         },
     )
     session.add(event)
@@ -225,7 +227,8 @@ def undo_last_move(session: Session, app: Application, *, note: str | None = Non
         to_stage=last.from_stage,
         occurred_at=utcnow(),
         summary=note or f"Undo: back to {last.from_stage}",
-        data={"undo_of": last.id},
+        # The stage's id, because that's what the summary says. A note is someone's own words: no message.
+        data={"undo_of": last.id, **({} if note else {"msg": message("event.undoMove", {"stage": last.from_stage})})},
     )
     session.add(event)
     app.stage = last.from_stage
@@ -255,13 +258,20 @@ def _activity_time(events: list[Event], fallback: datetime) -> datetime:
     return max(times) if times else fallback
 
 
-def note_change(session: Session, app: Application, summary: str, data: dict[str, Any] | None = None) -> Event:
+def note_change(
+    session: Session,
+    app: Application,
+    summary: str,
+    data: dict[str, Any] | None = None,
+    *,
+    msg: dict[str, Any] | None = None,
+) -> Event:
     """Record a change to the application's details on its timeline ("Recruiter changed from …").
 
     Bookkeeping, not contact with anyone: it doesn't count as activity, so it doesn't reset how
-    long the application has been quiet.
+    long the application has been quiet. `msg` is `summary` as a message (`message`).
     """
-    data = {**(data or {}), "bookkeeping": True}  # see _activity_time
+    data = {**(data or {}), "bookkeeping": True, **({"msg": msg} if msg else {})}  # see _activity_time
     event = Event(application_id=app.id, kind="manual", occurred_at=utcnow(), summary=summary, data=data)
     session.add(event)
     session.flush()
@@ -326,7 +336,32 @@ EventMsgKey = Literal[
     "event.offerRemovedYear",
     "event.offerRemovedDay",
     "event.offerRemovedNoFigures",
+    "event.followedUp",
+    "event.noReply",
+    "event.replyToRead",
+    "event.replyRead",
+    "event.repliedWaiting",
+    "event.heardBack",
+    "event.undoMove",
+    "event.recruiterChanged",
+    "event.recruiterSet",
+    "event.recruiterRemoved",
+    "event.recruiterChangedAgency",
+    "event.recruiterSetAgency",
+    "event.recruiterRemovedAgency",
+    "event.recruiterChangedOnRole",
+    "event.recruiterSetOnRole",
+    "event.rolePersonKeptAgency",
+    "event.rolePersonKeptUnnamedAgency",
+    "event.rolePersonKeptDirect",
 ]
+
+
+def message(key: EventMsgKey, params: dict[str, str | int | None]) -> dict[str, Any]:
+    """What goes in `data.msg`. A key the API doesn't know would be saved for good and show as null."""
+    if key not in get_args(EventMsgKey):
+        raise ValueError(f"unknown event message key {key!r}")
+    return {"key": key, "params": params}
 
 
 def log_message(
@@ -345,7 +380,5 @@ def log_message(
     `summary` stays what's saved, exported and searched. `data.msg` sits beside whatever `data` holds, and
     `EventMsg` in api/schemas.py lists the keys. Text someone typed has no key: use `log_activity`.
     """
-    if key not in get_args(EventMsgKey):  # saved for good, and a key the API doesn't know would show as null
-        raise ValueError(f"unknown event message key {key!r}")
-    data = {**(data or {}), "msg": {"key": key, "params": params}}
+    data = {**(data or {}), "msg": message(key, params)}
     return log_activity(session, app, kind, summary=summary, occurred_at=occurred_at, data=data)

@@ -425,8 +425,12 @@ test.describe("follow-ups and quiet applications", () => {
       .last();
     await line.getByRole("button", { name: "Done", exact: true }).click();
     await expect.poll(async () => (await app(request, "Senior Python Developer")).follow_up_on).toBeNull();
-    const detail = await get<{ events: { summary: string | null }[] }>(request, `applications/${row.id}`);
-    expect(detail.events.map((e) => e.summary)).toContain("Followed up");
+    const detail = await get<{ events: { summary: string | null; msg: { key: string } | null }[] }>(
+      request,
+      `applications/${row.id}`,
+    );
+    const followed = detail.events.find((e) => e.summary === "Followed up");
+    expect(followed?.msg?.key).toBe("event.followedUp");
   });
 
   test("snoozing takes a quiet application off the list", async ({ page, request }) => {

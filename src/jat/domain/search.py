@@ -68,6 +68,7 @@ class Candidate:
     own_title: str | None = None
     subkind: str | None = None
     done: bool = False  # a to-do that's done (its subtitle says so in English)
+    event_data: object = None  # a timeline entry's saved `data`, for its message. Matching stays on the English.
 
 
 @dataclass
@@ -85,6 +86,7 @@ class Hit:
     own_title: str | None = None
     subkind: str | None = None
     done: bool = False
+    event_data: object = None
 
 
 def _snippet(text: str, words: list[str]) -> str | None:
@@ -127,6 +129,7 @@ def match(candidate: Candidate, words: list[str]) -> Hit | None:
         candidate.own_title,
         candidate.subkind,
         candidate.done,
+        candidate.event_data,
     )
 
 
@@ -305,6 +308,7 @@ def _activity(session: Session, places: Places) -> Iterator[Candidate]:
             subtitle=apps.get(e.application_id),
             subtitle_searchable=False,
             updated=e.occurred_at,
+            event_data=e.data,
         )
 
 

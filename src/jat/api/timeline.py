@@ -36,6 +36,7 @@ from ..domain.applications import STAGE_CHANGE, is_implied
 from .deps import SessionDep, WorkflowDep
 from .meetings import label as meeting_label
 from .notes import _sync
+from .schemas import EventMsg, read_event_msg
 
 router = APIRouter(tags=["timeline"])
 
@@ -115,6 +116,8 @@ class TimelineItem(BaseModel):
     kind: Kind
     title: str  # the English, for older clients; the frontend words the title itself from `kind`
     detail: str | None = None
+    msg: EventMsg | None = None  # an event's saved message: `title` and `detail` are its English, split up
+    bare_kind: str | None = None  # an event with no words at all: its `kind`, which is all `title` can say
     application_id: str | None = None
     role_title: str | None = None
     role_id: str | None = None  # the role it's about: on role items and on every application's items
@@ -284,6 +287,8 @@ def timeline(
                     kind="stage-event" if e.kind == STAGE_CHANGE else "other-event",
                     title=_event_title(e, stage_names),
                     detail=_detail(e),
+                    msg=read_event_msg(e.data),
+                    bare_kind=e.kind if e.kind != STAGE_CHANGE and not e.summary else None,
                     stage_move=_stage_move(e, stage_names),
                 )
             )

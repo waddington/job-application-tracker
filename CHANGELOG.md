@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.2.38 (2026-10-31)
+
+- **Developers:** new reply, waiting, recruiter, Undo, "Followed up" and "No reply" events also save their message as a key and values (`data.msg`, so it appears in `export/events.jsonl`), and the Timeline, Today's recent list and search results show saved messages from the translation files, ready for other languages. The saved English and old events are unchanged, and search still matches the saved English (#176).
+
 ## 1.2.37 (2026-10-31)
 
 - **Developers:** the remaining Timeline titles: stage moves, rounds, offer replies, calls, notes and people marked ghosted or not interested, read their text from the translation files, ready for other languages. The English is unchanged (#173).

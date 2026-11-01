@@ -39,4 +39,26 @@ export default {
   offerRemovedYear: "Offer removed: {{money}} a year",
   offerRemovedDay: "Offer removed: {{money}} a day",
   offerRemovedNoFigures: "Offer removed: no figures yet",
+  followedUp: "Followed up",
+  noReply: "No reply",
+  replyToRead: "They replied; to read",
+  replyRead: "Read their reply",
+  repliedWaiting: "Replied; waiting to hear back",
+  heardBack: "Heard back",
+  // {{stage}} is the stage's id, as the saved English has it (fix-undo-raw-stage-id).
+  undoMove: "Undo: back to {{stage}}",
+  recruiterChanged: "Recruiter changed from {{old}} to {{new}}",
+  recruiterSet: "Recruiter set to {{new}}",
+  recruiterRemoved: "Recruiter removed ({{old}})",
+  recruiterChangedAgency: "Recruiter changed from {{old}} to {{new}} (through {{agency}})",
+  recruiterSetAgency: "Recruiter set to {{new}} (through {{agency}})",
+  recruiterRemovedAgency: "Recruiter removed ({{old}}) (through {{agency}})",
+  recruiterChangedOnRole: "Recruiter changed from {{old}} to {{new}}, on the role",
+  recruiterSetOnRole: "Recruiter set to {{new}}, on the role",
+  rolePersonKeptAgency:
+    "The role's person changed from {{old}} to {{new}}; this application still has {{old}} (through {{agency}})",
+  rolePersonKeptUnnamedAgency:
+    "The role's person changed from {{old}} to {{new}}; this application still has {{old}} (through an agency)",
+  rolePersonKeptDirect:
+    "The role's person changed from {{old}} to {{new}}; this application still has {{old}} (direct)",
 } as const;

@@ -310,5 +310,68 @@
     "key": "event.offerRemovedNoFigures",
     "params": {},
     "summary": "Offer removed: no figures yet"
+  },
+  { "key": "event.followedUp", "params": {}, "summary": "Followed up" },
+  { "key": "event.noReply", "params": {}, "summary": "No reply" },
+  { "key": "event.replyToRead", "params": {}, "summary": "They replied; to read" },
+  { "key": "event.replyRead", "params": {}, "summary": "Read their reply" },
+  { "key": "event.repliedWaiting", "params": {}, "summary": "Replied; waiting to hear back" },
+  { "key": "event.heardBack", "params": {}, "summary": "Heard back" },
+  { "key": "event.undoMove", "params": { "stage": "applied" }, "summary": "Undo: back to applied" },
+  {
+    "key": "event.recruiterChanged",
+    "params": { "old": "Alex Morgan", "new": "Sam Patel" },
+    "summary": "Recruiter changed from Alex Morgan to Sam Patel"
+  },
+  {
+    "key": "event.recruiterChanged",
+    "params": { "old": "{{new}} $t(common:actions.cancel)", "new": "<b>A & B</b> $&" },
+    "summary": "Recruiter changed from {{new}} $t(common:actions.cancel) to <b>A & B</b> $&"
+  },
+  { "key": "event.recruiterSet", "params": { "new": "Sam Patel" }, "summary": "Recruiter set to Sam Patel" },
+  {
+    "key": "event.recruiterRemoved",
+    "params": { "old": "Alex Morgan" },
+    "summary": "Recruiter removed (Alex Morgan)"
+  },
+  {
+    "key": "event.recruiterChangedAgency",
+    "params": { "old": "Alex Morgan", "new": "Sam Patel", "agency": "Northwind Talent" },
+    "summary": "Recruiter changed from Alex Morgan to Sam Patel (through Northwind Talent)"
+  },
+  {
+    "key": "event.recruiterSetAgency",
+    "params": { "new": "Sam Patel", "agency": "Northwind Talent" },
+    "summary": "Recruiter set to Sam Patel (through Northwind Talent)"
+  },
+  {
+    "key": "event.recruiterRemovedAgency",
+    "params": { "old": "Alex Morgan", "agency": "Northwind Talent" },
+    "summary": "Recruiter removed (Alex Morgan) (through Northwind Talent)"
+  },
+  {
+    "key": "event.recruiterChangedOnRole",
+    "params": { "old": "Alex Morgan", "new": "Sam Patel" },
+    "summary": "Recruiter changed from Alex Morgan to Sam Patel, on the role"
+  },
+  {
+    "key": "event.recruiterSetOnRole",
+    "params": { "new": "Sam Patel" },
+    "summary": "Recruiter set to Sam Patel, on the role"
+  },
+  {
+    "key": "event.rolePersonKeptAgency",
+    "params": { "old": "Alex Morgan", "new": "Sam Patel", "agency": "Northwind Talent" },
+    "summary": "The role's person changed from Alex Morgan to Sam Patel; this application still has Alex Morgan (through Northwind Talent)"
+  },
+  {
+    "key": "event.rolePersonKeptUnnamedAgency",
+    "params": { "old": "Alex Morgan", "new": "Sam Patel" },
+    "summary": "The role's person changed from Alex Morgan to Sam Patel; this application still has Alex Morgan (through an agency)"
+  },
+  {
+    "key": "event.rolePersonKeptDirect",
+    "params": { "old": "Alex Morgan", "new": "Sam Patel" },
+    "summary": "The role's person changed from Alex Morgan to Sam Patel; this application still has Alex Morgan (direct)"
   }
 ]

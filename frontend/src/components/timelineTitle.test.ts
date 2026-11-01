@@ -3,8 +3,10 @@ import { afterEach, describe, expect, it } from "vitest";
 import type { TimelineItem } from "../api/timelineHooks";
 import { i18n } from "../i18n";
 import { PSEUDO } from "../i18n/language";
+import eventCases from "./eventMessages.cases.json";
+import events from "./timelineEvents.cases.json";
 import cases from "./timelineTitles.cases.json";
-import { timelineTitle } from "./timelineTitle";
+import { timelineDetail, timelineTitle } from "./timelineTitle";
 
 // tests/test_timeline_titles.py makes the real API send each of these same cases, with this `title`, so
 // the frontend's English and the API's can't drift apart.
@@ -64,8 +66,59 @@ describe("a title built here", () => {
   });
 });
 
+describe("an other event's words", () => {
+  const eventItem = (msg: unknown, detail: string | null = null, kind = "other-event") =>
+    ({ ...itemOf({ kind }), msg, detail }) as unknown as TimelineItem;
+  const link = (title: string) => ({ key: "event.linkAdded", params: { title } });
+
+  it.each(eventCases.map((c) => [c.summary, c] as const))("reads as the API wrote it: %s", (summary, c) => {
+    const item = eventItem({ key: c.key, params: c.params });
+    expect(timelineTitle(item)).toBe(summary);
+    expect(timelineDetail(item)).toBeNull();
+  });
+
+  // tests/test_event_messages.py sends these through Python's split.
+  it.each(events.split.map((c) => [c.summary, c] as const))("splits as the API does: %j", (_, c) => {
+    const item = eventItem(link(c.params.title));
+    expect(timelineTitle(item)).toBe(c.title);
+    expect(timelineDetail(item)).toBe(c.detail);
+  });
+
+  it.each(events.bare)("with no words, says its kind: $kind", ({ kind, title }) => {
+    expect(timelineTitle({ ...eventItem(null), bare_kind: kind })).toBe(title);
+  });
+
+  it("shows a stage move's whole note as its detail, only when the API sends one", () => {
+    const undo = { key: "event.undoMove", params: { stage: "applied" } };
+    expect(timelineDetail(eventItem(undo, "Undo: back to applied", "stage-event"))).toBe(
+      "Undo: back to applied",
+    );
+    expect(timelineDetail(eventItem(undo, null, "stage-event"))).toBeNull();
+  });
+
+  it("goes through the translation files", async () => {
+    await i18n.changeLanguage(PSEUDO);
+    const translated = i18n.t("events:linkAdded", { title: "Contoso\nmore" });
+    const item = eventItem(link("Contoso\nmore"), "more");
+    expect(timelineTitle(item)).not.toBe("Link added: Contoso");
+    expect(timelineTitle(item)).toBe(translated.split("\n")[0]);
+    expect(timelineDetail(item)).toBe(translated.split("\n")[1]);
+    expect(timelineTitle({ ...eventItem(null), bare_kind: "call" })).not.toBe("Call");
+  });
+
+  it("falls back on what the API sent, for old events and typed text", () => {
+    expect(timelineTitle(eventItem(null))).toBe(API_TITLE);
+    expect(timelineDetail(eventItem(null, "Saved detail"))).toBe("Saved detail");
+    expect(timelineDetail(eventItem(undefined))).toBeNull();
+    const future = eventItem({ key: "event.fromTheFuture", params: {} }, "Saved detail");
+    expect(timelineTitle(future)).toBe(API_TITLE);
+    expect(timelineDetail(future)).toBe("Saved detail");
+    expect(timelineTitle({ ...eventItem(null), bare_kind: "stage_change" })).toBe(API_TITLE);
+  });
+});
+
 describe("the API's title shows", () => {
-  it("for other events, whose words come from i18n-events-activity", () => {
+  it("for other events with no message", () => {
     const item = itemOf({ kind: "other-event", person: "Sam Sample", role: "Engineer", company: "Contoso" });
     expect(timelineTitle(item)).toBe(API_TITLE);
   });

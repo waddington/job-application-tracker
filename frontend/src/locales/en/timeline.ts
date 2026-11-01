@@ -48,6 +48,14 @@ export default {
   // An entry's title. Must match the API's `title` in English: timelineTitles.cases.json proves it.
   // "?" stands for a company that isn't there any more, as the API has always written it.
   titles: {
+    // An event with no words at all: what kind it is.
+    bareCall: "Call",
+    bareEmail: "Email",
+    bareMessage: "Message",
+    bareNote: "Note",
+    bareFile: "File",
+    bareInterview: "Interview",
+    bareManual: "Manual",
     pitched: "{{person}} pitched {{role}} at {{company}}",
     pitchedNoCompany: "{{person}} pitched {{role}} at ?",
     roleAdded: "Added role {{role}} at {{company}}",
