@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 
 import type { Schemas } from "../api/client";
 import { useSaveInterview, type Interview } from "../api/interviewHooks";
+import { i18n } from "../i18n";
 import { roundLabel } from "../utils/rounds";
 import { formatDateTime } from "../utils/time";
 
@@ -44,7 +45,12 @@ type Reschedulable = Pick<Interview, "id" | "round" | "title" | "kind" | "starts
   role_title: string;
 };
 type RescheduleBy = NonNullable<Schemas["InterviewPatch"]["reschedule_by"]>;
-const WHO: RescheduleBy[] = ["me", "them", "mutual", "neither"];
+const WHO = [
+  { value: "me", key: "interviews:reschedule.whoOptions.me" },
+  { value: "them", key: "interviews:reschedule.whoOptions.them" },
+  { value: "mutual", key: "interviews:reschedule.whoOptions.mutual" },
+  { value: "neither", key: "interviews:reschedule.whoOptions.neither" },
+] as const satisfies readonly { value: RescheduleBy; key: string }[];
 
 /** The Reschedule button and its dialog, for a booked round; nothing for any other. */
 export function RescheduleButton({ interview }: { interview: Reschedulable & { status: string } }) {
@@ -124,7 +130,7 @@ export function RescheduleModal({ interview, onClose }: { interview: Reschedulab
           label={t("reschedule.who")}
           required
           allowDeselect={false}
-          data={WHO.map((value) => ({ value, label: t(`reschedule.whoOptions.${value}`) }))}
+          data={WHO.map(({ value, key }) => ({ value, label: i18n.t(key) }))}
           value={who}
           error={whoMissing && !who ? t("reschedule.whoRequired") : undefined}
           onChange={(value) => setWho(value as RescheduleBy | null)}
