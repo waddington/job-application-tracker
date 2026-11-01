@@ -14,10 +14,16 @@ const PLURAL = /(_ordinal)?_(zero|one|two|few|many|other)$/;
  */
 export const TO_TRANSLATE = "[TRANSLATE]";
 
+/**
+ * The marker anywhere, however it's been respaced or recased, or any [word] opening a line: machine
+ * translation can turn it into [PRZETŁUMACZ]. No English line opens with brackets.
+ */
+const MARKED = /\[\s*translate\s*\]|^\s*\[[^\]{}]*\]/iu;
+
 /** The lines of a language's file ("a.b") still marked TO_TRANSLATE. */
 export const untranslated = (tree: Tree): string[] =>
   Object.entries(flatten(tree))
-    .filter(([, text]) => text.includes(TO_TRANSLATE))
+    .filter(([, text]) => MARKED.test(text))
     .map(([key]) => key);
 
 /** { a: { b: "x" } } → { "a.b": "x" }. */

@@ -207,8 +207,9 @@ JAT_API_URL=http://127.0.0.1:8771 pnpm --dir frontend dev
 Open <http://127.0.0.1:5173> and choose your language from the button at the top right, beside
 light and dark mode. (Adding `?lang=pl` to the address does the same.) It works however much you've
 translated: a line you haven't done shows as it is in the file, like `[TRANSLATE] Today`, so you can
-try it as you go and see what's left. Go through every page. Look for sentences that read badly, text that's cut off because it came out longer than the English,
-and dates and plurals, with a count of 1 and of more.
+try it as you go and see what's left. Go through every page. Look for sentences that read badly, text
+that's cut off because it came out longer than the English, and dates and plurals, with a count of 1
+and of more.
 
 `Pseudo-language (dev)` in the same menu shows the English with accents and made longer. Anything
 still plain there skipped translation altogether: that's a bug in the app, not your text, so

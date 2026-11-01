@@ -129,6 +129,20 @@ describe("untranslated", () => {
     expect(untranslated(tree)).toEqual(["left", "nested.left"]);
     expect(untranslated({ done: "Czekasz" })).toEqual([]);
   });
+
+  it("still catches a marker that's been respaced, recased or machine translated", () => {
+    const tree = {
+      lower: "[translate] Czekasz",
+      spaced: "[ TRANSLATE ] Czekasz",
+      translated: "[PRZETŁUMACZ] Czekasz",
+      inside: "Czekasz [translate] tutaj",
+    };
+    expect(untranslated(tree)).toEqual(["lower", "spaced", "translated", "inside"]);
+  });
+
+  it("leaves brackets alone when they aren't opening a line, and placeholders", () => {
+    expect(untranslated({ a: "Czekasz [dzień]", b: "{{count}} dni", c: "[{{name}}] Czekasz" })).toEqual([]);
+  });
 });
 
 describe("usedKeys", () => {
