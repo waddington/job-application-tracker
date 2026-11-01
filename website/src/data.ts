@@ -50,7 +50,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Do I need to be technical?",
-    a: "A little, for now. Setting it up means installing Python and Node.js (the install guide links to both), then about ten minutes copying and pasting a few commands into the Terminal app. After that it's a normal web page in your browser. A one-command install and a double-click app are planned.",
+    a: "A little, for now. Setting it up means installing Node.js and a few small tools (the install guide links to them all), then about ten minutes copying and pasting a few commands into the Terminal app. After that it's a normal web page in your browser. A one-command install and a double-click app are planned.",
   },
   {
     q: "Is it like Huntr or Teal?",

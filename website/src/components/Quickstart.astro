@@ -1,7 +1,9 @@
 ---
 import { GUIDE } from "../data";
 
-// The commands are the README's and the install guide's, word for word. Keep them in step.
+// The install and demo commands match the README and the install guide (which gives the two pnpm
+// steps a line each). "Use it for real" follows the README; the guide splits it between
+// install.md and your-data.md. Keep them in step.
 
 type Line = { cmd?: string; out?: string; note?: string };
 const tabs: { id: string; label: string; lines: Line[] }[] = [
