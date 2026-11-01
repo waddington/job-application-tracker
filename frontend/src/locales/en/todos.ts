@@ -31,5 +31,11 @@ export default {
   dueOptional: "Due (optional)",
   byOptional: "By (optional)",
   add: "Add",
+  // The toast after ticking one off or deleting it.
+  toast: {
+    tickedOff: "Ticked off: {{text}}",
+    deleted: "Deleted: {{text}}",
+    undo: "Undo",
+  },
   none: "Nothing to do here. Add a reminder in your own words; it shows on Today until you tick it off.",
 } as const;

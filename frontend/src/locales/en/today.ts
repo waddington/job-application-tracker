@@ -24,7 +24,8 @@ export default {
   },
   // The line of numbers over the pipeline. <b> holds the number.
   numbers: {
-    active: "<b>{{count}}</b> active",
+    active_one: "<b>{{count}}</b> active",
+    active_other: "<b>{{count}}</b> active",
     interviews_one: "<b>{{count}}</b> interview in the next two weeks",
     interviews_other: "<b>{{count}}</b> interviews in the next two weeks",
     offers_one: "<b>{{count}}</b> offer to answer",

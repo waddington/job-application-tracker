@@ -70,7 +70,7 @@ function notifyUndo(message: string, undo: () => Promise<unknown>) {
             void undo();
           }}
         >
-          Undo
+          {i18n.t("todos:toast.undo")}
         </Button>
       </Group>
     ),
@@ -110,7 +110,10 @@ export function useTickTodo() {
     mutationFn: (args: { todo: Todo; done: boolean }) => setDone(args.todo.id, args.done),
     onSuccess: (_data, { todo, done }) => {
       refresh();
-      if (done) notifyUndo(`Ticked off: ${todo.text}`, () => setDone(todo.id, false).then(refresh));
+      if (done)
+        notifyUndo(i18n.t("todos:toast.tickedOff", { text: todo.text }), () =>
+          setDone(todo.id, false).then(refresh),
+        );
     },
     onError: notifyError,
   });
@@ -128,7 +131,7 @@ export function useDeleteTodo() {
     },
     onSuccess: (_data, todo) => {
       refresh();
-      notifyUndo(`Deleted: ${todo.text}`, async () => {
+      notifyUndo(i18n.t("todos:toast.deleted", { text: todo.text }), async () => {
         const body = {
           text: todo.text,
           due_on: todo.due_on,

@@ -128,7 +128,7 @@ describe("usedKeys", () => {
     );
   });
 
-  it("counts namespaced strings anywhere (i18n.t outside components, shadow keys)", () => {
+  it("counts namespaced strings anywhere (i18n.t outside components)", () => {
     const source = `i18n.t("today:sources.recruiter"); i18n.t("common:appName"); "other:x"`;
     expect(usedKeys(source, ns, "common")).toEqual(new Set(["today:sources.recruiter", "common:appName"]));
   });
