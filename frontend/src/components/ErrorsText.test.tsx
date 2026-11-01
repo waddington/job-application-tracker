@@ -20,6 +20,16 @@ const coded = (code: ErrorCode, params: Record<string, string | number> = {}) =>
 
 // Keyed by code, so a code with no row fails the type check.
 const TEXT: Record<ErrorCode, [Record<string, string | number>, string]> = {
+  agencies_in_use: [{ id: "x1" }, "agencies x1 is still in use"],
+  application_link_not_found: [{}, "link not found on this application"],
+  attachment_entity_incomplete: [{}, "Give both entity_type and entity_id, or neither"],
+  attachment_entity_type_invalid: [{ kinds: "role, agency" }, "entity_type must be one of role, agency"],
+  attachment_entity_type_required: [{}, "Give entity_type with entity_id"],
+  companies_in_use: [{ id: "x1" }, "companies x1 is still in use"],
+  duplicates_needs_company: [{}, "Give company_id or company_name."],
+  roles_in_use: [{ id: "x1" }, "roles x1 is still in use"],
+  time_zone_unknown: [{ tz: "Mars/Base", quoted_tz: "'Mars/Base'" }, "unknown time zone 'Mars/Base'"],
+  todo_entity_incomplete: [{}, "give both entity_type and entity_id, or neither"],
   attachment_file_missing: [{ name: "brief.pdf" }, "brief.pdf is missing from files/"],
   attachment_is_version_file: [
     { label: "v3", quoted_label: "'v3'" },

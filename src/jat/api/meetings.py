@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, HTTPException, Response
+from fastapi import APIRouter, Response
 from pydantic import AwareDatetime
 from sqlalchemy import select
 from sqlalchemy.orm import Session, aliased
@@ -60,7 +60,7 @@ def outs(found) -> list[S.MeetingOut]:
 def _out(session: Session, meeting_id: str) -> S.MeetingOut:
     found = session.execute(query().where(Meeting.id == meeting_id)).all()
     if not found:
-        raise HTTPException(status_code=404, detail=f"Meeting {meeting_id} not found")
+        raise CodedError(404, f"Meeting {meeting_id} not found", "meeting_not_found", {"id": meeting_id})
     return outs(found)[0]
 
 

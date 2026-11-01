@@ -40,14 +40,17 @@ export function errorMessage(error: unknown): string {
 export class ApiError extends Error {
   readonly code?: ErrorCode;
   readonly params?: Record<string, string | number>;
+  /** A validation error's problems (a 422 with a list), which `errorText` words in your language. */
+  readonly issues?: Partial<Schemas["ValidationIssue"]>[];
 
   constructor(body: unknown) {
     super(errorMessage(body));
     this.name = "ApiError";
     if (body && typeof body === "object") {
-      const { code, params } = body as Partial<Schemas["ErrorOut"]>;
+      const { code, params, detail } = body as Partial<Schemas["ErrorOut"]>;
       if (typeof code === "string") this.code = code;
       if (params && typeof params === "object") this.params = params;
+      if (Array.isArray(detail)) this.issues = detail;
     }
   }
 }

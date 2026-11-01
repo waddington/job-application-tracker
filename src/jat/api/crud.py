@@ -2,13 +2,14 @@
 
 from collections.abc import Callable
 
-from fastapi import APIRouter, HTTPException, Request, Response
+from fastapi import APIRouter, Request, Response
 from pydantic import AnyUrl, BaseModel
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from .deps import SessionDep, get_or_404
+from .errors import CodedError, ErrorCode
 
 
 def values(model: BaseModel, *, partial: bool) -> dict:
@@ -25,6 +26,7 @@ def crud_router(
     schema_out: type[BaseModel],
     prefix: str,
     tag: str,
+    in_use: ErrorCode,
     order_by,
     search_column=None,
     validate: Callable[[Session, dict], None] | None = None,
@@ -77,7 +79,7 @@ def crud_router(
             session.delete(obj)
             session.flush()
         except IntegrityError as exc:
-            raise HTTPException(status_code=409, detail=f"{tag} {item_id} is still in use") from exc
+            raise CodedError(409, f"{tag} {item_id} is still in use", in_use, {"id": item_id}) from exc
         return Response(status_code=204)
 
     return router
