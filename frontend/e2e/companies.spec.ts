@@ -880,13 +880,14 @@ test.describe("the company pages", () => {
     await expect(save).toBeDisabled();
     await page.getByLabel("About", { exact: true }).fill("Makes fictional widgets");
     await save.click();
-    await expect(save).toBeDisabled();
+    // Save is also disabled while saving, so wait for the saved value itself.
+    const saved = async () => (await getJson<Named>(request, `companies/${here.id}`)).description;
+    await expect.poll(saved).toBe("Makes fictional widgets");
     await page.reload();
     await expect(page.getByLabel("About", { exact: true })).toHaveValue("Makes fictional widgets");
     await page.getByLabel("About", { exact: true }).fill("");
     await save.click();
-    await expect(save).toBeDisabled();
-    expect((await getJson<Named>(request, `companies/${here.id}`)).description).toBeNull();
+    await expect.poll(saved).toBeNull();
   });
 
   test("a company that doesn't exist says so", async ({ page, problems }) => {
