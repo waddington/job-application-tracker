@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.2.41 (2026-11-01)
+
+- **Developers:** LANGPLACEHOLDER read their text from the translation files, ready for other languages. The English is unchanged (#180).
+
 ## 1.2.40 (2026-11-01)
 
 - **Developers:** a stage that still has its default id and English name now shows translated wherever stages appear, ready for other languages. Renamed and added stages show as written, `config.toml` never changes, and the English is unchanged. The API adds raw stage ids beside its names (#179).
