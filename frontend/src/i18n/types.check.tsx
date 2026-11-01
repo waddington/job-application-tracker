@@ -36,7 +36,7 @@ export function useTypeChecks() {
   t("greeting", { nam: "Alex" });
 }
 
-/** TextKey ("namespace:key", used by shadow mode). */
+/** TextKey ("namespace:key", used by eventText.ts). */
 export function textKeyChecks(): TextKey[] {
   const good: TextKey[] = ["people:replies.within", "common:nav.items.today", "today:groupBadge"];
   // @ts-expect-error a key that doesn't exist

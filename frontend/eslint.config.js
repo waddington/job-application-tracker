@@ -4,94 +4,6 @@ import reactHooks from "eslint-plugin-react-hooks";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 
-// Files whose text has moved to the translation files (docs/rfc/i18n.md §15). Each area's PR
-// adds its files here, so hard-coded English can't creep back in; i18n-finish turns it on
-// everywhere.
-const TRANSLATED = [
-  "src/api/attachmentHooks.ts",
-  "src/api/noteHooks.ts",
-  "src/api/notifyError.ts",
-  "src/components/Layout.tsx",
-  "src/components/HeaderSearch.tsx",
-  "src/components/ApiStatus.tsx",
-  "src/components/DeleteButton.tsx",
-  "src/components/EditNameModal.tsx",
-  "src/components/HeaderButtons.tsx",
-  "src/components/CreatableSelect.tsx",
-  "src/components/DuplicateWarning.tsx",
-  "src/pages/NotFound.tsx",
-  // i18n-today
-  "src/pages/TodayPage.tsx",
-  "src/components/Todos.tsx",
-  "src/components/Waiting.tsx",
-  "src/components/ChaseActions.tsx",
-  "src/components/PersonChase.tsx",
-  "src/components/ReplyHabit.tsx",
-  "src/components/GhostMark.tsx",
-  "src/components/OutcomeNotes.tsx",
-  "src/components/HowItWorks.tsx",
-  "src/components/AtAGlance.tsx",
-  // i18n-applications
-  "src/pages/ApplicationsPage.tsx",
-  "src/pages/ApplicationPage.tsx",
-  "src/components/ApplicationDrawer.tsx",
-  "src/components/Board.tsx",
-  "src/components/NewApplicationModal.tsx",
-  "src/components/SentDocuments.tsx",
-  "src/components/StageBadge.tsx",
-  // i18n-roles
-  "src/components/Roles.tsx",
-  "src/pages/RolesPage.tsx",
-  "src/pages/RolePage.tsx",
-  // i18n-people
-  "src/pages/RecruitersPage.tsx",
-  "src/pages/PersonPage.tsx",
-  "src/pages/CompaniesPage.tsx",
-  "src/pages/CompanyPage.tsx",
-  "src/pages/AgencyPage.tsx",
-  "src/components/ContactFormModal.tsx",
-  "src/components/ContactCard.tsx",
-  "src/components/MergePerson.tsx",
-  "src/components/TimelineButton.tsx",
-  // i18n-interviews
-  "src/pages/InterviewsPage.tsx",
-  "src/components/Interviews.tsx",
-  "src/components/InterviewFormModal.tsx",
-  "src/components/Reschedule.tsx",
-  // i18n-calls
-  "src/components/Meetings.tsx",
-  // i18n-offers
-  "src/pages/OffersPage.tsx",
-  "src/components/Offers.tsx",
-  // i18n-documents
-  "src/pages/DocumentsPage.tsx",
-  "src/components/CvFiles.tsx",
-  // i18n-attachments-links
-  "src/components/Attachments.tsx",
-  "src/components/Links.tsx",
-  // i18n-notes-search
-  "src/pages/NotesPage.tsx",
-  "src/pages/SearchPage.tsx",
-  "src/components/Notes.tsx",
-  "src/components/NoteEditorModal.tsx",
-  // i18n-insights-tabs
-  "src/pages/InsightsPage.tsx",
-  "src/components/InsightStats.tsx",
-  "src/components/Scorecard.tsx",
-  "src/components/WholePicture.tsx",
-  // i18n-insights-reviews
-  "src/components/Conversations.tsx",
-  "src/components/DocumentPerformance.tsx",
-  // i18n-sankey
-  "src/components/SankeyChart.tsx",
-  // i18n-events-setup
-  "src/components/eventText.ts",
-  // i18n-timeline-page
-  "src/pages/TimelinePage.tsx",
-  // i18n-timeline-titles
-  "src/components/timelineTitle.ts",
-];
-
 export default tseslint.config(
   { ignores: ["dist", "node_modules", "src/api/schema.d.ts"] },
   js.configs.recommended,
@@ -108,7 +20,10 @@ export default tseslint.config(
     rules: { "react-hooks/rules-of-hooks": "off" },
   },
   {
-    files: TRANSLATED,
+    // Every source file: all UI text comes from the translation files (docs/rfc/i18n.md §15).
+    // Tests look for that text, in English, so they're the exception.
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: ["src/**/*.test.{ts,tsx}", "src/test/**"],
     plugins: { i18next },
     rules: {
       // Text in JSX, and in the props people read or hear, must come from t().
@@ -165,6 +80,26 @@ export default tseslint.config(
             ],
           },
         },
+      ],
+    },
+  },
+  {
+    // The rule above reads JSX only. This one catches text in an object, such as a toast's
+    // message: a property people read, holding a plain string with lower-case letters in it.
+    // A translation key ("today:glance.added", "nav.items.today") isn't text.
+    files: ["src/**/*.{ts,tsx}"],
+    // nav.ts: label and description are shown only by Placeholder, which no page reaches.
+    ignores: ["src/**/*.test.{ts,tsx}", "src/test/**", "src/locales/**", "src/nav.ts"],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        ...[
+          "Literal[value=/^(?![\\w-]+[.:][\\w.:-]+$).*[a-z]/]",
+          "TemplateLiteral > TemplateElement[value.raw=/[a-z]/]",
+        ].map((text) => ({
+          selector: `Property[key.name=/^(message|title|label|description|placeholder|error)$/] > ${text}`,
+          message: "Text people read comes from the translation files: use t() or i18n.t().",
+        })),
       ],
     },
   },

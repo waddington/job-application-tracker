@@ -14,6 +14,11 @@ export default {
   },
   nav: {
     label: "Main navigation",
+    // A page in the menu that isn't built yet (pages/Placeholder.tsx). There are none today.
+    placeholder: {
+      comingSoon: "Coming soon",
+      roadmapTask: "Roadmap task <task/>",
+    },
     // Menu headings, in menu order (nav.ts NAV_GROUPS).
     groups: {
       today: "Today",

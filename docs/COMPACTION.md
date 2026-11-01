@@ -217,14 +217,14 @@ next action.
     `MissingValueError`/`MissingKeyError` in dev and tests), `language.ts` (`LANGUAGES`,
     `LANGUAGE_NAMES`, `pickLanguage`, `saveLanguage`, `isLanguage`, `PSEUDO` = `en-XA`,
     `?lang=pseudo` in dev), `pseudo.ts`, `catalog.ts` (key and placeholder checks, unused-key
-    scanner), `shadow.ts` (shadow mode, unused now), `types.check.tsx` (type tests).
+    scanner), `types.check.tsx` (type tests).
   - English text: `frontend/src/locales/en/{common,today,people,todos,selftest}.ts` (`as const`,
     typed via `i18next.d.ts`; `TextKey` = "ns:key"). Other languages will be JSON in
     `locales/<code>/`; a missing key, namespace or plural form fails `catalog.test.ts`.
   - Converted so far: the frame (header, menu, footer, Not found, shared dialogs), Today and
     everything on it (to-dos, reply/chase buttons, marks, reply habits, How did it go?, At a
-    glance, How it works), and the switch. Their files are in `TRANSLATED` in
-    `frontend/eslint.config.js` (lint rule `i18next/no-literal-string`).
+    glance, How it works), and the switch. The lint rule, in
+    `frontend/eslint.config.js` (`i18next/no-literal-string`), now covers every source file but tests.
   - `utils/format.ts`: `formatDay(value, pattern, lang)` and helpers; every date through the
     dayjs `PATTERNS`. `utils/time.ts` `formatDate`/`formatDateTime`/`ago` go through it.
   - `scripts/i18n/text_snapshot.py` + `text_diff.py`: before/after text check (section 6).
@@ -493,10 +493,10 @@ names stay in their English (#161, #164), which looks the same. Leave it alone.
   field. Fall back to it for an older server (`hitTitle`, `nodeName` do; #156's role page drops its text instead, so don't
   copy that). Say in the report if Kai must restart.
 - **Whole sentences, one per state:** no word dropped into a placeholder, no count glued on. A count always gets `_one` and
-  `_other` keys, even when English repeats itself, or the catalog test can't protect it. `today.ts` `numbers.active` and
-  `people.ts` `toChase` still have that hole, for `i18n-finish`. Keys in a map outside a component are whole (`"ns:key"`), or
+  `_other` keys, even when English repeats itself, or the catalog test can't protect it. Keys in a map
+  outside a component are whole (`"ns:key"`), or
   the unused-key scanner misses them.
-- Move strings to `frontend/src/locales/en/<namespace>.ts`; add the files to `TRANSLATED` in `frontend/eslint.config.js`.
+- Move strings to `frontend/src/locales/en/<namespace>.ts`; the lint rule covers every source file but tests.
   Your words go into `<Trans>` as components, never `values`. A regex with `//` gets its own line, for the unused-key
   scanner. Pass `TFunction<"namespace">`, not `ReturnType<typeof useTranslation>["t"]` (too deep for TypeScript).
 - Add the area's views to `scripts/i18n/text_snapshot.py`. `bash <tmp>/deps/i18n_snapshot.sh` from the worktree compares
@@ -666,7 +666,7 @@ is that stopped process, not a fault. To preview a branch, serve it on a spare p
 3. Write the English in `locales/en/<ns>.ts` (new namespace → `locales/en/index.ts`), cut the
    components over (`useTranslation("<ns>")`, `t()`, `<Trans>` for markup, `i18n.t("ns:key")`
    outside components; another namespace too → `useTranslation(["ns", "common"])`); text the
-   app *saves* stays English with a comment (`i18n-events`). Add the files to `TRANSLATED`.
+   app *saves* stays English with a comment (`i18n-events`). The lint rule covers every source file but tests.
 4. Typecheck, lint, tests; rebuild, restart the server, snapshot again, `text_diff.py` must say
    `0 view parts differ` (or only intended changes). Pin what the snapshot can't reach in a
    test (`components/TodayText.test.tsx` is the model). Prove a test catches a slip by breaking
@@ -770,7 +770,7 @@ conflict is the last lines of `docs/ROADMAP.yaml` (keep both, in merge order).
 - **i18n:** the frontend does all translating; the backend sends codes and ids next to its
   English (§4 of the RFC). One namespace per area; keys say what text is for; English as
   `.ts` `as const` (typed keys and placeholder names), other languages JSON. Every converted
-  file goes in `TRANSLATED`. Your data (stage names, companies, notes) is never translated.
+  file is linted (every source file but tests). Your data (stage names, companies, notes) is never translated.
   Saved text stays English until `i18n-events`; no backfill of old events. Each i18n PR is a
   patch with its own release (the switch was minor). Cut over directly with the before/after
   text snapshot (shadow mode was for the first steps). Typed id-to-key maps hold bare keys.

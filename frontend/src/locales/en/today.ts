@@ -24,16 +24,19 @@ export default {
   },
   // The line of numbers over the pipeline. <b> holds the number.
   numbers: {
-    active: "<b>{{count}}</b> active",
+    active_one: "<b>{{count}}</b> active",
+    active_other: "<b>{{count}}</b> active",
     interviews_one: "<b>{{count}}</b> interview in the next two weeks",
     interviews_other: "<b>{{count}}</b> interviews in the next two weeks",
     offers_one: "<b>{{count}}</b> offer to answer",
     offers_other: "<b>{{count}}</b> offers to answer",
     pipeline: "Active applications by stage",
-    stageCount: "{{stage}}: {{count}}",
+    stageCount_one: "{{stage}}: {{count}}",
+    stageCount_other: "{{stage}}: {{count}}",
   },
   // Read out for the count beside each group's heading: "3 in Your move".
-  groupBadge: "{{count}} in {{group}}",
+  groupBadge_one: "{{count}} in {{group}}",
+  groupBadge_other: "{{count}} in {{group}}",
   yourMove: {
     title: "Your move",
     hint: "Things to do now",

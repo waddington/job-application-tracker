@@ -104,29 +104,11 @@ pnpm --dir frontend gen:api
 
 ## Text in the UI (translations)
 
-The app is being made translatable, English only for now; the plan and its order are in
-[`docs/rfc/i18n.md`](docs/rfc/i18n.md). Pages move over area by area. So far:
-- the app's frame (header, menu, footer, Not found, shared buttons and dialogs);
-- Today, with its to-dos, the reply and chase buttons, How did it go?, At a glance and How it
-  works;
-- Applications: the list and board, the quick view, the application page and New application;
-- Roles: the Roles page, a role's page, the role form, Apply / Interested / Pass and role lines;
-- People and companies: Recruiters, a person's page and form, Merge, companies and agencies;
-- Interviews: the Interviews page, rounds on an application, the round form and Reschedule;
-- Calls: the calls card on a person's page, the call form, Happened and a call's line;
-- Offers: the Offers page, the Offer card on an application and the offer form;
-- Documents: the Documents page and the CV files card;
-- Files and links: the Files and Links cards;
-- Notes and search: notes, the note editor, the Notes page and the search results page;
-- Insights: the page, stage and route tables, the scorecard, weekly activity, The whole picture,
-  Recruiter conversations, CVs and cover letters and the Sankey;
-- Timeline: the page's own text, filters, kinds of thing and lanes, and entries' titles and details, also
-  in Today's recent list (only events saved before their message existed, and your own words, stay as saved).
-- Errors: the shared "That didn't work" toast, and the errors that have a code so far (backup,
-  to-dos, applications, people, calls, stage moves, documents, attachments and notes).
-
-The files are listed in `TRANSLATED` in `frontend/eslint.config.js`. Until an area has moved,
-keep writing its text as before. Once it has:
+The app is translatable, English only for now; the plan is in
+[`docs/rfc/i18n.md`](docs/rfc/i18n.md). The UI's own text goes through the translation layer. Three
+things stay English: events saved before their message existed, and your own words, stay as saved; and
+a few errors from the server with no code (not found on a stale page, and validation details) show as
+the API sent them (`i18n-uncoded-errors`).
 
 - **English lives in `frontend/src/locales/en/<namespace>.ts`**, one file per area, as a
   nested object with `as const`. Name keys for what the text is for (`waiting.title`), not
@@ -169,10 +151,15 @@ keep writing its text as before. Once it has:
   like `` `nav.items.${keyof …}` ``): `t()` refuses `"common:nav.items.today"` when `common`
   is its own namespace. The unused-key test counts any dotted string in a file as a key of
   that file's namespaces. Don't use `keyPrefix`.
-- **Hard-coded text is a lint error** in files that have moved over: add each converted file
-  to `TRANSLATED` in `frontend/eslint.config.js`. The rule (`i18next/no-literal-string`) checks
-  text and template strings in JSX, and the props people read or hear (`label`, `*Label`,
-  `placeholder`, `aria-label`, `title`, `description`, `error`, `hint`, `empty`, `confirm`…).
+- **Hard-coded text is a lint error** in every source file except tests. The rule
+  (`i18next/no-literal-string` in `frontend/eslint.config.js`) checks text and template strings in
+  JSX, and the props people read or hear (`label`, `*Label`, `placeholder`, `aria-label`, `title`,
+  `description`, `error`, `hint`, `empty`, `confirm`…). A second rule (`no-restricted-syntax`) catches
+  a plain string in an object's `message`, `title`, `label`, `description`, `placeholder` or `error`,
+  such as a toast's or a dropdown option's. It skips translation keys, the locale files and `nav.ts`.
+  Neither catches a JSX prop not listed (`tooltip=`, `message=`), a string held in a variable or
+  constant (`{ label }`, `message: SOME_TEXT`), a property with another name, or a word in capitals.
+  Those are yours to catch: the pseudo-language shows them.
   Strings in plain code, like a form's error messages, still need care. A prop that carries
   prose and isn't on the list goes on it.
 - **Adding an error code,** for an error people can see (the backend never translates):
@@ -221,26 +208,6 @@ dialogs and menus it opens and closes again; it never saves anything. Take one o
 on the branch, against the same demo data, then compare them with `scripts/i18n/text_diff.py`.
 It must print `0 view parts differ`. The script's docstring has the steps. Pin anything it can't
 reach (a dialog the demo data doesn't have) in a test.
-
-**Shadow mode** (`src/i18n/shadow.ts`) checks strings before they're cut over, a call at a time;
-nothing uses it now.
-`shadow("people:replies.within", english, { count })` still shows the hard-coded English, but
-it also looks the key up and compares the two.
-- **Where it runs:** always in `pnpm dev` (`?i18n=off` pauses it until the next reload). In a
-  built app it runs only after you open it once with `?i18n=shadow`, which is remembered in
-  that browser until you open `?i18n=off`.
-- **What the console shows:**
-  - `✓` for each key that matches. These are `console.debug` lines, so turn on Chrome's
-    "Verbose" level to see them.
-  - `✗` with both texts for a mismatch.
-  - `?` for a key with no text, and `!` for a failed lookup.
-- **A table:** `window.jatI18n.report()` lists everything, worst first.
-- **Under test,** anything but a match throws `ShadowMismatchError`, so every test that renders
-  a shadowed string checks it. Pin each new shadow call in a test too, with the inputs the app
-  gives it.
-- **Other helpers:** `shadowTrans` (sentences with tags) and `shadowValue` (format helpers)
-  work the same way.
-- **Keys:** shadow keys are typed `"namespace:key"` (`TextKey`), so a typo is a type error.
 
 ## The website
 

@@ -96,7 +96,7 @@ export function compare(en: Tree, other: Tree, lang: string): Comparison {
  *   useTranslation("ns") or useTranslation(["a", "b"]), or the default namespace if none;
  * - <Trans ns="x" i18nKey="key"> is credited to x;
  * - any "ns:key" string with a known namespace counts wherever it is (calls outside
- *   components: i18n.t("today:waiting.title"), shadow keys);
+ *   components: i18n.t("today:waiting.title"));
  * - any other dotted string ("nav.items.today") is credited to the file's namespaces, as for
  *   t(). That's how typed maps of ids to keys are written: bare, the way t() takes them.
  * Not understood: keyPrefix, and keys built at run time (`stage.${id}`), which the app avoids.
