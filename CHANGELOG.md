@@ -7,7 +7,7 @@ Numbers in brackets are pull requests.
 
 ## 1.2.39 (2026-11-01)
 
-- **Developers:** FINISHPLACEHOLDER read their text from the translation files, ready for other languages. The English is unchanged (#177).
+- **Developers:** the app's text cutover is finished: a lint rule now stops hard-coded text in all frontend source except tests, the shadow helper is gone, and every count has its plural forms. A few rare API errors and validation messages still reach toasts in English (`i18n-uncoded-errors`). The English is unchanged (#177).
 
 ## 1.2.38 (2026-10-31)
 
