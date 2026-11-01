@@ -48,6 +48,8 @@ describe("app shell", () => {
     );
     expect(screen.getByRole("heading", { name: "Offers" })).toBeInTheDocument();
     expect(screen.getByText("offers")).toBeInTheDocument();
+    expect(screen.getByText("Coming soon")).toBeInTheDocument();
+    expect(screen.getByText("offers").parentElement).toHaveTextContent(/^Roadmap task offers$/);
   });
 
   it("explains how it works from the help button", async () => {
