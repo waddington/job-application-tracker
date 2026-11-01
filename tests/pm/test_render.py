@@ -174,6 +174,30 @@ class BugTests(unittest.TestCase):
         self.assertLess(html.index('pill bug">bug'), html.index('pill planned">planned'))
         self.assertIn("BUG · high", html)
 
+    def test_a_reviewed_bug_shows_how_easy_the_fix_is_and_its_hours(self):
+        data = {
+            "phases": [
+                {
+                    "id": "B",
+                    "name": "Bugs",
+                    "tasks": [
+                        {
+                            "id": "rated",
+                            "name": "R",
+                            "type": "bug",
+                            "severity": "low",
+                            "ease": "trivial",
+                            "estimate_h": 0.5,
+                        },
+                        {"id": "unrated", "name": "U", "type": "bug", "severity": "low", "estimate_h": 2},
+                    ],
+                }
+            ]
+        }
+        tasks = {t.id: t for p in from_data(data).phases for t in p.tasks}
+        self.assertIn("BUG · low · trivial fix · 0.5 h", render.bug_tag(tasks["rated"]))
+        self.assertEqual('<span class="pill bug">BUG · low</span> ', render.bug_tag(tasks["unrated"]))
+
     def test_details_show_and_are_escaped(self):
         data = {
             "project": "demo",

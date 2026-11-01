@@ -11,6 +11,43 @@ from tools.pm.roadmap import Live, PullRequest, apply_live, from_data
 from tools.pm.server import Dashboard
 
 
+class BugReviewTest(unittest.TestCase):
+    def test_shows_each_rating_escaped_and_nothing_when_unreviewed(self):
+        data = {
+            "phases": [
+                {
+                    "id": "B",
+                    "name": "Bugs",
+                    "tasks": [
+                        {
+                            "id": "rated",
+                            "name": "R",
+                            "type": "bug",
+                            "severity": "high",
+                            "severity_reason": "Loses <data>",
+                            "ease": "easy",
+                            "ease_reason": "One file",
+                            "fix_risk": "low",
+                            "data_risk": "loses-or-changes-data",
+                            "changes_english": False,
+                            "root_cause": "In a.py:1",
+                            "fix_outline": "Change it",
+                            "related_bugs": ["other"],
+                        },
+                        {"id": "other", "name": "O", "type": "bug", "severity": "low"},
+                    ],
+                }
+            ]
+        }
+        roadmap = from_data(data)
+        tasks = {t.id: t for p in roadmap.phases for t in p.tasks}
+        html = task_page.bug_review(tasks["rated"], roadmap)
+        for text in ("Bug review", "Loses &lt;data&gt;", "easy", "loses or changes data", "In a.py:1", "/task/other"):
+            self.assertIn(text, html)
+        self.assertIn("<dt>Changes shown text</dt><dd>No", html.replace("\n", ""))
+        self.assertEqual("", task_page.bug_review(tasks["other"], roadmap))
+
+
 def pr(state="MERGED", merge_commit="abc", **kw):
     return PullRequest(
         7,

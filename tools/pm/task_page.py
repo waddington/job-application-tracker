@@ -9,6 +9,9 @@ from .live import TaskEvidence
 from .render import PIPELINE_STAGES, bug_tag, pill, repo_link, task_link
 from .roadmap import PullRequest, Roadmap, Task
 
+# Review fields that are one of a few words, some hyphenated in the file.
+RATED = ("fix_risk", "data_risk", "confirmed_by")
+
 
 def stage_why(task: Task) -> str:
     """Why the task is at its stage, in words."""
@@ -103,6 +106,50 @@ def branch_note(task: Task, evidence: TaskEvidence) -> str:
     return " (none: marked done on the roadmap)" if task.status == "done" else " (not started)"
 
 
+def bug_review(task: Task, roadmap: Roadmap) -> str:
+    """A bug's ratings and what investigating it found. Empty if it hasn't been reviewed."""
+    review = task.review
+    if not review:
+        return ""
+
+    def text(key: str) -> str:
+        value = review.get(key)
+        if value is True:
+            return "Yes: needs Kai's go-ahead"
+        if value is False:
+            return "No"
+        return escape(str(value).replace("-", " ")) if key in RATED else escape(str(value))
+
+    labels = (
+        ("Severity", task.severity or "", "severity_reason"),
+        ("Fix", review.get("ease"), "ease_reason"),
+    )
+    rated = [
+        fact(label, f"{escape(str(value))}<br><span class='small muted'>{escape(str(review.get(why, '')))}</span>")
+        for label, value, why in labels
+        if value
+    ]
+    facts = [
+        (label, key)
+        for label, key in (
+            ("Risk of the fix", "fix_risk"),
+            ("Saved data", "data_risk"),
+            ("Changes shown text", "changes_english"),
+            ("Confirmed by", "confirmed_by"),
+            ("Root cause", "root_cause"),
+            ("How to fix", "fix_outline"),
+            ("Pinned by", "pinned_by"),
+            ("Notes", "review_notes"),
+        )
+        if key in review
+    ]
+    rated += [fact(label, text(key)) for label, key in facts]
+    related = review.get("related_bugs")
+    if isinstance(related, list) and related:
+        rated.append(fact("Related", links([str(r) for r in related], roadmap)))
+    return f'<div class="panel"><h2>Bug review</h2><dl class="facts">{"".join(rated)}</dl></div>\n'
+
+
 def task_page(task: Task, roadmap: Roadmap, evidence: TaskEvidence, branch_prs: list[PullRequest] | None = None) -> str:
     needed_by = [t.id for t in roadmap.tasks if task.id in t.depends]
     owner = "Kai" if task.owner == "kai" else escape(task.owner)
@@ -145,6 +192,7 @@ def task_page(task: Task, roadmap: Roadmap, evidence: TaskEvidence, branch_prs: 
     return f"""<div class="stack">
 <div class="panel"><p class="small muted" style="margin:0 0 4px"><code>{escape(task.id)}</code></p>
 <h1 style="font-size:18px;margin:0 0 8px">{bug_tag(task)}{escape(task.name)}</h1>{pill(task.status)}{detail}</div>
+{bug_review(task, roadmap)}
 <div class="panel"><h2>Stage</h2>{stage_track(task)}<p style="margin:8px 0 0">{stage_why(task)}</p>{wait_note}</div>
 <div class="rm-grid">
 <div class="panel"><h2>Pull request</h2><dl class="facts">{branch}{"".join(pr_facts)}</dl></div>

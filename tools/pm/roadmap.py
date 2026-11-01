@@ -9,6 +9,21 @@ from .yamlish import YamlishError, parse
 
 STATUSES = ("bug", "planned", "building", "review", "done", "blocked")
 SEVERITIES = ("high", "medium", "low")
+# What investigating a bug found, shown on its task page.
+REVIEW_FIELDS = (
+    "ease",
+    "fix_risk",
+    "data_risk",
+    "changes_english",
+    "confirmed_by",
+    "severity_reason",
+    "ease_reason",
+    "root_cause",
+    "fix_outline",
+    "pinned_by",
+    "related_bugs",
+    "review_notes",
+)
 BRANCH_PREFIX = "worktree-"
 
 
@@ -58,6 +73,8 @@ class Task:
     severity: str | None = None
     # A longer description: what happens and how it was found. Names stay short.
     detail: str | None = None
+    # A bug's ratings and findings from an investigation: REVIEW_FIELDS, where set.
+    review: dict[str, object] = field(default_factory=dict)
     estimate_h: float = 0.0
     depends: list[str] = field(default_factory=list)
     prd: str | None = None
@@ -158,8 +175,11 @@ def from_data(data) -> Roadmap:
         if not isinstance(raw_phase, dict) or not raw_phase.get("id"):
             roadmap.errors.append(f"phase #{i + 1} needs an id")
             continue
-        phase = Phase(id=str(raw_phase["id"]), name=str(raw_phase.get("name") or raw_phase["id"]),
-                      goal=str(raw_phase.get("goal") or ""))
+        phase = Phase(
+            id=str(raw_phase["id"]),
+            name=str(raw_phase.get("name") or raw_phase["id"]),
+            goal=str(raw_phase.get("goal") or ""),
+        )
         for raw in raw_phase.get("tasks") or []:
             task = _task(raw, phase.id, roadmap.errors)
             if task:
@@ -211,6 +231,7 @@ def _task(raw, phase_id: str, errors: list[str]) -> Task | None:
         type=kind,
         severity=str(severity) if severity is not None else None,
         detail=str(raw["detail"]) if raw.get("detail") is not None else None,
+        review={key: raw[key] for key in REVIEW_FIELDS if raw.get(key) not in (None, "", [])},
         estimate_h=estimate,
         depends=[str(d) for d in depends],
         prd=raw.get("prd"),
@@ -245,7 +266,7 @@ def _find_cycle(roadmap: Roadmap) -> list[str] | None:
             if nxt not in graph:
                 continue
             if state.get(nxt) == 1:
-                return path[path.index(nxt):] + [nxt]
+                return path[path.index(nxt) :] + [nxt]
             if state.get(nxt) is None and (found := visit(nxt)):
                 return found
         path.pop()
