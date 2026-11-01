@@ -100,9 +100,13 @@ export function LanguageSwitch() {
             size="compact-sm"
             aria-label={t("language.current", { name })}
             leftSection={<IconWorld size={16} aria-hidden />}
-            rightSection={<IconChevronDown size={14} aria-hidden />}
+            rightSection={
+              <Box component="span" visibleFrom="sm" lh={0}>
+                <IconChevronDown size={14} aria-hidden />
+              </Box>
+            }
           >
-            {/* No room for the name on a phone: the globe and arrow still say what it is. */}
+            {/* No room for the name or arrow on a phone: the header only just fits. */}
             <Box component="span" visibleFrom="sm">
               {name}
             </Box>
