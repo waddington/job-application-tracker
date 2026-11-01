@@ -72,10 +72,11 @@ def pill(status: str) -> str:
     return f'<span class="pill {escape(status)}">{escape(status)}</span>'
 
 
-def repo_link(roadmap: Roadmap, path: str, label: str) -> str:
+def repo_link(roadmap: Roadmap, path: str, label: str, ref: str | None = None) -> str:
     if not roadmap.repo:
         return f"<code>{escape(path)}</code>"
-    return f'<a href="https://github.com/{escape(roadmap.repo)}/blob/main/{escape(path)}">{escape(label)}</a>'
+    target = f"{escape(roadmap.repo)}/blob/{escape(ref or 'main')}/{escape(path)}"
+    return f'<a href="https://github.com/{target}">{escape(label)}</a>'
 
 
 def task_link(task_id: str) -> str:
@@ -90,6 +91,14 @@ def bug_tag(task: Task) -> str:
     return f'<span class="pill bug">BUG{severity}</span> '
 
 
+def task_tags(task: Task) -> str:
+    """The bug tag, and a mark on a task that isn't on main's roadmap yet."""
+    if not task.on_branch:
+        return bug_tag(task)
+    about = f"Only on the roadmap of {task.on_branch} so far, not on main"
+    return f'{bug_tag(task)}<span class="on-branch" title="{escape(about)}">on its branch</span> '
+
+
 def task_links(roadmap: Roadmap, task: Task) -> str:
     parts = []
     if task.pr:
@@ -101,9 +110,9 @@ def task_links(roadmap: Roadmap, task: Task) -> str:
     elif task.branch:
         parts.append(f"<code>{escape(task.branch)}</code> +{task.commits_ahead}")
     if task.prd:
-        parts.append(repo_link(roadmap, task.prd, "PRD"))
+        parts.append(repo_link(roadmap, task.prd, "PRD", task.on_branch))
     if task.rfc:
-        parts.append(repo_link(roadmap, task.rfc, "RFC"))
+        parts.append(repo_link(roadmap, task.rfc, "RFC", task.on_branch))
     return " · ".join(parts)
 
 
@@ -114,7 +123,7 @@ def task_line(roadmap: Roadmap, task: Task, show_status: bool = True) -> str:
     owner = ' <span class="pill blocked">Kai</span>' if task.owner == "kai" else ""
     detail = f'<br><span class="small">{escape(task.detail)}</span>' if task.detail else ""
     return (
-        f"<li>{status}{bug_tag(task)}<b>{escape(task.name)}</b>{owner}{detail}<br>"
+        f"<li>{status}{task_tags(task)}<b>{escape(task.name)}</b>{owner}{detail}<br>"
         f'<span class="small muted">{task_link(task.id)} · {escape(task.phase)} · {task.estimate_h:g} h'
         f"{' · ' + links if links else ''}</span></li>"
     )
@@ -220,7 +229,7 @@ def pipeline_table(roadmap: Roadmap, snapshot: Snapshot) -> str:
         commits = f"{t.commits_ahead} commit{'' if t.commits_ahead == 1 else 's'}"
         size = f"+{t.pr.additions:,} −{t.pr.deletions:,}" if t.pr else commits
         rows.append(
-            f'<tr><td><span class="sr">{escape(t.status)}: </span>{bug_tag(t)}'
+            f'<tr><td><span class="sr">{escape(t.status)}: </span>{task_tags(t)}'
             f'<span class="clip" title="{escape(t.name)}">{escape(t.name)}</span>'
             f'<span class="small muted">{task_link(t.id)} · {task_links(roadmap, t)}</span></td>{cells}'
             f'<td class="small muted">{size}</td></tr>'
@@ -237,7 +246,7 @@ def feed_list(snapshot: Snapshot, now: datetime) -> str:
     for e in derive.feed(snapshot):
         stamp = f"{e.when:%H:%M}" if e.when.date() == now.date() else day(e.when)
         title = f'<a href="{escape(e.url)}">{escape(e.title)}</a>' if e.url else escape(e.title)
-        dot = {"commit": "past", "opened": "review", "merged": "done"}[e.kind]
+        dot = {"commit": "past", "drafted": "building", "opened": "review", "merged": "done"}[e.kind]
         about = f"<code>{escape(e.detail)}</code> on main" if e.kind == "commit" else escape(e.detail)
         items.append(
             f'<li><span class="time">{stamp}</span><span class="dot {dot}"></span>'
@@ -291,7 +300,7 @@ live from branches and PRs</p>{pipeline_table(roadmap, snapshot)}</div></div>
     prs = (
         "".join(
             f'<li><a href="{escape(p.url)}">#{p.number}</a> {escape(p.title)} '
-            f'<span class="small muted"><code>{escape(p.branch)}</code></span></li>'
+            f'<span class="small muted"><code>{escape(p.branch)}</code>{" · draft" if p.is_draft else ""}</span></li>'
             for p in open_prs
         )
         or f'<li class="muted">{"No open PRs" if snapshot.github_ok else UNKNOWN_GITHUB}.</li>'
@@ -331,7 +340,7 @@ def board(roadmap: Roadmap, snapshot: Snapshot, phase: str | None = None) -> str
                 extra = f'<div class="small muted">waits on {escape(", ".join(waiting))}</div>'
             links = task_links(roadmap, t)
             cards.append(
-                f'<div class="card {status}">{bug_tag(t)}<b>{escape(t.name)}</b>'
+                f'<div class="card {status}">{task_tags(t)}<b>{escape(t.name)}</b>'
                 f"{f'<div class=small>{escape(t.detail)}</div>' if t.detail else ''}"
                 f'<div class="small muted">{task_link(t.id)} · {escape(t.phase)} · {t.estimate_h:g} h'
                 f"{' · Kai' if t.owner == 'kai' else ''}</div>{extra}"
@@ -367,7 +376,7 @@ Each phase from its first PR to its latest. Fill shows tasks done, a tick is a t
                 or "—"
             )
             rows.append(
-                f"<tr><td>{pill(t.status)}</td><td>{bug_tag(t)}<b>{escape(t.name)}</b>"
+                f"<tr><td>{pill(t.status)}</td><td>{task_tags(t)}<b>{escape(t.name)}</b>"
                 f"{f'<br><span class=small>{escape(t.detail)}</span>' if t.detail else ''}<br>"
                 f"{task_link(t.id)}</td><td>{t.estimate_h:g} h</td>"
                 f'<td class="small">{deps}</td><td class="small">{escape(t.owner)}</td>'
@@ -414,8 +423,11 @@ def as_json(roadmap: Roadmap, snapshot: Snapshot) -> dict:
                         "prd": t.prd,
                         "rfc": t.rfc,
                         "branch": t.branch,
+                        "on_branch": t.on_branch,
                         "commits_ahead": t.commits_ahead,
-                        "pr": {"number": t.pr.number, "state": t.pr.state, "url": t.pr.url} if t.pr else None,
+                        "pr": {"number": t.pr.number, "state": t.pr.state, "is_draft": t.pr.is_draft, "url": t.pr.url}
+                        if t.pr
+                        else None,
                     }
                     for t in p.tasks
                 ],

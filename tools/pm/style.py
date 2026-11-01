@@ -88,6 +88,8 @@ border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:16
 align-items:center;padding:4px 0}
 .phase-row .name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
 .phase-row .num{text-align:right}.now{color:var(--accent);font-size:11px;font-weight:400}
+.on-branch{color:var(--accent);border:1px solid currentColor;border-radius:3px;padding:0 4px;
+font-size:11px;font-weight:400;white-space:nowrap}
 .segs{display:flex;height:8px;background:var(--line-2);border-radius:2px;overflow:hidden}
 .segs i{display:block}.segs .done{background:var(--done)}.segs .review{background:var(--review)}
 .segs .building{background:var(--building)}

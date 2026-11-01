@@ -24,7 +24,7 @@ def is_merge(subject: str) -> bool:
 @dataclass
 class Event:
     when: datetime
-    kind: str  # commit | opened | merged
+    kind: str  # commit | drafted | opened | merged
     title: str
     detail: str
     url: str = ""
@@ -39,7 +39,10 @@ def feed(snapshot: Snapshot, limit: int = 30) -> list[Event]:
     ]
     for pr in snapshot.live.prs:
         if opened := parse_time(pr.created_at):
-            events.append(Event(opened, "opened", f"PR #{pr.number} opened", pr.title, pr.url))
+            if pr.is_draft:  # still a draft, so not in review yet
+                events.append(Event(opened, "drafted", f"PR #{pr.number} opened as a draft", pr.title, pr.url))
+            else:
+                events.append(Event(opened, "opened", f"PR #{pr.number} opened", pr.title, pr.url))
         if merged := parse_time(pr.merged_at):
             events.append(Event(merged, "merged", f"PR #{pr.number} merged", pr.title, pr.url))
     return sorted(events, key=lambda e: e.when, reverse=True)[:limit]

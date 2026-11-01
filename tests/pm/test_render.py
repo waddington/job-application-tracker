@@ -1,8 +1,66 @@
 import unittest
 
-from tools.pm import render
-from tools.pm.live import Commit, Snapshot
-from tools.pm.roadmap import Live, PullRequest, apply_live, from_data
+from tools.pm import render, task_page
+from tools.pm.live import Commit, Snapshot, TaskEvidence
+from tools.pm.roadmap import BranchRoadmap, Live, Phase, PullRequest, Task, apply_live, from_data
+
+
+class DraftAndBranchTests(unittest.TestCase):
+    def setUp(self):
+        roadmap = from_data({"repo": "o/d", "phases": [{"id": "P", "name": "n", "tasks": [{"id": "a", "name": "A"}]}]})
+        extra = Task("new", "New <task>", "P", prd="docs/x.md")
+        draft = PullRequest(
+            7, "PR", "OPEN", "worktree-a", "https://example.com/7", is_draft=True, created_at="2026-10-01T10:00:00Z"
+        )
+        self.live = Live(
+            prs=[draft],
+            branch_roadmaps={"worktree-new": BranchRoadmap("worktree-new", "s", [Phase("P", "n", "", [extra])])},
+        )
+        self.roadmap = apply_live(roadmap, self.live)
+        self.snapshot = Snapshot(live=self.live)
+
+    def column(self, status):
+        """The Board's column for a status."""
+        html = render.board(self.roadmap, self.snapshot)
+        return next(c for c in html.split('<div class="col">') if f'pill {status}">{status}' in c)
+
+    def test_a_draft_sits_in_the_building_column_not_review(self):
+        self.assertIn("/task/a", self.column("building"))
+        self.assertNotIn("/task/a", self.column("review"))
+
+    def test_the_overview_counts_a_draft_as_building_and_labels_it(self):
+        self.assertEqual(self.roadmap.summary()["counts"]["building"], 1)
+        self.assertEqual(self.roadmap.summary()["counts"]["review"], 0)
+        html = render.overview(self.roadmap, self.snapshot)
+        self.assertIn("· draft", html)
+        self.assertIn("PR #7 opened as a draft", html)
+
+    def test_a_branch_task_is_marked_wherever_it_shows(self):
+        pages = (render.board(self.roadmap, self.snapshot), render.roadmap_page(self.roadmap, self.snapshot))
+        for html in pages:
+            self.assertIn("on its branch", html)
+            self.assertIn("New &lt;task&gt;", html)
+        tasks = render.as_json(self.roadmap, self.snapshot)["phases"][0]["tasks"]
+        self.assertEqual(tasks[1]["on_branch"], "worktree-new")
+
+    def test_a_branch_task_links_its_documents_on_the_branch(self):
+        self.assertIn("/blob/worktree-new/docs/x.md", render.task_links(self.roadmap, self.roadmap.task("new")))
+        self.assertIn("/blob/main/", render.repo_link(self.roadmap, "docs/y.md", "Y"))
+
+    def test_the_task_page_says_where_it_lives_and_why(self):
+        task = self.roadmap.task("new")
+        html = task_page.task_page(task, self.roadmap, TaskEvidence())
+        self.assertIn("Only on <code>worktree-new</code> so far, not on main", html)
+        self.assertIn("The roadmap on <code>worktree-new</code> has it", html)
+        self.assertNotIn("docs/ROADMAP.yaml", html)
+
+    def test_a_draft_task_page_gives_the_draft_as_the_reason(self):
+        html = task_page.task_page(self.roadmap.task("a"), self.roadmap, TaskEvidence())
+        self.assertIn("PR #7 open as a draft.", html)
+        self.assertIn('pill building">building', html)
+
+    def test_a_task_on_main_has_no_mark(self):
+        self.assertEqual(render.task_tags(self.roadmap.task("a")), "")
 
 
 def state():

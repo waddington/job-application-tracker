@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 
 from .yamlish import YamlishError, parse
@@ -29,12 +29,23 @@ class PullRequest:
 
 
 @dataclass
+class BranchRoadmap:
+    """What one branch's copy of the roadmap adds: its phases, holding only the tasks it added."""
+
+    branch: str
+    sha: str = ""
+    phases: list[Phase] = field(default_factory=list)
+    errors: list[str] = field(default_factory=list)
+
+
+@dataclass
 class Live:
     """Live evidence from git and GitHub. Everything is optional: missing tools mean no evidence."""
 
     branches_ahead: dict[str, int] = field(default_factory=dict)  # branch -> commits ahead of main
     prs: list[PullRequest] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
+    branch_roadmaps: dict[str, BranchRoadmap] = field(default_factory=dict)
 
     def pr_for(self, branch: str) -> PullRequest | None:
         """The PR for a branch: an open one if any, else the most recently merged, else closed."""
@@ -62,6 +73,8 @@ class Task:
     depends: list[str] = field(default_factory=list)
     prd: str | None = None
     rfc: str | None = None
+    # The branch whose roadmap it came from, when it isn't on main's yet.
+    on_branch: str | None = None
     # Filled in by apply_live.
     status: str = "planned"
     status_source: str = "roadmap"
@@ -258,14 +271,43 @@ def _find_cycle(roadmap: Roadmap) -> list[str] | None:
     return None
 
 
+def add_branch_tasks(roadmap: Roadmap, live: Live) -> None:
+    """Add the tasks that so far exist only on a branch's roadmap. A task on main keeps main's definition.
+
+    A branch whose latest PR merged or closed has nothing to add: what merged is on main, and what closed
+    was dropped. Two branches adding the same id: the task's own branch wins, else the first by name.
+    """
+    known = {t.id for t in roadmap.tasks}
+    found: dict[str, tuple[Phase, Task]] = {}
+    for name, branch in sorted(live.branch_roadmaps.items()):
+        pr = live.pr_for(name)
+        if pr and pr.state != "OPEN":
+            continue
+        roadmap.errors.extend(f"{name}: {error}" for error in branch.errors)
+        for phase in branch.phases:
+            for task in phase.tasks:
+                if task.id not in known and (task.id not in found or task.branch_name == name):
+                    # A copy, because apply_live writes to it and this branch's data is shared between requests.
+                    # Nothing on a branch is done until it merges, whatever its roadmap says.
+                    planned = "building" if task.planned_status == "done" else task.planned_status
+                    found[task.id] = (phase, replace(task, on_branch=name, planned_status=planned, status=planned))
+    phases = {p.id: p for p in roadmap.phases}
+    for phase, task in found.values():
+        if phase.id not in phases:
+            phases[phase.id] = Phase(phase.id, phase.name, phase.goal)
+            roadmap.phases.append(phases[phase.id])
+        phases[phase.id].tasks.append(task)
+
+
 def apply_live(roadmap: Roadmap, live: Live) -> Roadmap:
     """Set each task's live status from git and GitHub evidence, falling back to the roadmap.
 
-    merged PR -> done; open PR -> review; branch with commits ahead of main -> building.
-    A task the roadmap already marks blocked keeps that status. One marked done keeps it, unless its
-    only PR is still open: a PR marks its task done just before merging, and it isn't done until then.
+    merged PR -> done; open ready PR -> review; open draft PR, or a branch with commits ahead of main
+    -> building. A task the roadmap already marks blocked keeps that status. One marked done keeps it,
+    unless its only PR is still open: a PR marks its task done just before merging, and it isn't done until then.
     A follow-up PR on a branch that has already merged doesn't reopen the task.
     """
+    add_branch_tasks(roadmap, live)
     for task in roadmap.tasks:
         task.status, task.status_source = task.planned_status, "roadmap"
         task.pr = live.pr_for(task.branch_name)
@@ -278,7 +320,10 @@ def apply_live(roadmap: Roadmap, live: Live) -> Roadmap:
             task.pr = max(merged, key=lambda p: p.number)  # the PR that finished it, not the follow-up
             continue
         if task.pr and task.pr.state == "OPEN":
-            task.status, task.status_source = "review", f"PR #{task.pr.number} open"
+            if task.pr.is_draft:
+                task.status, task.status_source = "building", f"PR #{task.pr.number} open as a draft"
+            else:
+                task.status, task.status_source = "review", f"PR #{task.pr.number} open"
         elif task.planned_status == "done":
             continue
         elif task.pr and task.pr.state == "MERGED":

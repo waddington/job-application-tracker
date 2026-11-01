@@ -6,7 +6,7 @@ from html import escape
 
 from .derive import parse_time
 from .live import TaskEvidence
-from .render import PIPELINE_STAGES, bug_tag, pill, repo_link, task_link
+from .render import PIPELINE_STAGES, pill, repo_link, task_link, task_tags
 from .roadmap import PullRequest, Roadmap, Task
 
 
@@ -16,6 +16,8 @@ def stage_why(task: Task) -> str:
         return f"PR #{task.pr.number} merged."
     if task.status == "bug":
         return "Recorded as a bug in <code>docs/ROADMAP.yaml</code>. No fix has started."
+    if task.status_source == "roadmap" and task.on_branch:
+        return f"The roadmap on <code>{escape(task.on_branch)}</code> has it, and no open PR says otherwise."
     if task.status_source == "roadmap":
         return f"<code>docs/ROADMAP.yaml</code> says {escape(task.status)}, and no open PR says otherwise."
     return f"{escape(task.status_source)}."
@@ -114,10 +116,14 @@ def task_page(task: Task, roadmap: Roadmap, evidence: TaskEvidence, branch_prs: 
         fact("Needed by", links(needed_by, roadmap)),
     ]
     documents = " · ".join(
-        repo_link(roadmap, path, label) for path, label in ((task.prd, "PRD"), (task.rfc, "RFC")) if path
+        repo_link(roadmap, path, label, task.on_branch)
+        for path, label in ((task.prd, "PRD"), (task.rfc, "RFC"))
+        if path
     )
     if documents:
         about.append(fact("Documents", documents))
+    if task.on_branch:
+        about.append(fact("Roadmap", f"Only on <code>{escape(task.on_branch)}</code> so far, not on main"))
     branch = fact("Branch", f"<code>{escape(task.branch_name)}</code>{branch_note(task, evidence)}")
     if task.pr:
         pr = task.pr
@@ -144,7 +150,7 @@ def task_page(task: Task, roadmap: Roadmap, evidence: TaskEvidence, branch_prs: 
     )
     return f"""<div class="stack">
 <div class="panel"><p class="small muted" style="margin:0 0 4px"><code>{escape(task.id)}</code></p>
-<h1 style="font-size:18px;margin:0 0 8px">{bug_tag(task)}{escape(task.name)}</h1>{pill(task.status)}{detail}</div>
+<h1 style="font-size:18px;margin:0 0 8px">{task_tags(task)}{escape(task.name)}</h1>{pill(task.status)}{detail}</div>
 <div class="panel"><h2>Stage</h2>{stage_track(task)}<p style="margin:8px 0 0">{stage_why(task)}</p>{wait_note}</div>
 <div class="rm-grid">
 <div class="panel"><h2>Pull request</h2><dl class="facts">{branch}{"".join(pr_facts)}</dl></div>

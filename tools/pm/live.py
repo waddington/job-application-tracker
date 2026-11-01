@@ -8,10 +8,11 @@ import re
 import subprocess
 import threading
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 
-from .roadmap import BRANCH_PREFIX, Live, PullRequest
+from .roadmap import BRANCH_PREFIX, BranchRoadmap, Live, Phase, PullRequest, from_data
+from .yamlish import parse
 
 SEP = "\x1f"
 PR_LIMIT = 1000
@@ -184,6 +185,46 @@ def scope_history(root: Path, main: str) -> list[tuple[str, int]]:
     return history
 
 
+AGENT_BRANCH = BRANCH_PREFIX + "agent-"  # a worktree an agent hasn't named yet: not a task's branch
+_branch_seen: dict[str, BranchRoadmap] = {}  # by commit: a commit never changes
+
+
+def _roadmap_at(root: Path, ref: str) -> str:
+    """The roadmap file at a ref, empty if that commit has none."""
+    try:
+        return _run(["git", "show", f"{ref}:{ROADMAP_PATH}"], root)
+    except subprocess.CalledProcessError:
+        return ""
+
+
+def parse_branch_roadmap(branch: str, sha: str, text: str, base_text: str) -> BranchRoadmap:
+    """The tasks on a branch's roadmap that weren't there when it left main, so a task main has since
+    removed or renamed doesn't come back from an older branch. Whatever is wrong with the file becomes
+    an error to show, never an exception: it's somebody's work in progress."""
+    if not text.strip():
+        return BranchRoadmap(branch, sha)
+    try:
+        ours = from_data(parse(text))
+    except Exception as exc:  # the parser and model expect a shape a bad file needn't have
+        return BranchRoadmap(branch, sha, errors=[f"its roadmap can't be read: {exc}"])
+    try:
+        base = {t.id for t in from_data(parse(base_text)).tasks}
+    except Exception:  # judge the branch by its own file: main's roadmap still hides what main has
+        base = set()
+    phases = [Phase(p.id, p.name, p.goal, [t for t in p.tasks if t.id not in base]) for p in ours.phases]
+    return BranchRoadmap(branch, sha, [p for p in phases if p.tasks], ours.errors)
+
+
+def read_branch_roadmap(root: Path, main: str, branch: str, ref: str) -> BranchRoadmap:
+    """One branch's additions, read once per commit: this runs in the background every refresh."""
+    sha = _run(["git", "rev-parse", ref], root).strip()
+    if sha not in _branch_seen:
+        base = _run(["git", "merge-base", main, sha], root).strip()
+        text, base_text = _roadmap_at(root, sha), _roadmap_at(root, base)
+        _branch_seen[sha] = parse_branch_roadmap(branch, sha, text, base_text)
+    return replace(_branch_seen[sha], branch=branch)  # two branches can sit on one commit
+
+
 @dataclass
 class TaskEvidence:
     """What git says about one task's work, read when its page is opened."""
@@ -328,17 +369,26 @@ def collect(root: Path, repo: str) -> Snapshot:
         refs = _run(["git", "for-each-ref", "--format=%(refname:short)", "refs/heads", "refs/remotes/origin"], root)
         for branch in parse_branches(refs):
             counted = False
+            newest = None
             for ref in (branch, f"origin/{branch}"):  # one of these may not exist, which is fine
                 try:
                     count = int(_run(["git", "rev-list", "--count", f"{main}..{ref}"], root).strip())
                 except (subprocess.SubprocessError, OSError, ValueError):
                     continue
                 counted = True
+                if newest is None or count > live.branches_ahead[branch]:
+                    newest = ref
                 live.branches_ahead[branch] = max(count, live.branches_ahead.get(branch, 0))
             if not counted:
                 snapshot.git_ok = False
                 live.warnings.append(f"git: couldn't compare {branch} with main")
-        log = _run(["git", "log", main, "-n", str(COMMIT_LIMIT), f"--format=%h{SEP}%s{SEP}%cI{SEP}%an"], root)
+            elif live.branches_ahead[branch] and not branch.startswith(AGENT_BRANCH):
+                try:
+                    live.branch_roadmaps[branch] = read_branch_roadmap(root, main, branch, newest)
+                except (subprocess.SubprocessError, OSError) as exc:
+                    snapshot.git_ok = False
+                    live.warnings.append(f"git: couldn't read the roadmap on {branch}: {exc}")
+        log =_run(["git", "log", main, "-n", str(COMMIT_LIMIT), f"--format=%h{SEP}%s{SEP}%cI{SEP}%an"], root)
         snapshot.commits = parse_commits(log)
         if len(snapshot.commits) >= COMMIT_LIMIT:
             live.warnings.append(f"git: only the latest {COMMIT_LIMIT} commits are read, so older activity is missing")
@@ -384,7 +434,12 @@ def keep_last_good(new: Snapshot, old: Snapshot | None) -> Snapshot:
     stays red and the Problems panel says how old that data is."""
     if old is None:
         return new
+    # A roadmap gone bad on a branch's new commit keeps the tasks it last showed, with the error listed.
+    for name, branch in new.live.branch_roadmaps.items():
+        if branch.errors and not branch.phases and name in old.live.branch_roadmaps:
+            new.live.branch_roadmaps[name] = replace(branch, phases=old.live.branch_roadmaps[name].phases)
     if not new.git_ok:
+        new.live.branch_roadmaps = {**old.live.branch_roadmaps, **new.live.branch_roadmaps}
         new.git_at = old.git_at
         new.scope = new.scope or old.scope
         new.areas = new.areas or old.areas
