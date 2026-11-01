@@ -36,6 +36,8 @@ file and reload the page.
   outcomes.
 - Any active stage can move to a closed one, and **Ghosted** can be reopened (sometimes they
   do get back to you).
+- A stage that still has its default id and name shows in your language. One you rename or add
+  shows as you wrote it, and `config.toml` never changes.
 
 ## Your own stages
 

@@ -14,12 +14,14 @@ import notes from "./notes";
 import people from "./people";
 import roles from "./roles";
 import selftest from "./selftest";
+import stages from "./stages";
 import timeline from "./timeline";
 import today from "./today";
 import todos from "./todos";
 
 const en = {
   common,
+  stages,
   today,
   applications,
   roles,

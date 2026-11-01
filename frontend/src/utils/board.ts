@@ -1,6 +1,7 @@
 import type { ApplicationRow } from "../api/client";
 import type { Workflow, WorkflowStage } from "../api/hooks";
 import { i18n } from "../i18n";
+import { stageName } from "./stageName";
 
 export interface Column {
   stage: WorkflowStage;
@@ -20,7 +21,7 @@ const MAX_GAP_FILLED = 6;
 
 /** The column's heading: the stage, and its round when split ("Interviewing · Round 2"). */
 export function columnTitle(column: Column): string {
-  const stage = column.stage.name;
+  const stage = stageName(column.stage);
   if (column.round === undefined) return stage;
   return column.round === null
     ? i18n.t("applications:board.noRoundYet", { stage })
@@ -128,7 +129,7 @@ export function planDrop(
 ): DropPlan {
   const to = over ? stageOfColumn(over) : undefined;
   if (!over || !to || over === own) return { do: "nothing" };
-  const name = (id: string) => workflow.stages.find((s) => s.id === id)?.name ?? id;
+  const name = (id: string) => stageName({ id, name: workflow.stages.find((s) => s.id === id)?.name ?? id });
   const roundsInOrder = i18n.t("applications:board.roundsInOrder");
   // Within a split stage a card's column is its round, which comes from its interviews; and
   // a card coming in can't skip ahead to a round.

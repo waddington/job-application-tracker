@@ -4,6 +4,7 @@ import { api, unwrap, type Schemas } from "./client";
 import { invalidateApplicationViews, keys } from "./hooks";
 import { notifyError } from "./notifyError";
 import { i18n } from "../i18n";
+import { stageName } from "../utils/stageName";
 
 export type RoleSummary = Schemas["RoleSummary"];
 export type RoleStatus = RoleSummary["status"];
@@ -26,8 +27,11 @@ export const ROLE_STATUS: Record<RoleStatus, { label: `roles:status.${RoleStatus
 /** A role's badge: its status, or for one closed before you applied, the stage it ended at. */
 export function roleBadge(role: RoleSummary): { label: string; color: string } {
   const status = ROLE_STATUS[role.status];
-  // closed_as is the stage's name, as written in config.toml.
-  const label = role.status === "closed" && role.closed_as ? role.closed_as : i18n.t(status.label);
+  // closed_as is the stage's name, as written in config.toml; closed_stage its id.
+  const label =
+    role.status === "closed" && role.closed_as
+      ? stageName({ id: role.closed_stage, name: role.closed_as })
+      : i18n.t(status.label);
   return { label, color: status.color };
 }
 

@@ -70,7 +70,7 @@ def summaries(session: Session, *where, workflow: Workflow | None = None) -> lis
 
     out = []
     for role, company_name, contact, agency in rows:
-        closed_as = None
+        closed_as = closed_stage = None
         if apps[role.id]:
             status = (
                 role_progress(
@@ -82,7 +82,8 @@ def summaries(session: Session, *where, workflow: Workflow | None = None) -> lis
             )
             if status == "closed":
                 # The latest application's stage (the one the role links to).
-                closed_as = names.get(stages[role.id][-1], stages[role.id][-1])
+                closed_stage = stages[role.id][-1]
+                closed_as = names.get(closed_stage, closed_stage)
         else:
             status = "passed" if role.decision == "passed" else "to_decide"
         out.append(
@@ -91,6 +92,7 @@ def summaries(session: Session, *where, workflow: Workflow | None = None) -> lis
                 company_name=company_name,
                 status=status,
                 closed_as=closed_as,
+                closed_stage=closed_stage,
                 application_ids=apps[role.id],
                 contact_name=contact.name if contact else None,
                 agency_id=agency.id if agency else None,

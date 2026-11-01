@@ -4,6 +4,7 @@ import { callLabel } from "../utils/calls";
 import { eventText } from "./eventText";
 import { formatMoney } from "../utils/format";
 import { roundLabel } from "../utils/rounds";
+import { stageName } from "../utils/stageName";
 
 // What api/timeline.py splits a summary on. Python's splitlines and strip each know characters JavaScript's
 // don't, so these are spelled out: the two must agree (timelineEvents.cases.json).
@@ -98,9 +99,13 @@ export function timelineTitle(item: TimelineItem): string {
     case "stage-event": {
       const move = item.stage_move;
       if (move?.to_name == null) break;
+      const to = stageName({ id: move.to_stage, name: move.to_name });
       return move.from_name == null
-        ? i18n.t("timeline:titles.stageAdded", { stage: move.to_name })
-        : i18n.t("timeline:titles.stageMoved", { from: move.from_name, to: move.to_name });
+        ? i18n.t("timeline:titles.stageAdded", { stage: to })
+        : i18n.t("timeline:titles.stageMoved", {
+            from: stageName({ id: move.from_stage, name: move.from_name }),
+            to,
+          });
     }
     case "interview": {
       const r = item.round;

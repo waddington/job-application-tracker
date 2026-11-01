@@ -42,6 +42,7 @@ import {
   useWorkflow,
 } from "../api/hooks";
 import { i18n } from "../i18n";
+import { stageName } from "../utils/stageName";
 import { ago, formatDate, formatDateTime } from "../utils/time";
 import { AtAGlance } from "./AtAGlance";
 import { DuplicateWarning } from "./DuplicateWarning";
@@ -155,7 +156,7 @@ export function ApplicationSummary({ app }: { app: ApplicationDetail }) {
       key={stageId}
       onClick={() => move.mutate({ id: app.id, to_stage: stageId, stageName: names.get(stageId) })}
     >
-      {names.get(stageId) ?? stageId}
+      {stageName({ id: stageId, name: names.get(stageId) ?? stageId })}
     </Menu.Item>
   );
   return (
@@ -167,7 +168,7 @@ export function ApplicationSummary({ app }: { app: ApplicationDetail }) {
         </Anchor>
       </div>
       <Group gap="xs">
-        <StageBadge stage={stages.get(app.stage)} fallback={app.stage_name} />
+        <StageBadge id={app.stage} stage={stages.get(app.stage)} fallback={app.stage_name} />
         <RoundBadge round={app.current_round} stageKind={app.stage_kind} />
         {app.stale && (
           <Badge color="red" variant="light">
@@ -259,7 +260,7 @@ export function ApplicationSummary({ app }: { app: ApplicationDetail }) {
 export function ApplicationTimeline({ app }: { app: ApplicationDetail }) {
   useTranslation("events"); // eventText reads i18n directly: this redraws it when the language changes
   const { data: workflow } = useWorkflow();
-  const names = new Map((workflow?.stages ?? []).map((s) => [s.id, s.name]));
+  const names = new Map((workflow?.stages ?? []).map((s) => [s.id, stageName(s)]));
   return (
     <Timeline active={app.events.length} bulletSize={22} lineWidth={2}>
       {newestFirst(app.events).map((event) => {

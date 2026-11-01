@@ -42,6 +42,7 @@ import { i18n } from "../i18n";
 import { beforeApplied } from "../utils/applied";
 import { callLabel } from "../utils/calls";
 import { formatDay } from "../utils/format";
+import { stageName } from "../utils/stageName";
 import { useFavourite, useGhosted } from "./GhostMark";
 import { CreatableSelect } from "./CreatableSelect";
 import { DeleteButton } from "./DeleteButton";
@@ -454,7 +455,7 @@ export function ApplyModal({
         <Group grow align="flex-start">
           <Select
             label={t("apply.stage")}
-            data={(workflow?.stages ?? []).map((s) => ({ value: s.id, label: s.name }))}
+            data={(workflow?.stages ?? []).map((s) => ({ value: s.id, label: stageName(s) }))}
             value={stage}
             onChange={setStage}
             allowDeselect={false}

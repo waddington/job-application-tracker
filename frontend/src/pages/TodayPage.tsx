@@ -57,6 +57,7 @@ import { StageBadge } from "../components/StageBadge";
 import { i18n } from "../i18n";
 import { formatDay } from "../utils/format";
 import { roundLabel } from "../utils/rounds";
+import { stageName } from "../utils/stageName";
 import { ago, formatDate, formatDateTime } from "../utils/time";
 import { useToday } from "../utils/useToday";
 import { TimelineRow } from "./TimelinePage";
@@ -190,7 +191,7 @@ function AppLine({
       }
       status={
         <>
-          <StageBadge stage={stages.get(row.stage)} fallback={row.stage_name} />
+          <StageBadge id={row.stage} stage={stages.get(row.stage)} fallback={row.stage_name} />
           <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
             {detail}
           </Text>
@@ -582,7 +583,10 @@ export function TodayPage() {
                 <>
                   <Progress.Root size={16} aria-label={t("numbers.pipeline")}>
                     {pipeline.map(({ stage, count }) => (
-                      <Tooltip key={stage.id} label={t("numbers.stageCount", { stage: stage.name, count })}>
+                      <Tooltip
+                        key={stage.id}
+                        label={t("numbers.stageCount", { stage: stageName(stage), count })}
+                      >
                         <Progress.Section value={(count / active.length) * 100} color={stage.color}>
                           <Progress.Label>{count}</Progress.Label>
                         </Progress.Section>
@@ -595,7 +599,7 @@ export function TodayPage() {
                         <Text span c={shade(stage.color)} fw={700}>
                           ●
                         </Text>{" "}
-                        {stage.name} {count}
+                        {stageName(stage)} {count}
                       </Text>
                     ))}
                   </Group>

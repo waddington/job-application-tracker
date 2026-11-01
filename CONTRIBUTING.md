@@ -110,6 +110,12 @@ things stay English: events saved before their message existed, and your own wor
 a few errors from the server with no code (not found on a stale page, and validation details) show as
 the API sent them (`i18n-uncoded-errors`).
 
+A stage's name always goes through `stageName({ id, name })` (`utils/stageName.ts`) when it's shown: a
+default stage shows translated, a renamed or added one as written. It's for showing only: logic,
+sorting, saves and the API use the id, or the name as the API sent it. A new default stage in
+`domain/workflow.py` also goes in `locales/defaultStages.json`, `locales/en/stages.ts` and `STAGE_TEXT`:
+a test and the type check fail until it does.
+
 - **English lives in `frontend/src/locales/en/<namespace>.ts`**, one file per area, as a
   nested object with `as const`. Name keys for what the text is for (`waiting.title`), not
   what it says. Put a comment beside any wording that was chosen on purpose.

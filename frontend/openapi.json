@@ -3125,6 +3125,17 @@
             ],
             "title": "Sent On"
           },
+          "stage": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stage"
+          },
           "stage_name": {
             "title": "Stage Name",
             "type": "string"
@@ -8523,6 +8534,17 @@
             ],
             "title": "Closed As"
           },
+          "closed_stage": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed Stage"
+          },
           "company_id": {
             "title": "Company Id",
             "type": "string"
@@ -10513,9 +10535,31 @@
             ],
             "title": "From Name"
           },
+          "from_stage": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Stage"
+          },
           "to_name": {
             "title": "To Name",
             "type": "string"
+          },
+          "to_stage": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Stage"
           }
         },
         "required": [
@@ -10934,7 +10978,7 @@
   },
   "info": {
     "title": "Job Application Tracker",
-    "version": "1.2.39"
+    "version": "1.2.40"
   },
   "openapi": "3.1.0",
   "paths": {

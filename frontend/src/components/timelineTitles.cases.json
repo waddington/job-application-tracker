@@ -150,19 +150,29 @@
   {
     "kind": "stage-event",
     "seed": { "start": "applied", "move": "screen" },
-    "stage_move": { "from_name": "Applied", "to_name": "Screen" },
+    "stage_move": {
+      "from_name": "Applied",
+      "to_name": "Screen",
+      "from_stage": "applied",
+      "to_stage": "screen"
+    },
     "title": "Applied → Screen"
   },
   {
     "kind": "stage-event",
     "seed": { "start": "interested" },
-    "stage_move": { "from_name": null, "to_name": "Interested" },
+    "stage_move": {
+      "from_name": null,
+      "to_name": "Interested",
+      "from_stage": null,
+      "to_stage": "interested"
+    },
     "title": "Added at Interested"
   },
   {
     "kind": "stage-event",
     "seed": { "start": "applied" },
-    "stage_move": { "from_name": null, "to_name": "Applied" },
+    "stage_move": { "from_name": null, "to_name": "Applied", "from_stage": null, "to_stage": "applied" },
     "title": "Added at Applied"
   },
   {
@@ -173,13 +183,23 @@
       "from_stage": "<b>{{to}}</b> $&",
       "to_stage": "$t(common:actions.cancel) {{from}}"
     },
-    "stage_move": { "from_name": "<b>{{to}}</b> $&", "to_name": "$t(common:actions.cancel) {{from}}" },
+    "stage_move": {
+      "from_name": "<b>{{to}}</b> $&",
+      "to_name": "$t(common:actions.cancel) {{from}}",
+      "from_stage": "<b>{{to}}</b> $&",
+      "to_stage": "$t(common:actions.cancel) {{from}}"
+    },
     "title": "<b>{{to}}</b> $& → $t(common:actions.cancel) {{from}}"
   },
   {
     "kind": "stage-event",
     "seed": { "start": "interested", "to_stage": "<b>{{stage}}</b> $&" },
-    "stage_move": { "from_name": null, "to_name": "<b>{{stage}}</b> $&" },
+    "stage_move": {
+      "from_name": null,
+      "to_name": "<b>{{stage}}</b> $&",
+      "from_stage": null,
+      "to_stage": "<b>{{stage}}</b> $&"
+    },
     "title": "Added at <b>{{stage}}</b> $&"
   },
   {

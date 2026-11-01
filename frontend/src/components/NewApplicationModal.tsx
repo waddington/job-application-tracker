@@ -26,6 +26,7 @@ import {
   useDuplicates,
   useWorkflow,
 } from "../api/hooks";
+import { stageName } from "../utils/stageName";
 import { DuplicateWarning } from "./DuplicateWarning";
 
 interface Values {
@@ -250,7 +251,7 @@ export function NewApplicationModal({
           <Group grow align="flex-start">
             <Select
               label={t("new.stage")}
-              data={(workflow?.stages ?? []).map((s) => ({ value: s.id, label: s.name }))}
+              data={(workflow?.stages ?? []).map((s) => ({ value: s.id, label: stageName(s) }))}
               allowDeselect={false}
               {...form.getInputProps("stage")}
             />

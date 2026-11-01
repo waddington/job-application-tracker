@@ -8,6 +8,7 @@ import { useInterviews } from "../api/interviewHooks";
 import { useOffers } from "../api/offerHooks";
 import { useTodos } from "../api/todoHooks";
 import { glance, type GlanceItem } from "../utils/attention";
+import { stageName } from "../utils/stageName";
 import { useNow, useToday } from "../utils/useToday";
 
 function Row({ item }: { item: GlanceItem }) {
@@ -72,7 +73,11 @@ export function AtAGlance({ app }: { app: ApplicationDetail }) {
           <>
             {!g.open && (
               <Text size="sm" c="dimmed">
-                {t("glance.nothingToChase", { what: app.archived ? t("glance.archived") : app.stage_name })}
+                {t("glance.nothingToChase", {
+                  what: app.archived
+                    ? t("glance.archived")
+                    : stageName({ id: app.stage, name: app.stage_name }),
+                })}
               </Text>
             )}
             {g.attention.length > 0 ? (

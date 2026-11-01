@@ -8,6 +8,7 @@ import type { Todo } from "../api/todoHooks";
 import { i18n } from "../i18n";
 import { formatDay as format } from "./format";
 import { roundLabel } from "./rounds";
+import { stageName } from "./stageName";
 
 /**
  * What an application needs, and how long ago things happened, for its "At a glance" card.
@@ -202,7 +203,10 @@ export function glance({ app, stage, interviews, offers, todos, today, now }: Gl
       attention.push({
         key: "stale",
         label: limit
-          ? t("today:glance.goneQuietAfter", { stage: stage?.name ?? app.stage_name, count: limit })
+          ? t("today:glance.goneQuietAfter", {
+              stage: stageName({ id: app.stage, name: stage?.name ?? app.stage_name }),
+              count: limit,
+            })
           : t("today:glance.goneQuiet"),
         when: t("today:glance.noActivity", { count: app.days_since_activity }),
         tone: "red",
@@ -240,7 +244,10 @@ export function glance({ app, stage, interviews, offers, todos, today, now }: Gl
     .filter((e) => Date.parse(e.occurred_at) <= now)
     .sort((a, b) => Date.parse(b.occurred_at) - Date.parse(a.occurred_at));
   const enteredStage = past.find((e) => e.kind === "stage_change" && e.to_stage === app.stage);
-  if (enteredStage) at(t("today:glance.movedTo", { stage: app.stage_name }), dayOf(enteredStage.occurred_at));
+  if (enteredStage) {
+    const stage = stageName({ id: app.stage, name: app.stage_name });
+    at(t("today:glance.movedTo", { stage }), dayOf(enteredStage.occurred_at));
+  }
   const contact = past.find((e) => Object.hasOwn(LAST_CONTACT, e.kind));
   if (contact) at(t(LAST_CONTACT[contact.kind as keyof typeof LAST_CONTACT]), dayOf(contact.occurred_at));
   const lastRound = interviews
