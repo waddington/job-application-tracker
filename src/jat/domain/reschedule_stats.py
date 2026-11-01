@@ -1,4 +1,4 @@
-"""How often booked rounds moved, and who needed it (PRD FR20a), for applications added in a period.
+"""How often booked rounds moved, and who needed it (PRD FR9b), for applications added in a period.
 
 A round counts its moves as the larger of `rescheduled_count` and its readable saved records, so
 one saved before moves kept a record, or with a bad record, still counts. Any move without a who

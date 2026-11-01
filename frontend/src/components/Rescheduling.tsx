@@ -7,12 +7,16 @@ function MovedList({ title, rows }: { title: string; rows: RescheduledNamed[] })
   const { t } = useTranslation("insights");
   if (!rows.length) return null;
   return (
-    <Table aria-label={title}>
+    <Table aria-label={title} layout="fixed">
       <Table.Thead>
         <Table.Tr>
           <Table.Th>{title}</Table.Th>
-          <Table.Th ta="right">{t("rescheduling.roundsMoved")}</Table.Th>
-          <Table.Th ta="right">{t("rescheduling.movesColumn")}</Table.Th>
+          <Table.Th ta="right" w={120}>
+            {t("rescheduling.roundsMoved")}
+          </Table.Th>
+          <Table.Th ta="right" w={72}>
+            {t("rescheduling.movesColumn")}
+          </Table.Th>
         </Table.Tr>
       </Table.Thead>
       <Table.Tbody>

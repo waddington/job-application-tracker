@@ -122,7 +122,9 @@ want. The Obsidian plugins work on plain files but aren't a web app and have no 
   change and an optional reason, which go on that move's timeline entry, so each move keeps its
   own. The application timeline, the Timeline page and Today's recent activity show each move's
   old and new time, who and why. The round remembers how often it moved and the time it moved
-  from, and shows it as *Rescheduled*.
+  from, and shows it as *Rescheduled*, with how many days its saved moves pushed it back or
+  brought it forward in total. Insights counts rounds moved of those booked, and moves by who,
+  with *not recorded* as its own group, listing companies and recruiters only from 3 moved rounds.
 - **FR10:** Coding interviews and take-home tasks also hold instructions, repo or platform
   links, a deadline and attachments.
 

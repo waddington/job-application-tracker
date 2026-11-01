@@ -40,7 +40,8 @@ What it does:
   recruiter, referred, found yourself) to passed, deciding, its stages and what's still
   waiting (`GET /api/v1/insights/whole-flow`); stage flows by date and route; conversion and
   median time per stage; direct vs recruiter outcomes; weekly activity; a recruiter and
-  agency scorecard; recruiter conversations (`GET /api/v1/insights/conversations`).
+  agency scorecard; recruiter conversations (`GET /api/v1/insights/conversations`); how many
+  booked rounds moved and who needed it (`GET /api/v1/insights/rescheduling`).
 - An A/B test of CV and cover-letter versions (heard back, screens or interviews, offers, a
   95% range, Fisher's exact test; `GET /api/v1/insights/documents`); identical CV files on
   applications, roles or people become versions (`GET /api/v1/cv-files`,
@@ -56,8 +57,8 @@ committed to the user's private data repo); React 19, TypeScript, Mantine, TanSt
 Router/Query and d3-sankey. Run with `uv run jat --data-dir <dir> serve`
 (http://127.0.0.1:8770); try demo data with `uv run python scripts/seed_demo.py /tmp/jat-demo`.
 The JSON API is documented at http://127.0.0.1:8770/api/docs; insights live under
-`/api/v1/insights/` (`whole-flow`, `flow`, `stats`, `activity`, `scorecard`, `conversations`,
-`documents`).
+`/api/v1/insights/` (`whole-flow`, `flow`, `stats`, `activity`, `scorecard`, `rescheduling`,
+`conversations`, `documents`).
 
 ## Docs
 - [Website](https://waddington.github.io/job-application-tracker/): the project's landing page

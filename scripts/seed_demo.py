@@ -63,7 +63,13 @@ def add_moves(s, by_title: dict[str, Application]) -> None:
         app.last_activity_at = last_activity
 
     move_round("Senior Python Developer", 1, "them", "Their manager is away")
+    # Moved twice: two days early to a day early, then to its final time.
+    twice = s.query(Interview).filter_by(application_id=by_title["Senior Python Developer"].id, round=2).one()
+    final_time = twice.starts_at
+    twice.starts_at = final_time - timedelta(days=1)
     move_round("Senior Python Developer", 2, "me", "A clash with another interview", 1)
+    twice.starts_at = final_time
+    move_round("Senior Python Developer", 2, "them", pushed_days=1)
     move_round("Senior Python Developer", 3, "mutual", pushed_days=3)
     move_round("Senior Software Engineer", 1, None)
     older = s.query(Interview).filter_by(application_id=by_title["Senior Backend Engineer"].id, round=1).one()
