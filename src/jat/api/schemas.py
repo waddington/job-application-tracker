@@ -694,7 +694,7 @@ class ActivityIn(In):
     occurred_at: AwareDatetime | None = None
     data: dict[str, Any] = Field(
         default={},
-        description="Saved with the event, except a `msg` or `reschedule`, which are ignored: only the app writes those.",
+        description="Saved with the event, except `msg` and `reschedule`, ignored as only the app writes those.",
     )
 
 

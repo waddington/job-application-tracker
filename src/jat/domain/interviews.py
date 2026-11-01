@@ -104,7 +104,11 @@ _RESCHEDULED_BY: dict[str, tuple[svc.EventMsgKey, svc.EventMsgKey, str]] = {
     "me": ("event.roundRescheduledByMe", "event.roundRescheduledByMeReason", "you needed the change"),
     "them": ("event.roundRescheduledByThem", "event.roundRescheduledByThemReason", "they needed the change"),
     "mutual": ("event.roundRescheduledByMutual", "event.roundRescheduledByMutualReason", "you both needed the change"),
-    "neither": ("event.roundRescheduledByNeither", "event.roundRescheduledByNeitherReason", "not down to either of you"),
+    "neither": (
+        "event.roundRescheduledByNeither",
+        "event.roundRescheduledByNeitherReason",
+        "not down to either of you",
+    ),
 }
 
 
