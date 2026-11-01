@@ -45,6 +45,7 @@ export default {
   // The language switch in the header. Languages are listed by their own names, not here.
   language: {
     label: "Language",
+    current: "Language: {{name}}",
     comingSoon: "Coming soon!",
     pseudo: "Pseudo-language (dev)",
   },

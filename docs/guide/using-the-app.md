@@ -629,7 +629,8 @@ browser is set to.
 
 ## Language
 
-The language button at the top right (beside light/dark mode) lists the languages the app
+The language button at the top right (beside light/dark mode, showing a globe and your current
+language's name) lists the languages the app
 comes in, each by its own name. For now that's English, with more *Coming soon!*. Your choice
 is kept in this browser; until you pick one, the app follows your browser's language if it
 has it, and English otherwise. What you've typed (companies, notes, stage names you've renamed

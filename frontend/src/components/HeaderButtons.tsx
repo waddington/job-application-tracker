@@ -1,6 +1,6 @@
 import { ActionIcon, Box, Button, Menu, Modal, Tooltip } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { IconCheck, IconHelp, IconLanguage, IconPlus } from "@tabler/icons-react";
+import { IconCheck, IconChevronDown, IconHelp, IconPlus, IconWorld } from "@tabler/icons-react";
 import { useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -79,6 +79,8 @@ export function NewApplicationButton({
 export function LanguageSwitch() {
   const { t, i18n } = useTranslation();
   const [opened, setOpened] = useState(false);
+  const shown = i18n.resolvedLanguage ?? "";
+  const name = isLanguage(shown) ? LANGUAGE_NAMES[shown] : t("language.pseudo");
   const choose = (lang: string) => {
     void i18n.changeLanguage(lang);
     if (isLanguage(lang)) saveLanguage(lang);
@@ -93,9 +95,18 @@ export function LanguageSwitch() {
           aria-expanded; hidden while the menu is open. */}
       <Tooltip label={t("language.label")} disabled={opened}>
         <Menu.Target>
-          <ActionIcon variant="subtle" size="lg" aria-label={t("language.label")}>
-            <IconLanguage size={18} />
-          </ActionIcon>
+          <Button
+            variant="default"
+            size="compact-sm"
+            aria-label={t("language.current", { name })}
+            leftSection={<IconWorld size={16} aria-hidden />}
+            rightSection={<IconChevronDown size={14} aria-hidden />}
+          >
+            {/* No room for the name on a phone: the globe and arrow still say what it is. */}
+            <Box component="span" visibleFrom="sm">
+              {name}
+            </Box>
+          </Button>
         </Menu.Target>
       </Tooltip>
       <Menu.Dropdown>
