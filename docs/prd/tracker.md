@@ -120,8 +120,9 @@ want. The Obsidian plugins work on plain files but aren't a web app and have no 
   stage, so "Interviewing" says which interview and what it is.
 - **FR9b:** A booked round can be rescheduled: a new time (it keeps its length), who needed the
   change and an optional reason, which go on that move's timeline entry, so each move keeps its
-  own. The round remembers how often it moved and the time it moved from, and shows it as
-  *Rescheduled*.
+  own. The application timeline, the Timeline page and Today's recent activity show each move's
+  old and new time, who and why. The round remembers how often it moved and the time it moved
+  from, and shows it as *Rescheduled*.
 - **FR10:** Coding interviews and take-home tasks also hold instructions, repo or platform
   links, a deadline and attachments.
 

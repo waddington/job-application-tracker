@@ -18,6 +18,10 @@ interface Patterns {
   weekdayDayMonth: string;
   /** Thu 5 Mar */
   shortWeekdayDayMonth: string;
+  /** Thu 5 Mar, 09:07 */
+  shortWeekdayDayMonthTime: string;
+  /** Thu 5 Mar 2026, 09:07 */
+  shortWeekdayDayMonthYearTime: string;
   /** Thu 5 Mar 2026 */
   shortWeekdayDayMonthYear: string;
   /** 5 Mar */
@@ -40,6 +44,8 @@ const PATTERNS = new Map<string, Patterns>([
     {
       weekdayDayMonth: "dddd D MMMM",
       shortWeekdayDayMonth: "ddd D MMM",
+      shortWeekdayDayMonthTime: "ddd D MMM, HH:mm",
+      shortWeekdayDayMonthYearTime: "ddd D MMM YYYY, HH:mm",
       shortWeekdayDayMonthYear: "ddd D MMM YYYY",
       dayMonth: "D MMM",
       dayMonthYear: "D MMM YYYY",

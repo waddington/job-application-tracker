@@ -208,6 +208,50 @@ describe("a row", () => {
     });
   });
 
+  describe("for a reschedule", () => {
+    const WITH_MOVE = "Moved from Tue 3 Nov, 10:00 to Thu 5 Nov, 14:00 · They needed the change · A <clash>";
+    const params = { round: 2, title: "Technical", kind: "technical", reason: "A <clash>" };
+    const moved = {
+      kind: "other-event",
+      category: "interview",
+      title: "Round 2 · Technical rescheduled (they needed the change): A <clash>",
+      msg: { key: "event.roundRescheduledByThemReason", params },
+      reschedule: {
+        from_at: "2026-11-03T10:00:00",
+        to_at: "2026-11-05T14:00:00",
+        by: "them",
+        reason: "A <clash>",
+      },
+    } as unknown as Partial<TimelineItem>;
+
+    it("says the round, then the move in sentences, each once", async () => {
+      await wrapped(<TimelineRow item={item(moved)} />);
+      expect(await screen.findByText("Round 2 · Technical rescheduled")).toBeTruthy();
+      expect(screen.getByText(WITH_MOVE)).toBeTruthy();
+      expect(screen.queryByText(/\(they needed the change\)/)).toBeNull();
+    });
+
+    it("keeps the entry's text with no move, as an older server sends it", async () => {
+      await wrapped(<TimelineRow item={item({ ...moved, reschedule: undefined })} />);
+      expect(
+        await screen.findByText("Round 2 · Technical rescheduled (they needed the change): A <clash>"),
+      ).toBeTruthy();
+      expect(screen.queryByText(/^Moved from/)).toBeNull();
+    });
+
+    it("translates all but the reason", async () => {
+      await wrapped(<TimelineRow item={item(moved)} />);
+      await screen.findByText(WITH_MOVE);
+      try {
+        await act(() => i18n.changeLanguage(PSEUDO));
+        await waitFor(() => expect(screen.queryByText(WITH_MOVE)).toBeNull());
+        expect(screen.getByText(/\]A <clash>$/)).toBeTruthy();
+      } finally {
+        await act(() => i18n.changeLanguage("en"));
+      }
+    });
+  });
+
   it("leaves the API's title and detail as they came", async () => {
     await wrapped(<TimelineRow item={item({ title: "Moved to <Screen>", detail: "{{not}} a value" })} />);
     expect(await screen.findByText("Moved to <Screen>")).toBeTruthy();

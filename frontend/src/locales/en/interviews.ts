@@ -121,5 +121,14 @@ export default {
     },
     why: "Why? (optional)",
     whyPlaceholder: "They had a clash, you asked to move it…",
+    // A move's line on a timeline. {{from}} and {{to}} are built by formatDay; a reason follows as written.
+    move: {
+      times: "Moved from {{from}} to {{to}}",
+      byMe: "You needed the change",
+      byThem: "They needed the change",
+      byMutual: "You both needed the change",
+      byNeither: "Not down to either of you",
+      separator: " · ",
+    },
   },
 } as const;

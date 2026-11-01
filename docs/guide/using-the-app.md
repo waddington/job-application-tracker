@@ -448,18 +448,23 @@ or cancelled. On each row:
 
 - **Reschedule** (a booked round, including one whose time has passed): pick the new time,
   choose **Who needed the change?** (*Me*, *Them*, *Both of us* or *Neither of us*) and, if you
-  like, say why. Its end moves with it; the application's timeline says "Round 2 · … rescheduled
-  (they needed the change): why". Every move keeps its own entry, so a second reschedule doesn't
-  overwrite the first. The same button is on the application's page, on Today, and in the quick
+  like, say why. Its end moves with it. The application's timeline, the
+  [Timeline](#timeline) page and Today's recent activity say "Round 2 · … rescheduled", and under
+  it "Moved from Tue 3 Nov, 10:00 to Thu 5 Nov, 14:00 · They needed the change · why" (with the
+  years, if it moved into another year). Every move
+  keeps its own entry, so a second reschedule doesn't overwrite the first. The same button is on
+  the application's page, on Today, and in the quick
   view for its current round while the application is in an active stage.
 - the pencil edits the round (everything on its form).
 
 A round that's moved shows **Rescheduled** (or *Rescheduled ×2*), here and on the
 application's page; hover it for the time it moved from. Changing a booked round's time from
-its form counts too (the end moves with it there as well), but says nothing about who or why;
-changing its status in the same save doesn't count. Older moves keep the words they already
-had ("… rescheduled", or "… rescheduled: why" if you gave a reason), with no who, and those from
-before the count came in have no old time.
+its form counts too (the end moves with it there as well), but gives only the old and new time,
+with nothing about who or why; changing its status in the same save doesn't count. Moves from
+before a reschedule saved its times keep the words they already had ("… rescheduled", or
+"… rescheduled: why" if you gave a reason), with no times or who, and those from before the
+count came in have no old time on the badge. On the Timeline's lanes view, hovering a dot gives
+a move's who and why in one sentence, without the times.
 
 ## Offers
 

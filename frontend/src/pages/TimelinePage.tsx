@@ -21,6 +21,7 @@ import type { TFunction } from "i18next";
 import { Fragment, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { movedRoundText, moveLine } from "../components/eventText";
 import { PersonName } from "../components/GhostMark";
 import { timelineDetail, timelineTitle } from "../components/timelineTitle";
 import { useAgencies, useCompanies, useContacts } from "../api/hooks";
@@ -144,7 +145,9 @@ export function TimelineRow({ item, showDate }: { item: TimelineItem; showDate?:
   const cat = categoryOf(item.category);
   const date = formatDay(dayOf(item), "dayMonth", lang);
   const dated = item.all_day ? date : t("dateTime", { date, time: timeOf(item, t, lang) });
-  const detail = timelineDetail(item);
+  // A move says its who and why on its own line, in full: it's all the Today list has to show them.
+  const moved = movedRoundText(item);
+  const detail = moved ? null : timelineDetail(item);
   return (
     <Group gap="sm" wrap="nowrap" align="flex-start" py={6}>
       <Text size="xs" c="dimmed" w={showDate ? 92 : 52} style={{ flexShrink: 0 }} pt={2}>
@@ -155,8 +158,13 @@ export function TimelineRow({ item, showDate }: { item: TimelineItem; showDate?:
       </Badge>
       <Stack gap={2} style={{ minWidth: 0 }}>
         <Text size="sm" fw={500}>
-          {timelineTitle(item)}
+          {moved ?? timelineTitle(item)}
         </Text>
+        {item.reschedule && (
+          <Text size="xs" c="dimmed" style={{ overflowWrap: "anywhere" }}>
+            {moveLine(item.reschedule)}
+          </Text>
+        )}
         {detail && (
           <Text size="xs" c="dimmed" lineClamp={2}>
             {detail}

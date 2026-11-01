@@ -36,7 +36,7 @@ from ..domain.applications import STAGE_CHANGE, is_implied
 from .deps import SessionDep, WorkflowDep
 from .meetings import label as meeting_label
 from .notes import _sync
-from .schemas import EventMsg, read_event_msg
+from .schemas import EventMsg, RoundMove, read_event_msg, read_round_move
 
 router = APIRouter(tags=["timeline"])
 
@@ -134,6 +134,7 @@ class TimelineItem(BaseModel):
     archived: bool = False  # on an archived application
     stage_move: TimelineStageMove | None = None
     round: TimelineRound | None = None
+    reschedule: RoundMove | None = None  # on an event: the move it records, for events saved with one
     offer: TimelineOfferFigure | None = None
     call: TimelineCall | None = None
     note_title: str | None = None
@@ -296,6 +297,7 @@ def timeline(
                     msg=read_event_msg(e.data),
                     bare_kind=e.kind if e.kind != STAGE_CHANGE and not e.summary else None,
                     stage_move=_stage_move(e, stage_names),
+                    reschedule=read_round_move(e.kind, e.data),
                 )
             )
 
