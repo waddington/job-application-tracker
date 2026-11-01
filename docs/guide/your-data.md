@@ -42,6 +42,9 @@ job-search-data/
 
 - **The database is a working copy.** `export/` is the readable, durable form: the app
   writes it on every snapshot, and `jat restore` rebuilds the database from it.
+- **Without git, the database is the only copy.** Snapshots are off, so `export/` isn't kept
+  up to date. Turn them on ([below](#snapshots-automatic-local-history)), or keep a
+  [zip backup](#a-single-file-backup-zip), which works without git.
 - **Notes are the real thing.** Each note is a Markdown file with a small YAML header
   (title, what it's attached to, dates). You can edit them in any editor while the app is
   running; it picks up changes the next time it lists notes.
@@ -65,9 +68,30 @@ nothing shows up in `git log` until you've been idle for a minute.
 If the folder isn't a git repo, snapshots are off and the app still works; the sidebar's
 connection tooltip says "data dir isn't a git repo".
 
+To turn them on, stop the app and make the folder a git repo. You get full history, and with a
+remote (below) an off-machine backup for free:
+
+```bash
+git -C ~/job-search-data init
+uv run jat snapshot     # the first commit; after this they happen by themselves
+```
+
+Then start it again with `uv run jat serve`. Git needs a name and email to commit: if
+`jat snapshot` stops with git's message about them, run
+`git config --global user.name "Alex Example"` and
+`git config --global user.email "alex@example.com"` with your own details, and try again.
+
 ## Pushing: off-machine backup
 
 Snapshots stay on your machine until you push them. The app **never pushes on its own**.
+First connect the data repo, once, to a **private** remote repository (GitHub, GitLab, your
+own server):
+
+```bash
+git -C ~/job-search-data remote add origin <your-private-repo-url>
+```
+
+Then, whenever you like:
 
 ```bash
 uv run jat push
@@ -121,11 +145,11 @@ The data repo is how your tracker travels.
 
 Both computers need the same version of the app (or the one restoring needs a newer one):
 an export from a newer version is refused with "update the app first". Update the code on
-both ([Updating](install.md#updating-to-a-newer-version)) when you update one.
+both ([Updating](commands.md#updating-to-a-newer-version)) when you update one.
 
 **Set up the second computer once:**
 
-1. Install the app ([Install](install.md#install)).
+1. Install the app ([Install](install.md#get-it-running): the first set of commands).
 2. Clone your private data repo:
 
    ```bash

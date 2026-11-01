@@ -1,7 +1,9 @@
 ---
 import { GUIDE } from "../data";
 
-// The commands are the README's and the install guide's, word for word. Keep them in step.
+// The install and demo commands match the README and the install guide (which gives the two pnpm
+// steps a line each). "Use it for real" follows the README; the guide splits it between
+// install.md and your-data.md. Keep them in step.
 
 type Line = { cmd?: string; out?: string; note?: string };
 const tabs: { id: string; label: string; lines: Line[] }[] = [
@@ -61,7 +63,7 @@ const needs = [
         Set up in about <span class="serif grad">ten minutes</span>.
       </h2>
       <p class="lede reveal">
-        For now there's no installer. With Python and Node.js on your computer, you copy and paste a few
+        For now there's no installer. With uv and Node.js on your computer, you copy and paste a few
         commands into the Terminal app, once; the <a href={`${GUIDE}install.md`}>install guide</a> lists what
         you need and where to get it. After that it's a web page in your browser. A one-command install and a
         double-click app are on the way.

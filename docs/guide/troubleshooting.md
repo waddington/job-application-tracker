@@ -1,5 +1,9 @@
 # Troubleshooting
 
+## It won't run on Windows
+
+Windows isn't supported: the app uses Unix file locking. It runs on Linux and macOS.
+
 ## "No data directory configured"
 
 `jat` doesn't know where your data is. Add `JAT_DATA_DIR=~/your-data-folder` to `.env` in
