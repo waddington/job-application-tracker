@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.2.47 (2026-11-01)
+
+- **Security:** updates undici and zod in the frontend's test and lint tools, fixing five Dependabot alerts and moving past a sixth that had been auto-dismissed. minimatch alert 32 stays open: it affects development tools only, and those tools can't take the fixed version yet. Nothing changes in the app (#190).
+
 ## 1.2.46 (2026-11-01)
 
 - **Security:** updates undici and fast-uri in the website's dependencies to fix twelve Dependabot alerts. The website looks and works the same (#186).
