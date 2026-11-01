@@ -273,9 +273,9 @@ describe("pseudo-language", () => {
 
 describe("pickLanguage", () => {
   it("prefers the saved choice, then the browser, then English", () => {
-    expect(pickLanguage({ stored: "en", browser: ["fr-FR"] })).toBe("en");
-    expect(pickLanguage({ browser: ["fr-FR", "en-GB"] })).toBe("en");
-    expect(pickLanguage({ browser: ["fr-FR"] })).toBe("en");
+    expect(pickLanguage({ stored: "en", browser: ["xx-YY"] })).toBe("en");
+    expect(pickLanguage({ browser: ["xx-YY", "en-GB"] })).toBe("en");
+    expect(pickLanguage({ browser: ["xx-YY"] })).toBe("en");
     expect(pickLanguage({})).toBe("en");
   });
 
@@ -315,6 +315,6 @@ describe("the saved choice", () => {
   it("knows the shipped languages from the pseudo-language and others", () => {
     expect(isLanguage("en")).toBe(true);
     expect(isLanguage(PSEUDO)).toBe(false);
-    expect(isLanguage("fr")).toBe(false);
+    expect(isLanguage("xx")).toBe(false);
   });
 });

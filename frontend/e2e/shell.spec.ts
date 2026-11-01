@@ -1,5 +1,6 @@
 import type { Page } from "@playwright/test";
 
+import { LANGUAGES } from "../src/i18n/language";
 import { expect, test } from "./fixtures";
 
 // The frame around every page: the menu, theme, language, help, the connection dot, the backup
@@ -108,11 +109,12 @@ test.describe("a browser that prefers dark", () => {
 });
 
 test.describe("a browser in another language, with a stale saved choice", () => {
-  test.use({ locale: "de-DE" });
+  test.use({ locale: "xx-YY" }); // no language has this code, so it stays true as languages are added
 
   test("falls back to English, all the way", async ({ page, context }) => {
     await context.addInitScript(() => localStorage.setItem("jat.language", "xx"));
     await opened(page);
+    expect(await page.evaluate(() => navigator.language)).toBe("xx-YY");
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
   });
 });
@@ -130,7 +132,37 @@ test.describe("language", () => {
     await expect(english).toHaveAttribute("aria-current", "true");
     await expect(english).toHaveAttribute("lang", "en");
     await expect(page.getByRole("menuitem", { name: "Coming soon!" })).toBeDisabled();
-    await expect(page.getByRole("menuitem")).toHaveCount(2);
+    // Each language, Coming soon! and the link to the guide: no more than those.
+    await expect(page.getByRole("menuitem")).toHaveCount(LANGUAGES.length + 2);
+  });
+
+  test("Don't see your language? opens the guide in a new tab, from the keyboard, and only then", async ({
+    page,
+    context,
+  }) => {
+    const toGitHub: string[] = [];
+    await context.route("https://github.com/**", async (route) => {
+      toGitHub.push(route.request().url());
+      await route.fulfill({ status: 200, contentType: "text/html", body: "<title>The guide</title>" });
+    });
+    await opened(page);
+    await page.getByRole("button", { name: "Language" }).focus();
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("menu")).toBeVisible();
+    const link = page.getByRole("menuitem", { name: "Don't see your language?" });
+    await expect(link).toHaveAttribute("target", "_blank");
+    await expect(link).toHaveAttribute("rel", "noopener noreferrer");
+    expect(toGitHub).toEqual([]);
+
+    // Down from the button, past the languages, skipping the greyed-out Coming soon!
+    for (let i = 0; i <= LANGUAGES.length; i++) await page.keyboard.press("ArrowDown");
+    await expect(link).toBeFocused();
+    const popup = page.waitForEvent("popup");
+    await page.keyboard.press("Enter");
+    const guide = await popup;
+    await expect(guide).toHaveURL(/\/blob\/main\/docs\/guide\/adding-a-language\.md$/);
+    await expect(page.getByRole("menu")).toBeHidden();
+    expect(toGitHub).toHaveLength(1);
   });
 
   test("choosing it is remembered in this browser", async ({ page }) => {
