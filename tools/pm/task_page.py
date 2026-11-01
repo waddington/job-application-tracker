@@ -6,7 +6,7 @@ from html import escape
 
 from .derive import parse_time
 from .live import TaskEvidence
-from .render import PIPELINE_STAGES, bug_tag, pill, repo_link, task_link
+from .render import PIPELINE_STAGES, pill, repo_link, task_link, task_tags
 from .roadmap import PullRequest, Roadmap, Task
 
 
@@ -14,7 +14,25 @@ def stage_why(task: Task) -> str:
     """Why the task is at its stage, in words."""
     if task.status == "done" and task.pr and task.pr.state == "MERGED":
         return f"PR #{task.pr.number} merged."
+    if task.pr_unknown and task.status_source == "roadmap":
+        return (
+            f"<code>docs/ROADMAP.yaml</code> says {escape(task.status)}. "
+            "GitHub hasn't answered, so whether a PR changes that is unknown."
+        )
+    if task.on_branch and task.status_source.startswith("roadmap"):
+        where = f"Only on the roadmap of <code>{escape(task.on_branch)}</code> so far"
+        if not task.pr:
+            where += ", which has no PR yet."
+        elif task.pr.state == "OPEN":
+            where += f", in PR #{task.pr.number}, open{' as a draft' if task.pr.is_draft else ''}."
+        else:
+            where += f". PR #{task.pr.number} is {escape(task.pr.state.lower())}."
+        if task.done_on_branch:
+            return f"{where} That file says done, which it isn't until it merges."
+        return f"{where} That file says {escape(task.planned_status)}."
     if task.status == "bug":
+        if task.pr:  # any other PR state would have moved it on
+            return f"Recorded as a bug in <code>docs/ROADMAP.yaml</code>. PR #{task.pr.number} closed without merging."
         return "Recorded as a bug in <code>docs/ROADMAP.yaml</code>. No fix has started."
     if task.status_source == "roadmap":
         return f"<code>docs/ROADMAP.yaml</code> says {escape(task.status)}, and no open PR says otherwise."
@@ -59,6 +77,10 @@ def code_section(evidence: TaskEvidence, task: Task) -> str:
             '<p class="muted">git couldn\'t read this. If it only just merged, a <code>git fetch</code> may help.</p>'
         )
     if not evidence.source:
+        if task.pr_unknown:
+            return (
+                '<p class="muted">No branch here, and GitHub hasn\'t answered, so whether it has a PR is unknown.</p>'
+            )
         state = task.pr.state if task.pr else ""
         if state == "CLOSED":
             return '<p class="muted">Its branch is gone, and it never merged, so there\'s no diff to read.</p>'
@@ -100,6 +122,8 @@ def branch_note(task: Task, evidence: TaskEvidence) -> str:
         return " (merged)"
     if task.pr:
         return " (not found)"
+    if task.pr_unknown:
+        return ""
     return " (none: marked done on the roadmap)" if task.status == "done" else " (not started)"
 
 
@@ -114,11 +138,15 @@ def task_page(task: Task, roadmap: Roadmap, evidence: TaskEvidence, branch_prs: 
         fact("Needed by", links(needed_by, roadmap)),
     ]
     documents = " · ".join(
-        repo_link(roadmap, path, label) for path, label in ((task.prd, "PRD"), (task.rfc, "RFC")) if path
+        repo_link(roadmap, path, label, task.on_branch)
+        for path, label in ((task.prd, "PRD"), (task.rfc, "RFC"))
+        if path
     )
     if documents:
         about.append(fact("Documents", documents))
-    branch = fact("Branch", f"<code>{escape(task.branch_name)}</code>{branch_note(task, evidence)}")
+    if task.on_branch:
+        about.append(fact("Roadmap", f"Only on <code>{escape(task.on_branch)}</code> so far, not on main"))
+    branch = fact("Branch", f"<code>{escape(task.work_branch)}</code>{branch_note(task, evidence)}")
     if task.pr:
         pr = task.pr
         draft = ", draft" if pr.is_draft else ""
@@ -133,6 +161,8 @@ def task_page(task: Task, roadmap: Roadmap, evidence: TaskEvidence, branch_prs: 
         if others:
             listed = ", ".join(f'<a href="{escape(p.url)}">#{p.number}</a>' for p in others)
             pr_facts.append(fact("Other PRs", f"{listed} <span class='small muted'>on the same branch</span>"))
+    elif task.pr_unknown:
+        pr_facts = [fact("PR", "Unknown: GitHub hasn't answered")]
     else:
         pr_facts = [fact("PR", "None yet" if task.status != "done" else "None")]
     detail = f'<p style="margin:8px 0 0">{escape(task.detail)}</p>' if task.detail else ""
@@ -144,7 +174,7 @@ def task_page(task: Task, roadmap: Roadmap, evidence: TaskEvidence, branch_prs: 
     )
     return f"""<div class="stack">
 <div class="panel"><p class="small muted" style="margin:0 0 4px"><code>{escape(task.id)}</code></p>
-<h1 style="font-size:18px;margin:0 0 8px">{bug_tag(task)}{escape(task.name)}</h1>{pill(task.status)}{detail}</div>
+<h1 style="font-size:18px;margin:0 0 8px">{task_tags(task)}{escape(task.name)}</h1>{pill(task.status)}{detail}</div>
 <div class="panel"><h2>Stage</h2>{stage_track(task)}<p style="margin:8px 0 0">{stage_why(task)}</p>{wait_note}</div>
 <div class="rm-grid">
 <div class="panel"><h2>Pull request</h2><dl class="facts">{branch}{"".join(pr_facts)}</dl></div>

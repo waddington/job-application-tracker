@@ -52,8 +52,8 @@ class Dashboard:
             if task is None:
                 body = '<div class="panel"><p style="margin:0">No such task on the roadmap.</p></div>'
                 return 404, "text/html", render.page("Not found", "/roadmap", body, roadmap, snapshot)
-            evidence = task_evidence(self.root, task.branch_name, task.pr)
-            branch_prs = [p for p in snapshot.live.prs if p.branch == task.branch_name]
+            evidence = task_evidence(self.root, task.work_branch, task.pr)
+            branch_prs = [p for p in snapshot.live.prs if p.branch == task.work_branch]
             body = task_page.task_page(task, roadmap, evidence, branch_prs)
             return 200, "text/html", render.page(task.id, "/roadmap", body, roadmap, snapshot)
         if path == "/api/roadmap.json":
