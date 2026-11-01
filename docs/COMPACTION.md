@@ -435,7 +435,7 @@ trusting anything here, re-read `docs/ROADMAP.yaml` and run `gh pr list`.
 - P10: "start p10, the pm dashboard upgrades. do 3 items from it for now", "feel free to start PM activityt and also pm
   agents", "keep going, finish p10 then stop" (finished).
 - Bugs: asked which to fix and when, Kai said "none yet". Recording them is still required.
-- Not started, waiting on Kai: `deps-*` and `security-alerts` (the Dependabot fixes, below), `pm-draft-building` (P7).
+- Not started, waiting on Kai: `deps-*` and `security-alerts` (the Dependabot fixes, below).
 
 **Kai's latest word on how to work:**
 - PM dashboard work gets no version bump or release. Asked "should these be releases?" with "i think yes because were
@@ -453,9 +453,8 @@ trusting anything here, re-read `docs/ROADMAP.yaml` and run `gh pr list`.
   with the Edit tool. A script only for a truly mechanical bulk change. Patch scripts kept breaking on Prettier's wrapping.
 - "have you started yet? the pm dashboard doesnt show anything in progress?": the dashboard reads `worktree-<id>`
   branches and PRs, so push the branch as soon as work starts, not after it's done.
-- "the pm dashboard isnt showing the currently in progress item as being in progress": it reads main's roadmap, so a task
-  split only on its branch doesn't show. Land a roadmap split in its own small PR before the code starts (#158 did). An open
-  draft still shows as In review until `pm-draft-building`; Kai hasn't asked for that yet, and I told Kai so.
+- "the pm dashboard isnt showing the currently in progress item as being in progress": fixed by `pm-draft-building`: a draft shows as
+  Building, and a task only on its branch shows too, so a roadmap split no longer needs its own PR first.
 - "how tf is pr 131 still open??????" and "was antyhing done in the last 90 minutes…": never leave a ready PR unmerged
   once the cycle is complete, and never report and stop while approved work remains. A subagent's report isn't the end of
   the job: check for open PRs before going quiet.
@@ -541,8 +540,15 @@ is that stopped process, not a fault. To preview a branch, serve it on a spare p
   `agents.py`, `task_page.py`, `render.py`, `style.py`, `roadmap.py` (status from evidence), `server.py`. Standard library only, and nothing loads from the web.
 - **Decided, and told to Kai:** no plan line on the burn-up, because the roadmap has no planned dates (a labelled forecast
   instead); a swimlane bar is a PR, not an agent, because this project keeps no workflow journals.
-- **Known gaps, left:** drafts show as In review and a task only on its branch doesn't appear until it merges
-  (`pm-draft-building`); with GitHub down since startup, a task page reads as if it has no PR; "Tests added" counts a test
+- **Drafts and branches:** a draft PR's task is Building, a ready one's Review. A task a `worktree-*` branch added to its own
+  roadmap shows marked "on its branch", read once per branch commit (`git show`; only what the branch added since it left main).
+  Main's definition wins for a task on both. Left out: `worktree-agent-*` and branches whose PR merged or closed. The dashboard
+  doesn't fetch: an open PR whose latest commit isn't here gets a warning under Problems. A bad roadmap on a branch keeps its last
+  tasks and shows under Problems. Branch tasks count in the totals, burn-up and forecast, so the size steps up at "today" (its
+  history is main's), and a stale branch with no PR counts until it's deleted. With GitHub never having answered, commits on a
+  branch show status `unknown`, not Building, and branch tasks are held back and out of the totals, which Problems says.
+- **Known gaps, left:** a merged task added only on its branch vanishes until the main checkout is pulled (its branch is no
+  longer ahead of `origin/main`, and the local roadmap file doesn't have it yet); "Tests added" counts a test
   moved between files; chart text is small on tablet widths; empty Board columns still show on phones (from the #129 review).
 
 **Other things said lately:**
