@@ -2226,6 +2226,8 @@ export interface components {
             role_title: string;
             /** Sent On */
             sent_on: string | null;
+            /** Stage */
+            stage?: string | null;
             /** Stage Name */
             stage_name: string;
             /** Version Id */
@@ -3747,6 +3749,8 @@ export interface components {
             application_ids: string[];
             /** Closed As */
             closed_as?: string | null;
+            /** Closed Stage */
+            closed_stage?: string | null;
             /** Company Id */
             company_id: string;
             /** Company Name */
@@ -4211,8 +4215,12 @@ export interface components {
         TimelineStageMove: {
             /** From Name */
             from_name: string | null;
+            /** From Stage */
+            from_stage?: string | null;
             /** To Name */
             to_name: string;
+            /** To Stage */
+            to_stage?: string | null;
         };
         /** TitleParams */
         TitleParams: {

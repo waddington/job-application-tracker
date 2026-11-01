@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 
 import type { Flow, FlowLink, FlowNode } from "../api/insightHooks";
 import { i18n } from "../i18n";
+import { stageName } from "../utils/stageName";
 
 type Node = SankeyNode<FlowNode, FlowLink>;
 type Link = SankeyLink<FlowNode, FlowLink>;
@@ -185,12 +186,13 @@ const NODE_NAMES = {
   ghosted: "insights:sankey.nodes.ghosted",
 } as const satisfies Record<Exclude<NonNullable<FlowNode["code"]>, "holding_other">, string>;
 
-/** A node's name in your language. A stage has no code, and shows as you wrote it, as does
- * anything from an older server. */
+/** A node's name in your language. A stage has no code and its node's id is its own: a default stage
+ * shows translated, any other as you wrote it. "Still at" nodes' ids are `holding:<stage id>`. */
 export function nodeName(node: FlowNode, lng = i18n.language): string {
-  if (!node.code) return node.name;
+  if (!node.code) return stageName(node, lng);
   if (node.code === "holding_other") {
-    return i18n.t("insights:sankey.nodes.holding_other", { stage: node.stage_name ?? "", lng });
+    const stage = stageName({ id: node.id.replace(/^holding:/, ""), name: node.stage_name ?? "" }, lng);
+    return i18n.t("insights:sankey.nodes.holding_other", { stage, lng });
   }
   return i18n.t(NODE_NAMES[node.code], { lng });
 }

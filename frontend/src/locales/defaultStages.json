@@ -1,0 +1,13 @@
+{
+  "interested": "Interested",
+  "applied": "Applied",
+  "screen": "Screen",
+  "interviewing": "Interviewing",
+  "final": "Final",
+  "offer": "Offer",
+  "accepted": "Accepted",
+  "declined": "Declined",
+  "rejected": "Rejected",
+  "withdrawn": "Withdrawn",
+  "ghosted": "Ghosted"
+}

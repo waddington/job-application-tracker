@@ -4,6 +4,7 @@ import type { TFunction } from "i18next";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import type { Duplicate } from "../api/client";
+import { stageName } from "../utils/stageName";
 import { formatDate } from "../utils/time";
 
 type T = TFunction<"common">;
@@ -24,7 +25,7 @@ function describe(d: Duplicate, t: T): string {
         date: formatDate(d.applied_on),
       })
     : via(d, t);
-  const bits = [how, t("duplicates.now", { stage: d.stage_name })];
+  const bits = [how, t("duplicates.now", { stage: stageName({ id: d.stage, name: d.stage_name }) })];
   if (d.archived) bits.push(t("duplicates.archived"));
   return bits.join(t("duplicates.separator"));
 }

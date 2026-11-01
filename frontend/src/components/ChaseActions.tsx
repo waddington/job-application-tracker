@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 
 import type { ApplicationRow } from "../api/client";
 import { useMoveApplication, useUpdateApplication, useWorkflow } from "../api/hooks";
+import { stageName } from "../utils/stageName";
 
 const inDays = (n: number) => dayjs().add(n, "day").format("YYYY-MM-DD");
 
@@ -96,7 +97,7 @@ export function ChaseActions({ row }: { row: ApplicationRow }) {
         </Menu.Dropdown>
       </Menu>
       {ghosted && canGhost && (
-        <Tooltip label={t("chase.markAs", { stage: ghosted.name })}>
+        <Tooltip label={t("chase.markAs", { stage: stageName(ghosted) })}>
           <Button
             size="compact-xs"
             variant="subtle"
@@ -104,9 +105,13 @@ export function ChaseActions({ row }: { row: ApplicationRow }) {
             leftSection={<IconGhost2 size={14} />}
             loading={move.isPending}
             disabled={busy}
-            aria-label={t("chase.markWhoAs", { company: row.company_name, stage: ghosted.name })}
+            aria-label={t("chase.markWhoAs", { company: row.company_name, stage: stageName(ghosted) })}
             onClick={() => {
-              if (!window.confirm(t("chase.markConfirm", { company: row.company_name, stage: ghosted.name })))
+              if (
+                !window.confirm(
+                  t("chase.markConfirm", { company: row.company_name, stage: stageName(ghosted) }),
+                )
+              )
                 return;
               move.mutate(
                 // The note is for an older server; this one words it and saves its message (docs/rfc/i18n.md).
@@ -120,13 +125,13 @@ export function ChaseActions({ row }: { row: ApplicationRow }) {
                 {
                   onSuccess: () =>
                     notifications.show({
-                      message: t("chase.marked", { company: row.company_name, stage: ghosted.name }),
+                      message: t("chase.marked", { company: row.company_name, stage: stageName(ghosted) }),
                     }),
                 },
               );
             }}
           >
-            {ghosted.name}
+            {stageName(ghosted)}
           </Button>
         </Tooltip>
       )}

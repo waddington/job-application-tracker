@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useActivity, type Stats, type Week } from "../api/insightHooks";
 import { i18n } from "../i18n";
 import { formatDay } from "../utils/format";
+import { stageName } from "../utils/stageName";
 
 function routeLabel(route: string) {
   if (route === "direct") return i18n.t("insights:routes.direct");
@@ -47,7 +48,7 @@ export function StageTable({ stats }: { stats: Stats }) {
               <Table.Tr key={s.id}>
                 <Table.Td>
                   <Badge variant="light" color={s.color}>
-                    {s.name}
+                    {stageName(s)}
                   </Badge>
                 </Table.Td>
                 <Table.Td>{s.reached}</Table.Td>
@@ -104,7 +105,7 @@ export function RouteTable({ stats }: { stats: Stats }) {
                 <Table.Th>{t("routeTable.route")}</Table.Th>
                 <Table.Th>{t("routeTable.applications")}</Table.Th>
                 {stages.map((s) => (
-                  <Table.Th key={s.id}>{s.name}</Table.Th>
+                  <Table.Th key={s.id}>{stageName(s)}</Table.Th>
                 ))}
               </Table.Tr>
             </Table.Thead>

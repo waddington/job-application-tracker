@@ -1,15 +1,26 @@
 import { Badge } from "@mantine/core";
+import { useTranslation } from "react-i18next";
 
 import type { WorkflowStage } from "../api/hooks";
+import { stageName } from "../utils/stageName";
 
-export function StageBadge({ stage, fallback }: { stage: WorkflowStage | undefined; fallback: string }) {
+export function StageBadge({
+  id,
+  stage,
+  fallback,
+}: {
+  id: string;
+  stage: WorkflowStage | undefined;
+  fallback: string;
+}) {
+  useTranslation("stages"); // stageName reads i18n directly: this redraws it when the language changes
   return (
     <Badge
       color={stage?.color ?? "gray"}
       variant={stage?.kind === "active" ? "light" : "outline"}
       radius="sm"
     >
-      {stage?.name ?? fallback}
+      {stageName({ id, name: stage?.name ?? fallback })}
     </Badge>
   );
 }

@@ -225,6 +225,7 @@ class RoleSummary(RoleOut):
     company_name: str
     status: RoleStatus  # from its applications once it has any, whatever `decision` says
     closed_as: str | None = None  # when `closed`: the stage it ended at ("Withdrawn")
+    closed_stage: str | None = None  # that stage's id, so a default one can show in your language
     application_ids: list[str]
     contact_name: str | None = None
     agency_id: str | None = None  # the person's agency
@@ -368,6 +369,7 @@ class DocumentUsage(BaseModel):
     version_id: str
     version_label: str
     sent_on: date | None
+    stage: str | None = None  # the id beside `stage_name`, so a default stage can show in your language
 
 
 class DocumentDetail(DocumentOut):

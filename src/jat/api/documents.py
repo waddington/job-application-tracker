@@ -124,6 +124,7 @@ def _usages(session: Session, workflow: Workflow, document_id: str) -> list[S.Do
             company_name=company.name,
             role_title=role.title,
             stage_name=workflow.stage(app.stage).name if workflow.has(app.stage) else app.stage,
+            stage=app.stage,
             version_id=version.id,
             version_label=version.label,
             sent_on=link.sent_on,

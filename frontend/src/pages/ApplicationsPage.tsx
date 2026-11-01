@@ -37,6 +37,7 @@ import { NewApplicationModal } from "../components/NewApplicationModal";
 import { RoundBadge } from "../components/Interviews";
 import { StageBadge } from "../components/StageBadge";
 import { i18n } from "../i18n";
+import { stageName } from "../utils/stageName";
 import { ago } from "../utils/time";
 
 type Sort = NonNullable<ApplicationFilters["sort"]>;
@@ -157,7 +158,7 @@ export function ApplicationsPage() {
         />
         <MultiSelect
           placeholder={stage.length ? undefined : t("filters.allStages")}
-          data={(workflow?.stages ?? []).map((s) => ({ value: s.id, label: s.name }))}
+          data={(workflow?.stages ?? []).map((s) => ({ value: s.id, label: stageName(s) }))}
           value={stage}
           onChange={setStage}
           clearable
@@ -274,7 +275,7 @@ export function ApplicationsPage() {
                   </Table.Td>
                   <Table.Td>
                     <Stack gap={4} align="flex-start">
-                      <StageBadge stage={stages.get(row.stage)} fallback={row.stage_name} />
+                      <StageBadge id={row.stage} stage={stages.get(row.stage)} fallback={row.stage_name} />
                       <RoundBadge round={row.current_round} stageKind={row.stage_kind} size="xs" />
                     </Stack>
                   </Table.Td>

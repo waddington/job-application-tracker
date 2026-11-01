@@ -85,6 +85,10 @@ class TimelineRole(BaseModel):
 class TimelineStageMove(BaseModel):
     from_name: str | None  # None: it started here ("Added at …")
     to_name: str
+    # The ids beside the names, so the frontend can show a default stage in your language. Optional for
+    # the shared title cases; this server always sends `to_stage`, and `from_stage` with `from_name`.
+    from_stage: str | None = None
+    to_stage: str | None = None
 
 
 class TimelineRound(BaseModel):
@@ -185,6 +189,8 @@ def _stage_move(event: Event, stage_names: dict[str, str]) -> TimelineStageMove 
     return TimelineStageMove(
         from_name=stage_names.get(event.from_stage, event.from_stage) if moved else None,
         to_name=stage_names.get(event.to_stage, event.to_stage),
+        from_stage=event.from_stage if moved else None,
+        to_stage=event.to_stage,
     )
 
 

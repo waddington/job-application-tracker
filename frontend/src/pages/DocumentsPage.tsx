@@ -43,6 +43,7 @@ import {
   type DocumentVersion,
 } from "../api/documentHooks";
 import { humanSize } from "../components/Attachments";
+import { stageName } from "../utils/stageName";
 import { formatDate } from "../utils/time";
 
 type Kind = "cv" | "cover_letter" | "other";
@@ -208,9 +209,12 @@ function WhereUsed({ id }: { id: string }) {
               ? t("used.versionDateStage", {
                   version: u.version_label,
                   date: formatDate(u.sent_on),
-                  stage: u.stage_name,
+                  stage: stageName({ id: u.stage, name: u.stage_name }),
                 })
-              : t("used.versionStage", { version: u.version_label, stage: u.stage_name })}
+              : t("used.versionStage", {
+                  version: u.version_label,
+                  stage: stageName({ id: u.stage, name: u.stage_name }),
+                })}
           </Text>
         </Text>
       ))}
