@@ -47,6 +47,9 @@ export default {
     label: "Language",
     comingSoon: "Coming soon!",
     pseudo: "Pseudo-language (dev)",
+    // A link to the guide for adding a language; the second is what a screen reader hears.
+    addYours: "Don't see your language?",
+    addYoursLabel: "Don't see your language? Opens a guide on GitHub in a new tab.",
   },
   // One key per state: "dark" and "light" need translating too.
   theme: {

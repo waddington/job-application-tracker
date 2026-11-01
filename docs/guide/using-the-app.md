@@ -635,6 +635,9 @@ is kept in this browser; until you pick one, the app follows your browser's lang
 has it, and English otherwise. What you've typed (companies, notes, stage names you've renamed
 or added) is never translated.
 
+Under the languages, *Don't see your language?* opens [a guide to adding one](adding-a-language.md)
+on GitHub, in a new tab. It's an ordinary link: the app itself never fetches anything from there.
+
 ## Dark mode
 
 The moon/sun button at the top right.

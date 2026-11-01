@@ -1,11 +1,18 @@
 import { ActionIcon, Box, Button, Menu, Modal, Tooltip } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { IconCheck, IconHelp, IconLanguage, IconPlus } from "@tabler/icons-react";
+import { IconCheck, IconExternalLink, IconHelp, IconLanguage, IconPlus } from "@tabler/icons-react";
 import { useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { isLanguage, LANGUAGE_NAMES, LANGUAGES, PSEUDO, saveLanguage } from "../i18n/language";
+import {
+  ADD_LANGUAGE_GUIDE,
+  isLanguage,
+  LANGUAGE_NAMES,
+  LANGUAGES,
+  PSEUDO,
+  saveLanguage,
+} from "../i18n/language";
 import { HowItWorks } from "./HowItWorks";
 import { NewApplicationModal } from "./NewApplicationModal";
 
@@ -74,7 +81,8 @@ export function NewApplicationButton({
 /**
  * Change the language by hand (docs/rfc/i18n.md §6): the shipped languages by their own names,
  * then "Coming soon!" until a second one ships. The choice is kept in this browser. In dev, the
- * pseudo-language is offered too.
+ * pseudo-language is offered too. Last, a plain link to the guide for adding a language: the app
+ * fetches nothing, and the browser only goes there if you open it.
  */
 export function LanguageSwitch() {
   const { t, i18n } = useTranslation();
@@ -111,6 +119,17 @@ export function LanguageSwitch() {
             {t("language.pseudo")}
           </Menu.Item>
         )}
+        <Menu.Divider />
+        <Menu.Item
+          component="a"
+          href={ADD_LANGUAGE_GUIDE}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={t("language.addYoursLabel")}
+          rightSection={<IconExternalLink size={14} aria-hidden />}
+        >
+          {t("language.addYours")}
+        </Menu.Item>
       </Menu.Dropdown>
     </Menu>
   );

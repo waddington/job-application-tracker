@@ -15,6 +15,7 @@ move it between computers. Start at the top if you're new.
 5. [Command reference](commands.md): every `jat` command, settings and environment
    variables, and the local JSON API.
 6. [Troubleshooting](troubleshooting.md): common problems and how to fix them.
+7. [Adding a language](adding-a-language.md): translate the app into your language, step by step.
 
 The short version:
 
