@@ -83,4 +83,24 @@ export default tseslint.config(
       ],
     },
   },
+  {
+    // The rule above reads JSX only. This one catches text in an object, such as a toast's
+    // message: a property people read, holding a plain string with lower-case letters in it.
+    // A translation key ("today:glance.added", "nav.items.today") isn't text.
+    files: ["src/**/*.{ts,tsx}"],
+    // nav.ts: label and description are shown only by Placeholder, which no page reaches.
+    ignores: ["src/**/*.test.{ts,tsx}", "src/test/**", "src/locales/**", "src/nav.ts"],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        ...[
+          "Literal[value=/^(?![\\w-]+[.:][\\w.:-]+$).*[a-z]/]",
+          "TemplateLiteral > TemplateElement[value.raw=/[a-z]/]",
+        ].map((text) => ({
+          selector: `Property[key.name=/^(message|title|label|description|placeholder|error)$/] > ${text}`,
+          message: "Text people read comes from the translation files: use t() or i18n.t().",
+        })),
+      ],
+    },
+  },
 );

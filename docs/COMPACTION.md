@@ -217,7 +217,7 @@ next action.
     `MissingValueError`/`MissingKeyError` in dev and tests), `language.ts` (`LANGUAGES`,
     `LANGUAGE_NAMES`, `pickLanguage`, `saveLanguage`, `isLanguage`, `PSEUDO` = `en-XA`,
     `?lang=pseudo` in dev), `pseudo.ts`, `catalog.ts` (key and placeholder checks, unused-key
-    scanner), `shadow.ts` (shadow mode, unused now), `types.check.tsx` (type tests).
+    scanner), `types.check.tsx` (type tests).
   - English text: `frontend/src/locales/en/{common,today,people,todos,selftest}.ts` (`as const`,
     typed via `i18next.d.ts`; `TextKey` = "ns:key"). Other languages will be JSON in
     `locales/<code>/`; a missing key, namespace or plural form fails `catalog.test.ts`.

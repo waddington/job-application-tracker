@@ -105,8 +105,10 @@ pnpm --dir frontend gen:api
 ## Text in the UI (translations)
 
 The app is translatable, English only for now; the plan is in
-[`docs/rfc/i18n.md`](docs/rfc/i18n.md). All the UI's text goes through the translation layer. Only
-events saved before their message existed, and your own words, stay as saved.
+[`docs/rfc/i18n.md`](docs/rfc/i18n.md). The UI's own text goes through the translation layer. Three
+things stay English: events saved before their message existed, and your own words, stay as saved; and
+a few errors from the server with no code (not found on a stale page, and validation details) show as
+the API sent them (`i18n-uncoded-errors`).
 
 - **English lives in `frontend/src/locales/en/<namespace>.ts`**, one file per area, as a
   nested object with `as const`. Name keys for what the text is for (`waiting.title`), not
@@ -152,8 +154,12 @@ events saved before their message existed, and your own words, stay as saved.
 - **Hard-coded text is a lint error** in every source file except tests. The rule
   (`i18next/no-literal-string` in `frontend/eslint.config.js`) checks text and template strings in
   JSX, and the props people read or hear (`label`, `*Label`, `placeholder`, `aria-label`, `title`,
-  `description`, `error`, `hint`, `empty`, `confirm`…). It doesn't see plain strings outside JSX,
-  such as a toast's `message:`, so those are still yours to catch: the pseudo-language shows them.
+  `description`, `error`, `hint`, `empty`, `confirm`…). A second rule (`no-restricted-syntax`) catches
+  a plain string in an object's `message`, `title`, `label`, `description`, `placeholder` or `error`,
+  such as a toast's or a dropdown option's. It skips translation keys, the locale files and `nav.ts`.
+  Neither catches a JSX prop not listed (`tooltip=`, `message=`), a string held in a variable or
+  constant (`{ label }`, `message: SOME_TEXT`), a property with another name, or a word in capitals.
+  Those are yours to catch: the pseudo-language shows them.
   Strings in plain code, like a form's error messages, still need care. A prop that carries
   prose and isn't on the list goes on it.
 - **Adding an error code,** for an error people can see (the backend never translates):
