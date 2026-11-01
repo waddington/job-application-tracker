@@ -8,6 +8,18 @@ type Tree = { readonly [key: string]: string | Tree };
 // in one of these ("status_other"), and the app doesn't use i18next's context suffixes.
 const PLURAL = /(_ordinal)?_(zero|one|two|few|many|other)$/;
 
+/**
+ * In front of every line scripts/i18n/new_language.mjs writes: "[TRANSLATE] Show all rows". A
+ * line still holding it hasn't been translated, and a test fails until none is left.
+ */
+export const TO_TRANSLATE = "[TRANSLATE]";
+
+/** The lines of a language's file ("a.b") still marked TO_TRANSLATE. */
+export const untranslated = (tree: Tree): string[] =>
+  Object.entries(flatten(tree))
+    .filter(([, text]) => text.includes(TO_TRANSLATE))
+    .map(([key]) => key);
+
 /** { a: { b: "x" } } → { "a.b": "x" }. */
 export function flatten(tree: Tree, prefix = ""): Record<string, string> {
   const out: Record<string, string> = {};

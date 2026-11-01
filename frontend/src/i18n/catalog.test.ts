@@ -1,7 +1,17 @@
 import { describe, expect, it } from "vitest";
 
 import en from "../locales/en";
-import { baseKey, compare, flatten, placeholders, pluralCategories, unusedKeys, usedKeys } from "./catalog";
+import {
+  baseKey,
+  compare,
+  flatten,
+  placeholders,
+  pluralCategories,
+  TO_TRANSLATE,
+  untranslated,
+  unusedKeys,
+  usedKeys,
+} from "./catalog";
 import { DEFAULT_NS } from ".";
 
 describe("helpers", () => {
@@ -106,6 +116,18 @@ describe("compare another language with English", () => {
       { key: "greeting", dropped: ["name"], unknown: [] },
       { key: "nested.a", dropped: [], unknown: ["who"] },
     ]);
+  });
+});
+
+describe("untranslated", () => {
+  it("lists the lines still holding the marker, wherever they are", () => {
+    const tree = {
+      done: "Czekasz",
+      left: `${TO_TRANSLATE} Waiting`,
+      nested: { left: `Czekasz ${TO_TRANSLATE} on them`, done: "A" },
+    };
+    expect(untranslated(tree)).toEqual(["left", "nested.left"]);
+    expect(untranslated({ done: "Czekasz" })).toEqual([]);
   });
 });
 
@@ -215,6 +237,18 @@ describe("the app's text", () => {
         });
       }
     }
+  });
+
+  // Only this test fails: a half-done language still shows in `pnpm dev`, so you can try it as you go.
+  it("has no line still waiting to be translated", () => {
+    const left = Object.entries(others).flatMap(([path, tree]) => {
+      const file = path.split("/").slice(-2).join("/");
+      return untranslated(tree).map((key) => `${file}: ${key}`);
+    });
+    expect(
+      left,
+      `Still to translate: ${left.length}. Translate each line below and delete its ${TO_TRANSLATE} (search for it in frontend/src/locales/)`,
+    ).toEqual([]);
   });
 
   it("has no English keys that no code uses", () => {

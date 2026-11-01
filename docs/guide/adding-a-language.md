@@ -52,18 +52,32 @@ browser set to that region, so `pl` suits anyone set to Polish, but `pt-BR` won'
 node --experimental-strip-types scripts/i18n/new_language.mjs pl
 ```
 
-That writes a copy of all the English to `frontend/src/locales/pl/`: one JSON file per area of the
-app (`today.json`, `offers.json`, `stages.json` for the default stage names, and so on), and an
+That writes all the English to `frontend/src/locales/pl/`: one JSON file per area of the app
+(`today.json`, `offers.json`, `stages.json` for the default stage names, and so on), and an
 `index.ts` that you leave as it is. It won't overwrite a folder that's already there.
+
+Every line starts with `[TRANSLATE]`, so nothing can pass for finished by accident:
+
+```json
+"title": "[TRANSLATE] Waiting on them",
+```
 
 ## 3. Translate
 
-Change the text on the right of each colon. Never change what's on the left, or the quotes:
+Change the text on the right of each colon, and delete `[TRANSLATE]` as you go. Never change what's
+on the left, or the quotes:
 
 ```json
-{ "title": "Waiting on them" }
-{ "title": "Czekasz na odpowiedź" }
+"title": "Czekasz na odpowiedź",
 ```
+
+To see how much is left, and in which files:
+
+```bash
+grep -rc '\[TRANSLATE\]' frontend/src/locales/pl
+```
+
+Your editor's search across files finds each line.
 
 A few things have to stay exactly as they are, wherever your sentence puts them:
 
@@ -79,38 +93,37 @@ for.
 
 ## 4. Plural forms
 
-English has two forms, so a count has two lines. Your language may have other rules. To see which
-forms it uses:
-
-```bash
-node -e 'console.log(new Intl.PluralRules("pl").resolvedOptions().pluralCategories)'
-```
-
-Polish prints `few`, `many`, `one` and `other`. So one English pair becomes four lines:
+English has two forms for a count, and your language may have more or fewer. Step 2 already wrote
+the ones yours uses, so Polish gets four lines where English has two:
 
 ```json
-{
-  "days_one": "{{count}} dzień",
-  "days_few": "{{count}} dni",
-  "days_many": "{{count}} dni",
-  "days_other": "{{count}} dnia"
-}
+"days_few": "[TRANSLATE] {{count}} days",
+"days_many": "[TRANSLATE] {{count}} days",
+"days_one": "[TRANSLATE] {{count}} day",
+"days_other": "[TRANSLATE] {{count}} days",
 ```
 
-A language with one form, like Chinese, needs only `_other`, and you can delete the `_one` lines. A
-language's forms are often for ranges of numbers (Polish `few` is 2 to 4, 22 to 24…); the
+Each becomes the right wording for those numbers:
+
+```json
+"days_few": "{{count}} dni",
+"days_many": "{{count}} dni",
+"days_one": "{{count}} dzień",
+"days_other": "{{count}} dnia",
+```
+
+A language's forms are often for ranges of numbers (Polish `few` is 2 to 4, 22 to 24…); the
 [Unicode plural tables](https://www.unicode.org/cldr/charts/latest/supplemental/language_plural_rules.html)
-list them.
+list them. A language with one form, like Chinese, gets only `_other`.
 
 **One line looks like a plural but isn't:** `holding_other` in `insights.json` ("Still at
-{{stage}}"). The check in step 7 treats it as one. If your language has more forms than `other`,
-copy that line for each of them, all saying the same thing (`holding_one`, `holding_few`,
-`holding_many`).
+{{stage}}"), which has no count. Polish gets `holding_few`, `holding_many`, `holding_one` and
+`holding_other`: give them all the same translation.
 
 ## 5. Add it to the app
 
-Three small edits, all under `frontend/src/`. Keep them to the end, because until they're all done
-choosing your language shows English.
+Three small edits, all under `frontend/src/`. You can make them before you've finished translating.
+Until all three are done, your language won't show properly.
 
 **`i18n/index.ts`** loads the text. Add the import beside English's, and the `resources` line in
 the `createI18n` call at the bottom (the app's own one, with `react: true`):
@@ -192,8 +205,9 @@ JAT_API_URL=http://127.0.0.1:8771 pnpm --dir frontend dev
 ```
 
 Open <http://127.0.0.1:5173> and choose your language from the button at the top right, beside
-light and dark mode. (Adding `?lang=pl` to the address does the same.) Go through every page. Look
-for sentences that read badly, text that's cut off because it came out longer than the English,
+light and dark mode. (Adding `?lang=pl` to the address does the same.) It works however much you've
+translated: a line you haven't done shows as it is in the file, like `[TRANSLATE] Today`, so you can
+try it as you go and see what's left. Go through every page. Look for sentences that read badly, text that's cut off because it came out longer than the English,
 and dates and plurals, with a count of 1 and of more.
 
 `Pseudo-language (dev)` in the same menu shows the English with accents and made longer. Anything
@@ -211,9 +225,22 @@ pnpm --dir frontend test
 
 Each should finish with no errors. `format` tidies the files, so it may change them.
 
-`test` is the one that looks at your text. It fails if a file is missing a line or a plural form, has
-a line English doesn't, or has lost or invented a `{{value}}`. The failure names the file and the
-lines. It stops at the first file with a problem, so fix that one and run it again:
+`test` is the one that looks at your text, and it fails until no `[TRANSLATE]` is left. That's only
+this test: the app itself keeps working, as in step 6. It lists every line still to do:
+
+```text
+AssertionError: Still to translate: 1. Translate each line below and delete its [TRANSLATE] (search for it in frontend/src/locales/)
++ [
++   "pl/applications.json: title",
++ ]
+```
+
+That's the line `"title"` at the top level of `applications.json`. A dot in a name means it's nested:
+`view.label` is `"label"` inside `"view"`.
+
+It also fails if a file is missing a line or a plural form, has a line English doesn't, or has lost or
+invented a `{{value}}`. That check stops at the first file with a problem, so fix that one and run it
+again. Here, three forms of a line in `insights.json` are gone:
 
 ```text
     "file": "pl/insights.json",
