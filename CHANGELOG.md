@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.2.42 (2026-11-01)
+
+- **Developers:** SWITCHPLACEHOLDER read their text from the translation files, ready for other languages. The English is unchanged (#182).
+
 ## 1.2.41 (2026-11-01)
 
 - **Don't see your language?** The language switch now links to a [guide to adding a language](docs/guide/adding-a-language.md). `scripts/i18n/new_language.mjs` writes a new language's starting files, with every line marked `[TRANSLATE]`, and a test fails until none is left (#180).
