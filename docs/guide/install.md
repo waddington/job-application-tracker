@@ -30,7 +30,7 @@ uv run jat serve
 `jat init` will say snapshots are disabled. That's fine for now - more on that below.
 
 Now open http://127.0.0.1:8770 and you're in! Press New application at the top right to add
-your first one, or ? to see how it works.
+your first one, or **?** to see how it works.
 
 When you're done, press Ctrl+C. Next time, just run `uv run jat serve` from the same folder.
 Your data stays in `~/job-search-data`, away from the code.
