@@ -46,8 +46,8 @@ roadmap is `docs/ROADMAP.yaml`, shown by the PM dashboard (see "Project manageme
 - **Commit and push small, frequent, logical units.**
 - **Open a draft PR early.** As soon as work is going to become a PR, push a first commit, however
   minimal (the roadmap task set to `building` will do), and open it with
-  `gh pr create --draft --title … --body-file …`. The PM dashboard then shows a task already on main's
-  roadmap (a task added only on the branch appears once it merges; see `pm-draft-building`). Keep pushing to it as work continues. Run `gh pr ready` when it's time for review, then follow the
+  `gh pr create --draft --title … --body-file …`. The PM dashboard then shows the task as Building,
+  even one so far only on the branch's roadmap (marked "on its branch"), and as Review once the PR is ready. Keep pushing to it as work continues. Run `gh pr ready` when it's time for review, then follow the
   review-fix cycle below.
 - **Keep PRs small.** Aim for about 500 changed lines, and treat 1,000 as a strong target to stay
   below. Go over only when a change can't sensibly be split, and say why in the PR. `uv.lock`,
@@ -117,8 +117,9 @@ PR.** PRs that only touch internal files (`CLAUDE.md`, `docs/ROADMAP.yaml`, `doc
 
 ## Project management
 - PM dashboard: `python3 -m tools.pm` (http://127.0.0.1:8767), run from the main checkout.
-  Standard library only. It reads `docs/ROADMAP.yaml` and takes live task status from
-  `worktree-<task id>` branches and their PRs (via `gh`).
+  Standard library only. It reads `docs/ROADMAP.yaml`, adds the tasks a `worktree-*` branch has added to
+  its own copy (not `worktree-agent-*`, nor a branch whose PR merged or closed), and takes live task status
+  from `worktree-<task id>` branches and their PRs (via `gh`): a draft PR is Building, a ready one Review.
 - Its tests run with the rest: `uv run pytest`.
 - After merging a PR that changes `tools/pm`, restart the dashboard so it loads the new code.
 
