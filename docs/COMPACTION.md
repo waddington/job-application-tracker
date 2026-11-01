@@ -80,7 +80,7 @@ next action.
   every PR: "most are patch unless its new feature then it would be minor. it should be very
   explicit asking me for permission to merge a major bump". The rules are in `CLAUDE.md`
   (*Versions and releases*): bump in each PR, release each version, ask before any major.
-  Released: v1.0.0, v1.1.0, v1.1.1–v1.1.4, v1.2.0–v1.2.8. Kai: "yes add release for each change"
+  Released: v1.0.0 up to v1.2.43 (section 4a). Kai: "yes add release for each change"
   (each i18n PR is its own patch release; the switcher was minor). Only internal planning
   files (`CLAUDE.md`, `docs/ROADMAP.yaml`, `docs/COMPACTION.md`, `docs/IDEAS.md`, `docs/rfc/` plans) and the PM dashboard skip
   the bump.
@@ -208,23 +208,30 @@ next action.
   `/search?q=`.
 - **Header** (`components/Layout.tsx`; buttons in `components/HeaderButtons.tsx`): wordmark →
   `/`; **New application**; search (`/`); **?** How it works; the **language switch**
-  (`LanguageSwitch`, #114: English ticked, *Coming soon!* greyed out, *Pseudo-language (dev)*
-  in dev only; saved in localStorage `jat.language`; `<html lang>` follows); theme toggle.
+  (`LanguageSwitch`, #114, #182: an outlined button with a globe, the language's name and an arrow, the
+  globe alone on a phone; English ticked, *Coming soon!* greyed out, *Pseudo-language (dev)* in dev only,
+  *Don't see your language?* linking to the guide; saved in localStorage `jat.language`; `<html lang>`
+  follows); theme toggle.
   Every date picker rings today (#82) and shows "D MMM YYYY" (`theme.ts` `valueFormat`);
   calendars follow the language (`DatesProvider` in `App.tsx`, weeks from Monday).
-- **Translations (i18n, in progress; plan `docs/rfc/i18n.md`).** i18next + react-i18next.
+- **Translations (i18n; the cutover is done, English only so far; `docs/rfc/i18n.md`).** i18next + react-i18next.
   - `frontend/src/i18n/`: `index.ts` (`createI18n`, the app's `i18n`, strict mode throws
     `MissingValueError`/`MissingKeyError` in dev and tests), `language.ts` (`LANGUAGES`,
     `LANGUAGE_NAMES`, `pickLanguage`, `saveLanguage`, `isLanguage`, `PSEUDO` = `en-XA`,
     `?lang=pseudo` in dev), `pseudo.ts`, `catalog.ts` (key and placeholder checks, unused-key
     scanner), `types.check.tsx` (type tests).
-  - English text: `frontend/src/locales/en/{common,today,people,todos,selftest}.ts` (`as const`,
-    typed via `i18next.d.ts`; `TextKey` = "ns:key"). Other languages will be JSON in
-    `locales/<code>/`; a missing key, namespace or plural form fails `catalog.test.ts`.
-  - Converted so far: the frame (header, menu, footer, Not found, shared dialogs), Today and
-    everything on it (to-dos, reply/chase buttons, marks, reply habits, How did it go?, At a
-    glance, How it works), and the switch. The lint rule, in
-    `frontend/eslint.config.js` (`i18next/no-literal-string`), now covers every source file but tests.
+  - English text: `frontend/src/locales/en/*.ts`, one namespace per area (`as const`, typed via
+    `i18next.d.ts`; `TextKey` = "ns:key"). Other languages will be JSON in `locales/<code>/`; a missing
+    key, namespace or plural form, or a `[TRANSLATE]` marker left in, fails `catalog.test.ts`.
+    `scripts/i18n/new_language.mjs` writes a new language's starting files with every line marked;
+    `docs/guide/adding-a-language.md` is the how-to.
+  - All the app's text is converted. The lint rules in `frontend/eslint.config.js`
+    (`i18next/no-literal-string` plus a `no-restricted-syntax` on text properties) cover every source file
+    but tests, with what they miss listed in CONTRIBUTING.
+  - What the API sends: errors have `code` and `params` beside `detail`; 422s translate from Pydantic's
+    `type` and `ctx` (`api/validationText.ts`); saved events have `data.msg` and a typed `msg`
+    (`components/eventText.ts`); Timeline entries have `kind` and raw fields (`components/timelineTitle.ts`).
+    Default stages translate through `utils/stageName.ts`; renamed or added ones show as written.
   - `utils/format.ts`: `formatDay(value, pattern, lang)` and helpers; every date through the
     dayjs `PATTERNS`. `utils/time.ts` `formatDate`/`formatDateTime`/`ago` go through it.
   - `scripts/i18n/text_snapshot.py` + `text_diff.py`: before/after text check (section 6).
@@ -410,34 +417,37 @@ next action.
   - Then: "update … COMPACTION.md again for claude code compact command. i want to continue with
     the i18n work".
 
-### 4a. Current work, 2026-10-31 (read this first; it overrides 4 and 5 where they differ)
+### 4a. Current work, 2026-11-01 (read this first; it overrides 4 and 5 where they differ)
 
 Keep this whole section word for word in the summary: it is the live plan.
 
-**Versions and main.** Released up to v1.2.28 (#163), and #164 `i18n-sankey` (v1.2.29) is the last of Kai's batch: if it's
-still open, finish its review-fix cycle, merge and release it first. All 17 `e2e-*` tasks in P9 are done (v1.2.3 to
-v1.2.19), P8 through `i18n-people` (v1.2.20), and all six tasks in P10 (#148 to #153, no releases). This batch: #155
-`i18n-interviews`, #156 `i18n-calls`, #157 `i18n-offers`, #158 the roadmap split, #159 `i18n-documents`, #160
-`i18n-attachments-links`, #161 `i18n-notes-search`, #162 `i18n-insights-tabs`, #163 `i18n-insights-reviews`, #164
-`i18n-sankey` (v1.2.21 to v1.2.29). The whole browser suite is 645 tests and passes; pytest is 510; unit tests 439. Before
-trusting anything here, re-read `docs/ROADMAP.yaml` and run `gh pr list`.
+**Versions and main.** Released up to v1.2.43 (#181). All of P9 and P10 are done, and so is the i18n cutover: #167 to #174 and
+#176 (the nine parts of items 11 to 13, v1.2.30 to v1.2.38), #177 `i18n-finish` (v1.2.39), #179 `i18n-default-stages` (v1.2.40),
+#180 `i18n-contribute-language` (v1.2.41), #182 `language-switch-label` (v1.2.42), #181 `i18n-uncoded-errors` (v1.2.43). Dashboard
+and planning, no releases: #175 `delivery-speed`, #178 phase P11, #183 `pm-draft-building`, #184 `bug-ratings`. Tests on main:
+pytest 1,045, browser 649. Before trusting anything here, re-read `docs/ROADMAP.yaml` and run `gh pr list`.
 
-**Once #164 is out, nothing is running: wait for Kai.** The "keep going" loop does not apply right now. Kai scopes each step:
-- P9: "continue with the P9 E2e test tasks but do not make the security fixes or bug fixes" (finished).
-- P8: "now back to p8, pick up items 8 then 9 then 10 then stop and wait for further instruction", then "first, detail them
-  out to me", then "each item can be multiple PRs", which I took as the go. Items 8, 9, 10 are the roadmap's "i18n 8/14",
-  "9/14", "10/14". Stopped after #164. Then "coninue with these 3 items" (11, 12, 13), "i want you to fan out and work in
-  parallel", "sounds good, get started". **Live plan: nine PRs (#166 split the tasks), three at a time, one from each item.**
-  Wave 1: `i18n-timeline-page`, `i18n-errors-setup`, `i18n-events-setup`. Wave 2: `i18n-timeline-titles`,
-  `i18n-errors-applications`, `i18n-events-rounds-offers`. Wave 3: `i18n-timeline-records`, `i18n-errors-files`, then
-  `i18n-events-activity` once `i18n-timeline-records` has merged. Merges go one at a time; the version bump and changelog
-  happen only at merge time, from main's version. Stop after these nine; `i18n-finish` waits for Kai.
-- P10: "start p10, the pm dashboard upgrades. do 3 items from it for now", "feel free to start PM activityt and also pm
-  agents", "keep going, finish p10 then stop" (finished).
-- Bugs: asked which to fix and when, Kai said "none yet". Recording them is still required.
-- Not started, waiting on Kai: `deps-*` and `security-alerts` (the Dependabot fixes, below).
+**Nothing is running: wait for Kai.** The "keep going" loop does not apply right now. Kai scopes each step, and nothing below is
+approved to start:
+- **Bugs:** "dont fix yet though". The 62 are rated (below); Kai picks which.
+- **`i18n-search`:** "ok nvm that for now, i will come back to that another tim". It needs a decision first: the server reads
+  the translation files (my leaning, loosening "the backend never translates" for search only), the frontend expands the
+  query, or search moves to the browser. Chinese also needs word splitting.
+- **Speed-up ideas** in `docs/rfc/delivery-speed.md`: "dont actual change behaviour yet this is just investigation for niow". The
+  process stays as it is until Kai picks from them, and that includes builders repeating checks.
+- **P11 "Test gaps"** (six tasks): "i want to keep track of those so we can address them another time".
+- **Waiting too:** `multi-language`, `deps-*` and `security-alerts` (the Dependabot fixes, below), `tests-reorganise`.
 
 **Kai's latest word on how to work:**
+- "if you followed the iterative review-fix cycle then i give you permission to merge and release". The permission check
+  blocked #180's merge as "Merge Without Review" until Kai said this; it can block again. Asking was right, and a blocked
+  command ran nothing.
+- "i want you to fan out and work in parallel", and "massively fan out, e.g. 10 or more agents (a fresh agent per bug)". Parallel
+  when Kai says so; otherwise "tackle these sequentially". "make all of the roadmap changes in 1 PR".
+- A PR Kai holds: "do not merge this one, this one i want to check myself first". Label it, keep it a draft, give a preview on
+  demo data. "Other than that it looks good" was then read as a yes, said aloud so Kai could object.
+- "how is pr180 taking so long? wasnt it a small change": I'd grown the ask (an extra check), and the brief repeats checks. Don't
+  grow a small ask; say what's extra. Kai then said "continue as you are".
 - PM dashboard work gets no version bump or release. Asked "should these be releases?" with "i think yes because were
   making changes, but also no because theyre not part of the actual tracker", I said no and Kai said "sounds good to me".
 - On the dashboard: "you dont have to match the styling, but hype pie dashboard has many features this dashboard doesnt
@@ -460,27 +470,38 @@ trusting anything here, re-read `docs/ROADMAP.yaml` and run `gh pr list`.
   the job: check for open PRs before going quiet.
 - Mid-turn "sitrep" questions get a short honest answer straight away, then carry on.
 
-**Open bugs (phase B; 56, all recorded, owner Kai; none to fix without a go-ahead).** Each has a `test.fail` or a detail
-in the roadmap; remove a bug's `test.fail` in the PR that fixes it. Branch `worktree-<bug id>`, and the board follows it.
-- High: `fix-applied-date-wipe` (may have hit Kai's real data; I recommended it first, with the two 422s below).
-- Medium, can't edit: `fix-person-move-blocks-application`, `fix-agency-delete-blocks-application-save` (every edit gets 422).
-- Medium, lost or overwritten data: `fix-person-saved-before-new-company`, `fix-note-reopen-stale`, `fix-stale-edit-after-save`,
-  `fix-typed-agency-lost`, `fix-emptied-agency-kept`, `fix-call-delete-no-confirm`, `fix-deletes-no-confirm`.
-- Medium, silent or wrong: `fix-hidden-link-blocks-save`, `fix-timeline-load-error-silent`, `fix-link-rename-cancel-saves`.
-- Medium, 500 on overlapping writes (`database is locked`): `fix-double-save-locked`, `fix-link-rename-tick-error`.
-- Medium, duplicates: `fix-duplicate-agency-name`, `fix-duplicate-company-name`, `fix-duplicate-role`. Also
-  `fix-add-another-role-carries-over`.
-- Low: 37 more, in the roadmap.
-Told to Kai but unconfirmed, not recorded: the backup hint says `jat init` where the restore docs say `jat restore`.
+**Open bugs (phase B; 62, owner Kai; none to fix without a go-ahead).** One fresh agent rated each (#184), reading the code and any
+test but not running the browser suite; each rated one bug alone, so ratings between bugs may disagree. All are still real.
+Each entry has `severity`, `ease`, `estimate_h`, `fix_risk`, `data_risk`, `changes_english`, `root_cause`, `fix_outline`, `pinned_by`,
+`related_bugs`, and the dashboard shows them (a pill, and a Bug review panel on the task page). High 1, medium 18, low 43; trivial
+15, easy 38, moderate 9, no hard; about 52 hours. A fix that changes text needs Kai's go-ahead, and a bug's `test.fail` comes off in
+the PR that fixes it. Branch `worktree-<bug id>`, and the board follows it.
+- High: `fix-applied-date-wipe` (easy, 1 h; may have hit Kai's real data). Clicking Save right after moving to Applied clears the
+  date. Workaround, told to Kai: reload after the move, before saving.
+- Medium, easy or trivial: `fix-add-another-role-carries-over`, `fix-call-delete-no-confirm`, `fix-didnt-happen-notes-hidden`,
+  `fix-link-rename-tick-error`, `fix-link-rename-cancel-saves`, `fix-timeline-load-error-silent`,
+  `fix-agency-delete-blocks-application-save`, `fix-emptied-agency-kept`, `fix-stale-edit-after-save`, `fix-hidden-link-blocks-save`,
+  `fix-person-move-blocks-application`, `fix-note-reopen-stale`.
+- Medium, moderate: `fix-deletes-no-confirm`, `fix-duplicate-role`, `fix-typed-agency-lost`, `fix-double-save-locked`,
+  `fix-duplicate-company-name`, `fix-duplicate-agency-name`.
+- The 19 high and medium come to about 25 hours; I told Kai they'd clear everything that can lose saved data or block editing.
+Told to Kai but unconfirmed, not recorded: the backup hint says `jat init` where the restore docs say `jat restore`. Seen by
+#183's builder, not recorded: with GitHub down the Phase status panel clips "% of tasks" at 1440 px; the burn-up's "today" label
+clips without a forecast; a blank Timeline doesn't say why.
 
 **Settled:** two people can share a name. Kai: "yes there can be 2 people with the same name". Keep that test pinned; it
 isn't a bug.
 
-**The running tracker** on 8770 needs a restart by Kai (Ctrl+C, `uv run jat serve`) to pick up this batch's API fields; I've
-told Kai. Until then: a role's page loses "on Call with…" (#156, the only thing that goes missing), and search and Sankey
-names stay in their English (#161, #164), which looks the same. Leave it alone.
+**The running tracker** on 8770 needs a restart by Kai (Ctrl+C, `uv run jat serve`) to pick up the backend changes up to v1.2.43,
+unless Kai has already; I've told Kai. Until then new events save English only, so they'll stay English when a language arrives; a
+role's page loses "on Call with…" (#156). The buttons keep working, and an older server's English shows. Leave it alone.
 
-**The loop for the next i18n area** (the nine parts above, then `i18n-finish`; as Kai scopes them):
+**A parallel batch, as run for items 11 to 13:** one builder agent per PR with `isolation: "worktree"` and the brief
+`<tmp>/deps/builder-brief.md`; each renames its branch, opens a draft, and doesn't bump or merge. A separate reviewer per PR;
+findings go back to the builder by `SendMessage`, or I fix small ones. I bump (`finish_i18n.py`), check and merge one at a time,
+merging main first. Give each server its own port and reviewers their own, or one's test data shows up in another's snapshot.
+
+**The loop for an i18n change:**
 - Read the area and the last entry in `docs/rfc/i18n.md`. If it won't fit in about 500 changed lines (1,000 at most,
   CLAUDE.md *Git*), split its roadmap task first, in its own PR (#158). Worktree `worktree-<id>`; set the task `building`,
   push, and open a draft PR straight away.
@@ -501,10 +522,13 @@ names stay in their English (#161, #164), which looks the same. Leave it alone.
 - Add the area's views to `scripts/i18n/text_snapshot.py`. `bash <tmp>/deps/i18n_snapshot.sh` from the worktree compares
   main's build with the branch's: it must say 0 view parts differ, and no view "couldn't open".
 - A `*Text.test.tsx` pins what the snapshot can't reach, by exact text: plurals, hover titles, errors, confirmations, and
-  states the demo lacks (it has no attachments, links, closed offers or waiting CV files). Reviewers check each claim of
+  states the demo lacks (`test-gaps-demo-data`, P11, lists them). Reviewers check each claim of
   coverage, so say "most of" unless it's all. Run the review before the slow checks, and the checks on the final commit.
 - Don't pipe `pnpm format` into `tail -0` (it stops Prettier part way); send it to `/dev/null`. A snapshot run across the top
-  of an hour differs on the call form's default time: run it again.
+  of an hour differs on the call form's default time, and across midnight on "Today": run it again. `SNAP_PORT=<port>` gives it its own port.
+- An API change must keep working when the rebuilt frontend meets a tracker not yet restarted: Kai's serves `frontend/dist` from
+  main. A new body field got 422 from the old server, so #176 sends the old body and puts the marker in the query string.
+- A changed response field can be a major: #181 first changed a 422's `type`, then kept it and added to `ctx` instead. Stay additive.
 - `pr-<task>.md` in `<tmp>/deps/` is the PR body; `python3 <tmp>/deps/finish_i18n.py <task> "<what>" "<title>"` bumps, writes
   the changelog, marks the roadmap done, sets the draft PR's title and body, and marks it ready.
 - Review, fix, review again until no `must_fix` is left, run everything (the list is in CLAUDE.md *Git*), `merge.sh <pr>`, then `ship.sh <version> <pr> <task>` from the main checkout. Add the
@@ -512,11 +536,14 @@ names stay in their English (#161, #164), which looks the same. Leave it alone.
 
 **The loop's scripts,** in `<tmp>` = `/home/kai/.claude/jobs/cf5328f4/tmp`: `deps/e2e.sh <spec>` (format, typecheck, lint,
 one spec), `deps/merge_main.sh` (merge main; a roadmap conflict keeps both sides, then `deps/roadmap_dedupe.py` leaves one
-line per id, the longer), `deps/merge.sh`, `deps/ship.sh`, `deps/finish.py` (tests-only PRs), `deps/pm_checks.sh` (every
+line per id, the longer, so check a task's status afterwards: "building" outlasts "done"), `deps/merge.sh`, `deps/ship.sh <version>
+<pr> <worktree folder> [<branch>]`, `deps/finish.py` (tests-only PRs), `deps/pm_checks.sh` (every
 check in CLAUDE.md *Git* on the current commit, printing PASS or FAIL for each and the commit it ran on; about 6 minutes,
 so run it in the background and restart it after any new commit), `<tmp>/pm_shot.py <base url> <prefix> <path>[@light][@375][@full]`
 (screenshots, run with `uv run --with playwright python`; not the older `deps/pm_shot.py`). If they're gone, rewrite them from this description. `e2e.sh`'s
-output is cut short, so read the whole of it before trusting a pass.
+output is cut short, so read the whole of it before trusting a pass. `finish_i18n.py` writes a generic changelog line: replace it
+with what the PR really does. A finished builder's worktree stays locked; once merged and clean, `git worktree remove -f -f`
+(Kai: "cleanup the no-longer-needed worktrees").
 
 **Dependabot, already reviewed (31 alerts: 27 open, 4 auto-dismissed; no PRs made). Three PRs, one per lockfile:**
 - `deps-python`, `uv.lock`: certifi to 2026.10.18 (critical advisory; only pulled in by httpx, a dev dependency, despite
@@ -530,8 +557,8 @@ output is cut short, so read the whole of it before trusting a pass.
 **PM dashboard.** http://127.0.0.1:8767 runs from the main checkout as a background job of this session (`python3 -m
 tools.pm`). It reads the main checkout's roadmap, so **pull main after every merge, roadmap-only ones too**, or Kai's
 dashboard is stale (Kai noticed once). It doesn't reload code, so restart it after a change to `tools/pm`:
-`pkill -f '^python3 -m tools[.]pm$'`, then start it again as a background job. The "failed, exit 143" notice that follows
-is that stopped process, not a fault. To preview a branch, serve it on a spare port from the worktree:
+`TaskStop` on its job, then start it again as a background job. It's silent by design, so the harness's "still running" check-ins
+need no action. To preview a branch, serve it on a spare port from the worktree:
 `python3 -m tools.pm --port 8768 --root <main checkout>`.
 - **Pages:** Overview `/`, Board `/board`, Roadmap `/roadmap`, Activity `/activity`, Agents `/agents`, a task
   `/task/<id>`. `Collector` serves the last snapshot and refreshes in the background; a failed source keeps its last data
@@ -589,15 +616,10 @@ is that stopped process, not a fault. To preview a branch, serve it on a spare p
 ### 5. Work in flight and candidates
 
 - **In flight:** none (after this doc's PR merges).
-- **Next: what's left of the i18n work, P8, in this order** (when Kai says; the areas before these are done, see 4a):
-  1. `i18n-timeline-*`: titles built in the frontend from a new `kind` and raw fields, including a round's and a call's
-     title (`api/timeline.py`), which Today's recent list also shows.
-  2. `i18n-errors-*`: error codes (Literal) + `errors` namespace, and the "That didn't work" toasts in `api/*Hooks`.
-  3. `i18n-events-*`: `data.msg` on new events, a typed `msg` in the API; "Followed up", "No reply" and the rounds' saved
-     summaries (saved English today) move here. No backfill.
-  4. `i18n-finish`: the lint rule everywhere, `shadow.ts` removed, a pseudo screenshot pass, RFC done. Then
-     `i18n-contribute-language`, `i18n-default-stages` and `multi-language` (Chinese, a native-speaker review; also percent
-     and number formats, brackets and separators, and search matching the API's English titles).
+- **Left of the i18n work, P8** (when Kai says; see 4a): `i18n-search` and `multi-language` (Chinese, a native-speaker review;
+  also percent and number formats, brackets and separators).
+- **Noticed, for later:** long text clips on Today's Waiting rows, the call form's How and the offer form's kind (for
+  `multi-language`); README screenshots showing the header still have the old language icon (`readme-refresh-*`).
 - **Planned elsewhere, not started** (build only when Kai asks): `tests-reorganise` (P7: a test
   file per component next to it with React Testing Library, shared render helpers in
   `src/test/`, `@testing-library/user-event`, backend tests by module, a Testing section in
@@ -618,13 +640,13 @@ is that stopped process, not a fault. To preview a branch, serve it on a spare p
   - `docs/IDEAS.md` still lists "An MCP server" as rejected (reversed in #101); a one-line fix
     was offered.
 - **Noticed, not promised:**
-  - i18n: labels computed outside components (`utils/attention.ts`, `waitingLabel`…) don't
-    re-render on a language change by themselves; fine while English-only, revisit for
-    `multi-language`. Calendar names can't be pseudo-accented (they're dayjs locale data).
+  - i18n: labels computed outside components re-render on the pages #177 checked (20, not dialogs or
+    menus); `test-gaps-language-switch` covers the rest. Calendar names can't be pseudo-accented (they're dayjs locale data).
     `firstDayOfWeek` is fixed at Monday (TODO in `App.tsx`).
   - Ghost and star still missing in the Timeline *About* select and to-do "about" text.
   - Reply times: weekdays only, no bank holidays.
-  - On phones: the header search overlaps the page title.
+  - On phones: the header search overlaps the page title (`fix-phone-header-overflow`); the header
+    only just fits at 375 px, so anything wider there pushes the theme toggle off.
   - The application page's People card ignores a recruiter set through the route.
   - Today: a to-do on a role shows on its role line and in Coming up; to-dos months ahead still
     count in Coming up.
@@ -776,13 +798,15 @@ conflict is the last lines of `docs/ROADMAP.yaml` (keep both, in merge order).
 - **i18n:** the frontend does all translating; the backend sends codes and ids next to its
   English (§4 of the RFC). One namespace per area; keys say what text is for; English as
   `.ts` `as const` (typed keys and placeholder names), other languages JSON. Every converted
-  file is linted (every source file but tests). Your data (stage names, companies, notes) is never translated.
-  Saved text stays English until `i18n-events`; no backfill of old events. Each i18n PR is a
+  file is linted (every source file but tests). Your data (companies, notes, stage names you've renamed or
+  added) is never translated; a default stage you haven't changed is (Kai: option 2).
+  Saved summaries stay English, new events also save `data.msg`; no backfill of old events. Each i18n PR is a
   patch with its own release (the switch was minor). Cut over directly with the before/after
-  text snapshot (shadow mode was for the first steps). Typed id-to-key maps hold bare keys.
-  A language is added in four steps (CONTRIBUTING "Adding a language"), `LANGUAGES` last.
-- **Language switch:** English plus a greyed *Coming soon!*; pseudo in dev only, never saved;
-  languages by their own names (`LANGUAGE_NAMES`), not translated.
+  text snapshot. Typed id-to-key maps hold bare keys.
+  A language is added by `docs/guide/adding-a-language.md`, `LANGUAGES` last; a `[TRANSLATE]` marker fails the
+  test, not the app, so a half-done language still runs in dev (Kai asked for markers over plain copies).
+- **Language switch:** option D of six (Kai): an outlined button, globe, name, arrow; globe alone on a phone. English plus
+  a greyed *Coming soon!*; pseudo in dev only, never saved; languages by their own names (`LANGUAGE_NAMES`), not translated.
 - **Docker:** shelved; the plan is `docs/rfc/docker.md` (minor bump, bind-mounted data folder,
   user id and git identity passed in, Podman-compatible, Compose, published image later).
 
