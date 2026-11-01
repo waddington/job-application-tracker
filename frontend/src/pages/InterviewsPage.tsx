@@ -59,59 +59,62 @@ function InterviewTable({ interviews, empty }: { interviews: Interview[]; empty:
     );
   }
   return (
-    <Table highlightOnHover>
-      <Table.Thead>
-        <Table.Tr>
-          <Table.Th>{t("page.when")}</Table.Th>
-          <Table.Th>{t("page.round")}</Table.Th>
-          <Table.Th>{t("page.application")}</Table.Th>
-          <Table.Th>{t("page.status")}</Table.Th>
-          <Table.Th />
-        </Table.Tr>
-      </Table.Thead>
-      <Table.Tbody>
-        {interviews.map((i) => {
-          const when = i.starts_at ?? i.deadline_at;
-          return (
-            <Table.Tr key={i.id}>
-              <Table.Td>
-                <Text size="sm">
-                  {!when
-                    ? t("notBooked")
-                    : i.starts_at
-                      ? formatDateTime(when)
-                      : t("due", { when: formatDateTime(when) })}
-                </Text>
-              </Table.Td>
-              <Table.Td>
-                <Text size="sm" fw={600}>
-                  {roundLabel(i)}
-                </Text>
-              </Table.Td>
-              <Table.Td>
-                <Anchor component={Link} to={`/applications/${i.application_id}`} size="sm">
-                  {i.company_name}
-                </Anchor>
-                <Text size="xs" c="dimmed">
-                  {i.role_title}
-                </Text>
-              </Table.Td>
-              <Table.Td>
-                <Group gap={4}>
-                  <Badge size="sm" variant="light" color={roundStatus(i).color}>
-                    {roundStatus(i).label}
-                  </Badge>
-                  <RescheduledBadge interview={i} />
-                </Group>
-              </Table.Td>
-              <Table.Td>
-                <RoundActions interview={i} />
-              </Table.Td>
-            </Table.Tr>
-          );
-        })}
-      </Table.Tbody>
-    </Table>
+    // On a phone the row is wider than the card: it scrolls sideways, so its buttons can be reached.
+    <Table.ScrollContainer minWidth={640}>
+      <Table highlightOnHover>
+        <Table.Thead>
+          <Table.Tr>
+            <Table.Th>{t("page.when")}</Table.Th>
+            <Table.Th>{t("page.round")}</Table.Th>
+            <Table.Th>{t("page.application")}</Table.Th>
+            <Table.Th>{t("page.status")}</Table.Th>
+            <Table.Th />
+          </Table.Tr>
+        </Table.Thead>
+        <Table.Tbody>
+          {interviews.map((i) => {
+            const when = i.starts_at ?? i.deadline_at;
+            return (
+              <Table.Tr key={i.id}>
+                <Table.Td>
+                  <Text size="sm">
+                    {!when
+                      ? t("notBooked")
+                      : i.starts_at
+                        ? formatDateTime(when)
+                        : t("due", { when: formatDateTime(when) })}
+                  </Text>
+                </Table.Td>
+                <Table.Td>
+                  <Text size="sm" fw={600}>
+                    {roundLabel(i)}
+                  </Text>
+                </Table.Td>
+                <Table.Td>
+                  <Anchor component={Link} to={`/applications/${i.application_id}`} size="sm">
+                    {i.company_name}
+                  </Anchor>
+                  <Text size="xs" c="dimmed">
+                    {i.role_title}
+                  </Text>
+                </Table.Td>
+                <Table.Td>
+                  <Group gap={4}>
+                    <Badge size="sm" variant="light" color={roundStatus(i).color}>
+                      {roundStatus(i).label}
+                    </Badge>
+                    <RescheduledBadge interview={i} />
+                  </Group>
+                </Table.Td>
+                <Table.Td>
+                  <RoundActions interview={i} />
+                </Table.Td>
+              </Table.Tr>
+            );
+          })}
+        </Table.Tbody>
+      </Table>
+    </Table.ScrollContainer>
   );
 }
 

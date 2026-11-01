@@ -213,6 +213,23 @@ test.describe("the button is wherever a booked round shows", () => {
     await expect.poll(async () => (await moves(request, appId))[0]?.data.reschedule?.by).toBe("me");
   });
 
+  test("Interviews on a phone: the table scrolls to the button instead of cutting it off", async ({
+    page,
+    request,
+  }) => {
+    const { label } = await bookedRound(request, "Phone Width Co", "On a phone");
+    await page.setViewportSize({ width: 375, height: 760 });
+    await page.goto("/interviews");
+    const button = page.getByRole("button", { name: `Reschedule ${label}` });
+    await expect(button).toBeVisible();
+    const scroller = page.locator(".mantine-ScrollArea-viewport").filter({ has: button });
+    await scroller.evaluate((el) => el.scrollTo({ left: el.scrollWidth }));
+    await expect(async () => {
+      const box = await button.boundingBox();
+      expect((box?.x ?? 999) + (box?.width ?? 0)).toBeLessThanOrEqual(375);
+    }).toPass();
+  });
+
   test("Today: a round coming up, and one awaiting its outcome", async ({ page, request }) => {
     const soon = await bookedRound(request, "From Today Co", "On today");
     const past = await bookedRound(request, "From Today Past Co", "Past today", -1);
