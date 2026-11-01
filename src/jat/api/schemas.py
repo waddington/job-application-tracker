@@ -584,6 +584,7 @@ InterviewKind = Literal[
 ]
 InterviewStatus = Literal["scheduled", "done", "cancelled"]
 InterviewFormat = Literal["video", "phone", "onsite", "take_home"]
+RescheduleBy = Literal["me", "them", "mutual", "neither"]  # who needed a booked round moved
 
 
 class InterviewIn(In):
@@ -623,9 +624,10 @@ class InterviewPatch(Patch):
     prep: str | None = None
     debrief: str | None = None
     questions: str | None = None
-    # Why it moved, when this PATCH reschedules it (a new time for a booked round): goes on the
-    # timeline entry, not stored on the round.
+    # Why it moved and who needed that, when this PATCH reschedules it (a new time for a booked
+    # round): they go on that move's timeline entry, not on the round, so each move keeps its own.
     reschedule_reason: str | None = Field(default=None, max_length=500)
+    reschedule_by: RescheduleBy | None = None
     task_instructions: str | None = None
     task_repo_url: HttpUrl | None = None
     interviewer_ids: list[str] | None = None
@@ -691,7 +693,8 @@ class ActivityIn(In):
     summary: str | None = None
     occurred_at: AwareDatetime | None = None
     data: dict[str, Any] = Field(
-        default={}, description="Saved with the event, except a `msg`, which is ignored: only the app writes messages."
+        default={},
+        description="Saved with the event, except `msg` and `reschedule`, ignored as only the app writes those.",
     )
 
 
@@ -827,6 +830,46 @@ class RoundRescheduledMsg(BaseModel):
 
 class RoundRescheduledReasonMsg(BaseModel):
     key: Literal["event.roundRescheduledReason"]
+    params: RoundReasonParams
+
+
+class RoundRescheduledByMeMsg(BaseModel):
+    key: Literal["event.roundRescheduledByMe"]
+    params: RoundParams
+
+
+class RoundRescheduledByThemMsg(BaseModel):
+    key: Literal["event.roundRescheduledByThem"]
+    params: RoundParams
+
+
+class RoundRescheduledByMutualMsg(BaseModel):
+    key: Literal["event.roundRescheduledByMutual"]
+    params: RoundParams
+
+
+class RoundRescheduledByNeitherMsg(BaseModel):
+    key: Literal["event.roundRescheduledByNeither"]
+    params: RoundParams
+
+
+class RoundRescheduledByMeReasonMsg(BaseModel):
+    key: Literal["event.roundRescheduledByMeReason"]
+    params: RoundReasonParams
+
+
+class RoundRescheduledByThemReasonMsg(BaseModel):
+    key: Literal["event.roundRescheduledByThemReason"]
+    params: RoundReasonParams
+
+
+class RoundRescheduledByMutualReasonMsg(BaseModel):
+    key: Literal["event.roundRescheduledByMutualReason"]
+    params: RoundReasonParams
+
+
+class RoundRescheduledByNeitherReasonMsg(BaseModel):
+    key: Literal["event.roundRescheduledByNeitherReason"]
     params: RoundReasonParams
 
 
@@ -1059,6 +1102,14 @@ EventMsg = Annotated[
     | RoundRemovedMsg
     | RoundRescheduledMsg
     | RoundRescheduledReasonMsg
+    | RoundRescheduledByMeMsg
+    | RoundRescheduledByThemMsg
+    | RoundRescheduledByMutualMsg
+    | RoundRescheduledByNeitherMsg
+    | RoundRescheduledByMeReasonMsg
+    | RoundRescheduledByThemReasonMsg
+    | RoundRescheduledByMutualReasonMsg
+    | RoundRescheduledByNeitherReasonMsg
     | OfferReceivedYearMsg
     | OfferReceivedDayMsg
     | OfferReceivedNoFiguresMsg

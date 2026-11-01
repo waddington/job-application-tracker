@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.3.0 (2026-11-01)
+
+- **Say who needed a reschedule:** rescheduling a round now asks who needed the change (me, them, both of us, neither of us) as well as why, and each move keeps its own old time, new time, who and why on the application's timeline. The Reschedule button is now on the application page, in the quick view (the current round, in an active stage) and on Today, as well as Interviews. On a phone, the Interviews table scrolls sideways so its buttons can be reached. After updating, restart the tracker: until you do, Reschedule fails with an error and saves nothing, though a round's Edit form still works (#191).
+
 ## 1.2.48 (2026-11-01)
 
 - **A shorter, friendlier install page:** the [install guide](docs/guide/install.md) now leads with the one path most people need. Updating moved to the [command reference](docs/guide/commands.md#updating-to-a-newer-version), and turning on snapshots and connecting a private remote to [Your data](docs/guide/your-data.md#snapshots-automatic-local-history), which now also says plainly that without git the database is the only copy. On the website, the FAQ answer to "Do I need to be technical?" and the Quick start intro now say what the guide does: uv fetches Python for you (#189).

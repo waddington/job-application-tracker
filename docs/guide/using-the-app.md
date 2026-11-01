@@ -446,16 +446,20 @@ the people there and notes); agencies have the same.
 Every interview round across all applications: what's coming up, then everything earlier
 or cancelled. On each row:
 
-- **Reschedule** (a booked round, including one whose time has passed): pick the new time
-  and, if you like, say why. Its end moves with it; the application's timeline says "Round 2 ·
-  … rescheduled: why".
+- **Reschedule** (a booked round, including one whose time has passed): pick the new time,
+  choose **Who needed the change?** (*Me*, *Them*, *Both of us* or *Neither of us*) and, if you
+  like, say why. Its end moves with it; the application's timeline says "Round 2 · … rescheduled
+  (they needed the change): why". Every move keeps its own entry, so a second reschedule doesn't
+  overwrite the first. The same button is on the application's page, on Today, and in the quick
+  view for its current round while the application is in an active stage.
 - the pencil edits the round (everything on its form).
 
 A round that's moved shows **Rescheduled** (or *Rescheduled ×2*), here and on the
 application's page; hover it for the time it moved from. Changing a booked round's time from
-its form counts too (the end moves with it there as well); changing its status in the same
-save doesn't. Rounds moved before this came in are counted, but their old time wasn't
-recorded.
+its form counts too (the end moves with it there as well), but says nothing about who or why;
+changing its status in the same save doesn't count. Older moves keep the words they already
+had ("… rescheduled", or "… rescheduled: why" if you gave a reason), with no who, and those from
+before the count came in have no old time.
 
 ## Offers
 

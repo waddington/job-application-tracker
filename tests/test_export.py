@@ -49,6 +49,23 @@ def test_export_is_deterministic(data_dir):
     assert read_export(data_dir) == first
 
 
+def test_a_reschedules_who_and_why_survive_export_and_restore(data_dir, tmp_path):
+    export_data_dir(data_dir)
+    fresh = tmp_path / "fresh"
+    init_data_dir(fresh, commit=False)
+    shutil.copytree(data_dir / "export", fresh / "export", dirs_exist_ok=True)
+    restore_data_dir(fresh)
+    export_data_dir(fresh)
+    rows = [json.loads(line) for line in (fresh / "export" / "events.jsonl").read_text(encoding="utf-8").splitlines()]
+    [moved] = [row for row in rows if "reschedule" in row["data"]]
+    assert moved["data"]["reschedule"] == {
+        "from": "2026-10-01T17:00:00+00:00",
+        "to": "2026-10-03T17:00:00+00:00",
+        "by": "them",
+        "reason": "A clash ✓",
+    }
+
+
 def test_round_trip_restore(data_dir, tmp_path):
     export_data_dir(data_dir)
     original = read_export(data_dir)

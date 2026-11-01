@@ -29,7 +29,8 @@ What it does:
   snooze and Ghosted, and "usually replies within N working days" per person (`replies`,
   `usual_reply_days` on contacts).
 - Interview rounds in the user's own words ("Round 2 · System design test"), rescheduled from
-  the Interviews page and marked so.
+  the application page, the quick view (the current round, in an active stage), Today or the
+  Interviews page and marked so, with who needed the change and why on the timeline.
 - Markdown notes as real files, links, attachments and `.eml` import onto the timeline;
   versioned CVs and cover letters.
 - Timeline across every role, application, company, agency and person, by day or as lanes

@@ -1285,7 +1285,7 @@ export interface components {
         ActivityIn: {
             /**
              * Data
-             * @description Saved with the event, except a `msg`, which is ignored: only the app writes messages.
+             * @description Saved with the event, except `msg` and `reschedule`, ignored as only the app writes those.
              * @default {}
              */
             data: {
@@ -2437,7 +2437,7 @@ export interface components {
             /** Kind */
             kind: string;
             /** Msg */
-            msg?: (components["schemas"]["LinkAddedMsg"] | components["schemas"]["NoteAddedMsg"] | components["schemas"]["FileAddedMsg"] | components["schemas"]["EmailMsg"] | components["schemas"]["EmailNoSubjectMsg"] | components["schemas"]["EmailUnknownSenderMsg"] | components["schemas"]["EmailNoSubjectUnknownSenderMsg"] | components["schemas"]["CvSentMsg"] | components["schemas"]["CoverLetterSentMsg"] | components["schemas"]["DocumentSentMsg"] | components["schemas"]["RoundScheduledMsg"] | components["schemas"]["RoundAddedMsg"] | components["schemas"]["RoundCancelledMsg"] | components["schemas"]["RoundBackOnMsg"] | components["schemas"]["RoundDoneMsg"] | components["schemas"]["RoundRemovedMsg"] | components["schemas"]["RoundRescheduledMsg"] | components["schemas"]["RoundRescheduledReasonMsg"] | components["schemas"]["OfferReceivedYearMsg"] | components["schemas"]["OfferReceivedDayMsg"] | components["schemas"]["OfferReceivedNoFiguresMsg"] | components["schemas"]["OfferBackYearMsg"] | components["schemas"]["OfferBackDayMsg"] | components["schemas"]["OfferBackNoFiguresMsg"] | components["schemas"]["OfferAcceptedYearMsg"] | components["schemas"]["OfferAcceptedDayMsg"] | components["schemas"]["OfferAcceptedNoFiguresMsg"] | components["schemas"]["OfferDeclinedYearMsg"] | components["schemas"]["OfferDeclinedDayMsg"] | components["schemas"]["OfferDeclinedNoFiguresMsg"] | components["schemas"]["OfferWithdrawnYearMsg"] | components["schemas"]["OfferWithdrawnDayMsg"] | components["schemas"]["OfferWithdrawnNoFiguresMsg"] | components["schemas"]["OfferRemovedYearMsg"] | components["schemas"]["OfferRemovedDayMsg"] | components["schemas"]["OfferRemovedNoFiguresMsg"] | components["schemas"]["FollowedUpMsg"] | components["schemas"]["NoReplyMsg"] | components["schemas"]["ReplyToReadMsg"] | components["schemas"]["ReplyReadMsg"] | components["schemas"]["RepliedWaitingMsg"] | components["schemas"]["HeardBackMsg"] | components["schemas"]["UndoMoveMsg"] | components["schemas"]["RecruiterChangedMsg"] | components["schemas"]["RecruiterSetMsg"] | components["schemas"]["RecruiterRemovedMsg"] | components["schemas"]["RecruiterChangedAgencyMsg"] | components["schemas"]["RecruiterSetAgencyMsg"] | components["schemas"]["RecruiterRemovedAgencyMsg"] | components["schemas"]["RecruiterChangedOnRoleMsg"] | components["schemas"]["RecruiterSetOnRoleMsg"] | components["schemas"]["RolePersonKeptAgencyMsg"] | components["schemas"]["RolePersonKeptUnnamedAgencyMsg"] | components["schemas"]["RolePersonKeptDirectMsg"]) | null;
+            msg?: (components["schemas"]["LinkAddedMsg"] | components["schemas"]["NoteAddedMsg"] | components["schemas"]["FileAddedMsg"] | components["schemas"]["EmailMsg"] | components["schemas"]["EmailNoSubjectMsg"] | components["schemas"]["EmailUnknownSenderMsg"] | components["schemas"]["EmailNoSubjectUnknownSenderMsg"] | components["schemas"]["CvSentMsg"] | components["schemas"]["CoverLetterSentMsg"] | components["schemas"]["DocumentSentMsg"] | components["schemas"]["RoundScheduledMsg"] | components["schemas"]["RoundAddedMsg"] | components["schemas"]["RoundCancelledMsg"] | components["schemas"]["RoundBackOnMsg"] | components["schemas"]["RoundDoneMsg"] | components["schemas"]["RoundRemovedMsg"] | components["schemas"]["RoundRescheduledMsg"] | components["schemas"]["RoundRescheduledReasonMsg"] | components["schemas"]["RoundRescheduledByMeMsg"] | components["schemas"]["RoundRescheduledByThemMsg"] | components["schemas"]["RoundRescheduledByMutualMsg"] | components["schemas"]["RoundRescheduledByNeitherMsg"] | components["schemas"]["RoundRescheduledByMeReasonMsg"] | components["schemas"]["RoundRescheduledByThemReasonMsg"] | components["schemas"]["RoundRescheduledByMutualReasonMsg"] | components["schemas"]["RoundRescheduledByNeitherReasonMsg"] | components["schemas"]["OfferReceivedYearMsg"] | components["schemas"]["OfferReceivedDayMsg"] | components["schemas"]["OfferReceivedNoFiguresMsg"] | components["schemas"]["OfferBackYearMsg"] | components["schemas"]["OfferBackDayMsg"] | components["schemas"]["OfferBackNoFiguresMsg"] | components["schemas"]["OfferAcceptedYearMsg"] | components["schemas"]["OfferAcceptedDayMsg"] | components["schemas"]["OfferAcceptedNoFiguresMsg"] | components["schemas"]["OfferDeclinedYearMsg"] | components["schemas"]["OfferDeclinedDayMsg"] | components["schemas"]["OfferDeclinedNoFiguresMsg"] | components["schemas"]["OfferWithdrawnYearMsg"] | components["schemas"]["OfferWithdrawnDayMsg"] | components["schemas"]["OfferWithdrawnNoFiguresMsg"] | components["schemas"]["OfferRemovedYearMsg"] | components["schemas"]["OfferRemovedDayMsg"] | components["schemas"]["OfferRemovedNoFiguresMsg"] | components["schemas"]["FollowedUpMsg"] | components["schemas"]["NoReplyMsg"] | components["schemas"]["ReplyToReadMsg"] | components["schemas"]["ReplyReadMsg"] | components["schemas"]["RepliedWaitingMsg"] | components["schemas"]["HeardBackMsg"] | components["schemas"]["UndoMoveMsg"] | components["schemas"]["RecruiterChangedMsg"] | components["schemas"]["RecruiterSetMsg"] | components["schemas"]["RecruiterRemovedMsg"] | components["schemas"]["RecruiterChangedAgencyMsg"] | components["schemas"]["RecruiterSetAgencyMsg"] | components["schemas"]["RecruiterRemovedAgencyMsg"] | components["schemas"]["RecruiterChangedOnRoleMsg"] | components["schemas"]["RecruiterSetOnRoleMsg"] | components["schemas"]["RolePersonKeptAgencyMsg"] | components["schemas"]["RolePersonKeptUnnamedAgencyMsg"] | components["schemas"]["RolePersonKeptDirectMsg"]) | null;
             /**
              * Occurred At
              * Format: date-time
@@ -2647,6 +2647,8 @@ export interface components {
             prep?: string | null;
             /** Questions */
             questions?: string | null;
+            /** Reschedule By */
+            reschedule_by?: ("me" | "them" | "mutual" | "neither") | null;
             /** Reschedule Reason */
             reschedule_reason?: string | null;
             /** Round */
@@ -3880,6 +3882,78 @@ export interface components {
             key: "event.roundRemoved";
             params: components["schemas"]["RoundParams"];
         };
+        /** RoundRescheduledByMeMsg */
+        RoundRescheduledByMeMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.roundRescheduledByMe";
+            params: components["schemas"]["RoundParams"];
+        };
+        /** RoundRescheduledByMeReasonMsg */
+        RoundRescheduledByMeReasonMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.roundRescheduledByMeReason";
+            params: components["schemas"]["RoundReasonParams"];
+        };
+        /** RoundRescheduledByMutualMsg */
+        RoundRescheduledByMutualMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.roundRescheduledByMutual";
+            params: components["schemas"]["RoundParams"];
+        };
+        /** RoundRescheduledByMutualReasonMsg */
+        RoundRescheduledByMutualReasonMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.roundRescheduledByMutualReason";
+            params: components["schemas"]["RoundReasonParams"];
+        };
+        /** RoundRescheduledByNeitherMsg */
+        RoundRescheduledByNeitherMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.roundRescheduledByNeither";
+            params: components["schemas"]["RoundParams"];
+        };
+        /** RoundRescheduledByNeitherReasonMsg */
+        RoundRescheduledByNeitherReasonMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.roundRescheduledByNeitherReason";
+            params: components["schemas"]["RoundReasonParams"];
+        };
+        /** RoundRescheduledByThemMsg */
+        RoundRescheduledByThemMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.roundRescheduledByThem";
+            params: components["schemas"]["RoundParams"];
+        };
+        /** RoundRescheduledByThemReasonMsg */
+        RoundRescheduledByThemReasonMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.roundRescheduledByThemReason";
+            params: components["schemas"]["RoundReasonParams"];
+        };
         /** RoundRescheduledMsg */
         RoundRescheduledMsg: {
             /**
@@ -3993,7 +4067,7 @@ export interface components {
             /** Link */
             link: string;
             /** Msg */
-            msg?: (components["schemas"]["LinkAddedMsg"] | components["schemas"]["NoteAddedMsg"] | components["schemas"]["FileAddedMsg"] | components["schemas"]["EmailMsg"] | components["schemas"]["EmailNoSubjectMsg"] | components["schemas"]["EmailUnknownSenderMsg"] | components["schemas"]["EmailNoSubjectUnknownSenderMsg"] | components["schemas"]["CvSentMsg"] | components["schemas"]["CoverLetterSentMsg"] | components["schemas"]["DocumentSentMsg"] | components["schemas"]["RoundScheduledMsg"] | components["schemas"]["RoundAddedMsg"] | components["schemas"]["RoundCancelledMsg"] | components["schemas"]["RoundBackOnMsg"] | components["schemas"]["RoundDoneMsg"] | components["schemas"]["RoundRemovedMsg"] | components["schemas"]["RoundRescheduledMsg"] | components["schemas"]["RoundRescheduledReasonMsg"] | components["schemas"]["OfferReceivedYearMsg"] | components["schemas"]["OfferReceivedDayMsg"] | components["schemas"]["OfferReceivedNoFiguresMsg"] | components["schemas"]["OfferBackYearMsg"] | components["schemas"]["OfferBackDayMsg"] | components["schemas"]["OfferBackNoFiguresMsg"] | components["schemas"]["OfferAcceptedYearMsg"] | components["schemas"]["OfferAcceptedDayMsg"] | components["schemas"]["OfferAcceptedNoFiguresMsg"] | components["schemas"]["OfferDeclinedYearMsg"] | components["schemas"]["OfferDeclinedDayMsg"] | components["schemas"]["OfferDeclinedNoFiguresMsg"] | components["schemas"]["OfferWithdrawnYearMsg"] | components["schemas"]["OfferWithdrawnDayMsg"] | components["schemas"]["OfferWithdrawnNoFiguresMsg"] | components["schemas"]["OfferRemovedYearMsg"] | components["schemas"]["OfferRemovedDayMsg"] | components["schemas"]["OfferRemovedNoFiguresMsg"] | components["schemas"]["FollowedUpMsg"] | components["schemas"]["NoReplyMsg"] | components["schemas"]["ReplyToReadMsg"] | components["schemas"]["ReplyReadMsg"] | components["schemas"]["RepliedWaitingMsg"] | components["schemas"]["HeardBackMsg"] | components["schemas"]["UndoMoveMsg"] | components["schemas"]["RecruiterChangedMsg"] | components["schemas"]["RecruiterSetMsg"] | components["schemas"]["RecruiterRemovedMsg"] | components["schemas"]["RecruiterChangedAgencyMsg"] | components["schemas"]["RecruiterSetAgencyMsg"] | components["schemas"]["RecruiterRemovedAgencyMsg"] | components["schemas"]["RecruiterChangedOnRoleMsg"] | components["schemas"]["RecruiterSetOnRoleMsg"] | components["schemas"]["RolePersonKeptAgencyMsg"] | components["schemas"]["RolePersonKeptUnnamedAgencyMsg"] | components["schemas"]["RolePersonKeptDirectMsg"]) | null;
+            msg?: (components["schemas"]["LinkAddedMsg"] | components["schemas"]["NoteAddedMsg"] | components["schemas"]["FileAddedMsg"] | components["schemas"]["EmailMsg"] | components["schemas"]["EmailNoSubjectMsg"] | components["schemas"]["EmailUnknownSenderMsg"] | components["schemas"]["EmailNoSubjectUnknownSenderMsg"] | components["schemas"]["CvSentMsg"] | components["schemas"]["CoverLetterSentMsg"] | components["schemas"]["DocumentSentMsg"] | components["schemas"]["RoundScheduledMsg"] | components["schemas"]["RoundAddedMsg"] | components["schemas"]["RoundCancelledMsg"] | components["schemas"]["RoundBackOnMsg"] | components["schemas"]["RoundDoneMsg"] | components["schemas"]["RoundRemovedMsg"] | components["schemas"]["RoundRescheduledMsg"] | components["schemas"]["RoundRescheduledReasonMsg"] | components["schemas"]["RoundRescheduledByMeMsg"] | components["schemas"]["RoundRescheduledByThemMsg"] | components["schemas"]["RoundRescheduledByMutualMsg"] | components["schemas"]["RoundRescheduledByNeitherMsg"] | components["schemas"]["RoundRescheduledByMeReasonMsg"] | components["schemas"]["RoundRescheduledByThemReasonMsg"] | components["schemas"]["RoundRescheduledByMutualReasonMsg"] | components["schemas"]["RoundRescheduledByNeitherReasonMsg"] | components["schemas"]["OfferReceivedYearMsg"] | components["schemas"]["OfferReceivedDayMsg"] | components["schemas"]["OfferReceivedNoFiguresMsg"] | components["schemas"]["OfferBackYearMsg"] | components["schemas"]["OfferBackDayMsg"] | components["schemas"]["OfferBackNoFiguresMsg"] | components["schemas"]["OfferAcceptedYearMsg"] | components["schemas"]["OfferAcceptedDayMsg"] | components["schemas"]["OfferAcceptedNoFiguresMsg"] | components["schemas"]["OfferDeclinedYearMsg"] | components["schemas"]["OfferDeclinedDayMsg"] | components["schemas"]["OfferDeclinedNoFiguresMsg"] | components["schemas"]["OfferWithdrawnYearMsg"] | components["schemas"]["OfferWithdrawnDayMsg"] | components["schemas"]["OfferWithdrawnNoFiguresMsg"] | components["schemas"]["OfferRemovedYearMsg"] | components["schemas"]["OfferRemovedDayMsg"] | components["schemas"]["OfferRemovedNoFiguresMsg"] | components["schemas"]["FollowedUpMsg"] | components["schemas"]["NoReplyMsg"] | components["schemas"]["ReplyToReadMsg"] | components["schemas"]["ReplyReadMsg"] | components["schemas"]["RepliedWaitingMsg"] | components["schemas"]["HeardBackMsg"] | components["schemas"]["UndoMoveMsg"] | components["schemas"]["RecruiterChangedMsg"] | components["schemas"]["RecruiterSetMsg"] | components["schemas"]["RecruiterRemovedMsg"] | components["schemas"]["RecruiterChangedAgencyMsg"] | components["schemas"]["RecruiterSetAgencyMsg"] | components["schemas"]["RecruiterRemovedAgencyMsg"] | components["schemas"]["RecruiterChangedOnRoleMsg"] | components["schemas"]["RecruiterSetOnRoleMsg"] | components["schemas"]["RolePersonKeptAgencyMsg"] | components["schemas"]["RolePersonKeptUnnamedAgencyMsg"] | components["schemas"]["RolePersonKeptDirectMsg"]) | null;
             /** Own Title */
             own_title?: string | null;
             /** Round */
@@ -4144,7 +4218,7 @@ export interface components {
              */
             kind: "stage-event" | "other-event" | "interview" | "offer-reply" | "meeting" | "role" | "role-added" | "role-passed" | "company" | "agency" | "contact" | "contact-waiting" | "contact-chased" | "contact-closed" | "contact-to-read" | "note";
             /** Msg */
-            msg?: (components["schemas"]["LinkAddedMsg"] | components["schemas"]["NoteAddedMsg"] | components["schemas"]["FileAddedMsg"] | components["schemas"]["EmailMsg"] | components["schemas"]["EmailNoSubjectMsg"] | components["schemas"]["EmailUnknownSenderMsg"] | components["schemas"]["EmailNoSubjectUnknownSenderMsg"] | components["schemas"]["CvSentMsg"] | components["schemas"]["CoverLetterSentMsg"] | components["schemas"]["DocumentSentMsg"] | components["schemas"]["RoundScheduledMsg"] | components["schemas"]["RoundAddedMsg"] | components["schemas"]["RoundCancelledMsg"] | components["schemas"]["RoundBackOnMsg"] | components["schemas"]["RoundDoneMsg"] | components["schemas"]["RoundRemovedMsg"] | components["schemas"]["RoundRescheduledMsg"] | components["schemas"]["RoundRescheduledReasonMsg"] | components["schemas"]["OfferReceivedYearMsg"] | components["schemas"]["OfferReceivedDayMsg"] | components["schemas"]["OfferReceivedNoFiguresMsg"] | components["schemas"]["OfferBackYearMsg"] | components["schemas"]["OfferBackDayMsg"] | components["schemas"]["OfferBackNoFiguresMsg"] | components["schemas"]["OfferAcceptedYearMsg"] | components["schemas"]["OfferAcceptedDayMsg"] | components["schemas"]["OfferAcceptedNoFiguresMsg"] | components["schemas"]["OfferDeclinedYearMsg"] | components["schemas"]["OfferDeclinedDayMsg"] | components["schemas"]["OfferDeclinedNoFiguresMsg"] | components["schemas"]["OfferWithdrawnYearMsg"] | components["schemas"]["OfferWithdrawnDayMsg"] | components["schemas"]["OfferWithdrawnNoFiguresMsg"] | components["schemas"]["OfferRemovedYearMsg"] | components["schemas"]["OfferRemovedDayMsg"] | components["schemas"]["OfferRemovedNoFiguresMsg"] | components["schemas"]["FollowedUpMsg"] | components["schemas"]["NoReplyMsg"] | components["schemas"]["ReplyToReadMsg"] | components["schemas"]["ReplyReadMsg"] | components["schemas"]["RepliedWaitingMsg"] | components["schemas"]["HeardBackMsg"] | components["schemas"]["UndoMoveMsg"] | components["schemas"]["RecruiterChangedMsg"] | components["schemas"]["RecruiterSetMsg"] | components["schemas"]["RecruiterRemovedMsg"] | components["schemas"]["RecruiterChangedAgencyMsg"] | components["schemas"]["RecruiterSetAgencyMsg"] | components["schemas"]["RecruiterRemovedAgencyMsg"] | components["schemas"]["RecruiterChangedOnRoleMsg"] | components["schemas"]["RecruiterSetOnRoleMsg"] | components["schemas"]["RolePersonKeptAgencyMsg"] | components["schemas"]["RolePersonKeptUnnamedAgencyMsg"] | components["schemas"]["RolePersonKeptDirectMsg"]) | null;
+            msg?: (components["schemas"]["LinkAddedMsg"] | components["schemas"]["NoteAddedMsg"] | components["schemas"]["FileAddedMsg"] | components["schemas"]["EmailMsg"] | components["schemas"]["EmailNoSubjectMsg"] | components["schemas"]["EmailUnknownSenderMsg"] | components["schemas"]["EmailNoSubjectUnknownSenderMsg"] | components["schemas"]["CvSentMsg"] | components["schemas"]["CoverLetterSentMsg"] | components["schemas"]["DocumentSentMsg"] | components["schemas"]["RoundScheduledMsg"] | components["schemas"]["RoundAddedMsg"] | components["schemas"]["RoundCancelledMsg"] | components["schemas"]["RoundBackOnMsg"] | components["schemas"]["RoundDoneMsg"] | components["schemas"]["RoundRemovedMsg"] | components["schemas"]["RoundRescheduledMsg"] | components["schemas"]["RoundRescheduledReasonMsg"] | components["schemas"]["RoundRescheduledByMeMsg"] | components["schemas"]["RoundRescheduledByThemMsg"] | components["schemas"]["RoundRescheduledByMutualMsg"] | components["schemas"]["RoundRescheduledByNeitherMsg"] | components["schemas"]["RoundRescheduledByMeReasonMsg"] | components["schemas"]["RoundRescheduledByThemReasonMsg"] | components["schemas"]["RoundRescheduledByMutualReasonMsg"] | components["schemas"]["RoundRescheduledByNeitherReasonMsg"] | components["schemas"]["OfferReceivedYearMsg"] | components["schemas"]["OfferReceivedDayMsg"] | components["schemas"]["OfferReceivedNoFiguresMsg"] | components["schemas"]["OfferBackYearMsg"] | components["schemas"]["OfferBackDayMsg"] | components["schemas"]["OfferBackNoFiguresMsg"] | components["schemas"]["OfferAcceptedYearMsg"] | components["schemas"]["OfferAcceptedDayMsg"] | components["schemas"]["OfferAcceptedNoFiguresMsg"] | components["schemas"]["OfferDeclinedYearMsg"] | components["schemas"]["OfferDeclinedDayMsg"] | components["schemas"]["OfferDeclinedNoFiguresMsg"] | components["schemas"]["OfferWithdrawnYearMsg"] | components["schemas"]["OfferWithdrawnDayMsg"] | components["schemas"]["OfferWithdrawnNoFiguresMsg"] | components["schemas"]["OfferRemovedYearMsg"] | components["schemas"]["OfferRemovedDayMsg"] | components["schemas"]["OfferRemovedNoFiguresMsg"] | components["schemas"]["FollowedUpMsg"] | components["schemas"]["NoReplyMsg"] | components["schemas"]["ReplyToReadMsg"] | components["schemas"]["ReplyReadMsg"] | components["schemas"]["RepliedWaitingMsg"] | components["schemas"]["HeardBackMsg"] | components["schemas"]["UndoMoveMsg"] | components["schemas"]["RecruiterChangedMsg"] | components["schemas"]["RecruiterSetMsg"] | components["schemas"]["RecruiterRemovedMsg"] | components["schemas"]["RecruiterChangedAgencyMsg"] | components["schemas"]["RecruiterSetAgencyMsg"] | components["schemas"]["RecruiterRemovedAgencyMsg"] | components["schemas"]["RecruiterChangedOnRoleMsg"] | components["schemas"]["RecruiterSetOnRoleMsg"] | components["schemas"]["RolePersonKeptAgencyMsg"] | components["schemas"]["RolePersonKeptUnnamedAgencyMsg"] | components["schemas"]["RolePersonKeptDirectMsg"]) | null;
             /** Note Title */
             note_title?: string | null;
             offer?: components["schemas"]["TimelineOfferFigure"] | null;

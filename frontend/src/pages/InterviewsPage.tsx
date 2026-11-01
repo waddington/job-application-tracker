@@ -2,7 +2,6 @@ import {
   ActionIcon,
   Anchor,
   Badge,
-  Button,
   Card,
   Group,
   Loader,
@@ -20,37 +19,27 @@ import { useTranslation } from "react-i18next";
 import { useInterviews, type Interview } from "../api/interviewHooks";
 import { InterviewFormModal } from "../components/InterviewFormModal";
 import { roundStatus } from "../components/Interviews";
-import { RescheduledBadge, RescheduleModal } from "../components/Reschedule";
+import { RescheduleButton, RescheduledBadge } from "../components/Reschedule";
 import { roundLabel } from "../utils/rounds";
 import { formatDateTime } from "../utils/time";
 
 /** Edit a round, or move a booked one to another time. */
 function RoundActions({ interview }: { interview: Interview }) {
   const { t } = useTranslation("interviews");
-  const [open, setOpen] = useState<"edit" | "reschedule" | null>(null);
+  const [editing, setEditing] = useState(false);
   const label = roundLabel(interview);
   return (
     <Group gap={4} wrap="nowrap" justify="flex-end">
-      {interview.status === "scheduled" && interview.starts_at && (
-        <Button
-          size="compact-xs"
-          variant="light"
-          aria-label={t("reschedule.named", { label })}
-          onClick={() => setOpen("reschedule")}
-        >
-          {t("reschedule.action")}
-        </Button>
-      )}
+      <RescheduleButton interview={interview} />
       <Tooltip label={t("edit")}>
-        <ActionIcon variant="subtle" aria-label={t("editNamed", { label })} onClick={() => setOpen("edit")}>
+        <ActionIcon variant="subtle" aria-label={t("editNamed", { label })} onClick={() => setEditing(true)}>
           <IconPencil size={16} />
         </ActionIcon>
       </Tooltip>
-      {open === "reschedule" && <RescheduleModal interview={interview} onClose={() => setOpen(null)} />}
-      {open === "edit" && (
+      {editing && (
         <InterviewFormModal
           opened
-          onClose={() => setOpen(null)}
+          onClose={() => setEditing(false)}
           applicationId={interview.application_id}
           interview={interview}
           nextRound={interview.round ?? 1}
@@ -70,59 +59,62 @@ function InterviewTable({ interviews, empty }: { interviews: Interview[]; empty:
     );
   }
   return (
-    <Table highlightOnHover>
-      <Table.Thead>
-        <Table.Tr>
-          <Table.Th>{t("page.when")}</Table.Th>
-          <Table.Th>{t("page.round")}</Table.Th>
-          <Table.Th>{t("page.application")}</Table.Th>
-          <Table.Th>{t("page.status")}</Table.Th>
-          <Table.Th />
-        </Table.Tr>
-      </Table.Thead>
-      <Table.Tbody>
-        {interviews.map((i) => {
-          const when = i.starts_at ?? i.deadline_at;
-          return (
-            <Table.Tr key={i.id}>
-              <Table.Td>
-                <Text size="sm">
-                  {!when
-                    ? t("notBooked")
-                    : i.starts_at
-                      ? formatDateTime(when)
-                      : t("due", { when: formatDateTime(when) })}
-                </Text>
-              </Table.Td>
-              <Table.Td>
-                <Text size="sm" fw={600}>
-                  {roundLabel(i)}
-                </Text>
-              </Table.Td>
-              <Table.Td>
-                <Anchor component={Link} to={`/applications/${i.application_id}`} size="sm">
-                  {i.company_name}
-                </Anchor>
-                <Text size="xs" c="dimmed">
-                  {i.role_title}
-                </Text>
-              </Table.Td>
-              <Table.Td>
-                <Group gap={4}>
-                  <Badge size="sm" variant="light" color={roundStatus(i).color}>
-                    {roundStatus(i).label}
-                  </Badge>
-                  <RescheduledBadge interview={i} />
-                </Group>
-              </Table.Td>
-              <Table.Td>
-                <RoundActions interview={i} />
-              </Table.Td>
-            </Table.Tr>
-          );
-        })}
-      </Table.Tbody>
-    </Table>
+    // On a phone the row is wider than the card: it scrolls sideways, so its buttons can be reached.
+    <Table.ScrollContainer minWidth={640}>
+      <Table highlightOnHover>
+        <Table.Thead>
+          <Table.Tr>
+            <Table.Th>{t("page.when")}</Table.Th>
+            <Table.Th>{t("page.round")}</Table.Th>
+            <Table.Th>{t("page.application")}</Table.Th>
+            <Table.Th>{t("page.status")}</Table.Th>
+            <Table.Th />
+          </Table.Tr>
+        </Table.Thead>
+        <Table.Tbody>
+          {interviews.map((i) => {
+            const when = i.starts_at ?? i.deadline_at;
+            return (
+              <Table.Tr key={i.id}>
+                <Table.Td>
+                  <Text size="sm">
+                    {!when
+                      ? t("notBooked")
+                      : i.starts_at
+                        ? formatDateTime(when)
+                        : t("due", { when: formatDateTime(when) })}
+                  </Text>
+                </Table.Td>
+                <Table.Td>
+                  <Text size="sm" fw={600}>
+                    {roundLabel(i)}
+                  </Text>
+                </Table.Td>
+                <Table.Td>
+                  <Anchor component={Link} to={`/applications/${i.application_id}`} size="sm">
+                    {i.company_name}
+                  </Anchor>
+                  <Text size="xs" c="dimmed">
+                    {i.role_title}
+                  </Text>
+                </Table.Td>
+                <Table.Td>
+                  <Group gap={4}>
+                    <Badge size="sm" variant="light" color={roundStatus(i).color}>
+                      {roundStatus(i).label}
+                    </Badge>
+                    <RescheduledBadge interview={i} />
+                  </Group>
+                </Table.Td>
+                <Table.Td>
+                  <RoundActions interview={i} />
+                </Table.Td>
+              </Table.Tr>
+            );
+          })}
+        </Table.Tbody>
+      </Table>
+    </Table.ScrollContainer>
   );
 }
 

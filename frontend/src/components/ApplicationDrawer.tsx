@@ -47,6 +47,7 @@ import { ago, formatDate, formatDateTime } from "../utils/time";
 import { AtAGlance } from "./AtAGlance";
 import { DuplicateWarning } from "./DuplicateWarning";
 import { RoundBadge } from "./Interviews";
+import { RescheduleButton } from "./Reschedule";
 import { StageBadge } from "./StageBadge";
 import { ApplicationWaiting } from "./Waiting";
 
@@ -141,7 +142,13 @@ function LogActivity({ id }: { id: string }) {
 }
 
 /** Title, company, badges, move/undo and key facts. Used by the drawer and the full page. */
-export function ApplicationSummary({ app }: { app: ApplicationDetail }) {
+export function ApplicationSummary({
+  app,
+  canReschedule = false, // for the quick view: the application's page has it on each round
+}: {
+  app: ApplicationDetail;
+  canReschedule?: boolean;
+}) {
   const { t } = useTranslation("applications");
   const { data: workflow } = useWorkflow();
   const stages = stageLookup(workflow);
@@ -170,6 +177,15 @@ export function ApplicationSummary({ app }: { app: ApplicationDetail }) {
       <Group gap="xs">
         <StageBadge id={app.stage} stage={stages.get(app.stage)} fallback={app.stage_name} />
         <RoundBadge round={app.current_round} stageKind={app.stage_kind} />
+        {canReschedule && app.current_round && app.stage_kind === "active" && (
+          <RescheduleButton
+            interview={{
+              ...app.current_round,
+              company_name: app.company_name,
+              role_title: app.role_title,
+            }}
+          />
+        )}
         {app.stale && (
           <Badge color="red" variant="light">
             {t("summary.needsChasing")}
@@ -305,7 +321,7 @@ export function ApplicationDrawer({ id, onClose }: { id: string | null; onClose:
         <Loader />
       ) : (
         <Stack>
-          <ApplicationSummary app={app} />
+          <ApplicationSummary app={app} canReschedule />
           <AtAGlance app={app} />
           <Button
             component={Link}

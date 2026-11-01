@@ -243,6 +243,7 @@ const fields = {
   recruiter_name: "recruiter_name",
   relation: "relation",
   reply_to_read_since: "reply_to_read_since",
+  reschedule_by: "reschedule_by",
   reschedule_reason: "reschedule_reason",
   respond_by: "respond_by",
   role_id: "role_id",

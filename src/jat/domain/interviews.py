@@ -7,6 +7,7 @@ the next one still to happen, or, once they have all happened, the latest one.
 
 from collections.abc import Iterable
 from datetime import datetime
+from typing import Any
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, load_only
@@ -98,25 +99,52 @@ _MESSAGES: dict[str, svc.EventMsgKey] = {
 }
 
 
-def record(session: Session, app: Application, interview: Interview, what: str, reason: str = "") -> None:
+# Who needed a reschedule: its message, its message with a reason, and the words its summary says.
+_RESCHEDULED_BY: dict[str, tuple[svc.EventMsgKey, svc.EventMsgKey, str]] = {
+    "me": ("event.roundRescheduledByMe", "event.roundRescheduledByMeReason", "you needed the change"),
+    "them": ("event.roundRescheduledByThem", "event.roundRescheduledByThemReason", "they needed the change"),
+    "mutual": ("event.roundRescheduledByMutual", "event.roundRescheduledByMutualReason", "you both needed the change"),
+    "neither": (
+        "event.roundRescheduledByNeither",
+        "event.roundRescheduledByNeitherReason",
+        "not down to either of you",
+    ),
+}
+
+
+def record(
+    session: Session,
+    app: Application,
+    interview: Interview,
+    what: str,
+    reason: str = "",
+    by: str | None = None,
+    moved_from: datetime | None = None,
+) -> None:
     """Put an interview change on the application's timeline ("Round 2 · System design test scheduled").
 
     The message saves the label's raw parts, not the English label, so a language can build its own
-    (`roundLabel` in the frontend's utils/rounds.ts matches `label` above).
+    (`roundLabel` in the frontend's utils/rounds.ts matches `label` above). A reschedule also saves
+    `data.reschedule`: this move's own old and new time, who and why (null when not said), so a
+    round's history keeps every move. Entries from before this have none of it.
     """
     params: dict[str, str | int | None] = {"round": interview.round, "title": interview.title, "kind": interview.kind}
     key = _MESSAGES[what]
+    reason_key: svc.EventMsgKey = "event.roundRescheduledReason"
     summary = f"{label(interview)} {what}"
+    if by:
+        key, reason_key, words = _RESCHEDULED_BY[by]
+        summary = f"{summary} ({words})"
     if reason:
-        key = "event.roundRescheduledReason"
+        key = reason_key
         params["reason"] = reason
         summary = f"{summary}: {reason}"
-    svc.log_message(
-        session,
-        app,
-        "interview",
-        key=key,
-        params=params,
-        summary=summary,
-        data={"interview_id": interview.id, "round": interview.round, "status": interview.status},
-    )
+    data: dict[str, Any] = {"interview_id": interview.id, "round": interview.round, "status": interview.status}
+    if moved_from and interview.starts_at:
+        data["reschedule"] = {
+            "from": moved_from.isoformat(),
+            "to": interview.starts_at.isoformat(),
+            "by": by,
+            "reason": reason or None,
+        }
+    svc.log_message(session, app, "interview", key=key, params=params, summary=summary, data=data)

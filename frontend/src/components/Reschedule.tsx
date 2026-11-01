@@ -1,10 +1,12 @@
-import { Badge, Button, Group, Modal, Stack, Text, Textarea, Tooltip } from "@mantine/core";
+import { Badge, Button, Group, Modal, Select, Stack, Text, Textarea, Tooltip } from "@mantine/core";
 import { DateTimePicker } from "@mantine/dates";
 import dayjs from "dayjs";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import type { Schemas } from "../api/client";
 import { useSaveInterview, type Interview } from "../api/interviewHooks";
+import { i18n } from "../i18n";
 import { roundLabel } from "../utils/rounds";
 import { formatDateTime } from "../utils/time";
 
@@ -37,29 +39,66 @@ export function RescheduledBadge({
   );
 }
 
+/** What the dialog needs of a round: the board's and quick view's summary has no end time, and needn't. */
+type Reschedulable = Pick<Interview, "id" | "round" | "title" | "kind" | "starts_at"> & {
+  company_name: string;
+  role_title: string;
+};
+type RescheduleBy = NonNullable<Schemas["InterviewPatch"]["reschedule_by"]>;
+const WHO = [
+  { value: "me", key: "interviews:reschedule.whoOptions.me" },
+  { value: "them", key: "interviews:reschedule.whoOptions.them" },
+  { value: "mutual", key: "interviews:reschedule.whoOptions.mutual" },
+  { value: "neither", key: "interviews:reschedule.whoOptions.neither" },
+] as const satisfies readonly { value: RescheduleBy; key: string }[];
+
+/** The Reschedule button and its dialog, for a booked round; nothing for any other. */
+export function RescheduleButton({ interview }: { interview: Reschedulable & { status: string } }) {
+  const { t } = useTranslation("interviews");
+  const [open, setOpen] = useState(false);
+  if (interview.status !== "scheduled" || !interview.starts_at) return null;
+  return (
+    <>
+      <Button
+        size="compact-xs"
+        variant="light"
+        aria-label={t("reschedule.named", { label: roundLabel(interview) })}
+        onClick={() => setOpen(true)}
+      >
+        {t("reschedule.action")}
+      </Button>
+      {open && <RescheduleModal interview={interview} onClose={() => setOpen(false)} />}
+    </>
+  );
+}
+
 /**
- * Move a booked round to a new time, and say why if you like (it goes on the application's
- * timeline). Its end moves with it, so it lasts as long as before.
+ * Move a booked round to a new time, say who needed that and, if you like, why (they go on the
+ * application's timeline). The API moves its end with it, so it lasts as long as before.
  */
-export function RescheduleModal({ interview, onClose }: { interview: Interview; onClose: () => void }) {
+export function RescheduleModal({ interview, onClose }: { interview: Reschedulable; onClose: () => void }) {
   const { t } = useTranslation(["interviews", "common"]);
   const save = useSaveInterview();
   const [when, setWhen] = useState<string | null>(
     interview.starts_at ? dayjs(interview.starts_at).format(PICKER) : null,
   );
+  const [who, setWho] = useState<RescheduleBy | null>(null);
+  const [whoMissing, setWhoMissing] = useState(false);
   const [reason, setReason] = useState("");
   // To the minute: a change of seconds or fractions alone is no move.
   const moved = when !== null && !dayjs(when).isSame(dayjs(interview.starts_at), "minute");
   const submit = () => {
     if (!when) return;
-    const startsAt = dayjs(when);
-    const length = interview.ends_at ? dayjs(interview.ends_at).diff(dayjs(interview.starts_at)) : null;
+    if (!who) {
+      setWhoMissing(true);
+      return;
+    }
     save.mutate(
       {
         id: interview.id,
         body: {
-          starts_at: startsAt.toISOString(),
-          ...(length !== null ? { ends_at: startsAt.add(length, "ms").toISOString() } : {}),
+          starts_at: dayjs(when).toISOString(),
+          reschedule_by: who,
           reschedule_reason: reason.trim() || null,
         },
       },
@@ -87,6 +126,15 @@ export function RescheduleModal({ interview, onClose }: { interview: Interview; 
             : t("reschedule.where", { company: interview.company_name, role: interview.role_title })}
         </Text>
         <DateTimePicker label={t("reschedule.newTime")} value={when} onChange={setWhen} data-autofocus />
+        <Select
+          label={t("reschedule.who")}
+          required
+          allowDeselect={false}
+          data={WHO.map(({ value, key }) => ({ value, label: i18n.t(key) }))}
+          value={who}
+          error={whoMissing && !who ? t("reschedule.whoRequired") : undefined}
+          onChange={(value) => setWho(value as RescheduleBy | null)}
+        />
         <Textarea
           label={t("reschedule.why")}
           placeholder={t("reschedule.whyPlaceholder")}

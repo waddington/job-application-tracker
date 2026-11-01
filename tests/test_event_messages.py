@@ -188,6 +188,23 @@ def test_what_you_log_has_no_message_even_if_it_claims_one(client, seeded):
     assert r.json()["msg"] is None and r.json()["data"] == {"topic": "pay"} and r.json()["summary"] == "Spoke to Alex"
 
 
+def test_what_you_log_cant_claim_to_be_a_reschedule(client, seeded):
+    app_id = _app(client, seeded)
+    claimed = {"from": "2030-01-07T10:00:00+00:00", "to": "2030-01-08T10:00:00+00:00", "by": "them", "reason": "x"}
+    for kind in ("interview", "manual"):
+        r = client.post(
+            f"/api/v1/applications/{app_id}/activities",
+            json={"kind": kind, "summary": "Typed", "data": {"topic": "pay", "reschedule": claimed}},
+        )
+        assert r.status_code == 201, r.text
+        assert r.json()["data"] == {"topic": "pay"}
+    followed = client.post(
+        f"/api/v1/applications/{app_id}/activities?app_text=followed_up",
+        json={"kind": "manual", "data": {"reschedule": claimed}},
+    )
+    assert "reschedule" not in followed.json()["data"]
+
+
 def test_a_message_merges_with_what_data_already_holds():
     session = SimpleNamespace(add=lambda _: None, flush=lambda: None)
     app = SimpleNamespace(id="a", last_activity_at=None)
@@ -281,6 +298,11 @@ ROUND_STEPS = {
     "event.roundRemoved": ("scheduled", None),
     "event.roundRescheduled": ("scheduled", {"starts_at": LATER}),
     "event.roundRescheduledReason": ("scheduled", {"starts_at": LATER}),
+    **{
+        f"event.roundRescheduledBy{who.title()}{reason}": ("scheduled", {"starts_at": LATER, "reschedule_by": who})
+        for who in ("me", "them", "mutual", "neither")
+        for reason in ("", "Reason")
+    },
 }
 # The same for an offer: its status when made, then the status it changes to.
 OFFER_STEPS = {
