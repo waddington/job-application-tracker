@@ -1,8 +1,136 @@
+import json
 import unittest
+from itertools import product
 
 from tools.pm import render, task_page
-from tools.pm.live import Commit, Snapshot, TaskEvidence
+from tools.pm.live import Commit, Snapshot, TaskEvidence, parse_branch_roadmap
 from tools.pm.roadmap import BranchRoadmap, Live, Phase, PullRequest, Task, apply_live, from_data
+from tools.pm.yamlish import parse
+
+
+class BadBranchFieldTests(unittest.TestCase):
+    """Whatever a branch's file holds, every page renders, the bad value is listed and the rest still show."""
+
+    FIELDS = ("name", "owner", "type", "status", "severity", "detail", "estimate_h", "depends", "prd", "rfc")
+    VALUES = ("7", "true", "[1, 2]", "{a: 1}", '"nan"', '"inf"', "null", '""')
+
+    def render_all(self, line):
+        base = "phases:\n  - id: P\n    name: n\n    tasks:\n      - {id: a, name: A}\n"
+        text = f"{base}      - {{id: good, name: Good}}\n      - {line}\n"
+        branch = parse_branch_roadmap("worktree-new", "sha", text, base)
+        main = from_data(parse(base))
+        main.repo = "o/d"
+        live = Live(branches_ahead={"worktree-new": 1}, branch_roadmaps={"worktree-new": branch})
+        roadmap = apply_live(main, live)
+        snapshot = Snapshot(live=live)
+        render.overview(roadmap, snapshot)
+        render.board(roadmap, snapshot)
+        render.roadmap_page(roadmap, snapshot)
+        json.dumps(render.as_json(roadmap, snapshot))
+        for task in roadmap.tasks:
+            task_page.task_page(task, roadmap, TaskEvidence())
+        return roadmap
+
+    def test_any_value_in_any_field(self):
+        for name, value in product(self.FIELDS, self.VALUES):
+            with self.subTest(field=name, value=value):
+                roadmap = self.render_all(f"{{id: odd, {name}: {value}}}")
+                self.assertIsNotNone(roadmap.task("good"))
+
+    def test_bad_documents_and_estimates_are_listed(self):
+        for line, words in (
+            ("{id: odd, prd: 7}", "odd: prd must be a path"),
+            ("{id: odd, rfc: true}", "odd: rfc must be a path"),
+            ('{id: odd, estimate_h: "nan"}', "odd: estimate_h must be a number"),
+        ):
+            with self.subTest(line=line):
+                roadmap = self.render_all(line)
+                self.assertEqual(roadmap.errors, [f"worktree-new: {words}"])
+                self.assertIsNotNone(roadmap.task("odd"))
+
+    def test_a_phase_with_a_bad_shape_leaves_the_others(self):
+        base = "phases:\n  - id: P\n    tasks:\n      - {id: a}\n"
+        text = f"{base}      - {{id: good}}\n  - id: Q\n    tasks: 5\n"
+        branch = parse_branch_roadmap("b", "sha", text, base)
+        self.assertEqual([t.id for p in branch.phases for t in p.tasks], ["good"])
+        self.assertEqual(branch.errors, ["Q: tasks must be a list"])
+
+
+class SiblingTests(unittest.TestCase):
+    """A task added by another task's branch, which has a draft PR."""
+
+    def setUp(self):
+        main = from_data({"phases": [{"id": "P", "tasks": [{"id": "own"}]}]})
+        sibling = Task("sib", "Sibling", "P")
+        self.draft = PullRequest(901, "PR", "OPEN", "worktree-own", "https://example.com/901", is_draft=True)
+        live = Live(
+            branches_ahead={"worktree-own": 2},
+            prs=[self.draft],
+            branch_roadmaps={"worktree-own": BranchRoadmap("worktree-own", "s", [Phase("P", "n", "", [sibling])])},
+        )
+        self.roadmap = apply_live(main, live)
+        self.task = self.roadmap.task("sib")
+
+    def test_it_uses_the_branch_and_pr_it_lives_on(self):
+        self.assertEqual(
+            (self.task.work_branch, self.task.pr, self.task.commits_ahead), ("worktree-own", self.draft, 2)
+        )
+
+    def test_its_page_says_only_what_is_true(self):
+        evidence = TaskEvidence("branch", ahead=2, behind=0)
+        html = task_page.task_page(self.task, self.roadmap, evidence, [self.draft])
+        self.assertIn("in PR #901, open as a draft", html)
+        self.assertIn("<code>worktree-own</code>", html)
+        for false in ("no open PR says otherwise", "worktree-sib", "not started", "None yet", "No branch yet"):
+            self.assertNotIn(false, html)
+
+    def test_its_own_branch_takes_over_once_it_has_one(self):
+        main = from_data({"phases": [{"id": "P", "tasks": [{"id": "own"}]}]})
+        branch = BranchRoadmap("worktree-own", "s", [Phase("P", "n", "", [Task("sib", "S", "P")])])
+        live = Live(branches_ahead={"worktree-sib": 1}, branch_roadmaps={"worktree-own": branch})
+        task = apply_live(main, live).task("sib")
+        self.assertEqual((task.work_branch, task.status), ("worktree-sib", "building"))
+
+
+class GitHubNeverAnsweredTests(unittest.TestCase):
+    def setUp(self):
+        main = from_data({"phases": [{"id": "P", "tasks": [{"id": "a"}, {"id": "b"}, {"id": "c", "status": "done"}]}]})
+        extra = BranchRoadmap("worktree-new", "s", [Phase("P", "n", "", [Task("new", "New", "P")])])
+        self.live = Live(
+            branches_ahead={"worktree-a": 1, "worktree-new": 3},
+            branch_roadmaps={"worktree-new": extra},
+            prs_known=False,
+        )
+        self.roadmap = apply_live(main, self.live)
+        self.snapshot = Snapshot(live=self.live, github_ok=False)
+
+    def test_commits_dont_claim_building(self):
+        task = self.roadmap.task("a")
+        self.assertEqual(task.status, "unknown")
+        self.assertIn("1 commit on worktree-a; its PR is unknown", task.status_source)
+
+    def test_branch_tasks_are_held_out_of_the_totals_and_that_is_said(self):
+        self.assertIsNone(self.roadmap.task("new"))
+        self.assertEqual(self.roadmap.summary()["tasks"], 3)
+        self.assertIn("held back", render.problems(self.roadmap, self.snapshot))
+
+    def test_the_task_page_claims_nothing_about_prs(self):
+        for task_id, unlike in (("a", "None yet"), ("b", "no open PR says otherwise"), ("c", "with no PR or branch")):
+            html = task_page.task_page(self.roadmap.task(task_id), self.roadmap, TaskEvidence())
+            self.assertIn("GitHub hasn't answered", html, task_id)
+            self.assertNotIn(unlike, html, task_id)
+            self.assertNotIn("not started", html, task_id)
+
+    def test_the_board_shows_an_unknown_column_only_when_needed(self):
+        self.assertIn('pill unknown">unknown', render.board(self.roadmap, self.snapshot))
+        known = apply_live(from_data({"phases": [{"id": "P", "tasks": [{"id": "a"}]}]}), Live())
+        self.assertNotIn('pill unknown">unknown', render.board(known, Snapshot(live=Live())))
+
+    def test_one_commit_and_many(self):
+        known = apply_live(
+            from_data({"phases": [{"id": "P", "tasks": [{"id": "a"}]}]}), Live(branches_ahead={"worktree-a": 1})
+        )
+        self.assertEqual(known.task("a").status_source, "1 commit on worktree-a")
 
 
 class DraftAndBranchTests(unittest.TestCase):
@@ -51,7 +179,7 @@ class DraftAndBranchTests(unittest.TestCase):
         task = self.roadmap.task("new")
         html = task_page.task_page(task, self.roadmap, TaskEvidence())
         self.assertIn("Only on <code>worktree-new</code> so far, not on main", html)
-        self.assertIn("The roadmap on <code>worktree-new</code> has it", html)
+        self.assertIn("Only on the roadmap of <code>worktree-new</code> so far, with no PR yet.", html)
         self.assertNotIn("docs/ROADMAP.yaml", html)
 
     def test_a_draft_task_page_gives_the_draft_as_the_reason(self):

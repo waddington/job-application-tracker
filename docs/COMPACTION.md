@@ -542,9 +542,13 @@ is that stopped process, not a fault. To preview a branch, serve it on a spare p
   instead); a swimlane bar is a PR, not an agent, because this project keeps no workflow journals.
 - **Drafts and branches:** a draft PR's task is Building, a ready one's Review. A task a `worktree-*` branch added to its own
   roadmap shows marked "on its branch", read once per branch commit (`git show`; only what the branch added since it left main).
-  Main's definition wins for a task on both. Left out: `worktree-agent-*`, branches whose PR merged or closed, and an open
-  PR's branch not fetched here (the dashboard doesn't fetch). A bad roadmap on a branch keeps its last tasks and shows under Problems.
-- **Known gaps, left:** with GitHub down since startup, a task page reads as if it has no PR; "Tests added" counts a test
+  Main's definition wins for a task on both. Left out: `worktree-agent-*` and branches whose PR merged or closed. The dashboard
+  doesn't fetch: an open PR whose latest commit isn't here gets a warning under Problems. A bad roadmap on a branch keeps its last
+  tasks and shows under Problems. Branch tasks count in the totals, burn-up and forecast, so the size steps up at "today" (its
+  history is main's), and a stale branch with no PR counts until it's deleted. With GitHub never having answered, commits on a
+  branch show status `unknown`, not Building, and branch tasks are held back and out of the totals, which Problems says.
+- **Known gaps, left:** a merged task added only on its branch vanishes until the main checkout is pulled (its branch is no
+  longer ahead of `origin/main`, and the local roadmap file doesn't have it yet); "Tests added" counts a test
   moved between files; chart text is small on tablet widths; empty Board columns still show on phones (from the #129 review).
 
 **Other things said lately:**

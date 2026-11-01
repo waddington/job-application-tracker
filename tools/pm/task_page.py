@@ -14,10 +14,18 @@ def stage_why(task: Task) -> str:
     """Why the task is at its stage, in words."""
     if task.status == "done" and task.pr and task.pr.state == "MERGED":
         return f"PR #{task.pr.number} merged."
+    if task.pr_unknown and task.status_source == "roadmap":
+        return (
+            f"<code>docs/ROADMAP.yaml</code> says {escape(task.status)}. "
+            "GitHub hasn't answered, so whether a PR changes that is unknown."
+        )
     if task.status == "bug":
         return "Recorded as a bug in <code>docs/ROADMAP.yaml</code>. No fix has started."
     if task.status_source == "roadmap" and task.on_branch:
-        return f"The roadmap on <code>{escape(task.on_branch)}</code> has it, and no open PR says otherwise."
+        where = f"Only on the roadmap of <code>{escape(task.on_branch)}</code> so far"
+        if task.pr and task.pr.state == "OPEN":
+            return f"{where}, in PR #{task.pr.number}, open{' as a draft' if task.pr.is_draft else ''}."
+        return f"{where}, with no PR yet."
     if task.status_source == "roadmap":
         return f"<code>docs/ROADMAP.yaml</code> says {escape(task.status)}, and no open PR says otherwise."
     return f"{escape(task.status_source)}."
@@ -61,6 +69,10 @@ def code_section(evidence: TaskEvidence, task: Task) -> str:
             '<p class="muted">git couldn\'t read this. If it only just merged, a <code>git fetch</code> may help.</p>'
         )
     if not evidence.source:
+        if task.pr_unknown:
+            return (
+                '<p class="muted">No branch here, and GitHub hasn\'t answered, so whether it has a PR is unknown.</p>'
+            )
         state = task.pr.state if task.pr else ""
         if state == "CLOSED":
             return '<p class="muted">Its branch is gone, and it never merged, so there\'s no diff to read.</p>'
@@ -102,6 +114,8 @@ def branch_note(task: Task, evidence: TaskEvidence) -> str:
         return " (merged)"
     if task.pr:
         return " (not found)"
+    if task.pr_unknown:
+        return ""
     return " (none: marked done on the roadmap)" if task.status == "done" else " (not started)"
 
 
@@ -124,7 +138,7 @@ def task_page(task: Task, roadmap: Roadmap, evidence: TaskEvidence, branch_prs: 
         about.append(fact("Documents", documents))
     if task.on_branch:
         about.append(fact("Roadmap", f"Only on <code>{escape(task.on_branch)}</code> so far, not on main"))
-    branch = fact("Branch", f"<code>{escape(task.branch_name)}</code>{branch_note(task, evidence)}")
+    branch = fact("Branch", f"<code>{escape(task.work_branch)}</code>{branch_note(task, evidence)}")
     if task.pr:
         pr = task.pr
         draft = ", draft" if pr.is_draft else ""
@@ -139,6 +153,8 @@ def task_page(task: Task, roadmap: Roadmap, evidence: TaskEvidence, branch_prs: 
         if others:
             listed = ", ".join(f'<a href="{escape(p.url)}">#{p.number}</a>' for p in others)
             pr_facts.append(fact("Other PRs", f"{listed} <span class='small muted'>on the same branch</span>"))
+    elif task.pr_unknown:
+        pr_facts = [fact("PR", "Unknown: GitHub hasn't answered")]
     else:
         pr_facts = [fact("PR", "None yet" if task.status != "done" else "None")]
     detail = f'<p style="margin:8px 0 0">{escape(task.detail)}</p>' if task.detail else ""

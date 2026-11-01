@@ -1,4 +1,5 @@
 import json
+import subprocess
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -14,8 +15,9 @@ from tools.pm.live import (
     parse_commits,
     parse_prs,
     parse_worktrees,
+    unfetched_prs,
 )
-from tools.pm.roadmap import BranchRoadmap, Live, Phase, Task
+from tools.pm.roadmap import BranchRoadmap, Live, Phase, PullRequest, Task
 
 MAIN_FILE = "phases:\n  - id: P\n    tasks:\n      - {id: old, name: Old}\n"
 BRANCH_FILE = MAIN_FILE + "      - {id: new, name: New}\n"
@@ -94,6 +96,38 @@ class BranchRoadmapTests(unittest.TestCase):
         self.assertFalse(snapshot.git_ok)
         self.assertIn("couldn't read the roadmap on worktree-new", " ".join(snapshot.live.warnings))
         self.assertEqual(snapshot.live.branch_roadmaps, {})
+
+    def test_an_open_pr_not_up_to_date_here_is_warned_about(self):
+        read = BranchRoadmap("worktree-a", "local")
+        prs = [
+            PullRequest(1, "t", "OPEN", "worktree-a", "u", head_sha="newer"),
+            PullRequest(2, "t", "OPEN", "worktree-b", "u", head_sha="absent"),
+            PullRequest(3, "t", "OPEN", "worktree-agent-x", "u", head_sha="absent"),
+            PullRequest(4, "t", "MERGED", "worktree-c", "u", head_sha="absent"),
+            PullRequest(5, "t", "OPEN", "worktree-d", "u", head_sha="local"),
+            PullRequest(6, "t", "OPEN", "worktree-e", "u", head_sha="contained"),
+        ]
+        live = Live(prs=prs, branch_roadmaps={"worktree-a": read, "worktree-d": BranchRoadmap("worktree-d", "local")})
+
+        def run(args, cwd, timeout=15):
+            if args[-2] != "contained":
+                raise subprocess.CalledProcessError(1, args)
+            return ""
+
+        with mock.patch("tools.pm.live._run", side_effect=run):
+            warnings = unfetched_prs(Path("."), "origin/main", live)
+        self.assertEqual([w.split(":")[0] for w in warnings], ["PR #1", "PR #2"])
+        self.assertIn("git fetch", warnings[0])
+
+    def test_github_never_answering_stays_unknown_and_once_answered_stays_known(self):
+        down = Snapshot(live=Live(prs_known=False), github_ok=False)
+        self.assertFalse(keep_last_good(down, Snapshot(live=Live(prs_known=False), github_ok=False)).live.prs_known)
+        down = Snapshot(live=Live(prs_known=False), github_ok=False)
+        self.assertTrue(keep_last_good(down, Snapshot(live=Live())).live.prs_known)
+
+    def test_a_failing_gh_marks_prs_unknown(self):
+        with mock.patch("tools.pm.live._run", side_effect=OSError("no tool")):
+            self.assertFalse(collect(Path("."), "owner/demo").live.prs_known)
 
     def branch_snapshot(self, branch, git_ok=True):
         return Snapshot(live=Live(branch_roadmaps={branch.branch: branch} if branch else {}), git_ok=git_ok)

@@ -107,6 +107,7 @@ def parse_prs(output: str) -> list[PullRequest]:
                 additions=int(raw.get("additions") or 0),
                 deletions=int(raw.get("deletions") or 0),
                 merge_commit=(raw.get("mergeCommit") or {}).get("oid", ""),
+                head_sha=raw.get("headRefOid") or "",
             )
         )
     return prs
@@ -223,6 +224,31 @@ def read_branch_roadmap(root: Path, main: str, branch: str, ref: str) -> BranchR
         text, base_text = _roadmap_at(root, sha), _roadmap_at(root, base)
         _branch_seen[sha] = parse_branch_roadmap(branch, sha, text, base_text)
     return replace(_branch_seen[sha], branch=branch)  # two branches can sit on one commit
+
+
+def unfetched_prs(root: Path, main: str, live: Live) -> list[str]:
+    """Warnings for open PRs whose latest commit isn't in what was read here: the dashboard doesn't fetch,
+    so a task only on that branch would be missing or out of date, with nothing else to say so."""
+    warnings = []
+    for pr in live.prs:
+        if pr.state != "OPEN" or not pr.head_sha or not pr.branch.startswith(BRANCH_PREFIX):
+            continue
+        if pr.branch.startswith(AGENT_BRANCH):
+            continue
+        read = live.branch_roadmaps.get(pr.branch)
+        tip = read.sha if read else main
+        if pr.head_sha == tip:
+            continue
+        try:
+            _run(["git", "merge-base", "--is-ancestor", pr.head_sha, tip], root)
+        except subprocess.CalledProcessError:  # not contained, or the commit isn't here at all
+            warnings.append(
+                f"PR #{pr.number}: {pr.branch} isn't up to date here, so a task only on its roadmap may be "
+                "missing or out of date. A git fetch will fix it."
+            )
+        except (subprocess.SubprocessError, OSError):  # git itself failing is reported by whatever else fails
+            continue
+    return warnings
 
 
 @dataclass
@@ -388,7 +414,7 @@ def collect(root: Path, repo: str) -> Snapshot:
                 except (subprocess.SubprocessError, OSError) as exc:
                     snapshot.git_ok = False
                     live.warnings.append(f"git: couldn't read the roadmap on {branch}: {exc}")
-        log =_run(["git", "log", main, "-n", str(COMMIT_LIMIT), f"--format=%h{SEP}%s{SEP}%cI{SEP}%an"], root)
+        log = _run(["git", "log", main, "-n", str(COMMIT_LIMIT), f"--format=%h{SEP}%s{SEP}%cI{SEP}%an"], root)
         snapshot.commits = parse_commits(log)
         if len(snapshot.commits) >= COMMIT_LIMIT:
             live.warnings.append(f"git: only the latest {COMMIT_LIMIT} commits are read, so older activity is missing")
@@ -413,15 +439,19 @@ def collect(root: Path, repo: str) -> Snapshot:
             "--limit",
             str(PR_LIMIT),
             "--json",
-            "number,title,state,headRefName,url,isDraft,updatedAt,createdAt,mergedAt,additions,deletions,mergeCommit",
+            "number,title,state,headRefName,headRefOid,url,isDraft,updatedAt,createdAt,mergedAt,additions,deletions,"
+            "mergeCommit",
         ]
         if repo:
             args += ["--repo", repo]
         live.prs = parse_prs(_run(args, root, timeout=30))
         if len(live.prs) >= PR_LIMIT:
             live.warnings.append(f"GitHub: only the latest {PR_LIMIT} PRs are read, so PR counts are too low")
+        if snapshot.git_ok:
+            live.warnings += unfetched_prs(root, main, live)
     except (subprocess.SubprocessError, OSError, ValueError, KeyError) as exc:
         snapshot.github_ok = False
+        live.prs_known = False
         live.warnings.append(f"GitHub PRs unavailable (is `gh` installed and logged in?): {exc}")
     snapshot.taken_at = time.time()
     snapshot.git_at = snapshot.taken_at if snapshot.git_ok else 0.0
@@ -450,6 +480,7 @@ def keep_last_good(new: Snapshot, old: Snapshot | None) -> Snapshot:
     if not new.github_ok:
         new.github_at = old.github_at
         new.live.prs = old.live.prs
+        new.live.prs_known = old.live.prs_known
     return new
 
 

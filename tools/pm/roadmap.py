@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field, replace
+from math import isfinite
 from pathlib import Path
 
 from .yamlish import YamlishError, parse
 
-STATUSES = ("bug", "planned", "building", "review", "done", "blocked")
+# "unknown" only comes from live evidence: commits on a branch while GitHub has never answered.
+STATUSES = ("bug", "planned", "building", "review", "unknown", "done", "blocked")
 SEVERITIES = ("high", "medium", "low")
 BRANCH_PREFIX = "worktree-"
 
@@ -26,6 +28,7 @@ class PullRequest:
     additions: int = 0
     deletions: int = 0
     merge_commit: str = ""
+    head_sha: str = ""
 
 
 @dataclass
@@ -46,6 +49,7 @@ class Live:
     prs: list[PullRequest] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
     branch_roadmaps: dict[str, BranchRoadmap] = field(default_factory=dict)
+    prs_known: bool = True  # False until GitHub has answered once: `prs` being empty then means nothing
 
     def pr_for(self, branch: str) -> PullRequest | None:
         """The PR for a branch: an open one if any, else the most recently merged, else closed."""
@@ -81,10 +85,17 @@ class Task:
     branch: str | None = None
     commits_ahead: int = 0
     pr: PullRequest | None = None
+    # A task added by another task's branch, with no branch of its own: where its work is.
+    via_branch: str | None = None
+    pr_unknown: bool = False  # GitHub has never answered, so nothing is known about its PRs
 
     @property
     def branch_name(self) -> str:
         return BRANCH_PREFIX + self.id
+
+    @property
+    def work_branch(self) -> str:
+        return self.via_branch or self.branch_name
 
 
 @dataclass
@@ -167,13 +178,24 @@ def from_data(data) -> Roadmap:
         repo=str(data.get("repo") or ""),
         start=str(data.get("start") or ""),
     )
-    for i, raw_phase in enumerate(data.get("phases") or []):
+    raw_phases = data.get("phases") or []
+    if not isinstance(raw_phases, list):
+        roadmap.errors.append("phases must be a list")
+        raw_phases = []
+    for i, raw_phase in enumerate(raw_phases):
         if not isinstance(raw_phase, dict) or not raw_phase.get("id"):
             roadmap.errors.append(f"phase #{i + 1} needs an id")
             continue
-        phase = Phase(id=str(raw_phase["id"]), name=str(raw_phase.get("name") or raw_phase["id"]),
-                      goal=str(raw_phase.get("goal") or ""))
-        for raw in raw_phase.get("tasks") or []:
+        phase = Phase(
+            id=str(raw_phase["id"]),
+            name=str(raw_phase.get("name") or raw_phase["id"]),
+            goal=str(raw_phase.get("goal") or ""),
+        )
+        raw_tasks = raw_phase.get("tasks") or []
+        if not isinstance(raw_tasks, list):
+            roadmap.errors.append(f"{phase.id}: tasks must be a list")
+            raw_tasks = []
+        for raw in raw_tasks:
             task = _task(raw, phase.id, roadmap.errors)
             if task:
                 phase.tasks.append(task)
@@ -211,9 +233,17 @@ def _task(raw, phase_id: str, errors: list[str]) -> Task | None:
         depends = []
     try:
         estimate = float(raw.get("estimate_h") or 0)
+        if not isfinite(estimate):
+            raise ValueError
     except (TypeError, ValueError):
         errors.append(f"{task_id}: estimate_h must be a number")
         estimate = 0.0
+    documents = {}
+    for key in ("prd", "rfc"):
+        documents[key] = raw.get(key)
+        if documents[key] is not None and not isinstance(documents[key], str):
+            errors.append(f"{task_id}: {key} must be a path")
+            documents[key] = None
     return Task(
         id=task_id,
         name=str(raw.get("name") or task_id),
@@ -226,8 +256,8 @@ def _task(raw, phase_id: str, errors: list[str]) -> Task | None:
         detail=str(raw["detail"]) if raw.get("detail") is not None else None,
         estimate_h=estimate,
         depends=[str(d) for d in depends],
-        prd=raw.get("prd"),
-        rfc=raw.get("rfc"),
+        prd=documents["prd"],
+        rfc=documents["rfc"],
     )
 
 
@@ -258,7 +288,7 @@ def _find_cycle(roadmap: Roadmap) -> list[str] | None:
             if nxt not in graph:
                 continue
             if state.get(nxt) == 1:
-                return path[path.index(nxt):] + [nxt]
+                return path[path.index(nxt) :] + [nxt]
             if state.get(nxt) is None and (found := visit(nxt)):
                 return found
         path.pop()
@@ -276,7 +306,11 @@ def add_branch_tasks(roadmap: Roadmap, live: Live) -> None:
 
     A branch whose latest PR merged or closed has nothing to add: what merged is on main, and what closed
     was dropped. Two branches adding the same id: the task's own branch wins, else the first by name.
+    Until GitHub has answered, which branches are still open is unknown, so none are added: a dropped
+    branch's tasks would count in the totals. The Problems panel says they're held back.
     """
+    if not live.prs_known:
+        return
     known = {t.id for t in roadmap.tasks}
     found: dict[str, tuple[Phase, Task]] = {}
     for name, branch in sorted(live.branch_roadmaps.items()):
@@ -305,15 +339,22 @@ def apply_live(roadmap: Roadmap, live: Live) -> Roadmap:
     merged PR -> done; open ready PR -> review; open draft PR, or a branch with commits ahead of main
     -> building. A task the roadmap already marks blocked keeps that status. One marked done keeps it,
     unless its only PR is still open: a PR marks its task done just before merging, and it isn't done until then.
-    A follow-up PR on a branch that has already merged doesn't reopen the task.
+    A follow-up PR on a branch that has already merged doesn't reopen the task. Commits on a branch while
+    GitHub has never answered are unknown: its PR could be a draft, ready, merged or closed.
+    A task added by another task's branch shows that branch and PR, and keeps the status in that branch's file.
     """
     add_branch_tasks(roadmap, live)
     for task in roadmap.tasks:
         task.status, task.status_source = task.planned_status, "roadmap"
-        task.pr = live.pr_for(task.branch_name)
-        task.commits_ahead = live.branches_ahead.get(task.branch_name, 0)
-        task.branch = task.branch_name if task.branch_name in live.branches_ahead else None
-        if task.planned_status == "blocked":
+        task.pr_unknown = not live.prs_known
+        own = task.branch_name
+        if task.on_branch and task.on_branch != own and not live.pr_for(own) and own not in live.branches_ahead:
+            task.via_branch = task.on_branch
+        where = task.work_branch
+        task.pr = live.pr_for(where)
+        task.commits_ahead = live.branches_ahead.get(where, 0)
+        task.branch = where if where in live.branches_ahead else None
+        if task.via_branch or task.planned_status == "blocked":
             continue
         merged = [p for p in live.prs if p.branch == task.branch_name and p.state == "MERGED"]
         if task.planned_status == "done" and merged:
@@ -329,5 +370,9 @@ def apply_live(roadmap: Roadmap, live: Live) -> Roadmap:
         elif task.pr and task.pr.state == "MERGED":
             task.status, task.status_source = "done", f"PR #{task.pr.number} merged"
         elif task.commits_ahead > 0:
-            task.status, task.status_source = "building", f"{task.commits_ahead} commits on {task.branch_name}"
+            commits = f"{task.commits_ahead} commit{'' if task.commits_ahead == 1 else 's'} on {task.branch_name}"
+            if live.prs_known:
+                task.status, task.status_source = "building", commits
+            else:
+                task.status, task.status_source = "unknown", f"{commits}; its PR is unknown: GitHub hasn't answered"
     return roadmap

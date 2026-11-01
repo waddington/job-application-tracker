@@ -62,6 +62,9 @@ def problems(roadmap: Roadmap, snapshot: Snapshot) -> str:
     for ok, at, what in ages:
         if not ok and at:
             items.append(f"Showing {what} from {datetime.fromtimestamp(at):%-d %b, %H:%M}, when they last answered")
+    live = snapshot.live
+    if not live.prs_known and any(b.phases for b in live.branch_roadmaps.values()):
+        items.append("Tasks only on a branch's roadmap are held back, and out of the totals, until GitHub answers")
     if not items:
         return ""
     lis = "".join(f"<li>{escape(i)}</li>" for i in items)
@@ -347,6 +350,8 @@ def board(roadmap: Roadmap, snapshot: Snapshot, phase: str | None = None) -> str
                 f"{f'<div class=small>{links}</div>' if links else ''}</div>"
             )
         count = len(cards)
+        if status == "unknown" and not count:  # only while GitHub has never answered
+            continue
         cols.append(
             f'<div class="col"><h2 class="small muted">{pill(status)} <span>{count}</span></h2>'
             f"{''.join(cards) or '<p class=muted>—</p>'}</div>"
