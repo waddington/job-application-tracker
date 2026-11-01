@@ -31,7 +31,7 @@ Now open http://127.0.0.1:8770 and you're in! Press New application at the top r
 your first one.
 
 When you're done, press Ctrl+C. Next time, just run `uv run jat serve` from the same folder.
-Your data stays safely in `~/job-search-data`, away from the code.
+Your data stays in `~/job-search-data`, away from the code.
 
 ## When you're ready for more
 
