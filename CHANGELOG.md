@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.4.0 (2026-11-01)
+
+- **See every reschedule on the timelines:** a moved round now shows its old time, new time, who needed the change and why, for example *Moved from Tue 3 Nov, 10:00 to Thu 5 Nov, 14:00 · They needed the change · Their manager is away*, on the application timeline, the Timeline page and Today's Recent activity. Moves saved before 1.3.0 keep the text they had. Restart the tracker to see the new lines; nothing breaks before you do (#192).
+
 ## 1.3.0 (2026-11-01)
 
 - **Say who needed a reschedule:** rescheduling a round now asks who needed the change (me, them, both of us, neither of us) as well as why, and each move keeps its own old time, new time, who and why on the application's timeline. The Reschedule button is now on the application page, in the quick view (the current round, in an active stage) and on Today, as well as Interviews. On a phone, the Interviews table scrolls sideways so its buttons can be reached. After updating, restart the tracker: until you do, Reschedule fails with an error and saves nothing, though a round's Edit form still works (#191).
