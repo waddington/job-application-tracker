@@ -7,7 +7,7 @@ Numbers in brackets are pull requests.
 
 ## 1.2.44 (2026-11-01)
 
-- **A shorter, friendlier install page:** the [install guide](docs/guide/install.md) now leads with the one path most people need. Updating moved to the [command reference](docs/guide/commands.md#updating-to-a-newer-version), and turning on snapshots and connecting a private remote to [Your data](docs/guide/your-data.md#snapshots-automatic-local-history) (#189).
+- **A shorter, friendlier install page:** the [install guide](docs/guide/install.md) now leads with the one path most people need. Updating moved to the [command reference](docs/guide/commands.md#updating-to-a-newer-version), and turning on snapshots and connecting a private remote to [Your data](docs/guide/your-data.md#snapshots-automatic-local-history), which now also says plainly that without git the database is the only copy. The website's FAQ no longer says you need to install Python yourself (#189).
 
 ## 1.2.43 (2026-11-01)
 
