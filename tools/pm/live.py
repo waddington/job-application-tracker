@@ -204,6 +204,8 @@ def parse_branch_roadmap(branch: str, sha: str, text: str, base_text: str) -> Br
     an error to show, never an exception: it's somebody's work in progress."""
     if not text.strip():
         return BranchRoadmap(branch, sha)
+    if "�" in text:  # _run replaces what it can't decode
+        return BranchRoadmap(branch, sha, errors=["its roadmap can't be read: it isn't valid UTF-8"])
     try:
         ours = from_data(parse(text))
     except Exception as exc:  # the parser and model expect a shape a bad file needn't have

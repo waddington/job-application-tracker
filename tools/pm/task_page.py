@@ -19,13 +19,21 @@ def stage_why(task: Task) -> str:
             f"<code>docs/ROADMAP.yaml</code> says {escape(task.status)}. "
             "GitHub hasn't answered, so whether a PR changes that is unknown."
         )
-    if task.status == "bug":
-        return "Recorded as a bug in <code>docs/ROADMAP.yaml</code>. No fix has started."
-    if task.status_source == "roadmap" and task.on_branch:
+    if task.on_branch and task.status_source.startswith("roadmap"):
         where = f"Only on the roadmap of <code>{escape(task.on_branch)}</code> so far"
-        if task.pr and task.pr.state == "OPEN":
-            return f"{where}, in PR #{task.pr.number}, open{' as a draft' if task.pr.is_draft else ''}."
-        return f"{where}, with no PR yet."
+        if not task.pr:
+            where += ", which has no PR yet."
+        elif task.pr.state == "OPEN":
+            where += f", in PR #{task.pr.number}, open{' as a draft' if task.pr.is_draft else ''}."
+        else:
+            where += f". PR #{task.pr.number} is {escape(task.pr.state.lower())}."
+        if task.done_on_branch:
+            return f"{where} That file says done, which it isn't until it merges."
+        return f"{where} That file says {escape(task.planned_status)}."
+    if task.status == "bug":
+        if task.pr:  # any other PR state would have moved it on
+            return f"Recorded as a bug in <code>docs/ROADMAP.yaml</code>. PR #{task.pr.number} closed without merging."
+        return "Recorded as a bug in <code>docs/ROADMAP.yaml</code>. No fix has started."
     if task.status_source == "roadmap":
         return f"<code>docs/ROADMAP.yaml</code> says {escape(task.status)}, and no open PR says otherwise."
     return f"{escape(task.status_source)}."

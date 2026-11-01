@@ -12,6 +12,7 @@ from .yamlish import YamlishError, parse
 STATUSES = ("bug", "planned", "building", "review", "unknown", "done", "blocked")
 SEVERITIES = ("high", "medium", "low")
 BRANCH_PREFIX = "worktree-"
+MAX_ESTIMATE_H = 10_000
 
 
 @dataclass
@@ -87,6 +88,7 @@ class Task:
     pr: PullRequest | None = None
     # A task added by another task's branch, with no branch of its own: where its work is.
     via_branch: str | None = None
+    done_on_branch: bool = False  # its branch's file says done, which it isn't until it merges
     pr_unknown: bool = False  # GitHub has never answered, so nothing is known about its PRs
 
     @property
@@ -164,8 +166,8 @@ def load(path: Path) -> Roadmap:
     """Load and validate a roadmap. Problems are collected in `errors` rather than raised,
     so the dashboard can still show whatever parsed."""
     try:
-        data = parse(path.read_text())
-    except (OSError, YamlishError) as exc:
+        data = parse(path.read_text(encoding="utf-8"))
+    except (OSError, YamlishError, UnicodeError) as exc:
         return Roadmap(errors=[f"{path.name}: {exc}"])
     return from_data(data)
 
@@ -210,7 +212,7 @@ def _task(raw, phase_id: str, errors: list[str]) -> Task | None:
         return None
     task_id = str(raw["id"])
     status = str(raw.get("status") or "planned")
-    if status not in STATUSES:
+    if status not in STATUSES or status == "unknown":  # unknown only comes from live evidence
         errors.append(f"{task_id}: unknown status {status!r}")
         status = "planned"
     kind = str(raw.get("type") or ("bug" if status == "bug" else "task"))
@@ -233,10 +235,10 @@ def _task(raw, phase_id: str, errors: list[str]) -> Task | None:
         depends = []
     try:
         estimate = float(raw.get("estimate_h") or 0)
-        if not isfinite(estimate):
+        if not isfinite(estimate) or not 0 <= estimate <= MAX_ESTIMATE_H:  # a huge sum overflows the percentages
             raise ValueError
     except (TypeError, ValueError):
-        errors.append(f"{task_id}: estimate_h must be a number")
+        errors.append(f"{task_id}: estimate_h must be a number from 0 to {MAX_ESTIMATE_H}")
         estimate = 0.0
     documents = {}
     for key in ("prd", "rfc"):
@@ -323,8 +325,10 @@ def add_branch_tasks(roadmap: Roadmap, live: Live) -> None:
                 if task.id not in known and (task.id not in found or task.branch_name == name):
                     # A copy, because apply_live writes to it and this branch's data is shared between requests.
                     # Nothing on a branch is done until it merges, whatever its roadmap says.
-                    planned = "building" if task.planned_status == "done" else task.planned_status
-                    found[task.id] = (phase, replace(task, on_branch=name, planned_status=planned, status=planned))
+                    done = task.planned_status == "done"
+                    planned = "building" if done else task.planned_status
+                    copy = replace(task, on_branch=name, planned_status=planned, status=planned, done_on_branch=done)
+                    found[task.id] = (phase, copy)
     phases = {p.id: p for p in roadmap.phases}
     for phase, task in found.values():
         if phase.id not in phases:
@@ -346,12 +350,17 @@ def apply_live(roadmap: Roadmap, live: Live) -> Roadmap:
     add_branch_tasks(roadmap, live)
     for task in roadmap.tasks:
         task.status, task.status_source = task.planned_status, "roadmap"
+        if task.on_branch:
+            said = "says done, not merged yet" if task.done_on_branch else f"says {task.planned_status}"
+            task.status_source = f"roadmap on {task.on_branch} {said}"
         task.pr_unknown = not live.prs_known
         own = task.branch_name
-        if task.on_branch and task.on_branch != own and not live.pr_for(own) and own not in live.branches_ahead:
+        own_pr = live.pr_for(own)
+        own_active = live.branches_ahead.get(own, 0) > 0 or (own_pr and own_pr.state != "CLOSED")
+        if task.on_branch and task.on_branch != own and not own_active:
             task.via_branch = task.on_branch
         where = task.work_branch
-        task.pr = live.pr_for(where)
+        task.pr = live.pr_for(where) or own_pr
         task.commits_ahead = live.branches_ahead.get(where, 0)
         task.branch = where if where in live.branches_ahead else None
         if task.via_branch or task.planned_status == "blocked":

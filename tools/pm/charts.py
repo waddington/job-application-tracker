@@ -112,6 +112,8 @@ def burnup_svg(b: derive.Burnup) -> str:
             f'x2="{x(end):.1f}" y2="{y(reach):.1f}"/>'
         )
     summary = f"{b.done} of {b.total} tasks merged"
+    if not b.merged:
+        summary = f"at least {b.done} of {b.total} tasks done, as GitHub hasn't answered"
     return (
         f'<svg class="chart" viewBox="0 0 {WIDTH} {HEIGHT}" role="img" aria-label="Burn-up: {summary}">{grid}'
         f'<line class="today-line" x1="{x(b.now):.1f}" x2="{x(b.now):.1f}" y1="{TOP}" y2="{HEIGHT - BOTTOM}"/>'
@@ -122,7 +124,10 @@ def burnup_svg(b: derive.Burnup) -> str:
 def burnup_panel(roadmap: Roadmap, snapshot, now: datetime) -> str:
     b = derive.burnup(roadmap, snapshot, now)
     if not b.merged:
-        pace = "GitHub hasn't answered, so merges over time aren't known."
+        pace = (
+            "GitHub hasn't answered, so merges over time aren't known. "
+            f"At least {b.done} of {b.total} tasks are done: the ones the roadmap marks done."
+        )
     elif b.forecast:
         pace = (
             f"{b.recent} merged in the last {derive.PACE_DAYS} days. At that pace the rest are done around "
@@ -150,10 +155,19 @@ def burnup_panel(roadmap: Roadmap, snapshot, now: datetime) -> str:
 
 def status_table(roadmap: Roadmap) -> str:
     rows = []
+    columns = {
+        "done": "Done",
+        "review": "In review",
+        "unknown": "Unknown",  # only while GitHub has never answered
+        "building": "Building",
+        "planned": "Planned",
+        "blocked": "Blocked",
+        "bug": "Bugs",
+    }
+    if not any(t.status == "unknown" for t in roadmap.tasks):
+        del columns["unknown"]
     for p in roadmap.phases:
-        n = {
-            s: sum(t.status == s for t in p.tasks) for s in ("done", "review", "building", "planned", "blocked", "bug")
-        }
+        n = {s: sum(t.status == s for t in p.tasks) for s in columns}
         total = len(p.tasks)
         pct = round(100 * n["done"] / total) if total else 0
         dates = derive.phase_dates(p)
@@ -164,10 +178,7 @@ def status_table(roadmap: Roadmap) -> str:
             f'<td class="num">{p.done_h:g} / {p.estimate_h:g}</td><td class="num">{pct}%</td>'
             f'<td class="small muted num">{when}</td></tr>'
         )
-    heads = "".join(
-        f'<th class="num">{h}</th>'
-        for h in ("Done", "In review", "Building", "Planned", "Blocked", "Bugs", "Hours", "% of tasks")
-    )
+    heads = "".join(f'<th class="num">{h}</th>' for h in (*columns.values(), "Hours", "% of tasks"))
     return (
         '<details id="section-status" class="panel" open><summary><h2>Phase status</h2></summary>'
         f'<div class="table-wrap"><table><tr><th>Phase</th>{heads}'

@@ -60,7 +60,7 @@ main{padding:20px;max-width:1500px;margin:0 auto}
 ul.plain{list-style:none;margin:0;padding:0}ul.plain li{padding:6px 0;border-top:1px solid var(--line)}
 ul.plain li:first-child{border-top:0}
 .muted{color:var(--ink-3)}.small{font-size:12px}
-.board{display:grid;gap:12px;grid-template-columns:repeat(6,minmax(180px,1fr));overflow-x:auto}
+.board{display:grid;gap:12px;grid-auto-flow:column;grid-auto-columns:minmax(180px,1fr);overflow-x:auto}
 .col h2{display:flex;justify-content:space-between}
 .card{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--planned);
 border-radius:6px;padding:8px 10px;margin-bottom:8px}
@@ -159,7 +159,7 @@ padding:3px 0}
 svg.chart .axis{font-size:26px}.tl-mark:nth-child(even){display:none}}
 @media (max-width:1000px){.ov-grid{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:700px){.top{position:static;padding:0 16px}main{padding:16px}
-.board{grid-template-columns:repeat(6,85vw)}.phase-row{grid-template-columns:36px minmax(0,1fr) 40px}
+.board{grid-auto-columns:85vw}.phase-row{grid-template-columns:36px minmax(0,1fr) 40px}
 .phase-row .segs{grid-column:1/-1;order:1}.phase-row .dates{display:none}}
 """
 

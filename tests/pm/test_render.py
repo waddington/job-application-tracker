@@ -1,11 +1,127 @@
 import json
+import re
 import unittest
+from datetime import datetime
 from itertools import product
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
-from tools.pm import render, task_page
+from tools.pm import charts, derive, render, task_page
 from tools.pm.live import Commit, Snapshot, TaskEvidence, parse_branch_roadmap
-from tools.pm.roadmap import BranchRoadmap, Live, Phase, PullRequest, Task, apply_live, from_data
+from tools.pm.roadmap import BranchRoadmap, Live, Phase, PullRequest, Task, apply_live, from_data, load
 from tools.pm.yamlish import parse
+
+
+class SecondReviewTests(unittest.TestCase):
+    def sibling(self, *prs, ahead=None, status="planned", kind="task"):
+        main = from_data({"phases": [{"id": "P", "tasks": [{"id": "own"}]}]})
+        extra = from_data({"phases": [{"id": "P", "tasks": [{"id": "sib", "status": status, "type": kind}]}]}).phases
+        live = Live(
+            branches_ahead={"worktree-own": 2, **(ahead or {})},
+            prs=list(prs),
+            branch_roadmaps={"worktree-own": BranchRoadmap("worktree-own", "s", extra)},
+        )
+        roadmap = apply_live(main, live)
+        return roadmap.task("sib"), roadmap
+
+    HOST = PullRequest(9, "Host", "OPEN", "worktree-own", "https://example.com/9")
+    CLOSED = PullRequest(5, "Old", "CLOSED", "worktree-sib", "https://example.com/5")
+
+    def why(self, task):
+        return task_page.stage_why(task)
+
+    def test_a_sibling_with_its_own_closed_pr_shows_the_hosts_open_one(self):
+        task, _ = self.sibling(self.CLOSED, self.HOST)
+        self.assertEqual(task.pr.number, 9)
+        self.assertIn("in PR #9, open.", self.why(task))
+
+    def test_a_sibling_with_its_own_closed_pr_and_no_host_pr_says_so(self):
+        task, _ = self.sibling(self.CLOSED)
+        self.assertEqual(task.pr.number, 5)
+        self.assertIn("PR #5 is closed.", self.why(task))
+        self.assertNotIn("no PR", self.why(task))
+
+    def test_a_sibling_whose_own_branch_is_level_with_main_keeps_the_hosts_pr(self):
+        task, _ = self.sibling(self.HOST, ahead={"worktree-sib": 0})
+        self.assertEqual((task.work_branch, task.pr.number), ("worktree-own", 9))
+        self.assertIn("in PR #9, open.", self.why(task))
+
+    def test_a_sibling_with_no_pr_anywhere_says_its_branch_has_none(self):
+        task, _ = self.sibling()
+        self.assertIn("which has no PR yet", self.why(task))
+
+    def test_a_sibling_bug_in_an_open_pr_doesnt_say_no_fix_started(self):
+        task, _ = self.sibling(self.HOST, status="bug", kind="bug")
+        self.assertIn("in PR #9, open.", self.why(task))
+        self.assertNotIn("No fix", self.why(task))
+
+    def test_a_bug_whose_pr_closed_says_so(self):
+        roadmap = from_data({"phases": [{"id": "B", "tasks": [{"id": "fix", "type": "bug", "severity": "low"}]}]})
+        closed = PullRequest(5, "t", "CLOSED", "worktree-fix", "u")
+        self.assertIn("PR #5 closed", self.why(apply_live(roadmap, Live(prs=[closed])).task("fix")))
+
+    def test_done_in_a_branchs_file_says_where_the_status_is_from(self):
+        task, roadmap = self.sibling(self.HOST, status="done")
+        self.assertEqual(task.status, "building")
+        self.assertEqual(task.status_source, "roadmap on worktree-own says done, not merged yet")
+        self.assertIn("That file says done, which it isn't until it merges.", self.why(task))
+        self.assertIn("says done, not merged yet", render.roadmap_page(roadmap, Snapshot(live=Live())))
+
+    def test_a_huge_estimate_is_listed_and_every_page_still_renders(self):
+        for value in (1e308, -1, 10_001):
+            roadmap = from_data(
+                {"phases": [{"id": "P", "tasks": [{"id": "x", "estimate_h": value, "status": "done"}]}]}
+            )
+            self.assertEqual(roadmap.task("x").estimate_h, 0, value)
+            self.assertIn("estimate_h must be a number", roadmap.errors[0])
+            snapshot = Snapshot(live=Live())
+            apply_live(roadmap, snapshot.live)
+            render.roadmap_page(roadmap, snapshot)
+            render.as_json(roadmap, snapshot)
+
+    def test_a_file_cant_claim_unknown(self):
+        roadmap = from_data({"phases": [{"id": "P", "tasks": [{"id": "x", "status": "unknown"}]}]})
+        self.assertEqual(roadmap.task("x").planned_status, "planned")
+        self.assertIn("x: unknown status 'unknown'", roadmap.errors)
+
+    def test_a_non_utf8_roadmap_is_a_problem_on_main_and_on_a_branch(self):
+        with TemporaryDirectory() as folder:
+            path = Path(folder) / "ROADMAP.yaml"
+            path.write_bytes(b"project: caf\xe9\n")
+            self.assertIn("ROADMAP.yaml", load(path).errors[0])
+        found = parse_branch_roadmap("b", "sha", b"project: caf\xe9\n".decode(errors="replace"), "")
+        self.assertEqual((found.phases, found.errors), ([], ["its roadmap can't be read: it isn't valid UTF-8"]))
+
+
+class GitHubUnknownChartTests(unittest.TestCase):
+    def setUp(self):
+        tasks = [{"id": "a"}, {"id": "b"}, {"id": "c", "status": "done"}]
+        self.live = Live(branches_ahead={"worktree-a": 1, "worktree-b": 1}, prs_known=False)
+        self.roadmap = apply_live(from_data({"phases": [{"id": "P", "name": "n", "tasks": tasks}]}), self.live)
+        self.now = datetime(2026, 11, 1, 12).astimezone()
+
+    def test_phase_status_counts_every_task(self):
+        html = charts.status_table(self.roadmap)
+        self.assertIn(">Unknown</th>", html)
+        self.assertEqual(re.findall(r'<td class="num">([^<]*)</td>', html)[:2], ["1", "·"])
+        self.assertIn('<td class="num">2</td>', html)
+
+    def test_no_unknown_column_when_github_answered(self):
+        roadmap = apply_live(from_data({"phases": [{"id": "P", "tasks": [{"id": "a"}]}]}), Live())
+        self.assertNotIn("Unknown", charts.status_table(roadmap))
+
+    def test_the_burn_up_says_its_count_is_partial(self):
+        html = charts.burnup_panel(self.roadmap, Snapshot(live=self.live, github_ok=False), self.now)
+        self.assertIn("at least 1 of 3 tasks done", html)
+        self.assertIn("At least 1 of 3 tasks are done", html)
+        self.assertNotIn("1 of 3 tasks merged", html)
+
+    def test_unknown_work_makes_its_phase_the_current_one(self):
+        self.assertEqual(derive.current_phase(self.roadmap).id, "P")
+        tasks = [{"id": "z", "status": "planned"}]
+        data = {"phases": [{"id": "Q", "tasks": tasks}, {"id": "P", "tasks": [{"id": "a"}]}]}
+        roadmap = apply_live(from_data(data), Live(branches_ahead={"worktree-a": 1}, prs_known=False))
+        self.assertEqual(derive.current_phase(roadmap).id, "P")
 
 
 class BadBranchFieldTests(unittest.TestCase):
@@ -41,7 +157,7 @@ class BadBranchFieldTests(unittest.TestCase):
         for line, words in (
             ("{id: odd, prd: 7}", "odd: prd must be a path"),
             ("{id: odd, rfc: true}", "odd: rfc must be a path"),
-            ('{id: odd, estimate_h: "nan"}', "odd: estimate_h must be a number"),
+            ('{id: odd, estimate_h: "nan"}', "odd: estimate_h must be a number from 0 to 10000"),
         ):
             with self.subTest(line=line):
                 roadmap = self.render_all(line)
@@ -179,7 +295,7 @@ class DraftAndBranchTests(unittest.TestCase):
         task = self.roadmap.task("new")
         html = task_page.task_page(task, self.roadmap, TaskEvidence())
         self.assertIn("Only on <code>worktree-new</code> so far, not on main", html)
-        self.assertIn("Only on the roadmap of <code>worktree-new</code> so far, with no PR yet.", html)
+        self.assertIn("Only on the roadmap of <code>worktree-new</code> so far, which has no PR yet.", html)
         self.assertNotIn("docs/ROADMAP.yaml", html)
 
     def test_a_draft_task_page_gives_the_draft_as_the_reason(self):
