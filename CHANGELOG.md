@@ -7,7 +7,7 @@ Numbers in brackets are pull requests.
 
 ## 1.2.40 (2026-11-01)
 
-- **Developers:** STAGESPLACEHOLDER read their text from the translation files, ready for other languages. The English is unchanged (#179).
+- **Developers:** a stage that still has its default id and English name now shows translated wherever stages appear, ready for other languages. Renamed and added stages show as written, `config.toml` never changes, and the English is unchanged. The API adds raw stage ids beside its names (#179).
 
 ## 1.2.39 (2026-11-01)
 
