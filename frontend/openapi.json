@@ -3891,6 +3891,14 @@
                     "event.roundDone": "#/components/schemas/RoundDoneMsg",
                     "event.roundRemoved": "#/components/schemas/RoundRemovedMsg",
                     "event.roundRescheduled": "#/components/schemas/RoundRescheduledMsg",
+                    "event.roundRescheduledByMe": "#/components/schemas/RoundRescheduledByMeMsg",
+                    "event.roundRescheduledByMeReason": "#/components/schemas/RoundRescheduledByMeReasonMsg",
+                    "event.roundRescheduledByMutual": "#/components/schemas/RoundRescheduledByMutualMsg",
+                    "event.roundRescheduledByMutualReason": "#/components/schemas/RoundRescheduledByMutualReasonMsg",
+                    "event.roundRescheduledByNeither": "#/components/schemas/RoundRescheduledByNeitherMsg",
+                    "event.roundRescheduledByNeitherReason": "#/components/schemas/RoundRescheduledByNeitherReasonMsg",
+                    "event.roundRescheduledByThem": "#/components/schemas/RoundRescheduledByThemMsg",
+                    "event.roundRescheduledByThemReason": "#/components/schemas/RoundRescheduledByThemReasonMsg",
                     "event.roundRescheduledReason": "#/components/schemas/RoundRescheduledReasonMsg",
                     "event.roundScheduled": "#/components/schemas/RoundScheduledMsg",
                     "event.undoMove": "#/components/schemas/UndoMoveMsg"
@@ -3951,6 +3959,30 @@
                   },
                   {
                     "$ref": "#/components/schemas/RoundRescheduledReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundRescheduledByMeMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundRescheduledByThemMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundRescheduledByMutualMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundRescheduledByNeitherMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundRescheduledByMeReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundRescheduledByThemReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundRescheduledByMutualReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundRescheduledByNeitherReasonMsg"
                   },
                   {
                     "$ref": "#/components/schemas/OfferReceivedYearMsg"
@@ -4892,6 +4924,23 @@
               }
             ],
             "title": "Questions"
+          },
+          "reschedule_by": {
+            "anyOf": [
+              {
+                "enum": [
+                  "me",
+                  "them",
+                  "mutual",
+                  "neither"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reschedule By"
           },
           "reschedule_reason": {
             "anyOf": [
@@ -9006,6 +9055,150 @@
         "title": "RoundRemovedMsg",
         "type": "object"
       },
+      "RoundRescheduledByMeMsg": {
+        "properties": {
+          "key": {
+            "const": "event.roundRescheduledByMe",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/RoundParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "RoundRescheduledByMeMsg",
+        "type": "object"
+      },
+      "RoundRescheduledByMeReasonMsg": {
+        "properties": {
+          "key": {
+            "const": "event.roundRescheduledByMeReason",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/RoundReasonParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "RoundRescheduledByMeReasonMsg",
+        "type": "object"
+      },
+      "RoundRescheduledByMutualMsg": {
+        "properties": {
+          "key": {
+            "const": "event.roundRescheduledByMutual",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/RoundParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "RoundRescheduledByMutualMsg",
+        "type": "object"
+      },
+      "RoundRescheduledByMutualReasonMsg": {
+        "properties": {
+          "key": {
+            "const": "event.roundRescheduledByMutualReason",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/RoundReasonParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "RoundRescheduledByMutualReasonMsg",
+        "type": "object"
+      },
+      "RoundRescheduledByNeitherMsg": {
+        "properties": {
+          "key": {
+            "const": "event.roundRescheduledByNeither",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/RoundParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "RoundRescheduledByNeitherMsg",
+        "type": "object"
+      },
+      "RoundRescheduledByNeitherReasonMsg": {
+        "properties": {
+          "key": {
+            "const": "event.roundRescheduledByNeitherReason",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/RoundReasonParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "RoundRescheduledByNeitherReasonMsg",
+        "type": "object"
+      },
+      "RoundRescheduledByThemMsg": {
+        "properties": {
+          "key": {
+            "const": "event.roundRescheduledByThem",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/RoundParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "RoundRescheduledByThemMsg",
+        "type": "object"
+      },
+      "RoundRescheduledByThemReasonMsg": {
+        "properties": {
+          "key": {
+            "const": "event.roundRescheduledByThemReason",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/RoundReasonParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "RoundRescheduledByThemReasonMsg",
+        "type": "object"
+      },
       "RoundRescheduledMsg": {
         "properties": {
           "key": {
@@ -9368,6 +9561,14 @@
                     "event.roundDone": "#/components/schemas/RoundDoneMsg",
                     "event.roundRemoved": "#/components/schemas/RoundRemovedMsg",
                     "event.roundRescheduled": "#/components/schemas/RoundRescheduledMsg",
+                    "event.roundRescheduledByMe": "#/components/schemas/RoundRescheduledByMeMsg",
+                    "event.roundRescheduledByMeReason": "#/components/schemas/RoundRescheduledByMeReasonMsg",
+                    "event.roundRescheduledByMutual": "#/components/schemas/RoundRescheduledByMutualMsg",
+                    "event.roundRescheduledByMutualReason": "#/components/schemas/RoundRescheduledByMutualReasonMsg",
+                    "event.roundRescheduledByNeither": "#/components/schemas/RoundRescheduledByNeitherMsg",
+                    "event.roundRescheduledByNeitherReason": "#/components/schemas/RoundRescheduledByNeitherReasonMsg",
+                    "event.roundRescheduledByThem": "#/components/schemas/RoundRescheduledByThemMsg",
+                    "event.roundRescheduledByThemReason": "#/components/schemas/RoundRescheduledByThemReasonMsg",
                     "event.roundRescheduledReason": "#/components/schemas/RoundRescheduledReasonMsg",
                     "event.roundScheduled": "#/components/schemas/RoundScheduledMsg",
                     "event.undoMove": "#/components/schemas/UndoMoveMsg"
@@ -9428,6 +9629,30 @@
                   },
                   {
                     "$ref": "#/components/schemas/RoundRescheduledReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundRescheduledByMeMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundRescheduledByThemMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundRescheduledByMutualMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundRescheduledByNeitherMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundRescheduledByMeReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundRescheduledByThemReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundRescheduledByMutualReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundRescheduledByNeitherReasonMsg"
                   },
                   {
                     "$ref": "#/components/schemas/OfferReceivedYearMsg"
@@ -10123,6 +10348,14 @@
                     "event.roundDone": "#/components/schemas/RoundDoneMsg",
                     "event.roundRemoved": "#/components/schemas/RoundRemovedMsg",
                     "event.roundRescheduled": "#/components/schemas/RoundRescheduledMsg",
+                    "event.roundRescheduledByMe": "#/components/schemas/RoundRescheduledByMeMsg",
+                    "event.roundRescheduledByMeReason": "#/components/schemas/RoundRescheduledByMeReasonMsg",
+                    "event.roundRescheduledByMutual": "#/components/schemas/RoundRescheduledByMutualMsg",
+                    "event.roundRescheduledByMutualReason": "#/components/schemas/RoundRescheduledByMutualReasonMsg",
+                    "event.roundRescheduledByNeither": "#/components/schemas/RoundRescheduledByNeitherMsg",
+                    "event.roundRescheduledByNeitherReason": "#/components/schemas/RoundRescheduledByNeitherReasonMsg",
+                    "event.roundRescheduledByThem": "#/components/schemas/RoundRescheduledByThemMsg",
+                    "event.roundRescheduledByThemReason": "#/components/schemas/RoundRescheduledByThemReasonMsg",
                     "event.roundRescheduledReason": "#/components/schemas/RoundRescheduledReasonMsg",
                     "event.roundScheduled": "#/components/schemas/RoundScheduledMsg",
                     "event.undoMove": "#/components/schemas/UndoMoveMsg"
@@ -10183,6 +10416,30 @@
                   },
                   {
                     "$ref": "#/components/schemas/RoundRescheduledReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundRescheduledByMeMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundRescheduledByThemMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundRescheduledByMutualMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundRescheduledByNeitherMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundRescheduledByMeReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundRescheduledByThemReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundRescheduledByMutualReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundRescheduledByNeitherReasonMsg"
                   },
                   {
                     "$ref": "#/components/schemas/OfferReceivedYearMsg"

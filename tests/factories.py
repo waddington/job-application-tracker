@@ -111,6 +111,24 @@ def populate(session) -> dict[str, str]:
             InterviewContact(interview_id=interview.id, contact_id=recruiter.id),
             ApplicationDocument(application_id=app.id, document_version_id=version.id, sent_on=date(2026, 9, 28)),
             Event(application_id=app.id, kind="stage_change", from_stage="applied", to_stage="screen", data={}),
+            Event(
+                application_id=app.id,
+                kind="interview",
+                summary="Round 1 · Technical rescheduled (they needed the change): A clash ✓",
+                data={
+                    "interview_id": interview.id,
+                    "msg": {
+                        "key": "event.roundRescheduledByThemReason",
+                        "params": {"round": 1, "title": None, "kind": "technical", "reason": "A clash ✓"},
+                    },
+                    "reschedule": {
+                        "from": "2026-10-01T17:00:00+00:00",
+                        "to": "2026-10-03T17:00:00+00:00",
+                        "by": "them",
+                        "reason": "A clash ✓",
+                    },
+                },
+            ),
             Link(entity_type="role", entity_id=role.id, url="https://docs.example.com/d/1", title="JD notes"),
             Meeting(
                 contact_id=recruiter.id,

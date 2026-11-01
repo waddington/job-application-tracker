@@ -281,6 +281,11 @@ ROUND_STEPS = {
     "event.roundRemoved": ("scheduled", None),
     "event.roundRescheduled": ("scheduled", {"starts_at": LATER}),
     "event.roundRescheduledReason": ("scheduled", {"starts_at": LATER}),
+    **{
+        f"event.roundRescheduledBy{who.title()}{reason}": ("scheduled", {"starts_at": LATER, "reschedule_by": who})
+        for who in ("me", "them", "mutual", "neither")
+        for reason in ("", "Reason")
+    },
 }
 # The same for an offer: its status when made, then the status it changes to.
 OFFER_STEPS = {

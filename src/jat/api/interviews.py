@@ -141,6 +141,7 @@ def update_interview(interview_id: str, body: S.InterviewPatch, session: Session
     data = values(body, partial=True)
     interviewer_ids = data.pop("interviewer_ids", None)
     reason = " ".join((data.pop("reschedule_reason", None) or "").split())  # one line, for the timeline
+    by = data.pop("reschedule_by", None)
     before = (interview.status, interview.starts_at, interview.ends_at)
     for key, value in data.items():
         setattr(interview, key, value)
@@ -166,7 +167,7 @@ def update_interview(interview_id: str, body: S.InterviewPatch, session: Session
         if "ends_at" not in data and before[2] is not None:  # it lasts as long as before
             interview.ends_at = before[2] + (interview.starts_at - before[1])
         session.flush()
-        svc.record(session, app, interview, "rescheduled", reason=reason)
+        svc.record(session, app, interview, "rescheduled", reason=reason, by=by, moved_from=before[1])
     return _out(session, interview.id)
 
 

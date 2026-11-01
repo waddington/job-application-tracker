@@ -187,6 +187,46 @@
     "summary": "Round 2 · {{reason}} rescheduled: {{label}} $t(common:actions.cancel) $& <b>A & B</b>: é"
   },
   {
+    "key": "event.roundRescheduledByMe",
+    "params": { "round": 2, "title": "Pairing session", "kind": "pairing" },
+    "summary": "Round 2 · Pairing session rescheduled (you needed the change)"
+  },
+  {
+    "key": "event.roundRescheduledByThem",
+    "params": { "round": 2, "title": "Pairing session", "kind": "pairing" },
+    "summary": "Round 2 · Pairing session rescheduled (they needed the change)"
+  },
+  {
+    "key": "event.roundRescheduledByMutual",
+    "params": { "round": 2, "title": "Pairing session", "kind": "pairing" },
+    "summary": "Round 2 · Pairing session rescheduled (you both needed the change)"
+  },
+  {
+    "key": "event.roundRescheduledByNeither",
+    "params": { "round": 2, "title": "Pairing session", "kind": "pairing" },
+    "summary": "Round 2 · Pairing session rescheduled (neither side's doing)"
+  },
+  {
+    "key": "event.roundRescheduledByMeReason",
+    "params": { "round": 2, "title": null, "kind": "technical", "reason": "A clash at work" },
+    "summary": "Round 2 · Technical rescheduled (you needed the change): A clash at work"
+  },
+  {
+    "key": "event.roundRescheduledByThemReason",
+    "params": { "round": 2, "title": null, "kind": "technical", "reason": "They had a clash" },
+    "summary": "Round 2 · Technical rescheduled (they needed the change): They had a clash"
+  },
+  {
+    "key": "event.roundRescheduledByMutualReason",
+    "params": { "round": 2, "title": null, "kind": "technical", "reason": "A better day for all" },
+    "summary": "Round 2 · Technical rescheduled (you both needed the change): A better day for all"
+  },
+  {
+    "key": "event.roundRescheduledByNeitherReason",
+    "params": { "round": 2, "title": null, "kind": "technical", "reason": "A power cut" },
+    "summary": "Round 2 · Technical rescheduled (neither side's doing): A power cut"
+  },
+  {
     "key": "event.offerReceivedYear",
     "params": { "amount": 85000, "currency": "GBP" },
     "summary": "Offer received: £85,000 a year"

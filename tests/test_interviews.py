@@ -1,5 +1,7 @@
 from datetime import UTC, datetime, timedelta, timezone
 
+from jat.db.models import Event
+
 from .factories import post
 
 
@@ -180,6 +182,90 @@ def test_changing_status_and_time_together_isnt_a_reschedule(client, seeded):
     events = _interview_events(client, app["id"])
     assert "Round 1 · Pairing back on" in events
     assert not any("rescheduled" in e for e in events)
+
+
+def _moves(client, app_id):
+    """Each reschedule on the timeline: the data it saved, oldest first."""
+    detail = client.get(f"/api/v1/applications/{app_id}").json()
+    moved = [e for e in detail["events"] if e["kind"] == "interview" and "rescheduled" in (e["summary"] or "")]
+    return [e["data"].get("reschedule") for e in sorted(moved, key=lambda e: e["occurred_at"])]
+
+
+def test_every_reschedule_keeps_its_own_times_who_and_why(client, seeded):
+    app = _app(client, seeded)
+    first, second, third = _iso(3), _iso(5), _iso(7)
+    made = post(client, f"/api/v1/applications/{app['id']}/interviews", {"kind": "technical", "starts_at": first})
+    url = f"/api/v1/interviews/{made['id']}"
+    r = client.patch(url, json={"starts_at": second, "reschedule_by": "them", "reschedule_reason": " A  clash "})
+    assert r.status_code == 200, r.text
+    assert "reschedule_by" not in r.json()
+    assert client.patch(url, json={"starts_at": third, "reschedule_by": "me"}).status_code == 200
+    # Without a who, as an older client or the round's form sends: it's a move with nothing said.
+    moved = client.patch(url, json={"starts_at": first})
+    assert moved.json()["rescheduled_count"] == 3
+
+    moves = _moves(client, app["id"])
+    assert [(m["by"], m["reason"]) for m in moves] == [("them", "A clash"), ("me", None), (None, None)]
+    at = datetime.fromisoformat
+    assert [(at(m["from"]), at(m["to"])) for m in moves] == [
+        (at(first), at(second)),
+        (at(second), at(third)),
+        (at(third), at(first)),
+    ]
+    events = _interview_events(client, app["id"])
+    assert "Round 1 · Technical rescheduled (they needed the change): A clash" in events
+    assert "Round 1 · Technical rescheduled (you needed the change)" in events
+    assert "Round 1 · Technical rescheduled" in events
+
+
+def test_who_counts_only_for_a_real_reschedule(client, seeded):
+    app = _app(client, seeded)
+    made = post(client, f"/api/v1/applications/{app['id']}/interviews", {"kind": "pairing", "starts_at": _iso(3)})
+    url = f"/api/v1/interviews/{made['id']}"
+    # No move: same time, or a new title.
+    assert client.patch(url, json={"title": "Pairing", "reschedule_by": "them"}).status_code == 200
+    assert client.patch(url, json={"starts_at": made["starts_at"], "reschedule_by": "them"}).status_code == 200
+    # A status change in the same save isn't one either; nor is giving a time back.
+    client.patch(url, json={"status": "cancelled", "starts_at": _iso(4), "reschedule_by": "them"})
+    client.patch(url, json={"status": "scheduled", "starts_at": _iso(5), "reschedule_by": "them"})
+    client.patch(url, json={"starts_at": None, "reschedule_by": "them"})
+    client.patch(url, json={"starts_at": _iso(6), "reschedule_by": "them"})
+    assert client.get(url).json()["rescheduled_count"] == 0
+    assert _moves(client, app["id"]) == []
+    assert not any("needed the change" in e for e in _interview_events(client, app["id"]))
+
+
+def test_a_who_it_doesnt_know_is_refused_and_saves_nothing(client, seeded):
+    app = _app(client, seeded)
+    made = post(client, f"/api/v1/applications/{app['id']}/interviews", {"kind": "pairing", "starts_at": _iso(3)})
+    url = f"/api/v1/interviews/{made['id']}"
+    assert client.patch(url, json={"starts_at": _iso(5), "reschedule_by": "the cat"}).status_code == 422
+    kept = client.get(url).json()
+    assert (kept["starts_at"], kept["rescheduled_count"]) == (made["starts_at"], 0)
+
+
+def test_a_reschedule_from_before_who_keeps_showing_as_it_did(client, seeded, app):
+    made_app = _app(client, seeded)
+    with app.state.sessions.begin() as session:
+        session.add(
+            Event(
+                application_id=made_app["id"],
+                kind="interview",
+                summary="Round 1 rescheduled: an old clash",
+                data={
+                    "interview_id": "i1",
+                    "msg": {
+                        "key": "event.roundRescheduledReason",
+                        "params": {"round": 1, "title": None, "kind": "technical", "reason": "an old clash"},
+                    },
+                },
+            )
+        )
+    [event] = [
+        e for e in client.get(f"/api/v1/applications/{made_app['id']}").json()["events"] if e["kind"] == "interview"
+    ]
+    assert event["msg"]["key"] == "event.roundRescheduledReason"
+    assert "reschedule" not in event["data"]
 
 
 def test_upcoming_skips_cancelled_done_and_past(client, seeded):
