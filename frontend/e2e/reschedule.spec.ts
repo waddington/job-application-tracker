@@ -62,6 +62,19 @@ const moveDay = async (page: Page, dialog: Locator) => {
   await days.last().click();
   await page.locator('[class*="DateTimePicker-submitButton"]').click();
 };
+/** A day next to the current one: unlike moveDay, it stays within Today's two weeks. */
+const moveOneDay = async (page: Page, dialog: Locator) => {
+  await dialog.getByLabel("New time", { exact: true }).first().click();
+  const days = page.locator('[class*="DateTimePicker-day"]:not([data-outside])');
+  const selected = await days.evaluateAll((all) => all.findIndex((d) => d.hasAttribute("data-selected")));
+  await days.nth(selected > 0 ? selected - 1 : selected + 1).click();
+  await page.locator('[class*="DateTimePicker-submitButton"]').click();
+};
+const MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(" ");
+const dayMonth = (iso: string | null) => {
+  const d = new Date(iso ?? "");
+  return `${d.getDate()} ${MONTHS[d.getMonth()]}`;
+};
 const pickWho = async (page: Page, dialog: Locator, option: string) => {
   await who(dialog).click();
   await page.getByRole("option", { name: option, exact: true }).click();
@@ -103,7 +116,7 @@ test.describe("who needed the change", () => {
     await moveDay(page, dialog);
     await submit(dialog);
     await expect(dialog).toBeHidden();
-    await expect(page.getByText(`${label} rescheduled (neither side's doing)`).first()).toBeVisible();
+    await expect(page.getByText(`${label} rescheduled (not down to either of you)`).first()).toBeVisible();
   });
 
   test("a second reschedule keeps the first one's who and why", async ({ page, request }) => {
@@ -144,7 +157,7 @@ test.describe("who needed the change", () => {
     expect(patched.ok()).toBe(true);
     await page.goto(`/applications/${appId}`);
     await expect(page.getByText(`${label} rescheduled`, { exact: true }).first()).toBeVisible();
-    await expect(page.getByText(/needed the change|neither side/)).toHaveCount(0);
+    await expect(page.getByText(/needed the change|not down to either/)).toHaveCount(0);
     await expect(page.locator(".mantine-Card-root").getByText("Rescheduled", { exact: true })).toBeVisible();
   });
 });
@@ -236,11 +249,19 @@ test.describe("the button is wherever a booked round shows", () => {
     await page.goto("/");
     await expect(page.getByRole("button", { name: `Reschedule ${past.label}` })).toBeVisible();
     const dialog = await openDialog(page, soon.label);
-    await moveDay(page, dialog);
+    await moveOneDay(page, dialog);
     await pickWho(page, dialog, "Them");
     await submit(dialog);
     await expect(dialog).toBeHidden();
     await expect.poll(async () => (await moves(request, soon.appId))[0]?.data.reschedule?.by).toBe("them");
+    // The new time is on the row with no reload.
+    const moved = await roundNow(request, soon.round.id);
+    const line = page
+      .locator(".mantine-Stack-root")
+      .filter({ has: page.getByRole("button", { name: `Reschedule ${soon.label}` }) })
+      .last();
+    await expect(line).toContainText(dayMonth(moved.starts_at));
+    await expect(line).not.toContainText(dayMonth(soon.round.starts_at));
   });
 
   test("the quick view: moves the round, and its end with it", async ({ page, request }) => {
@@ -261,6 +282,12 @@ test.describe("the button is wherever a booked round shows", () => {
     await expect.poll(async () => (await moves(request, appId))[0]?.data.reschedule?.by).toBe("mutual");
     const moved = (await roundNow(request, round.id)) as Round & { ends_at: string };
     expect(Date.parse(moved.ends_at) - Date.parse(moved.starts_at ?? "")).toBe(3_600_000);
+    // The quick view's round shows the new day straight away, and still does after a page refresh.
+    const badge = (where: Locator) => where.getByText(new RegExp(`^${label} · `));
+    await expect(badge(drawer)).toContainText(dayMonth(moved.starts_at));
+    await page.reload();
+    await page.getByRole("row").filter({ hasText: "From Quick View Co" }).click();
+    await expect(badge(drawer)).toContainText(dayMonth(moved.starts_at));
   });
 
   test("not on a round with no time, or one that's finished", async ({ page, request }) => {
@@ -275,6 +302,8 @@ test.describe("the button is wherever a booked round shows", () => {
     expect(done.id).toBeTruthy();
     await page.goto(`/applications/${appId}`);
     await expect(page.getByRole("button", { name: `Reschedule ${label}` })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Edit Round 2 · Undated" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Edit Round 3 · Done one" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Reschedule Round 2 · Undated" })).toBeHidden();
     await expect(page.getByRole("button", { name: "Reschedule Round 3 · Done one" })).toBeHidden();
   });

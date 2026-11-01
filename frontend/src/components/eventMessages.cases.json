@@ -204,7 +204,7 @@
   {
     "key": "event.roundRescheduledByNeither",
     "params": { "round": 2, "title": "Pairing session", "kind": "pairing" },
-    "summary": "Round 2 · Pairing session rescheduled (neither side's doing)"
+    "summary": "Round 2 · Pairing session rescheduled (not down to either of you)"
   },
   {
     "key": "event.roundRescheduledByMeReason",
@@ -224,7 +224,7 @@
   {
     "key": "event.roundRescheduledByNeitherReason",
     "params": { "round": 2, "title": null, "kind": "technical", "reason": "A power cut" },
-    "summary": "Round 2 · Technical rescheduled (neither side's doing): A power cut"
+    "summary": "Round 2 · Technical rescheduled (not down to either of you): A power cut"
   },
   {
     "key": "event.offerReceivedYear",

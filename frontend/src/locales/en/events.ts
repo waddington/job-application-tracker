@@ -23,11 +23,11 @@ export default {
   roundRescheduledByMe: "{{label}} rescheduled (you needed the change)",
   roundRescheduledByThem: "{{label}} rescheduled (they needed the change)",
   roundRescheduledByMutual: "{{label}} rescheduled (you both needed the change)",
-  roundRescheduledByNeither: "{{label}} rescheduled (neither side's doing)",
+  roundRescheduledByNeither: "{{label}} rescheduled (not down to either of you)",
   roundRescheduledByMeReason: "{{label}} rescheduled (you needed the change): {{reason}}",
   roundRescheduledByThemReason: "{{label}} rescheduled (they needed the change): {{reason}}",
   roundRescheduledByMutualReason: "{{label}} rescheduled (you both needed the change): {{reason}}",
-  roundRescheduledByNeitherReason: "{{label}} rescheduled (neither side's doing): {{reason}}",
+  roundRescheduledByNeitherReason: "{{label}} rescheduled (not down to either of you): {{reason}}",
   // {{money}} is built by formatMoney: the offer's currency, with digits in your language.
   offerReceivedYear: "Offer received: {{money}} a year",
   offerReceivedDay: "Offer received: {{money}} a day",

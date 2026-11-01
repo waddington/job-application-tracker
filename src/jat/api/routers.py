@@ -952,8 +952,9 @@ def add_activity(
     ] = None,
 ):
     app = get_or_404(session, Application, app_id)
-    # What you log is your own words, shown as typed: only the app writes a message (svc.log_message).
-    data = {k: v for k, v in body.data.items() if k != "msg"}
+    # What you log is your own words, shown as typed: only the app writes a message (svc.log_message)
+    # or a reschedule's record (interviews.record).
+    data = {k: v for k, v in body.data.items() if k not in ("msg", "reschedule")}
     if app_text == "followed_up":  # the only one: the server holds the key and the text together
         return svc.log_message(
             session,
