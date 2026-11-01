@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.2.40 (2026-11-01)
+
+- **Developers:** STAGESPLACEHOLDER read their text from the translation files, ready for other languages. The English is unchanged (#179).
+
 ## 1.2.39 (2026-11-01)
 
 - **Developers:** the app's text cutover is finished: a lint rule now stops hard-coded text in all frontend source except tests, the shadow helper is gone, and every count has its plural forms. A few rare API errors and validation messages still reach toasts in English (`i18n-uncoded-errors`). The English is unchanged (#177).
