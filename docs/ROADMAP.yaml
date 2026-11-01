@@ -302,6 +302,7 @@ phases:
       - {id: compaction-refresh-9, name: "Refresh the compaction prompt after #115: the i18n work so far and how to continue it, Docker shelved, new standing instructions and gotchas", owner: lead, status: done, estimate_h: 0.5, depends: [compaction-refresh-8]}
       - {id: delivery-speed, name: "Investigate where a parallel batch spends its time, and write down ideas to speed it up, with no change to how work is done yet (Kai, 2026-10-31)", owner: lead, status: done, estimate_h: 0.5, depends: [], prd: docs/prd/tracker.md, rfc: docs/rfc/delivery-speed.md}
       - {id: test-gaps-roadmap, name: "Add a roadmap phase for the test gaps the i18n work found (Kai, 2026-11-01)", owner: lead, status: done, estimate_h: 0.5, depends: [], prd: docs/prd/tracker.md, rfc: docs/rfc/i18n.md}
+      - {id: language-switch-label, name: "Make the language switch obvious: an outlined button with a globe, the current language and an arrow, in place of a faint icon (Kai, 2026-11-01: option D)", owner: lead, status: done, estimate_h: 0.5, depends: [i18n-switcher], prd: docs/prd/tracker.md, rfc: docs/rfc/i18n.md}
 
   - id: P11
     name: Test gaps

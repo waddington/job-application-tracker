@@ -140,7 +140,9 @@ describe("the language switch", () => {
   it("lists English, ticked, and Coming soon! greyed out", async () => {
     mockApi({ "/api/v1/health": HEALTH });
     renderAt("/no-such-page");
-    fireEvent.click(await screen.findByRole("button", { name: "Language" }));
+    const button = await screen.findByRole("button", { name: "Language: English" });
+    expect(button).toHaveTextContent("English");
+    fireEvent.click(button);
     const english = await screen.findByRole("menuitem", { name: "English", hidden: true });
     expect(english).toHaveAttribute("aria-current", "true");
     expect(english).toHaveAttribute("lang", "en");
@@ -150,7 +152,7 @@ describe("the language switch", () => {
   it("links to the guide for adding a language, in a new tab, and says so to a screen reader", async () => {
     mockApi({ "/api/v1/health": HEALTH });
     renderAt("/no-such-page");
-    fireEvent.click(await screen.findByRole("button", { name: "Language" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Language: English" }));
     const link = await screen.findByRole("menuitem", {
       name: "Don't see your language? Opens a guide on GitHub in a new tab.",
       hidden: true,
@@ -172,7 +174,7 @@ describe("the language switch", () => {
   it("the button says it opens a menu, and whether it's open", async () => {
     mockApi({ "/api/v1/health": HEALTH });
     renderAt("/no-such-page");
-    const button = await screen.findByRole("button", { name: "Language" });
+    const button = await screen.findByRole("button", { name: "Language: English" });
     expect(button).toHaveAttribute("aria-haspopup", "menu");
     expect(button).toHaveAttribute("aria-expanded", "false");
     fireEvent.click(button);
@@ -195,7 +197,7 @@ describe("the language switch", () => {
     vi.stubEnv("DEV", false);
     mockApi({ "/api/v1/health": HEALTH });
     renderAt("/no-such-page");
-    fireEvent.click(await screen.findByRole("button", { name: "Language" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Language: English" }));
     expect(await screen.findByRole("menuitem", { name: "English", hidden: true })).toBeInTheDocument();
     expect(screen.queryByRole("menuitem", { name: "Pseudo-language (dev)", hidden: true })).toBeNull();
   });
@@ -203,7 +205,7 @@ describe("the language switch", () => {
   it("in dev, switches to the pseudo-language without remembering it", async () => {
     mockApi({ "/api/v1/health": HEALTH });
     renderAt("/no-such-page");
-    fireEvent.click(await screen.findByRole("button", { name: "Language" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Language: English" }));
     fireEvent.click(await screen.findByRole("menuitem", { name: "Pseudo-language (dev)", hidden: true }));
     expect(await screen.findByRole("heading", { name: /^\[Þàĝé ñöţ ƒöûñð/ })).toBeInTheDocument();
     expect(document.documentElement.getAttribute("lang")).toBe(PSEUDO);
