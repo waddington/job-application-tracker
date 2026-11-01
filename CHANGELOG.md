@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.2.43 (2026-11-01)
+
+- **Developers:** UNCODEDPLACEHOLDER read their text from the translation files, ready for other languages. The English is unchanged (#181).
+
 ## 1.2.42 (2026-11-01)
 
 - **The language switch is easier to spot:** it's now an outlined button with a globe, your current language's name and an arrow, in place of a faint icon. On a phone it shows the globe alone (#182).
