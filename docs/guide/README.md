@@ -3,8 +3,8 @@
 Everything you need to run Job Application Tracker day to day, look after your data, and
 move it between computers. Start at the top if you're new.
 
-1. [Install and first run](install.md): what you need, trying it with demo data, setting it
-   up for real, and updating to a newer version.
+1. [Install and first run](install.md): what you need, getting it running, and trying it with
+   demo data.
 2. [Your data](your-data.md): where it lives, how the app finds it, what's in the folder,
    snapshots and pushing, backups, restoring, and using it on a second computer.
 3. [Using the app](using-the-app.md): a tour of every page, from Today and the Timeline to Insights:
@@ -12,8 +12,8 @@ move it between computers. Start at the top if you're new.
    deleting.
 4. [Customising](customising.md): your own stages and staleness thresholds, strict
    Jira-style transitions, and snapshot timing (`config.toml`).
-5. [Command reference](commands.md): every `jat` command, settings and environment
-   variables, and the local JSON API.
+5. [Command reference](commands.md): every `jat` command, updating to a newer version,
+   settings and environment variables, and the local JSON API.
 6. [Troubleshooting](troubleshooting.md): common problems and how to fix them.
 7. [Adding a language](adding-a-language.md): translate the app into your language, step by step.
 
