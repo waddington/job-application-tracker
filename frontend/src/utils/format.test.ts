@@ -45,7 +45,7 @@ describe("formatDay", () => {
   it("uses English for a regional variant or a language it doesn't know", () => {
     expect(formatDay(AT, "dayMonth", "en-GB")).toBe("5 Mar");
     expect(formatDay(AT, "dayMonth", "en-XA")).toBe("5 Mar");
-    expect(formatDay(AT, "dayMonth", "fr")).toBe("5 Mar");
+    expect(formatDay(AT, "dayMonth", "xx")).toBe("5 Mar");
     expect(formatDay(AT, "dayMonth", "constructor")).toBe("5 Mar"); // not a prototype key
   });
 

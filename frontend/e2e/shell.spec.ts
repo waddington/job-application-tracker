@@ -109,11 +109,12 @@ test.describe("a browser that prefers dark", () => {
 });
 
 test.describe("a browser in another language, with a stale saved choice", () => {
-  test.use({ locale: "de-DE" });
+  test.use({ locale: "xx-YY" }); // no language has this code, so it stays true as languages are added
 
   test("falls back to English, all the way", async ({ page, context }) => {
     await context.addInitScript(() => localStorage.setItem("jat.language", "xx"));
     await opened(page);
+    expect(await page.evaluate(() => navigator.language)).toBe("xx-YY");
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
   });
 });

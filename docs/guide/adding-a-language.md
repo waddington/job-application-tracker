@@ -178,15 +178,17 @@ export const LANGUAGE_NAMES: Record<Language, string> = { en: "English", pl: "Po
 
 ## 6. Try it
 
-Make some made-up data to look at, and run the app in two terminals:
+Make some made-up data to look at, and run the app in two terminals. These use port 8771, not the
+usual 8770: if you already use the app, your own copy may be running on 8770, and this would then
+show your real job search and change it as you click around.
 
 ```bash
 uv run python scripts/seed_demo.py /tmp/jat-demo
-uv run jat --data-dir /tmp/jat-demo serve --dev
+uv run jat --data-dir /tmp/jat-demo serve --dev --port 8771
 ```
 
 ```bash
-pnpm --dir frontend dev
+JAT_API_URL=http://127.0.0.1:8771 pnpm --dir frontend dev
 ```
 
 Open <http://127.0.0.1:5173> and choose your language from the button at the top right, beside
@@ -214,11 +216,22 @@ a line English doesn't, or has lost or invented a `{{value}}`. The failure names
 lines. It stops at the first file with a problem, so fix that one and run it again:
 
 ```text
- file: "pl/insights.json"
- pluralForms: [ { key: "sankey.nodes.holding", missing: [ "one" ] } ]
+    "file": "pl/insights.json",
+-   "pluralForms": [],
++   "pluralForms": [
++     {
++       "key": "sankey.nodes.holding",
++       "missing": [
++         "few",
++         "many",
++         "one",
++       ],
++     },
++   ],
 ```
 
-That says `holding_one` is missing from `sankey` → `nodes` in `insights.json`. Run just this check,
+That says `holding_few`, `holding_many` and `holding_one` are missing from `sankey` → `nodes` in
+`insights.json`. Run just this check,
 more quickly, with `pnpm --dir frontend exec vitest run src/i18n/catalog.test.ts`.
 
 ## 8. The before and after text check
