@@ -60,10 +60,12 @@ def test_every_model_looked_up_has_a_code():
     named, variables, crud_models = set(), set(), set()
     for path in API.rglob("*.py"):
         text = path.read_text()
-        named |= set(re.findall(r"get_or_404\(session, ([A-Z]\w+)", text))
-        variables |= {(path.name, v) for v in re.findall(r"get_or_404\(session, ([a-z]\w+)", text)}
+        named |= set(re.findall(r"get_or_404\(\s*session,\s*([A-Z]\w+)", text))
+        variables |= {(path.name, v) for v in re.findall(r"get_or_404\(\s*session,\s*([a-z]\w+)", text)}
         for node in ast.walk(ast.parse(text)):
-            if isinstance(node, ast.Call) and getattr(node.func, "id", None) == "crud_router":
+            called = getattr(node, "func", None)
+            name = getattr(called, "id", None) or getattr(called, "attr", None)
+            if isinstance(node, ast.Call) and name == "crud_router":
                 crud_models |= {k.value.id for k in node.keywords if k.arg == "model"}
     assert crud_models == {"Agency", "Company", "Role"}, "the scan found the crud routers"
     # A model passed as a variable is only checked here if it comes from crud_router.

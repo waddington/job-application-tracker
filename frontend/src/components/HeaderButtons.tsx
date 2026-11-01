@@ -1,11 +1,25 @@
 import { ActionIcon, Box, Button, Menu, Modal, Tooltip } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { IconCheck, IconHelp, IconLanguage, IconPlus } from "@tabler/icons-react";
+import {
+  IconCheck,
+  IconChevronDown,
+  IconExternalLink,
+  IconHelp,
+  IconPlus,
+  IconWorld,
+} from "@tabler/icons-react";
 import { useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { isLanguage, LANGUAGE_NAMES, LANGUAGES, PSEUDO, saveLanguage } from "../i18n/language";
+import {
+  ADD_LANGUAGE_GUIDE,
+  isLanguage,
+  LANGUAGE_NAMES,
+  LANGUAGES,
+  PSEUDO,
+  saveLanguage,
+} from "../i18n/language";
 import { HowItWorks } from "./HowItWorks";
 import { NewApplicationModal } from "./NewApplicationModal";
 
@@ -74,11 +88,14 @@ export function NewApplicationButton({
 /**
  * Change the language by hand (docs/rfc/i18n.md §6): the shipped languages by their own names,
  * then "Coming soon!" until a second one ships. The choice is kept in this browser. In dev, the
- * pseudo-language is offered too.
+ * pseudo-language is offered too. Last, a plain link to the guide for adding a language: the app
+ * fetches nothing, and the browser only goes there if you open it.
  */
 export function LanguageSwitch() {
   const { t, i18n } = useTranslation();
   const [opened, setOpened] = useState(false);
+  const shown = i18n.resolvedLanguage ?? "";
+  const name = isLanguage(shown) ? LANGUAGE_NAMES[shown] : t("language.pseudo");
   const choose = (lang: string) => {
     void i18n.changeLanguage(lang);
     if (isLanguage(lang)) saveLanguage(lang);
@@ -93,9 +110,22 @@ export function LanguageSwitch() {
           aria-expanded; hidden while the menu is open. */}
       <Tooltip label={t("language.label")} disabled={opened}>
         <Menu.Target>
-          <ActionIcon variant="subtle" size="lg" aria-label={t("language.label")}>
-            <IconLanguage size={18} />
-          </ActionIcon>
+          <Button
+            variant="default"
+            size="compact-sm"
+            aria-label={t("language.current", { name })}
+            leftSection={<IconWorld size={16} aria-hidden />}
+            rightSection={
+              <Box component="span" visibleFrom="sm" lh={0}>
+                <IconChevronDown size={14} aria-hidden />
+              </Box>
+            }
+          >
+            {/* No room for the name or arrow on a phone: the header only just fits. */}
+            <Box component="span" visibleFrom="sm">
+              {name}
+            </Box>
+          </Button>
         </Menu.Target>
       </Tooltip>
       <Menu.Dropdown>
@@ -111,6 +141,17 @@ export function LanguageSwitch() {
             {t("language.pseudo")}
           </Menu.Item>
         )}
+        <Menu.Divider />
+        <Menu.Item
+          component="a"
+          href={ADD_LANGUAGE_GUIDE}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={t("language.addYoursLabel")}
+          rightSection={<IconExternalLink size={14} aria-hidden />}
+        >
+          {t("language.addYours")}
+        </Menu.Item>
       </Menu.Dropdown>
     </Menu>
   );

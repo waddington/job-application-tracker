@@ -8,6 +8,9 @@ export type Language = (typeof LANGUAGES)[number];
 /** Each language's name in itself, as the switch lists it: never translated. */
 export const LANGUAGE_NAMES: Record<Language, string> = { en: "English" };
 export const FALLBACK: Language = "en";
+/** The guide the switch links to. A test checks the file is there, so don't move it without this. */
+export const ADD_LANGUAGE_GUIDE =
+  "https://github.com/waddington/job-application-tracker/blob/main/docs/guide/adding-a-language.md";
 /**
  * Dev-only: accented, longer text that shows any string the translation layer missed.
  * Registered as en-XA, the standard pseudo-locale, so plurals follow English rules: an

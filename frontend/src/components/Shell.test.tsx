@@ -1,3 +1,6 @@
+import { existsSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { MantineProvider } from "@mantine/core";
 import { createMemoryHistory } from "@tanstack/react-router";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
@@ -5,7 +8,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { App } from "../App";
 import { i18n } from "../i18n";
-import { PSEUDO, STORAGE_KEY } from "../i18n/language";
+import { ADD_LANGUAGE_GUIDE, PSEUDO, STORAGE_KEY } from "../i18n/language";
 import { makeRouter } from "../router";
 import { mockApi, row, WORKFLOW } from "../test/mockApi";
 import { EditNameModal } from "./EditNameModal";
@@ -137,17 +140,41 @@ describe("the language switch", () => {
   it("lists English, ticked, and Coming soon! greyed out", async () => {
     mockApi({ "/api/v1/health": HEALTH });
     renderAt("/no-such-page");
-    fireEvent.click(await screen.findByRole("button", { name: "Language" }));
+    const button = await screen.findByRole("button", { name: "Language: English" });
+    expect(button).toHaveTextContent("English");
+    fireEvent.click(button);
     const english = await screen.findByRole("menuitem", { name: "English", hidden: true });
     expect(english).toHaveAttribute("aria-current", "true");
     expect(english).toHaveAttribute("lang", "en");
     expect(screen.getByRole("menuitem", { name: "Coming soon!", hidden: true })).toBeDisabled();
   });
 
+  it("links to the guide for adding a language, in a new tab, and says so to a screen reader", async () => {
+    mockApi({ "/api/v1/health": HEALTH });
+    renderAt("/no-such-page");
+    fireEvent.click(await screen.findByRole("button", { name: "Language: English" }));
+    const link = await screen.findByRole("menuitem", {
+      name: "Don't see your language? Opens a guide on GitHub in a new tab.",
+      hidden: true,
+    });
+    expect(link).toHaveTextContent("Don't see your language?");
+    expect(link.tagName).toBe("A");
+    expect(link).toHaveAttribute("href", ADD_LANGUAGE_GUIDE);
+    expect(link).toHaveAttribute("target", "_blank");
+    expect(link).toHaveAttribute("rel", "noopener noreferrer");
+  });
+
+  it("links to a guide that's really in the repo", () => {
+    const prefix = "https://github.com/waddington/job-application-tracker/blob/main/";
+    expect(ADD_LANGUAGE_GUIDE.startsWith(prefix)).toBe(true);
+    const guide = resolve(process.cwd(), "..", ADD_LANGUAGE_GUIDE.slice(prefix.length));
+    expect(existsSync(guide), guide).toBe(true);
+  });
+
   it("the button says it opens a menu, and whether it's open", async () => {
     mockApi({ "/api/v1/health": HEALTH });
     renderAt("/no-such-page");
-    const button = await screen.findByRole("button", { name: "Language" });
+    const button = await screen.findByRole("button", { name: "Language: English" });
     expect(button).toHaveAttribute("aria-haspopup", "menu");
     expect(button).toHaveAttribute("aria-expanded", "false");
     fireEvent.click(button);
@@ -170,7 +197,7 @@ describe("the language switch", () => {
     vi.stubEnv("DEV", false);
     mockApi({ "/api/v1/health": HEALTH });
     renderAt("/no-such-page");
-    fireEvent.click(await screen.findByRole("button", { name: "Language" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Language: English" }));
     expect(await screen.findByRole("menuitem", { name: "English", hidden: true })).toBeInTheDocument();
     expect(screen.queryByRole("menuitem", { name: "Pseudo-language (dev)", hidden: true })).toBeNull();
   });
@@ -178,7 +205,7 @@ describe("the language switch", () => {
   it("in dev, switches to the pseudo-language without remembering it", async () => {
     mockApi({ "/api/v1/health": HEALTH });
     renderAt("/no-such-page");
-    fireEvent.click(await screen.findByRole("button", { name: "Language" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Language: English" }));
     fireEvent.click(await screen.findByRole("menuitem", { name: "Pseudo-language (dev)", hidden: true }));
     expect(await screen.findByRole("heading", { name: /^\[Þàĝé ñöţ ƒöûñð/ })).toBeInTheDocument();
     expect(document.documentElement.getAttribute("lang")).toBe(PSEUDO);

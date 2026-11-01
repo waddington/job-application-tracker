@@ -12,6 +12,8 @@ requests all help.
   it would solve in your own job search, not just the button you'd add.
 - **Improve the docs.** The [user guide](docs/guide/README.md) is plain Markdown in
   `docs/guide/`.
+- **Add a language.** [Adding a language](docs/guide/adding-a-language.md) takes you through it,
+  and you don't need to be a developer.
 - **Send a pull request.** For anything bigger than a small fix, open an issue first so we can
   agree on the approach.
 - **Star the repo.** It helps other job seekers find it.
@@ -188,16 +190,8 @@ a test and the type check fail until it does.
   `api/validationIssues.cases.json`; a new request field gets a line in `fields`. A domain exception that carries a code (`WorkflowError`, `SnapshotError`…)
   takes it at the raise, and goes in `CODED_EXCEPTIONS` in `tests/test_error_codes.py`. Something
   not found gets its code from `NOT_FOUND` or `REQUIRED_NOT_FOUND` in `api/deps.py`.
-- **Adding a language** (once its translation is reviewed; the `multi-language` task does the
-  first):
-  1. its text in `frontend/src/locales/<code>/`, one JSON file per namespace (the tests
-     fail on any missing key or plural form);
-  2. register them in the app instance's `resources` (`frontend/src/i18n/index.ts`);
-  3. import its dayjs locale, and add its row to `PATTERNS` and `NUMBER_LOCALE` in
-     `utils/format.ts`;
-  4. add its code to `LANGUAGES` and its own name to `LANGUAGE_NAMES` in
-     `frontend/src/i18n/language.ts`. The switch lists it from then on. Do this step last:
-     until the others are done, picking it would show English.
+- **Adding a language:** the steps are in [the guide](docs/guide/adding-a-language.md), and the
+  language switch links to it. If you change one of the files or checks it names, change it too.
 - **Your data is never translated:** stage names, companies, notes and the like show as they
   were typed.
 
