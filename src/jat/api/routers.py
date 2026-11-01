@@ -93,6 +93,7 @@ router.include_router(
         schema_out=S.CompanyOut,
         prefix="/companies",
         tag="companies",
+        in_use="companies_in_use",
         order_by=func.lower(Company.name),
         search_column=Company.name,
         before_delete=_before_company_delete,
@@ -106,6 +107,7 @@ router.include_router(
         schema_out=S.AgencyOut,
         prefix="/agencies",
         tag="agencies",
+        in_use="agencies_in_use",
         order_by=func.lower(Agency.name),
         search_column=Agency.name,
     )
@@ -118,6 +120,7 @@ router.include_router(
         schema_out=S.RoleOut,
         prefix="/roles",
         tag="roles",
+        in_use="roles_in_use",
         order_by=func.lower(Role.title),
         search_column=Role.title,
         validate=_validate_role,
@@ -805,7 +808,7 @@ def find_duplicates(
     elif company_name:
         ids = dup.company_ids_named(session, company_name)
     else:
-        raise HTTPException(422, "Give company_id or company_name.")
+        raise CodedError(422, "Give company_id or company_name.", "duplicates_needs_company")
     return _duplicates(session, workflow, ids, role_title)
 
 
@@ -979,7 +982,7 @@ def link_contact(app_id: str, body: S.ApplicationContactIn, session: SessionDep)
 def unlink_contact(app_id: str, link_id: str, session: SessionDep):
     link = get_or_404(session, ApplicationContact, link_id)
     if link.application_id != app_id:
-        raise HTTPException(status_code=404, detail="link not found on this application")
+        raise CodedError(404, "link not found on this application", "application_link_not_found")
     session.delete(link)
     session.flush()
     return Response(status_code=204)

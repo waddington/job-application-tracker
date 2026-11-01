@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.2.43 (2026-11-01)
+
+- **Developers:** the API's last uncoded errors gain a `code` and `params` beside the unchanged English `detail`, and validation messages read their text from the translation files by Pydantic's `type`, ready for other languages. Validation responses only gain keys in `ctx`. A few rare validation types stay in Pydantic's English (#181).
+
 ## 1.2.42 (2026-11-01)
 
 - **The language switch is easier to spot:** it's now an outlined button with a globe, your current language's name and an arrow, in place of a faint icon. On a phone it shows the globe alone (#182).

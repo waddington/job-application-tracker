@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -14,6 +14,7 @@ from ..domain.insights import before_applied, role_progress, stage_paths
 from ..domain.workflow import Workflow
 from . import schemas as S
 from .deps import SessionDep, WorkflowDep
+from .errors import CodedError
 from .meetings import label as meeting_label
 
 router = APIRouter(tags=["roles"])
@@ -136,7 +137,7 @@ def role_summary(role_id: str, session: SessionDep, workflow: WorkflowDep):
     """One role with where it came from and where it stands, for its page."""
     found = summaries(session, Role.id == role_id, workflow=workflow)
     if not found:
-        raise HTTPException(404, f"Role {role_id} not found")
+        raise CodedError(404, f"Role {role_id} not found", "role_not_found", {"id": role_id})
     return found[0]
 
 

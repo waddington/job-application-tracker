@@ -6,7 +6,7 @@ from __future__ import annotations
 from datetime import UTC, date, datetime, timedelta
 from typing import Literal
 
-from fastapi import APIRouter, HTTPException, Response
+from fastapi import APIRouter, Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -77,7 +77,7 @@ def list_todos(
     lists ticked-off ones, most recently done first; `all` lists open ones, then done ones.
     Filter to one thing with `entity_type` and `entity_id` (both, or neither)."""
     if (entity_type is None) != (entity_id is None):
-        raise HTTPException(422, "give both entity_type and entity_id, or neither")
+        raise CodedError(422, "give both entity_type and entity_id, or neither", "todo_entity_incomplete")
     stmt = select(Todo)
     if entity_type is not None:
         stmt = stmt.where(Todo.entity_type == entity_type)

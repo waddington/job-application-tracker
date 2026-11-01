@@ -6,7 +6,7 @@ from datetime import date, datetime, timedelta
 from typing import Literal
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Query
 from pydantic import AwareDatetime, BaseModel
 
 from ..domain import conversations as conv_svc
@@ -16,6 +16,7 @@ from ..domain import scorecard as score_svc
 from ..domain import stats as stats_svc
 from . import schemas as S
 from .deps import SessionDep, WorkflowDep
+from .errors import CodedError
 
 router = APIRouter(prefix="/insights", tags=["insights"])
 
@@ -306,7 +307,8 @@ def weekly_activity(
     try:
         zone = ZoneInfo(tz)
     except (ZoneInfoNotFoundError, ValueError) as exc:
-        raise HTTPException(422, f"unknown time zone {tz!r}") from exc
+        detail = f"unknown time zone {tz!r}"
+        raise CodedError(422, detail, "time_zone_unknown", {"tz": tz, "quoted_tz": repr(tz)}) from exc
     if start is None:
         today = datetime.now(zone).date()
         start = today - timedelta(days=today.weekday(), weeks=weeks - 1)

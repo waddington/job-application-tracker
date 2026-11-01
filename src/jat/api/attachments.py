@@ -6,7 +6,7 @@ import contextlib
 import logging
 import mimetypes
 
-from fastapi import APIRouter, File, Form, HTTPException, Request, Response, UploadFile
+from fastapi import APIRouter, File, Form, Request, Response, UploadFile
 from fastapi.responses import FileResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -62,12 +62,13 @@ def _email_message(meta: dict) -> dict:
 
 def _check_entity(session: Session, entity_type: str | None, entity_id: str | None):
     if (entity_type is None) != (entity_id is None):
-        raise HTTPException(422, "Give both entity_type and entity_id, or neither")
+        raise CodedError(422, "Give both entity_type and entity_id, or neither", "attachment_entity_incomplete")
     if entity_type is None:
         return None
     model = ENTITY_MODELS.get(entity_type)
     if model is None:
-        raise HTTPException(422, f"entity_type must be one of {', '.join(ENTITY_MODELS)}")
+        kinds = ", ".join(ENTITY_MODELS)
+        raise CodedError(422, f"entity_type must be one of {kinds}", "attachment_entity_type_invalid", {"kinds": kinds})
     target = session.get(model, entity_id)
     if target is None:
         detail = f"entity_id: {entity_type} {entity_id} not found"
@@ -88,7 +89,7 @@ def list_attachments(
     if unattached:
         stmt = stmt.where(Attachment.entity_type.is_(None))
     elif entity_id is not None and entity_type is None:
-        raise HTTPException(422, "Give entity_type with entity_id")
+        raise CodedError(422, "Give entity_type with entity_id", "attachment_entity_type_required")
     elif entity_type:
         stmt = stmt.where(Attachment.entity_type == entity_type)
         if entity_id is not None:

@@ -3650,6 +3650,16 @@
             "anyOf": [
               {
                 "enum": [
+                  "agencies_in_use",
+                  "application_link_not_found",
+                  "attachment_entity_incomplete",
+                  "attachment_entity_type_invalid",
+                  "attachment_entity_type_required",
+                  "companies_in_use",
+                  "duplicates_needs_company",
+                  "roles_in_use",
+                  "time_zone_unknown",
+                  "todo_entity_incomplete",
                   "application_document_not_found",
                   "attachment_file_missing",
                   "attachment_not_found",
@@ -10807,8 +10817,20 @@
         "type": "object"
       },
       "ValidationIssue": {
-        "description": "One problem in the framework's own 422.",
+        "description": "One problem in the framework's own 422. `msg` is English; the frontend words it from `type`\nand `ctx`, the values that went into it (docs/rfc/i18n.md, `i18n-uncoded-errors`).",
         "properties": {
+          "ctx": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ctx"
+          },
           "loc": {
             "items": {
               "anyOf": [
@@ -10978,7 +11000,7 @@
   },
   "info": {
     "title": "Job Application Tracker",
-    "version": "1.2.42"
+    "version": "1.2.43"
   },
   "openapi": "3.1.0",
   "paths": {

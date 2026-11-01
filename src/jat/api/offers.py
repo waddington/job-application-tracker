@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException, Response
+from fastapi import APIRouter, Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -11,6 +11,7 @@ from ..domain import offers as svc
 from . import schemas as S
 from .crud import values
 from .deps import SessionDep, get_or_404
+from .errors import CodedError
 
 router = APIRouter(tags=["offers"])
 
@@ -44,7 +45,7 @@ def _outs(found) -> list[S.OfferOut]:
 def _out(session: Session, offer_id: str) -> S.OfferOut:
     found = session.execute(_query().where(Offer.id == offer_id)).all()
     if not found:
-        raise HTTPException(status_code=404, detail=f"Offer {offer_id} not found")
+        raise CodedError(404, f"Offer {offer_id} not found", "offer_not_found", {"id": offer_id})
     return _outs(found)[0]
 
 
