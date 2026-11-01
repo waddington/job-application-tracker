@@ -218,6 +218,100 @@ def test_every_reschedule_keeps_its_own_times_who_and_why(client, seeded):
     assert "Round 1 · Technical rescheduled" in events
 
 
+def _timeline_item(client, event_id):
+    items = client.get("/api/v1/timeline").json()["items"]
+    return next(i for i in items if i["id"] == f"event:{event_id}")
+
+
+def _set_reschedule(client, app_id, value, kind="interview"):
+    """The event a hand-edited export could hold: the API won't write these itself."""
+    made = post(client, f"/api/v1/applications/{app_id}/activities", {"kind": kind, "summary": "Moved it"})
+    with client.app.state.sessions.begin() as session:
+        session.get(Event, made["id"]).data = {"reschedule": value}
+    return made["id"]
+
+
+def _read_both(client, app_id, event_id):
+    """The field as the event and the Timeline item give it: the two always agree."""
+    events = client.get(f"/api/v1/applications/{app_id}").json()["events"]
+    on_event = next(e for e in events if e["id"] == event_id)["reschedule"]
+    assert _timeline_item(client, event_id)["reschedule"] == on_event
+    return on_event
+
+
+def test_a_real_reschedule_gives_its_move_on_both_timelines(client, seeded):
+    app = _app(client, seeded)
+    before, after = _iso(3), _iso(5)
+    made = post(client, f"/api/v1/applications/{app['id']}/interviews", {"kind": "technical", "starts_at": before})
+    client.patch(
+        f"/api/v1/interviews/{made['id']}",
+        json={"starts_at": after, "reschedule_by": "them", "reschedule_reason": "A clash"},
+    )
+    event = next(e for e in client.get(f"/api/v1/applications/{app['id']}").json()["events"] if e["reschedule"])
+    move = _read_both(client, app["id"], event["id"])
+    assert (move["by"], move["reason"]) == ("them", "A clash")
+    at = datetime.fromisoformat
+    assert (at(move["from_at"]), at(move["to_at"])) == (at(before), at(after))
+    # What was already there means what it did.
+    assert event["data"]["reschedule"]["by"] == "them"
+    assert event["summary"] == "Round 1 · Technical rescheduled (they needed the change): A clash"
+
+
+def test_a_partial_move_keeps_what_it_has(client, seeded):
+    app = _app(client, seeded)
+    times = {"from": "2026-11-03T10:00:00+00:00", "to": "2026-11-05T14:00:00+00:00"}
+    for extra in ({}, {"by": None, "reason": None}, {"reason": "   "}, {"reason": ""}, {"other": 1}):
+        move = _read_both(client, app["id"], _set_reschedule(client, app["id"], times | extra))
+        assert (move["by"], move["reason"]) == (None, None), extra
+        assert datetime.fromisoformat(move["from_at"]) == datetime.fromisoformat(times["from"])
+    assert _read_both(client, app["id"], _set_reschedule(client, app["id"], times | {"by": "me"}))["by"] == "me"
+    moved = _read_both(client, app["id"], _set_reschedule(client, app["id"], times | {"reason": " Why "}))
+    assert moved["reason"] == "Why"
+
+
+def test_a_bad_move_reads_as_absent_and_never_fails(client, seeded):
+    app = _app(client, seeded)
+    good = {"from": "2026-11-03T10:00:00+00:00", "to": "2026-11-05T14:00:00+00:00"}
+    for bad in (
+        None,
+        "moved",
+        7,
+        [],
+        {},
+        {"from": good["from"]},
+        {"to": good["to"]},
+        good | {"from": "not a date"},
+        good | {"from": None},
+        good | {"to": 1700000000},
+        good | {"to": "1700000000"},
+        good | {"to": True},
+        good | {"from": "2026-11-03T10:00:00"},  # no zone: it can't be shown at the right time
+        good | {"from": "2026-11-03"},
+        good | {"by": "the cat"},
+        good | {"by": 3},
+        good | {"by": ["me"]},
+        good | {"by": {"me": 1}},
+        good | {"reason": 12},
+        good | {"reason": ["why"]},
+    ):
+        assert _read_both(client, app["id"], _set_reschedule(client, app["id"], bad)) is None, bad
+
+
+def test_only_an_interview_event_has_a_move(client, seeded):
+    app = _app(client, seeded)
+    good = {"from": "2026-11-03T10:00:00+00:00", "to": "2026-11-05T14:00:00+00:00"}
+    assert _read_both(client, app["id"], _set_reschedule(client, app["id"], good, kind="call")) is None
+    # An older event, and one a client tried to fill in itself (the endpoint drops it).
+    plain = post(client, f"/api/v1/applications/{app['id']}/activities", {"kind": "interview", "summary": "Old"})
+    assert _read_both(client, app["id"], plain["id"]) is None
+    sent = post(
+        client,
+        f"/api/v1/applications/{app['id']}/activities",
+        {"kind": "interview", "summary": "Sent", "data": {"reschedule": good}},
+    )
+    assert _read_both(client, app["id"], sent["id"]) is None
+
+
 def test_who_counts_only_for_a_real_reschedule(client, seeded):
     app = _app(client, seeded)
     made = post(client, f"/api/v1/applications/{app['id']}/interviews", {"kind": "pairing", "starts_at": _iso(3)})

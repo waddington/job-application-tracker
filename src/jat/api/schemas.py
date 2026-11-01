@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import Annotated, Any, ClassVar, Literal
+from typing import Annotated, Any, ClassVar, Literal, get_args
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, HttpUrl, TypeAdapter, ValidationError, model_validator
 from pydantic_core import PydanticCustomError
@@ -1161,6 +1161,39 @@ def read_event_msg(data: Any) -> Any:
         return None
 
 
+class RoundMove(BaseModel):
+    """One reschedule of a round, as it was when it happened (`interviews.record` saves it)."""
+
+    from_at: datetime
+    to_at: datetime
+    by: RescheduleBy | None = None  # not said
+    reason: str | None = None  # the person's own words
+
+
+def _aware(value: Any) -> datetime | None:
+    if not isinstance(value, str):  # pydantic would take a number as a timestamp
+        return None
+    try:
+        when = datetime.fromisoformat(value)
+    except ValueError:
+        return None
+    return when if when.utcoffset() is not None else None
+
+
+def read_round_move(kind: str, data: Any) -> RoundMove | None:
+    """An interview event's saved move. A bad shape (a hand-edited export) is null, never a 500."""
+    saved = data.get("reschedule") if kind == "interview" and isinstance(data, dict) else None
+    if not isinstance(saved, dict):
+        return None
+    from_at, to_at = _aware(saved.get("from")), _aware(saved.get("to"))
+    by, reason = saved.get("by"), saved.get("reason")
+    if from_at is None or to_at is None or by not in (None, *get_args(RescheduleBy)):
+        return None
+    if reason is not None and not isinstance(reason, str):
+        return None
+    return RoundMove(from_at=from_at, to_at=to_at, by=by, reason=(reason or "").strip() or None)
+
+
 class EventOut(Out):
     id: str
     application_id: str
@@ -1172,10 +1205,12 @@ class EventOut(Out):
     data: dict[str, Any]
     created_at: datetime
     msg: EventMsg | None = None
+    reschedule: RoundMove | None = None
 
     @model_validator(mode="after")
-    def _read_msg(self) -> EventOut:
+    def _read_saved(self) -> EventOut:
         self.msg = read_event_msg(self.data)
+        self.reschedule = read_round_move(self.kind, self.data)
         return self
 
 

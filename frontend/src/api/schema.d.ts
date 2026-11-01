@@ -2443,6 +2443,7 @@ export interface components {
              * Format: date-time
              */
             occurred_at: string;
+            reschedule?: components["schemas"]["RoundMove"] | null;
             /** Summary */
             summary: string | null;
             /** To Stage */
@@ -3853,6 +3854,26 @@ export interface components {
             key: "event.roundDone";
             params: components["schemas"]["RoundParams"];
         };
+        /**
+         * RoundMove
+         * @description One reschedule of a round, as it was when it happened (`interviews.record` saves it).
+         */
+        RoundMove: {
+            /** By */
+            by?: ("me" | "them" | "mutual" | "neither") | null;
+            /**
+             * From At
+             * Format: date-time
+             */
+            from_at: string;
+            /** Reason */
+            reason?: string | null;
+            /**
+             * To At
+             * Format: date-time
+             */
+            to_at: string;
+        };
         /** RoundParams */
         RoundParams: {
             /** Kind */
@@ -4227,6 +4248,7 @@ export interface components {
              * @default []
              */
             people: components["schemas"]["TimelinePerson"][];
+            reschedule?: components["schemas"]["RoundMove"] | null;
             /** Role Id */
             role_id?: string | null;
             /** Role Title */

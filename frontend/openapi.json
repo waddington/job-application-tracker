@@ -4105,6 +4105,16 @@
             "title": "Occurred At",
             "type": "string"
           },
+          "reschedule": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RoundMove"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "summary": {
             "anyOf": [
               {
@@ -8958,6 +8968,55 @@
         "title": "RoundDoneMsg",
         "type": "object"
       },
+      "RoundMove": {
+        "description": "One reschedule of a round, as it was when it happened (`interviews.record` saves it).",
+        "properties": {
+          "by": {
+            "anyOf": [
+              {
+                "enum": [
+                  "me",
+                  "them",
+                  "mutual",
+                  "neither"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "By"
+          },
+          "from_at": {
+            "format": "date-time",
+            "title": "From At",
+            "type": "string"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "to_at": {
+            "format": "date-time",
+            "title": "To At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "from_at",
+          "to_at"
+        ],
+        "title": "RoundMove",
+        "type": "object"
+      },
       "RoundParams": {
         "properties": {
           "kind": {
@@ -10585,6 +10644,16 @@
             },
             "title": "People",
             "type": "array"
+          },
+          "reschedule": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RoundMove"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "role_id": {
             "anyOf": [
