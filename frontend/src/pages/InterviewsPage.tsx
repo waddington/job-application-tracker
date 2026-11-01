@@ -2,7 +2,6 @@ import {
   ActionIcon,
   Anchor,
   Badge,
-  Button,
   Card,
   Group,
   Loader,
@@ -20,37 +19,27 @@ import { useTranslation } from "react-i18next";
 import { useInterviews, type Interview } from "../api/interviewHooks";
 import { InterviewFormModal } from "../components/InterviewFormModal";
 import { roundStatus } from "../components/Interviews";
-import { RescheduledBadge, RescheduleModal } from "../components/Reschedule";
+import { RescheduleButton, RescheduledBadge } from "../components/Reschedule";
 import { roundLabel } from "../utils/rounds";
 import { formatDateTime } from "../utils/time";
 
 /** Edit a round, or move a booked one to another time. */
 function RoundActions({ interview }: { interview: Interview }) {
   const { t } = useTranslation("interviews");
-  const [open, setOpen] = useState<"edit" | "reschedule" | null>(null);
+  const [editing, setEditing] = useState(false);
   const label = roundLabel(interview);
   return (
     <Group gap={4} wrap="nowrap" justify="flex-end">
-      {interview.status === "scheduled" && interview.starts_at && (
-        <Button
-          size="compact-xs"
-          variant="light"
-          aria-label={t("reschedule.named", { label })}
-          onClick={() => setOpen("reschedule")}
-        >
-          {t("reschedule.action")}
-        </Button>
-      )}
+      <RescheduleButton interview={interview} />
       <Tooltip label={t("edit")}>
-        <ActionIcon variant="subtle" aria-label={t("editNamed", { label })} onClick={() => setOpen("edit")}>
+        <ActionIcon variant="subtle" aria-label={t("editNamed", { label })} onClick={() => setEditing(true)}>
           <IconPencil size={16} />
         </ActionIcon>
       </Tooltip>
-      {open === "reschedule" && <RescheduleModal interview={interview} onClose={() => setOpen(null)} />}
-      {open === "edit" && (
+      {editing && (
         <InterviewFormModal
           opened
-          onClose={() => setOpen(null)}
+          onClose={() => setEditing(false)}
           applicationId={interview.application_id}
           interview={interview}
           nextRound={interview.round ?? 1}

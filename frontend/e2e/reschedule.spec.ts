@@ -1,0 +1,264 @@
+import type { APIRequestContext, Locator, Page } from "@playwright/test";
+
+import { expect, test } from "./fixtures";
+
+// Rescheduling a booked round: the same dialog from every place one shows, who needed the change
+// and why, and what the application's timeline keeps. Each test makes its own application.
+
+interface Round {
+  id: string;
+  starts_at: string | null;
+  rescheduled_count: number;
+}
+interface ApiEvent {
+  kind: string;
+  summary: string | null;
+  occurred_at: string;
+  data: { reschedule?: { from: string; to: string; by: string | null; reason: string | null } };
+}
+
+const API = "/api/v1";
+const who = (dialog: Locator) => dialog.getByLabel(/^Who needed the change\?/).first();
+const inDays = (days: number) =>
+  new Date(Math.floor((Date.now() + days * 86_400_000) / 1000) * 1000).toISOString();
+const post = async <T>(request: APIRequestContext, path: string, data: object) => {
+  const made = await request.post(`${API}/${path}`, { data });
+  expect(made.ok(), `POST ${path}`).toBe(true);
+  return (await made.json()) as T;
+};
+const bookedRound = async (request: APIRequestContext, company: string, title: string, days = 6) => {
+  const app = await post<{ id: string }>(request, "applications/quick", {
+    company_name: company,
+    role_title: "Tested Role",
+    route: "direct",
+    tags: [],
+  });
+  const round = await post<Round>(request, `applications/${app.id}/interviews`, {
+    title,
+    starts_at: inDays(days),
+  });
+  return { appId: app.id, round, label: `Round 1 · ${title}` };
+};
+const roundNow = async (request: APIRequestContext, id: string) =>
+  (await (await request.get(`${API}/interviews/${id}`)).json()) as Round;
+/** Each reschedule on the application's timeline, oldest first. */
+const moves = async (request: APIRequestContext, appId: string) => {
+  const detail = (await (await request.get(`${API}/applications/${appId}`)).json()) as { events: ApiEvent[] };
+  return detail.events
+    .filter((e) => e.kind === "interview" && e.summary?.includes("rescheduled"))
+    .sort((a, b) => a.occurred_at.localeCompare(b.occurred_at));
+};
+
+const openDialog = async (page: Page, label: string, within: Page | Locator = page) => {
+  await within.getByRole("button", { name: `Reschedule ${label}` }).click();
+  const dialog = page.locator(".mantine-Modal-content");
+  await expect(dialog.getByText(`Reschedule ${label}`)).toBeVisible();
+  await dialog.getByText(`Reschedule ${label}`).click(); // also waits for it to stop moving
+  return dialog;
+};
+const moveDay = async (page: Page, dialog: Locator) => {
+  await dialog.getByLabel("New time", { exact: true }).first().click();
+  const days = page.locator('[class*="DateTimePicker-day"]:not([data-outside]):not([data-selected])');
+  await days.last().click();
+  await page.locator('[class*="DateTimePicker-submitButton"]').click();
+};
+const pickWho = async (page: Page, dialog: Locator, option: string) => {
+  await who(dialog).click();
+  await page.getByRole("option", { name: option, exact: true }).click();
+};
+const submit = (dialog: Locator) => dialog.getByRole("button", { name: "Reschedule", exact: true }).click();
+
+test.describe("who needed the change", () => {
+  test("is saved with the reason and shown after a reload", async ({ page, request }) => {
+    const { appId, round, label } = await bookedRound(request, "Who Saved Co", "Who saved");
+    await page.goto(`/applications/${appId}`);
+    const dialog = await openDialog(page, label);
+    await moveDay(page, dialog);
+    await pickWho(page, dialog, "Them");
+    await dialog.getByLabel("Why? (optional)").fill("Their manager is away");
+    await submit(dialog);
+    await expect(dialog).toBeHidden();
+
+    await page.reload();
+    await expect(
+      page.getByText(`${label} rescheduled (they needed the change): Their manager is away`).first(),
+    ).toBeVisible();
+    const [move] = await moves(request, appId);
+    expect(move?.data.reschedule).toMatchObject({ by: "them", reason: "Their manager is away" });
+    expect(Date.parse(move?.data.reschedule?.from ?? "")).toBe(Date.parse(round.starts_at ?? ""));
+    expect(Date.parse(move?.data.reschedule?.to ?? "")).toBe(
+      Date.parse((await roundNow(request, round.id)).starts_at ?? ""),
+    );
+  });
+
+  test("offers each choice, in plain words, with no reason needed", async ({ page, request }) => {
+    const { appId, label } = await bookedRound(request, "Who Options Co", "Options");
+    await page.goto(`/applications/${appId}`);
+    const dialog = await openDialog(page, label);
+    await who(dialog).click();
+    for (const option of ["Me", "Them", "Both of us", "Neither of us"]) {
+      await expect(page.getByRole("option", { name: option, exact: true })).toBeVisible();
+    }
+    await page.getByRole("option", { name: "Neither of us", exact: true }).click();
+    await moveDay(page, dialog);
+    await submit(dialog);
+    await expect(dialog).toBeHidden();
+    await expect(page.getByText(`${label} rescheduled (neither side's doing)`).first()).toBeVisible();
+  });
+
+  test("a second reschedule keeps the first one's who and why", async ({ page, request }) => {
+    const { appId, round, label } = await bookedRound(request, "Twice Moved Co", "Twice");
+    await page.goto(`/applications/${appId}`);
+    let dialog = await openDialog(page, label);
+    await moveDay(page, dialog);
+    await pickWho(page, dialog, "Them");
+    await dialog.getByLabel("Why? (optional)").fill("First clash");
+    await submit(dialog);
+    await expect(dialog).toBeHidden();
+    await expect.poll(async () => (await roundNow(request, round.id)).rescheduled_count).toBe(1);
+
+    dialog = await openDialog(page, label);
+    // Starts empty: the last move's answer isn't this one's.
+    await expect(who(dialog)).toHaveValue("");
+    await expect(dialog.getByLabel("Why? (optional)")).toHaveValue("");
+    await moveDay(page, dialog);
+    await pickWho(page, dialog, "Me");
+    await submit(dialog);
+    await expect(dialog).toBeHidden();
+
+    await page.reload();
+    await expect(
+      page.getByText(`${label} rescheduled (they needed the change): First clash`).first(),
+    ).toBeVisible();
+    await expect(page.getByText(`${label} rescheduled (you needed the change)`).first()).toBeVisible();
+    const saved = await moves(request, appId);
+    expect(saved.map((m) => m.data.reschedule?.by).sort()).toEqual(["me", "them"]);
+    const byThem = saved.find((m) => m.data.reschedule?.by === "them");
+    const byMe = saved.find((m) => m.data.reschedule?.by === "me");
+    expect(Date.parse(byMe?.data.reschedule?.from ?? "")).toBe(Date.parse(byThem?.data.reschedule?.to ?? ""));
+  });
+
+  test("a move with no who, like an old one, says nothing about who", async ({ page, request }) => {
+    const { appId, round, label } = await bookedRound(request, "Old Move Co", "Old move");
+    const patched = await request.patch(`${API}/interviews/${round.id}`, { data: { starts_at: inDays(8) } });
+    expect(patched.ok()).toBe(true);
+    await page.goto(`/applications/${appId}`);
+    await expect(page.getByText(`${label} rescheduled`, { exact: true }).first()).toBeVisible();
+    await expect(page.getByText(/needed the change|neither side/)).toHaveCount(0);
+    await expect(page.locator(".mantine-Card-root").getByText("Rescheduled", { exact: true })).toBeVisible();
+  });
+});
+
+test.describe("what the dialog asks", () => {
+  test("asks for who before it saves, and sends nothing until then", async ({ page, request }) => {
+    const { appId, round, label } = await bookedRound(request, "Who Required Co", "Required");
+    await page.goto(`/applications/${appId}`);
+    const dialog = await openDialog(page, label);
+    await moveDay(page, dialog);
+    const writes: string[] = [];
+    page.on("request", (r) => {
+      if (r.method() !== "GET") writes.push(r.url());
+    });
+    await submit(dialog);
+    await expect(dialog.getByText("Choose who needed the change")).toBeVisible();
+    expect(writes).toEqual([]);
+    await pickWho(page, dialog, "Both of us");
+    await expect(dialog.getByText("Choose who needed the change")).toBeHidden();
+    await submit(dialog);
+    await expect(dialog).toBeHidden();
+    expect((await roundNow(request, round.id)).rescheduled_count).toBe(1);
+  });
+
+  test("Cancel saves nothing, and the next open starts empty", async ({ page, request }) => {
+    const { appId, round, label } = await bookedRound(request, "Cancelled Move Co", "Called off");
+    await page.goto(`/applications/${appId}`);
+    const dialog = await openDialog(page, label);
+    await moveDay(page, dialog);
+    await pickWho(page, dialog, "Them");
+    await dialog.getByLabel("Why? (optional)").fill("Never mind");
+    const writes: string[] = [];
+    page.on("request", (r) => {
+      if (r.method() !== "GET") writes.push(r.url());
+    });
+    await dialog.getByRole("button", { name: "Cancel" }).click();
+    await expect(dialog).toBeHidden();
+    expect(writes).toEqual([]);
+    const after = await roundNow(request, round.id);
+    expect(after.starts_at).toBe(round.starts_at);
+    expect(after.rescheduled_count).toBe(0);
+    expect(await moves(request, appId)).toEqual([]);
+
+    const again = await openDialog(page, label);
+    await expect(who(again)).toHaveValue("");
+    await expect(again.getByLabel("Why? (optional)")).toHaveValue("");
+  });
+
+  test("a reason can't run past its limit", async ({ page, request }) => {
+    const { appId, label } = await bookedRound(request, "Long Reason Co", "Long reason");
+    await page.goto(`/applications/${appId}`);
+    const dialog = await openDialog(page, label);
+    await expect(dialog.getByLabel("Why? (optional)")).toHaveAttribute("maxlength", "500");
+  });
+});
+
+test.describe("the button is wherever a booked round shows", () => {
+  test("Interviews: a round moved from here is saved", async ({ page, request }) => {
+    const { appId, label } = await bookedRound(request, "From Interviews Co", "On interviews");
+    await page.goto("/interviews");
+    const dialog = await openDialog(page, label);
+    await moveDay(page, dialog);
+    await pickWho(page, dialog, "Me");
+    await submit(dialog);
+    await expect(dialog).toBeHidden();
+    await expect.poll(async () => (await moves(request, appId))[0]?.data.reschedule?.by).toBe("me");
+  });
+
+  test("Today: a round coming up, and one awaiting its outcome", async ({ page, request }) => {
+    const soon = await bookedRound(request, "From Today Co", "On today");
+    const past = await bookedRound(request, "From Today Past Co", "Past today", -1);
+    await page.goto("/");
+    await expect(page.getByRole("button", { name: `Reschedule ${past.label}` })).toBeVisible();
+    const dialog = await openDialog(page, soon.label);
+    await moveDay(page, dialog);
+    await pickWho(page, dialog, "Them");
+    await submit(dialog);
+    await expect(dialog).toBeHidden();
+    await expect.poll(async () => (await moves(request, soon.appId))[0]?.data.reschedule?.by).toBe("them");
+  });
+
+  test("the quick view: moves the round, and its end with it", async ({ page, request }) => {
+    const { appId, round, label } = await bookedRound(request, "From Quick View Co", "On quick view");
+    const withEnd = await request.patch(`${API}/interviews/${round.id}`, {
+      data: { ends_at: new Date(Date.parse(round.starts_at ?? "") + 3_600_000).toISOString() },
+    });
+    expect(withEnd.ok()).toBe(true);
+    await page.goto("/applications");
+    await page.getByRole("row").filter({ hasText: "From Quick View Co" }).click();
+    const drawer = page.getByRole("dialog").filter({ hasText: "From Quick View Co" });
+    const dialog = await openDialog(page, label, drawer);
+    await moveDay(page, dialog);
+    await pickWho(page, dialog, "Both of us");
+    await submit(dialog);
+    await expect(dialog).toBeHidden();
+    await expect(drawer).toBeVisible();
+    await expect.poll(async () => (await moves(request, appId))[0]?.data.reschedule?.by).toBe("mutual");
+    const moved = (await roundNow(request, round.id)) as Round & { ends_at: string };
+    expect(Date.parse(moved.ends_at) - Date.parse(moved.starts_at ?? "")).toBe(3_600_000);
+  });
+
+  test("not on a round with no time, or one that's finished", async ({ page, request }) => {
+    const { appId, label } = await bookedRound(request, "Not Booked Co", "Finished");
+    const interviews = `applications/${appId}/interviews`;
+    await post(request, interviews, { title: "Undated" });
+    const done = await post<Round>(request, interviews, {
+      title: "Done one",
+      starts_at: inDays(-3),
+      status: "done",
+    });
+    expect(done.id).toBeTruthy();
+    await page.goto(`/applications/${appId}`);
+    await expect(page.getByRole("button", { name: `Reschedule ${label}` })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Reschedule Round 2 · Undated" })).toBeHidden();
+    await expect(page.getByRole("button", { name: "Reschedule Round 3 · Done one" })).toBeHidden();
+  });
+});

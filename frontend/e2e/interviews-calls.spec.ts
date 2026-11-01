@@ -136,6 +136,11 @@ const pick = async (page: Page, dialog: Locator, label: string, option: string) 
   await dialog.getByLabel(label, { exact: true }).first().click();
   await page.getByRole("option", { name: option, exact: true }).click();
 };
+const whoField = (dialog: Locator) => dialog.getByLabel(/^Who needed the change\?/).first();
+const pickWho = async (page: Page, dialog: Locator, option: string) => {
+  await whoField(dialog).click();
+  await page.getByRole("option", { name: option, exact: true }).click();
+};
 const answerNext = (page: Page, accept: boolean) => {
   page.once("dialog", (d) => void (accept ? d.accept() : d.dismiss()));
 };
@@ -623,6 +628,7 @@ test.describe("rescheduling", () => {
     await openInterviews(page);
     let dialog = await open(page, "Round 1 · Moving");
     await moveDay(page, dialog, "New time");
+    await pickWho(page, dialog, "Them");
     await dialog.getByLabel("Why? (optional)").fill("  They had a   clash ");
     await dialog.getByRole("button", { name: "Reschedule", exact: true }).click();
     await expect(dialog).toBeHidden();
@@ -636,6 +642,7 @@ test.describe("rescheduling", () => {
 
     dialog = await open(page, "Round 1 · Moving");
     await moveDay(page, dialog, "New time");
+    await pickWho(page, dialog, "Me");
     await dialog.getByRole("button", { name: "Reschedule", exact: true }).click();
     await expect(dialog).toBeHidden();
     await expect(interviewRow(page, "Round 1 · Moving")).toContainText("Rescheduled ×2");
@@ -684,6 +691,7 @@ test.describe("rescheduling", () => {
     await openInterviews(page);
     const dialog = await open(page, "Round 1 · Stuck");
     await moveDay(page, dialog, "New time");
+    await pickWho(page, dialog, "Both of us");
     await dialog.getByLabel("Why? (optional)").fill("Kept reason");
     await dialog.getByRole("button", { name: "Reschedule", exact: true }).click();
     await expect(dialog.getByRole("button", { name: "Cancel" })).toBeDisabled();
@@ -691,6 +699,7 @@ test.describe("rescheduling", () => {
     await expect(dialog).toBeVisible();
     await expect(page.getByText("That didn't work").first()).toBeVisible();
     await expect(dialog.getByLabel("Why? (optional)")).toHaveValue("Kept reason");
+    await expect(whoField(dialog)).toHaveValue("Both of us");
   });
 });
 

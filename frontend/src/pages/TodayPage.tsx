@@ -23,6 +23,7 @@ import { useMemo, useState, type ReactNode } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
 import { InterviewOutcome } from "../components/OutcomeNotes";
+import { RescheduleButton } from "../components/Reschedule";
 import { ReplyHabit } from "../components/ReplyHabit";
 import { PersonName } from "../components/GhostMark";
 import { api, unwrap, type ApplicationRow, type Contact } from "../api/client";
@@ -459,7 +460,13 @@ export function TodayPage() {
     ...(data?.upcoming ?? []).map((i) => ({
       key: i.id,
       at: i.starts_at ?? i.deadline_at ?? "9999",
-      node: <InterviewLine key={i.id} interview={i} />,
+      node: (
+        <InterviewLine
+          key={i.id}
+          interview={i}
+          action={i.starts_at ? <RescheduleButton interview={i} /> : undefined}
+        />
+      ),
     })),
     ...todosLater.map((todo) => ({
       key: todo.id,
@@ -669,7 +676,16 @@ export function TodayPage() {
                   hint={t("sections.outcomeHint")}
                 >
                   {data.awaiting_outcome.map((i) => (
-                    <InterviewLine key={i.id} interview={i} action={<InterviewOutcome interview={i} />} />
+                    <InterviewLine
+                      key={i.id}
+                      interview={i}
+                      action={
+                        <>
+                          <InterviewOutcome interview={i} />
+                          <RescheduleButton interview={i} />
+                        </>
+                      }
+                    />
                   ))}
                   {meetingsToClose.map((m) => (
                     <MeetingLine
