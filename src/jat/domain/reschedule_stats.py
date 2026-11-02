@@ -40,7 +40,7 @@ class Named:
 
 @dataclass
 class Rescheduling:
-    booked_rounds: int = 0  # had a time at some point; a take-home with only a deadline can't move
+    booked_rounds: int = 0  # has a time now, or has moved; a take-home with only a deadline can't move
     moved_rounds: int = 0
     moves: int = 0  # one round can move more than once
     by: Counter[str] = field(default_factory=Counter)  # me | them | mutual | neither

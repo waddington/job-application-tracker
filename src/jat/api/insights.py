@@ -373,7 +373,7 @@ class RescheduledNamed(BaseModel):
 
 
 class ReschedulingOut(BaseModel):
-    booked_rounds: int  # had a time at some point
+    booked_rounds: int  # has a time now, or has moved
     moved_rounds: int  # of those, how many moved at least once
     moves: int  # by_* and not_recorded add up to this; one round can move more than once
     by_me: int
