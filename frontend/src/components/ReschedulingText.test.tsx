@@ -278,7 +278,8 @@ describe("a round's days moved", () => {
       process.env.TZ = "Europe/London";
     });
     afterAll(() => {
-      process.env.TZ = zone;
+      if (zone === undefined) delete process.env.TZ;
+      else process.env.TZ = zone;
     });
 
     it("runs in that zone", () => {
@@ -289,6 +290,13 @@ describe("a round's days moved", () => {
     it("counts a 23-hour day in March as one day", () => {
       expect(line(1, [move("2026-03-28T12:00:00Z", "2026-03-29T11:00:00Z")])).toBe(
         "Pushed back 1 day in total.",
+      );
+    });
+
+    it("counts days, not 24-hour blocks, across the short March day", () => {
+      // Sat 28 Mar 12:00 GMT to Mon 30 Mar 12:00 BST: only 47 hours, but two days.
+      expect(line(1, [move("2026-03-28T12:00:00Z", "2026-03-30T11:00:00Z")])).toBe(
+        "Pushed back 2 days in total.",
       );
     });
 
