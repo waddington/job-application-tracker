@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.6.0 (2026-11-02)
+
+- **A Rescheduling block on Insights:** the Applications tab shows how many booked rounds moved, and moves split by who needed the change, with older moves under *Not recorded*. Companies and recruiters show from 3 moved rounds, as plain counts. An application's rounds also say how many days their moves pushed them back or brought them forward in total. Restart the tracker to see them (#195).
+
 ## 1.5.0 (2026-11-02)
 
 - **API:** a new `GET /api/v1/insights/rescheduling` counts booked rounds, moved rounds and moves by who needed the change, with raw counts per company and recruiter, and interview rounds gain a `moves` list. Nothing changes in the app yet (#194).
