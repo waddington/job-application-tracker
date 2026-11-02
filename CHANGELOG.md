@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.5.0 (2026-11-02)
+
+- **API:** a new `GET /api/v1/insights/rescheduling` counts booked rounds, moved rounds and moves by who needed the change, with raw counts per company and recruiter, and interview rounds gain a `moves` list. Nothing changes in the app yet (#194).
+
 ## 1.4.0 (2026-11-01)
 
 - **See every reschedule on the timelines:** a moved round now shows its old time, new time, who needed the change and why, for example *Moved from Tue 3 Nov, 10:00 to Thu 5 Nov, 14:00 · They needed the change · Their manager is away*, on the application timeline, the Timeline page and Today's Recent activity. Moves saved before 1.3.0 keep the text they had. Restart the tracker to see the new lines; nothing breaks before you do (#192).
