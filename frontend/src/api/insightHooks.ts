@@ -63,6 +63,19 @@ export function useScorecard(since?: string) {
   });
 }
 
+export type Rescheduling = Schemas["ReschedulingOut"];
+export type RescheduledNamed = Schemas["RescheduledNamed"];
+
+/** How many booked rounds moved and who needed it, for applications added since `since`. */
+export function useRescheduling(since?: string) {
+  return useQuery({
+    queryKey: ["insights", "rescheduling", since],
+    queryFn: async () =>
+      unwrap(await api.GET("/api/v1/insights/rescheduling", { params: { query: { since } } })),
+    placeholderData: keepPreviousData,
+  });
+}
+
 export type Conversations = Schemas["ConversationsOut"];
 export type ConversationPerson = Schemas["ConversationPerson"];
 export type ConversationAgency = Schemas["ConversationAgency"];

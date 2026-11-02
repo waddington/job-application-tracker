@@ -40,7 +40,8 @@ What it does:
   recruiter, referred, found yourself) to passed, deciding, its stages and what's still
   waiting (`GET /api/v1/insights/whole-flow`); stage flows by date and route; conversion and
   median time per stage; direct vs recruiter outcomes; weekly activity; a recruiter and
-  agency scorecard; recruiter conversations (`GET /api/v1/insights/conversations`).
+  agency scorecard; recruiter conversations (`GET /api/v1/insights/conversations`); how many
+  booked rounds moved and who needed it (`GET /api/v1/insights/rescheduling`).
 - An A/B test of CV and cover-letter versions (heard back, screens or interviews, offers, a
   95% range, Fisher's exact test; `GET /api/v1/insights/documents`); identical CV files on
   applications, roles or people become versions (`GET /api/v1/cv-files`,

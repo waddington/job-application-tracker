@@ -24,6 +24,7 @@ from jat.db.models import (
     ContactDetail,
     Document,
     DocumentVersion,
+    Event,
     Interview,
     Meeting,
     Offer,
@@ -32,6 +33,7 @@ from jat.db.models import (
     Todo,
 )
 from jat.domain.applications import create_application, history, log_activity, move
+from jat.domain.interviews import record
 from jat.domain.workflow import DEFAULT_WORKFLOW as W
 from jat.storage.notes import NoteStore
 
@@ -40,6 +42,38 @@ NOW = datetime.now(UTC).replace(microsecond=0)
 
 def days_ago(n: float) -> datetime:
     return NOW - timedelta(days=n)
+
+
+def add_moves(s, by_title: dict[str, Application]) -> None:
+    """Moved rounds for Insights' Rescheduling block: three at one company and recruiter, one from
+    the round's Edit form (no who) and one from before moves kept a record (only the count)."""
+    s.flush()
+
+    def move_round(title: str, round_no: int, by: str | None, reason: str = "", pushed_days: int = 2) -> None:
+        app = by_title[title]
+        interview = s.query(Interview).filter_by(application_id=app.id, round=round_no).one()
+        was = interview.starts_at - timedelta(days=pushed_days)
+        interview.rescheduled_count += 1
+        interview.rescheduled_from = was
+        last_activity = app.last_activity_at
+        record(s, app, interview, "rescheduled", reason=reason, by=by, moved_from=was)
+        s.flush()
+        ev = s.query(Event).filter(Event.application_id == app.id).order_by(Event.seq.desc()).first()
+        ev.occurred_at = was - timedelta(days=3)  # in the past, so it isn't today's news
+        app.last_activity_at = last_activity
+
+    move_round("Senior Python Developer", 1, "them", "Their manager is away")
+    # Moved twice: two days early to a day early, then to its final time.
+    twice = s.query(Interview).filter_by(application_id=by_title["Senior Python Developer"].id, round=2).one()
+    final_time = twice.starts_at
+    twice.starts_at = final_time - timedelta(days=1)
+    move_round("Senior Python Developer", 2, "me", "A clash with another interview", 1)
+    twice.starts_at = final_time
+    move_round("Senior Python Developer", 2, "them", pushed_days=1)
+    move_round("Senior Python Developer", 3, "mutual", pushed_days=3)
+    move_round("Senior Software Engineer", 1, None)
+    older = s.query(Interview).filter_by(application_id=by_title["Senior Backend Engineer"].id, round=1).one()
+    older.rescheduled_count = 1
 
 
 # Interview rounds held on the day an application reached a stage: (stage, description, kind).
@@ -221,6 +255,7 @@ def seed(path: Path) -> None:
                     )
                 )
             first_app.setdefault(company, app)
+        add_moves(s, by_title)
         # Notes are Markdown files under notes/, indexed in the database.
         store = NoteStore(path)
         for title, body, links in [

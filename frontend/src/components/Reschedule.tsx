@@ -39,6 +39,34 @@ export function RescheduledBadge({
   );
 }
 
+/**
+ * How far a round's moves took it, in calendar days where you are, as the timeline shows them: later
+ * is positive. It's the net, so +5 then -2 is 3; it's only ever from moves with both times saved.
+ */
+export function daysMoved(moves: { from_at: string; to_at: string }[]) {
+  return moves.reduce(
+    (days, m) => days + dayjs(m.to_at).startOf("day").diff(dayjs(m.from_at).startOf("day"), "day"),
+    0,
+  );
+}
+
+/** "Pushed back 3 days in total." for a round whose saved moves add up to a different day. */
+export function RoundDaysMoved({ interview }: { interview: Pick<Interview, "rescheduled_count" | "moves"> }) {
+  const { t } = useTranslation("interviews");
+  const moves = interview.moves ?? [];
+  const days = daysMoved(moves);
+  if (!days) return null;
+  const unknown = Math.max(0, interview.rescheduled_count - moves.length);
+  return (
+    <Text size="sm" c="dimmed">
+      {days > 0
+        ? t("reschedule.pushedBack", { count: days })
+        : t("reschedule.broughtForward", { count: -days })}
+      {unknown > 0 && ` ${t("reschedule.notCounted", { count: unknown })}`}
+    </Text>
+  );
+}
+
 /** What the dialog needs of a round: the board's and quick view's summary has no end time, and needn't. */
 type Reschedulable = Pick<Interview, "id" | "round" | "title" | "kind" | "starts_at"> & {
   company_name: string;

@@ -466,6 +466,13 @@ before a reschedule saved its times keep the words they already had ("… resche
 count came in have no old time on the badge. On the Timeline's lanes view, hovering a dot gives
 a move's who and why in one sentence, without the times.
 
+On the application's page, a round whose moves add up to a different day also says how far:
+"Pushed back 3 days in total." It's the net, in calendar days where you are: pushed back five days
+and then brought two forward says 3, one that ends up earlier says "Brought forward 2 days in
+total.", and one back on its first day, or moved within a day, says nothing. Only moves with both
+times saved count; when it shows a figure and some moves have none, it says how many it left out. [Insights](#insights) has the counts, under
+*Rescheduling* on its Applications tab.
+
 ## Offers
 
 Add an offer from the application's page. A **permanent** or **fixed-term** offer has base
@@ -561,6 +568,15 @@ reached.
 - **Direct vs recruiter**: the share of each route's applications that got to each stage.
 - **Recruiter scorecard**: per recruiter or agency, roles sent, how many got interviews,
   where they ended up, how long until the first update, and when you last heard from them.
+- **Rescheduling**: how many booked rounds moved (a booked round has a time now, or has moved), and
+  every move split by who needed the change: *Me*, *Them*, *Both of us*, *Neither of us* or *Not
+  recorded*. A round that moves twice is one round and two moves. *Not recorded* holds moves
+  made on the round's form, and older moves the app only has a count for, so they aren't put down
+  to anyone. Companies and recruiters show only from 3 moved rounds, as plain counts, because fewer
+  could look like a pattern; with none that far, there's no list. It counts what happened and
+  doesn't say what moves caused. A move can have no date of its own, so the date range goes by when
+  the application was added, whenever the move was: a move last week on an application added
+  three months ago isn't in *Last 30 days*. A removed round isn't counted.
 
 **Recruiter conversations**: what happens before an application. A *pitched role* is one with
 a person on it (someone told you about it: **Add roles from this call**, or a person set on
