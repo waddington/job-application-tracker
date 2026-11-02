@@ -139,11 +139,14 @@ export default {
   rescheduling: {
     title: "Rescheduling",
     intro:
-      "Rounds on applications added in this period, whenever they moved. A booked round is one that's had a time.",
+      "Rounds on applications added in this period, whenever they moved. A booked round has a time now, or has moved.",
     loadFailed: "Couldn't load the rescheduling numbers.",
-    noneBooked: "No rounds booked in this period.",
+    noneBooked: "No booked rounds on applications added in this period.",
     noneMoved_one: "Your {{count}} booked round hasn't moved.",
     noneMoved_other: "None of your {{count}} booked rounds has moved.",
+    noneMovedInPeriod_one: "The {{count}} booked round on applications added in this period hasn't moved.",
+    noneMovedInPeriod_other:
+      "None of the {{count}} booked rounds on applications added in this period has moved.",
     moved_one: "Of {{count}} booked round, {{moved}} moved.",
     moved_other: "Of {{count}} booked rounds, {{moved}} moved.",
     moves_one: "That's {{count}} move.",

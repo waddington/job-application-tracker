@@ -1,9 +1,10 @@
 import { Card, Loader, Stack, Table, Text, Title } from "@mantine/core";
 import { useTranslation } from "react-i18next";
 
+import { PersonName } from "./GhostMark";
 import { useRescheduling, type Rescheduling, type RescheduledNamed } from "../api/insightHooks";
 
-function MovedList({ title, rows }: { title: string; rows: RescheduledNamed[] }) {
+function MovedList({ title, rows, person }: { title: string; rows: RescheduledNamed[]; person?: boolean }) {
   const { t } = useTranslation("insights");
   if (!rows.length) return null;
   return (
@@ -22,7 +23,7 @@ function MovedList({ title, rows }: { title: string; rows: RescheduledNamed[] })
       <Table.Tbody>
         {rows.map((r) => (
           <Table.Tr key={r.id}>
-            <Table.Td>{r.name}</Table.Td>
+            <Table.Td>{person ? <PersonName id={r.id} name={r.name} /> : r.name}</Table.Td>
             <Table.Td ta="right">{r.moved_rounds}</Table.Td>
             <Table.Td ta="right">{r.moves}</Table.Td>
           </Table.Tr>
@@ -75,7 +76,7 @@ function Moved({ data }: { data: Rescheduling }) {
             {t("rescheduling.listHint", { count: data.min_rounds_listed })}
           </Text>
           <MovedList title={t("rescheduling.company")} rows={data.companies} />
-          <MovedList title={t("rescheduling.recruiter")} rows={data.recruiters} />
+          <MovedList title={t("rescheduling.recruiter")} rows={data.recruiters} person />
         </>
       )}
     </Stack>
@@ -101,7 +102,11 @@ export function ReschedulingCard({ since }: { since?: string }) {
           {t("rescheduling.noneBooked")}
         </Text>
       ) : !data.moved_rounds ? (
-        <Text size="sm">{t("rescheduling.noneMoved", { count: data.booked_rounds })}</Text>
+        <Text size="sm">
+          {t(since ? "rescheduling.noneMovedInPeriod" : "rescheduling.noneMoved", {
+            count: data.booked_rounds,
+          })}
+        </Text>
       ) : (
         <Moved data={data} />
       )}

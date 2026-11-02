@@ -176,25 +176,19 @@ test.describe("the Rescheduling block", () => {
     ).toBeVisible();
   });
 
-  test("a date range counts by when the application was added", async ({ page, request }) => {
-    const app = await anApplication(request, "Period Co");
-    const round = await aRound(request, app.id, "In period");
-    await page.goto(`/applications/${app.id}`);
-    await reschedule(page, `Round ${round.round} · In period`, 1, "Neither of us");
+  // Everything here was added just now, so real numbers can't differ by period. This proves the page
+  // asks for the period and shows that answer; tests/test_reschedule_insights.py proves the filter.
+  test("a date range shows the numbers for that period", async ({ page, request }) => {
+    const all = await statsNow(request);
+    const inPeriod = { ...all, by_neither: all.by_neither + 41 };
+    await page.route("**/insights/rescheduling?*since=*", (route) => route.fulfill({ json: inPeriod }));
 
     const block = await theBlock(page);
-    const asked = page.waitForRequest(
-      (r) => r.url().includes("/insights/rescheduling") && r.url().includes("since="),
-    );
+    await expect(whoCell(block, "Neither of us")).toHaveText(String(all.by_neither));
     await page.locator('[aria-label="Date range"]').getByText("Last 30 days", { exact: true }).click();
-    await asked;
-    // Added just now, so its move is in the period.
-    const since = new Date(Date.now() - 30 * 86_400_000).toISOString();
-    const inPeriod = (await (
-      await request.get(`${API}/insights/rescheduling`, { params: { since } })
-    ).json()) as Stats;
     await expect(whoCell(block, "Neither of us")).toHaveText(String(inPeriod.by_neither));
-    expect(inPeriod.by_neither).toBeGreaterThan(0);
+    await page.locator('[aria-label="Date range"]').getByText("All time", { exact: true }).click();
+    await expect(whoCell(block, "Neither of us")).toHaveText(String(all.by_neither));
   });
 });
 

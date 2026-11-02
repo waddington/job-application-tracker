@@ -470,7 +470,7 @@ On the application's page, a round whose moves add up to a different day also sa
 "Pushed back 3 days in total." It's the net, in calendar days where you are: pushed back five days
 and then brought two forward says 3, one that ends up earlier says "Brought forward 2 days in
 total.", and one back on its first day, or moved within a day, says nothing. Only moves with both
-times saved count; if some have none, it says so. [Insights](#insights) has the counts, under
+times saved count; when it shows a figure and some moves have none, it says how many it left out. [Insights](#insights) has the counts, under
 *Rescheduling* on its Applications tab.
 
 ## Offers
@@ -568,7 +568,7 @@ reached.
 - **Direct vs recruiter**: the share of each route's applications that got to each stage.
 - **Recruiter scorecard**: per recruiter or agency, roles sent, how many got interviews,
   where they ended up, how long until the first update, and when you last heard from them.
-- **Rescheduling**: how many booked rounds moved (a booked round is one that's had a time), and
+- **Rescheduling**: how many booked rounds moved (a booked round has a time now, or has moved), and
   every move split by who needed the change: *Me*, *Them*, *Both of us*, *Neither of us* or *Not
   recorded*. A round that moves twice is one round and two moves. *Not recorded* holds moves
   made on the round's form, and older moves the app only has a count for, so they aren't put down

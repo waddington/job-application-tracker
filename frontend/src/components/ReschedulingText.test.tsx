@@ -1,7 +1,7 @@
 import { MantineProvider } from "@mantine/core";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, within } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 import type { Rescheduling } from "../api/insightHooks";
 import { daysMoved, RoundDaysMoved } from "./Reschedule";
@@ -29,17 +29,22 @@ const NOT_RECORDED =
 const LIST_HINT =
   "Only companies and recruiters with at least 3 moved rounds show here, as plain counts: fewer could look like a pattern when it isn't one.";
 
-async function block(data: Rescheduling) {
+async function block(
+  data: Rescheduling,
+  { since, contacts = [] }: { since?: string; contacts?: object[] } = {},
+) {
   vi.stubGlobal(
     "fetch",
-    vi.fn(
-      async () => new Response(JSON.stringify(data), { headers: { "Content-Type": "application/json" } }),
-    ),
+    vi.fn(async (input: RequestInfo | URL) => {
+      const url = input instanceof Request ? input.url : String(input);
+      const body = url.includes("/insights/rescheduling") ? data : contacts;
+      return new Response(JSON.stringify(body), { headers: { "Content-Type": "application/json" } });
+    }),
   );
   const view = render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
       <MantineProvider>
-        <ReschedulingCard />
+        <ReschedulingCard since={since} />
       </MantineProvider>
     </QueryClientProvider>,
   );
@@ -60,14 +65,14 @@ describe("the Rescheduling block", () => {
     expect(screen.getByRole("heading", { name: "Rescheduling" })).toBeTruthy();
     expect(
       screen.getByText(
-        "Rounds on applications added in this period, whenever they moved. A booked round is one that's had a time.",
+        "Rounds on applications added in this period, whenever they moved. A booked round has a time now, or has moved.",
       ),
     ).toBeTruthy();
   });
 
   it("at zero, says nothing was booked and shows no table", async () => {
     await block(stats());
-    expect(screen.getByText("No rounds booked in this period.")).toBeTruthy();
+    expect(screen.getByText("No booked rounds on applications added in this period.")).toBeTruthy();
     expect(screen.queryByRole("table")).toBeNull();
   });
 
@@ -78,6 +83,37 @@ describe("the Rescheduling block", () => {
     await block(stats({ booked_rounds: 4 }));
     expect(screen.getByText("None of your 4 booked rounds has moved.")).toBeTruthy();
     expect(screen.queryByRole("table")).toBeNull();
+  });
+
+  it("with a period picked, scopes that to applications added in it", async () => {
+    const since = "2026-10-01T00:00:00Z";
+    const one = await block(stats({ booked_rounds: 1 }), { since });
+    expect(
+      screen.getByText("The 1 booked round on applications added in this period hasn't moved."),
+    ).toBeTruthy();
+    one.unmount();
+    await block(stats({ booked_rounds: 4 }), { since });
+    expect(
+      screen.getByText("None of the 4 booked rounds on applications added in this period has moved."),
+    ).toBeTruthy();
+  });
+
+  it("marks a recruiter who ghosted you, as the scorecard does", async () => {
+    await block(
+      stats({
+        booked_rounds: 3,
+        moved_rounds: 3,
+        moves: 3,
+        not_recorded: 3,
+        companies: [{ id: "c", name: "Contoso", moved_rounds: 3, moves: 3 }],
+        recruiters: [{ id: "r", name: "Sam Patel", moved_rounds: 3, moves: 3 }],
+      }),
+      { contacts: [{ id: "r", name: "Sam Patel", closed_as: "ghosted", favourite: false }] },
+    );
+    const recruiters = screen.getByRole("table", { name: "Recruiter" });
+    expect(await within(recruiters).findByRole("img")).toBeTruthy();
+    expect(within(recruiters).getByText("Sam Patel")).toBeTruthy();
+    expect(within(screen.getByRole("table", { name: "Company" })).queryByRole("img")).toBeNull();
   });
 
   it("tells rounds from moves", async () => {
@@ -234,6 +270,46 @@ describe("a round's days moved", () => {
   it("says nothing for a same-day move, or with no times saved", () => {
     expect(line(1, [move("2026-11-03T10:00:00", "2026-11-03T15:00:00")])).toBe("");
     expect(line(2, [])).toBe("");
+  });
+
+  describe("in Europe/London, across a clock change and midnight", () => {
+    const zone = process.env.TZ;
+    beforeAll(() => {
+      process.env.TZ = "Europe/London";
+    });
+    afterAll(() => {
+      process.env.TZ = zone;
+    });
+
+    it("runs in that zone", () => {
+      expect(new Date("2026-07-01T12:00:00Z").getHours()).toBe(13);
+      expect(new Date("2026-12-01T12:00:00Z").getHours()).toBe(12);
+    });
+
+    it("counts a 23-hour day in March as one day", () => {
+      expect(line(1, [move("2026-03-28T12:00:00Z", "2026-03-29T11:00:00Z")])).toBe(
+        "Pushed back 1 day in total.",
+      );
+    });
+
+    it("counts a 25-hour gap in October by its days", () => {
+      // Sat 24 Oct 12:00 BST to Sun 25 Oct 12:00 GMT.
+      expect(line(1, [move("2026-10-24T11:00:00Z", "2026-10-25T12:00:00Z")])).toBe(
+        "Pushed back 1 day in total.",
+      );
+    });
+
+    it("says nothing for 24 hours that stay on the long October day", () => {
+      // Sun 25 Oct 00:30 BST to Sun 25 Oct 23:30 GMT.
+      expect(line(1, [move("2026-10-24T23:30:00Z", "2026-10-25T23:30:00Z")])).toBe("");
+    });
+
+    it("goes by local midnight, not UTC's", () => {
+      // An hour apart, either side of midnight in London, on one UTC day.
+      expect(line(1, [move("2026-07-01T22:30:00Z", "2026-07-01T23:30:00Z")])).toBe(
+        "Pushed back 1 day in total.",
+      );
+    });
   });
 
   it("says when moves with no saved times aren't counted", () => {
