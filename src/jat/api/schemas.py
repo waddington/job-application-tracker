@@ -646,6 +646,15 @@ class RoundSummary(Out):
     deadline_at: datetime | None
 
 
+class RoundMove(BaseModel):
+    """One reschedule of a round, as it was when it happened (`interviews.record` saves it)."""
+
+    from_at: datetime
+    to_at: datetime
+    by: RescheduleBy | None = None  # not said
+    reason: str | None = None  # the person's own words
+
+
 class InterviewOut(RoundSummary):
     application_id: str
     ends_at: datetime | None
@@ -660,6 +669,7 @@ class InterviewOut(RoundSummary):
     interviewer_ids: list[str]
     rescheduled_count: int  # times a booked round moved to another time
     rescheduled_from: datetime | None  # the time it moved from last (unknown for moves before 0014)
+    moves: list[RoundMove] = []  # the moves with both times saved, oldest first; can be fewer than the count
     # For lists across applications (the Interviews page).
     company_name: str
     role_title: str
@@ -1159,15 +1169,6 @@ def read_event_msg(data: Any) -> Any:
         return _EVENT_MSG.validate_python(data["msg"])
     except ValidationError:
         return None
-
-
-class RoundMove(BaseModel):
-    """One reschedule of a round, as it was when it happened (`interviews.record` saves it)."""
-
-    from_at: datetime
-    to_at: datetime
-    by: RescheduleBy | None = None  # not said
-    reason: str | None = None  # the person's own words
 
 
 def _aware(value: Any) -> datetime | None:

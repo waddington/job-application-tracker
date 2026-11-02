@@ -9,7 +9,7 @@ from pydantic import AwareDatetime
 from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 
-from ..db.models import Application, Company, Contact, Interview, InterviewContact, Role
+from ..db.models import Application, Company, Contact, Event, Interview, InterviewContact, Role
 from ..domain import interviews as svc
 from . import schemas as S
 from .crud import values
@@ -30,6 +30,23 @@ def _query():
     )
 
 
+def _saved_moves(session: Session, app_ids: set[str]) -> dict[str, list[S.RoundMove]]:
+    """Each round's moves with a readable record, in the order they were recorded."""
+    moves: dict[str, list[S.RoundMove]] = {}
+    if app_ids:
+        events = session.execute(
+            select(Event.kind, Event.data)
+            .where(Event.kind == "interview", Event.application_id.in_(app_ids))
+            .order_by(Event.seq)
+        )
+        for kind, data in events:
+            move = S.read_round_move(kind, data)
+            round_id = data.get("interview_id") if move is not None else None
+            if isinstance(round_id, str):
+                moves.setdefault(round_id, []).append(move)
+    return moves
+
+
 def _outs(session: Session, found) -> list[S.InterviewOut]:
     found = list(found)
     ids = [interview.id for interview, _, _ in found]
@@ -42,11 +59,13 @@ def _outs(session: Session, found) -> list[S.InterviewOut]:
         )
         for interview_id, contact_id in links:
             people.setdefault(interview_id, []).append(contact_id)
+    moves = _saved_moves(session, {interview.application_id for interview, _, _ in found})
     return [
         S.InterviewOut(
             **{f: getattr(interview, f) for f in S.InterviewOut.model_fields if hasattr(Interview, f)},
             label=svc.label(interview),
             interviewer_ids=people.get(interview.id, []),
+            moves=moves.get(interview.id, []),
             role_title=role_title,
             company_name=company_name,
         )

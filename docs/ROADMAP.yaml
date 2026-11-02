@@ -314,6 +314,7 @@ phases:
       - {id: reschedule-who, name: "Rescheduling, part 1: say who needed the change and why, kept on each timeline entry, with the Reschedule button on the application page, the quick view (current round, active stage), Today and Interviews (Kai, 2026-11-01)", owner: lead, status: done, estimate_h: 3, depends: [interview-reschedule], prd: docs/prd/tracker.md}
       - {id: docs-simplify-install, name: "Make the install page short and welcoming: lead with the one path most people need, and move the special cases to the bottom or to the right guide page (Kai, 2026-11-01)", owner: lead, status: done, estimate_h: 1, depends: [], prd: docs/prd/tracker.md}
       - {id: reschedule-timelines, name: "Rescheduling, part 2: show each move's old and new time, who needed it and why on the application timeline, the Timeline page and Today's Recent activity (Kai, 2026-11-01)", owner: lead, status: done, estimate_h: 3, depends: [reschedule-who], prd: docs/prd/tracker.md}
+      - {id: reschedule-insights-api, name: "Rescheduling, part 3a: the API behind the Rescheduling block, GET /insights/rescheduling and each round's saved moves; nothing visible yet (Kai, 2026-11-01)", owner: lead, status: building, estimate_h: 1.5, depends: [reschedule-timelines], prd: docs/prd/tracker.md}
 
   - id: P11
     name: Test gaps

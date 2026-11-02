@@ -4657,6 +4657,14 @@
             ],
             "title": "Meeting Url"
           },
+          "moves": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/RoundMove"
+            },
+            "title": "Moves",
+            "type": "array"
+          },
           "prep": {
             "anyOf": [
               {
@@ -7885,6 +7893,103 @@
           "params"
         ],
         "title": "ReplyToReadMsg",
+        "type": "object"
+      },
+      "RescheduledNamed": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "moved_rounds": {
+            "title": "Moved Rounds",
+            "type": "integer"
+          },
+          "moves": {
+            "title": "Moves",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "moved_rounds",
+          "moves"
+        ],
+        "title": "RescheduledNamed",
+        "type": "object"
+      },
+      "ReschedulingOut": {
+        "properties": {
+          "booked_rounds": {
+            "title": "Booked Rounds",
+            "type": "integer"
+          },
+          "by_me": {
+            "title": "By Me",
+            "type": "integer"
+          },
+          "by_mutual": {
+            "title": "By Mutual",
+            "type": "integer"
+          },
+          "by_neither": {
+            "title": "By Neither",
+            "type": "integer"
+          },
+          "by_them": {
+            "title": "By Them",
+            "type": "integer"
+          },
+          "companies": {
+            "items": {
+              "$ref": "#/components/schemas/RescheduledNamed"
+            },
+            "title": "Companies",
+            "type": "array"
+          },
+          "min_rounds_listed": {
+            "title": "Min Rounds Listed",
+            "type": "integer"
+          },
+          "moved_rounds": {
+            "title": "Moved Rounds",
+            "type": "integer"
+          },
+          "moves": {
+            "title": "Moves",
+            "type": "integer"
+          },
+          "not_recorded": {
+            "title": "Not Recorded",
+            "type": "integer"
+          },
+          "recruiters": {
+            "items": {
+              "$ref": "#/components/schemas/RescheduledNamed"
+            },
+            "title": "Recruiters",
+            "type": "array"
+          }
+        },
+        "required": [
+          "booked_rounds",
+          "moved_rounds",
+          "moves",
+          "by_me",
+          "by_them",
+          "by_mutual",
+          "by_neither",
+          "not_recorded",
+          "min_rounds_listed",
+          "companies",
+          "recruiters"
+        ],
+        "title": "ReschedulingOut",
         "type": "object"
       },
       "RoleIn": {
@@ -14381,6 +14486,74 @@
           }
         },
         "summary": "Stage Flow",
+        "tags": [
+          "insights"
+        ]
+      }
+    },
+    "/api/v1/insights/rescheduling": {
+      "get": {
+        "description": "How many booked rounds moved and who needed it, for applications added in [since, until).\n\nCompanies and recruiters are listed only from `min_rounds_listed` moved rounds, as raw counts.",
+        "operationId": "rescheduling_api_v1_insights_rescheduling_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "since",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Since"
+            }
+          },
+          {
+            "in": "query",
+            "name": "until",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Until"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReschedulingOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "An error, with a code when people can see it"
+          }
+        },
+        "summary": "Rescheduling",
         "tags": [
           "insights"
         ]

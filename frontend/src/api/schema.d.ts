@@ -785,6 +785,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/insights/rescheduling": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Rescheduling
+         * @description How many booked rounds moved and who needed it, for applications added in [since, until).
+         *
+         *     Companies and recruiters are listed only from `min_rounds_listed` moved rounds, as raw counts.
+         */
+        get: operations["rescheduling_api_v1_insights_rescheduling_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/insights/scorecard": {
         parameters: {
             query?: never;
@@ -2598,6 +2620,11 @@ export interface components {
             location: string | null;
             /** Meeting Url */
             meeting_url: string | null;
+            /**
+             * Moves
+             * @default []
+             */
+            moves: components["schemas"]["RoundMove"][];
             /** Prep */
             prep: string | null;
             /** Questions */
@@ -3592,6 +3619,42 @@ export interface components {
              */
             key: "event.replyToRead";
             params: components["schemas"]["NoParams"];
+        };
+        /** RescheduledNamed */
+        RescheduledNamed: {
+            /** Id */
+            id: string;
+            /** Moved Rounds */
+            moved_rounds: number;
+            /** Moves */
+            moves: number;
+            /** Name */
+            name: string;
+        };
+        /** ReschedulingOut */
+        ReschedulingOut: {
+            /** Booked Rounds */
+            booked_rounds: number;
+            /** By Me */
+            by_me: number;
+            /** By Mutual */
+            by_mutual: number;
+            /** By Neither */
+            by_neither: number;
+            /** By Them */
+            by_them: number;
+            /** Companies */
+            companies: components["schemas"]["RescheduledNamed"][];
+            /** Min Rounds Listed */
+            min_rounds_listed: number;
+            /** Moved Rounds */
+            moved_rounds: number;
+            /** Moves */
+            moves: number;
+            /** Not Recorded */
+            not_recorded: number;
+            /** Recruiters */
+            recruiters: components["schemas"]["RescheduledNamed"][];
         };
         /** RoleIn */
         RoleIn: {
@@ -6385,6 +6448,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FlowOut"];
+                };
+            };
+            /** @description An error, with a code when people can see it */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    rescheduling_api_v1_insights_rescheduling_get: {
+        parameters: {
+            query?: {
+                since?: string | null;
+                until?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReschedulingOut"];
                 };
             };
             /** @description An error, with a code when people can see it */

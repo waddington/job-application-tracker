@@ -12,6 +12,7 @@ from pydantic import AwareDatetime, BaseModel
 from ..domain import conversations as conv_svc
 from ..domain import document_performance as doc_svc
 from ..domain import insights as svc
+from ..domain import reschedule_stats as resched_svc
 from ..domain import scorecard as score_svc
 from ..domain import stats as stats_svc
 from . import schemas as S
@@ -362,6 +363,52 @@ def recruiter_scorecard(
     """How each recruiter's and agency's roles have gone, for applications added in [since, until)."""
     recruiters, agencies = score_svc.scorecard(session, workflow, since=since, until=until)
     return ScorecardOut(recruiters=[_score_out(s) for s in recruiters], agencies=[_score_out(s) for s in agencies])
+
+
+class RescheduledNamed(BaseModel):
+    id: str
+    name: str
+    moved_rounds: int
+    moves: int
+
+
+class ReschedulingOut(BaseModel):
+    booked_rounds: int  # has a time now, or has moved
+    moved_rounds: int  # of those, how many moved at least once
+    moves: int  # by_* and not_recorded add up to this; one round can move more than once
+    by_me: int
+    by_them: int
+    by_mutual: int
+    by_neither: int
+    not_recorded: int  # saved with no who: from the Edit form, or from before the app asked
+    min_rounds_listed: int  # companies and recruiters need this many moved rounds to be listed
+    companies: list[RescheduledNamed]  # most moved rounds first
+    recruiters: list[RescheduledNamed]
+
+
+@router.get("/rescheduling", response_model=ReschedulingOut)
+def rescheduling(
+    session: SessionDep,
+    since: AwareDatetime | None = None,
+    until: AwareDatetime | None = None,
+):
+    """How many booked rounds moved and who needed it, for applications added in [since, until).
+
+    Companies and recruiters are listed only from `min_rounds_listed` moved rounds, as raw counts."""
+    r = resched_svc.rescheduling(session, S.read_round_move, since=since, until=until)
+    return ReschedulingOut(
+        booked_rounds=r.booked_rounds,
+        moved_rounds=r.moved_rounds,
+        moves=r.moves,
+        by_me=r.by["me"],
+        by_them=r.by["them"],
+        by_mutual=r.by["mutual"],
+        by_neither=r.by["neither"],
+        not_recorded=r.not_recorded,
+        min_rounds_listed=resched_svc.MIN_ROUNDS_TO_LIST,
+        companies=[RescheduledNamed(**vars(n)) for n in r.companies],
+        recruiters=[RescheduledNamed(**vars(n)) for n in r.recruiters],
+    )
 
 
 class ConversationTally(BaseModel):
