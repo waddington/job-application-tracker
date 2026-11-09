@@ -8,7 +8,12 @@ A view is "<label>=<path>[@375][@full][@light][@sel=<css>][@click=<text>]":
   @light      light mode (dark otherwise)            @sel=   only the first element matching this CSS
   @click=     click the first element with this text first (to open a menu or dialog)
 
-  shoot <base url> <out dir> <view>...     one PNG per view, named after its label
+  check <view>...                          checks the views (pr_shots.sh does this before building)
+  shoot <base url> <out dir> <before|after> <view>...
+                                           one PNG per view, named after its label. A view main doesn't
+                                           have (its page is "Page not found", or its @sel/@click isn't
+                                           there) is left out of "before", where the table says "(none)";
+                                           missing from "after" it's an error, as the view is wrong.
   upload <dir> <branch> <view>...          <dir>/before and <dir>/after go on the pr-shots branch under
                                            <branch>/, and the Item / Before / After table is printed
 
@@ -16,6 +21,7 @@ Demo data only: the shots come from a seeded demo folder, never Kai's tracker.
 """
 
 import base64
+import hashlib
 import json
 import re
 import subprocess
@@ -26,6 +32,7 @@ from pathlib import Path
 REPO = "waddington/job-application-tracker"
 SHOTS_BRANCH = "pr-shots"
 RAW = f"https://raw.githubusercontent.com/{REPO}"
+NOT_FOUND = "Page not found"  # common:notFound.title in English, which the shots use
 
 
 @dataclass(frozen=True)
@@ -40,7 +47,9 @@ class View:
 
     @property
     def slug(self) -> str:
-        return re.sub(r"[^a-z0-9]+", "-", self.label.lower()).strip("-") or "view"
+        """The file name: the label's Latin letters and digits, or a hash of it (a Chinese label has none)."""
+        latin = re.sub(r"[^a-z0-9]+", "-", self.label.lower()).strip("-")
+        return latin or "view-" + hashlib.sha1(self.label.encode()).hexdigest()[:8]
 
 
 def parse_view(spec: str) -> View:
@@ -65,23 +74,33 @@ def parse_view(spec: str) -> View:
     return view
 
 
+def parse_views(specs: list[str]) -> list[View]:
+    views = [parse_view(s) for s in specs]
+    if len({v.slug for v in views}) != len(views):
+        raise ValueError("two views have the same label")
+    return views
+
+
 def table(views: list[View], sha: str, folder: str, have: set[str]) -> str:
     """The Markdown table for the PR body. A side with no image (a view new or gone) says so."""
 
     def cell(side: str, view: View) -> str:
         name = f"{side}/{view.slug}.png"
-        return f"![{view.label}, {side}]({RAW}/{sha}/{folder}/{name})" if name in have else "(none)"
+        alt = re.sub(r"[\[\]\n|]", " ", view.label)
+        return f"![{alt}, {side}]({RAW}/{sha}/{folder}/{name})" if name in have else "(none)"
 
-    rows = [f"| {v.label} | {cell('before', v)} | {cell('after', v)} |" for v in views]
+    rows = [f"| {v.label.replace('|', chr(92) + '|')} | {cell('before', v)} | {cell('after', v)} |" for v in views]
     return "\n".join(["| Item | Before | After |", "| --- | --- | --- |", *rows])
 
 
-def shoot(base: str, out: Path, views: list[View]) -> None:
+def shoot(base: str, out: Path, side: str, views: list[View]) -> list[str]:
+    """Shoots each view; returns the labels with no shot."""
     sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts/i18n/translate"))
     from playwright.sync_api import sync_playwright
     from screenshots import resolve  # the demo-data name lookup
 
     out.mkdir(parents=True, exist_ok=True)
+    missing = []
     with sync_playwright() as p:
         browser = p.chromium.launch(channel="chrome")
         for v in views:
@@ -89,22 +108,26 @@ def shoot(base: str, out: Path, views: list[View]) -> None:
                 viewport={"width": v.width, "height": 900}, color_scheme=v.scheme, reduced_motion="reduce"
             )
             page = ctx.new_page()
-            page.goto(base + resolve(base, v.path), wait_until="networkidle")
-            page.wait_for_timeout(800)
             target = out / f"{v.slug}.png"
             try:
+                page.goto(base + resolve(base, v.path), wait_until="networkidle")
+                page.wait_for_timeout(800)
+                if page.get_by_role("heading", name=NOT_FOUND).count():
+                    raise LookupError(NOT_FOUND)
                 if v.click:
-                    page.get_by_text(v.click, exact=True).first.click()
+                    page.get_by_text(v.click, exact=True).first.click(timeout=5000)
                     page.wait_for_timeout(600)
                 if v.sel:
                     page.locator(v.sel).first.screenshot(path=str(target), timeout=5000)
                 else:
                     page.screenshot(path=str(target), full_page=v.full)
-                print(target)
-            except Exception as e:  # a view new in the branch has nothing to show on main, and that's fine
-                print(f"{v.label}: no shot ({str(e).splitlines()[0][:120]})")
+                print(f"{side}: {v.label}")
+            except (Exception, SystemExit) as e:  # SystemExit: resolve() found no such name in the demo data
+                missing.append(v.label)
+                print(f"{side}: {v.label}: no shot ({str(e).splitlines()[0][:140] if str(e) else type(e).__name__})")
             ctx.close()
         browser.close()
+    return missing
 
 
 def gh(method: str, path: str, body: dict | None = None) -> dict:
@@ -115,13 +138,25 @@ def gh(method: str, path: str, body: dict | None = None) -> dict:
         text=True,
     )
     if out.returncode:
-        raise RuntimeError(f"gh api {method} {path}: {out.stderr.strip()[:200]}")
+        raise RuntimeError(f"gh api {method} {path}: {(out.stderr or out.stdout).strip()[:200]}")
     return json.loads(out.stdout) if out.stdout.strip() else {}
+
+
+def shots_head() -> str | None:
+    """The pr-shots branch's commit, or None when it doesn't exist yet (any other failure is raised)."""
+    try:
+        return gh("GET", f"git/ref/heads/{SHOTS_BRANCH}")["object"]["sha"]
+    except RuntimeError as e:
+        if "404" in str(e) or "Not Found" in str(e):
+            return None
+        raise
 
 
 def upload(folder_on_disk: Path, branch: str, views: list[View]) -> str:
     """Adds <branch>/before and <branch>/after to the pr-shots branch (made on first use) and returns the table."""
     folder = branch.removeprefix("worktree-")
+    if not folder:
+        sys.exit("no branch name (a detached HEAD?)")
     files = sorted(p for side in ("before", "after") for p in (folder_on_disk / side).glob("*.png"))
     if not files:
         sys.exit("no screenshots to upload")
@@ -134,35 +169,43 @@ def upload(folder_on_disk: Path, branch: str, views: list[View]) -> str:
     tree = [
         {"path": f"{folder}/{p.parent.name}/{p.name}", "mode": "100644", "type": "blob", "sha": blob(p)} for p in files
     ]
-    try:
-        head = gh("GET", f"git/ref/heads/{SHOTS_BRANCH}")["object"]["sha"]
-        base_tree = gh("GET", f"git/commits/{head}")["tree"]["sha"]
-    except RuntimeError:
-        head = base_tree = None
-    new_tree = gh("POST", "git/trees", {"tree": tree, **({"base_tree": base_tree} if base_tree else {})})
-    commit = gh(
-        "POST",
-        "git/commits",
-        {"message": f"Screenshots for {branch}", "tree": new_tree["sha"], "parents": [head] if head else []},
-    )
-    if head:
-        gh("PATCH", f"git/refs/heads/{SHOTS_BRANCH}", {"sha": commit["sha"]})
-    else:
-        gh("POST", "git/refs", {"ref": f"refs/heads/{SHOTS_BRANCH}", "sha": commit["sha"]})
+    for attempt in range(3):  # another PR's upload can move the branch between our read and our write
+        head = shots_head()
+        base_tree = {"base_tree": gh("GET", f"git/commits/{head}")["tree"]["sha"]} if head else {}
+        new_tree = gh("POST", "git/trees", {"tree": tree, **base_tree})
+        commit = gh(
+            "POST",
+            "git/commits",
+            {"message": f"Screenshots for {branch}", "tree": new_tree["sha"], "parents": [head] if head else []},
+        )
+        try:
+            if head:
+                gh("PATCH", f"git/refs/heads/{SHOTS_BRANCH}", {"sha": commit["sha"]})
+            else:
+                gh("POST", "git/refs", {"ref": f"refs/heads/{SHOTS_BRANCH}", "sha": commit["sha"]})
+            break
+        except RuntimeError:
+            if attempt == 2:
+                raise
     have = {f"{p.parent.name}/{p.name}" for p in files}
     return table(views, commit["sha"], folder, have)
 
 
 def main(argv: list[str]) -> None:
-    if len(argv) < 4 or argv[0] not in ("shoot", "upload"):
-        sys.exit(__doc__)
-    views = [parse_view(s) for s in argv[3:]]
-    if len({v.slug for v in views}) != len(views):
-        sys.exit("two views have the same label")
-    if argv[0] == "shoot":
-        shoot(argv[1].rstrip("/"), Path(argv[2]), views)
-    else:
-        print(upload(Path(argv[1]), argv[2], views))
+    cmd, args = (argv[0], argv[1:]) if argv else ("", [])
+    try:
+        if cmd == "check" and args:
+            print(f"{len(parse_views(args))} views")
+        elif cmd == "shoot" and len(args) >= 4 and args[2] in ("before", "after"):
+            missing = shoot(args[0].rstrip("/"), Path(args[1]), args[2], parse_views(args[3:]))
+            if missing and args[2] == "after":
+                sys.exit(f"no shot on this branch for: {', '.join(missing)} (check the path, @sel and @click)")
+        elif cmd == "upload" and len(args) >= 3:
+            print(upload(Path(args[0]), args[1], parse_views(args[2:])))
+        else:
+            sys.exit(__doc__)
+    except ValueError as e:
+        sys.exit(str(e))
 
 
 if __name__ == "__main__":
