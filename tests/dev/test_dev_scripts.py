@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from tools.dev import bump, check_links, release_notes, roadmap_dedupe
+from tools.dev import bump, check_links, pr_shots, release_notes, roadmap_dedupe
 
 
 def test_dedupe_keeps_the_longer_line_in_the_first_place():
@@ -50,3 +50,35 @@ def test_check_links_finds_missing_files_and_anchors(tmp_path: Path):
     a.write_text("[ok](b.md#getting-started-quickly) [gone](c.md) [bad](b.md#nope) [web](https://example.com)\n")
     assert check_links.slug("Getting started, quickly") == "getting-started-quickly"
     assert check_links.broken(a) == [f"{a}: missing file c.md", f"{a}: missing anchor b.md#nope"]
+
+
+def test_pr_shots_reads_a_view_and_its_options():
+    v = pr_shots.parse_view("Board card, not booked=/applications?view=board@375@light@sel=.card@click=Open")
+    assert (v.label, v.path, v.width, v.scheme, v.sel, v.click, v.full) == (
+        "Board card, not booked",
+        "/applications?view=board",
+        375,
+        "light",
+        ".card",
+        "Open",
+        False,
+    )
+    assert v.slug == "board-card-not-booked"
+    assert pr_shots.parse_view("Today=/@full") == pr_shots.View("Today", "/", full=True)
+    assert pr_shots.parse_view("Person={person:Alex Morgan}").path == "{person:Alex Morgan}"
+
+
+def test_pr_shots_refuses_what_isnt_a_view():
+    for spec in ("no path", "=/", "Label=applications", "Today=/@wide", "Today=/@sel="):
+        with pytest.raises(ValueError):
+            pr_shots.parse_view(spec)
+
+
+def test_pr_shots_table_has_a_row_per_view_and_marks_a_missing_side():
+    views = [pr_shots.parse_view("Board=/applications"), pr_shots.parse_view("New dialog=/@click=New")]
+    have = {"before/board.png", "after/board.png", "after/new-dialog.png"}
+    lines = pr_shots.table(views, "abc123", "my-task", have).splitlines()
+    assert lines[:2] == ["| Item | Before | After |", "| --- | --- | --- |"]
+    raw = "https://raw.githubusercontent.com/waddington/job-application-tracker/abc123/my-task"
+    assert lines[2] == f"| Board | ![Board, before]({raw}/before/board.png) | ![Board, after]({raw}/after/board.png) |"
+    assert lines[3] == f"| New dialog | (none) | ![New dialog, after]({raw}/after/new-dialog.png) |"
