@@ -19,9 +19,10 @@ The roadmap tasks are `i18n-zh-cn-*` in phase P8 of `docs/ROADMAP.yaml`.
 - **One PR per string file**, translated in context and reviewed per area of the screen by several models (below).
 - **Reviewers:** Sonnet and Opus, each separately ("perhaps we can drop haiku"); Opus translates and settles
   disagreements.
-- **No screenshots in the PRs** ("no screenshots in the PR"). They're taken to translate and review, and stay outside the
-  repo. The exception is the layout PR (2026-11-09): Kai reviews it from a before-and-after table of screenshots in its
-  description, hosted on a throwaway branch, and merges it himself.
+- **No screenshots in the translation PRs** ("no screenshots in the PR"). They're taken to translate and review, and stay
+  outside the repo. Since 2026-11-09 every PR that changes the UI shows before and after (CLAUDE.md, *Git*); a draft
+  language's translation PRs are the exception, as only a dev server shows them. Switching a language on is a UI change
+  and gets the table.
 - **Layout: English stays as it is, with as little language-specific CSS as possible** (Kai, 2026-11-09: "im not
   expecting any changes to english language version. if there are some needed then wait for my approval firtst";
   "ideally we want to reduce the language-specific css as much as possible … balacne between langauge-specific css and

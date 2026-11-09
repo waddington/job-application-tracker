@@ -51,6 +51,12 @@ roadmap is `docs/ROADMAP.yaml`, shown by the PM dashboard (see "Project manageme
   `gh pr create --draft --title … --body-file …`. The PM dashboard then shows the task as Building,
   even one so far only on the branch's roadmap (marked "on its branch"), and as Review once the PR is ready. Keep pushing to it as work continues. Run `gh pr ready` when it's time for review, then follow the
   review-fix cycle below.
+- **A UI change shows before and after in its PR** (Kai, 2026-11-09). A PR that changes what the app looks
+  like (a page, card, dialog, pill, layout or wording on screen) carries an `| Item | Before | After |` table of
+  screenshots in its body: run `tools/dev/pr_shots.sh` from the worktree with a view for each thing changed, added
+  or removed. A few views that show the change are enough, not every data scenario; add `--setup` when the demo
+  data doesn't show it. Demo data only. The images live on the long-lived `pr-shots` branch: never delete it. PRs
+  that don't change the UI, and a draft language's translation PRs (shown only on a dev server), leave it out.
 - **Don't quote Kai in PR descriptions or comments** (Kai, 2026-11-06). When Kai asks for work, the PR
   body says what was asked in your own words ("Adds a Done button to …", "Fixes the bug `fix-…`
   recorded in #N"), not Kai's message word for word; the same goes for PR and issue comments. The roadmap task

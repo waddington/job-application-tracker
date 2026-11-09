@@ -39,7 +39,9 @@ Write the PR body to a file under `/tmp/jat-<bug id>-…` and set it with
 `gh api -X PATCH repos/waddington/job-application-tracker/pulls/N -F body=@file` (`gh pr edit` fails): what was asked in
 your own words (never quote Kai), "## The bug", "## What changed", "## Version" ("Patch: <what>"), "## Checks" with honest
 results, ending with `🤖 Generated with [Claude Code](https://claude.com/claude-code)`. Say whether Kai must restart the
-tracker (only if Python changed).
+tracker (only if Python changed). If the fix changes what the app looks like, add "## Before and after": run
+`tools/dev/pr_shots.sh` from your worktree root with a view for each thing changed (`--setup <script>` when the demo data
+doesn't show the bug) and paste the table it prints. If it can't run in your worktree, say so and the lead runs it.
 
 ## Your report
 PR number, branch, worktree path, last commit, changed lines, how you proved the test catches the bug, each check's real

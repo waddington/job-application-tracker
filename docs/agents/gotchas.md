@@ -8,6 +8,8 @@ Each of these cost time once. Add a line when something new does.
   inline Python (especially mentioning git), `for` loops, `cd` before git, `git -C`, `&&` chains mixing git with other
   tools. Split the commands; edit files with Edit. A refused command ran nothing. Subagents inherit the limit: run a
   review from the worktree it reviews, or give the reviewer the diff as a file (`gh pr diff N > <tmp>/prN.diff`).
+- **`PATH=…:$PATH pnpm …` is refused in a worktree session** ("a value computed at runtime"): spell the whole PATH out
+  (`PATH=/home/kai/.nvm/versions/node/v22.23.3/bin:/home/kai/.local/bin:/usr/bin:/bin pnpm …`).
 - **A `cd` persists** to later Bash calls: after `cd frontend`, relative paths break. Use absolute paths, or `cd` back.
 - **zsh aborts a whole command line on an unmatched glob** (`grep --include=*.tsx`): later commands never run, so "no
   output" can mean "not run". Quote globs or use plain paths.

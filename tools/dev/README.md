@@ -20,6 +20,7 @@ Linux (GNU `sed`); on macOS `checks.sh` runs without `flock` and `ionice`, and t
 | `release_notes.py <version> <out>` | One version's CHANGELOG section with links made absolute (`ship.sh` uses it). |
 | `i18n_snapshot.sh` | The before/after text check for UI text changes: main's build against the branch's, on one demo folder. `SNAP_PORT` picks the port. |
 | `check_links.py [files]` | Relative links and anchors in the README and the guide (or the files given). |
+| `pr_shots.sh [--setup <file.py>] "<label>=<path>[@375][@full][@light][@sel=<css>][@click=<text>]"…` | The before-and-after screenshots a UI PR carries (CLAUDE.md, *Git*): each view on main's build and this branch's, on one fresh demo folder (`--setup` adds data first, through main's API), uploaded to the long-lived `pr-shots` branch; prints the `\| Item \| Before \| After \|` table and saves it as `var/pr-shots/table.md`. `@sel` shoots one element, `@click` opens a menu or dialog first. Needs main's `frontend/dist` (ship.sh rebuilds it). `PR_SHOTS_PORT` picks the port. |
 | `shot.py <url> <prefix> <path>[@light][@375][@full]…` | Screenshots with the system Chrome (`uv run --with playwright python`), flagging sideways scroll and console errors. |
 | `after_compact.sh [--user]` | Tells the session to read `docs/agents/` right after a compaction (a SessionStart hook; see `docs/COMPACTION.md`). |
 | `briefs/bug-fix.md` | The brief for a subagent fixing one roadmap bug. |

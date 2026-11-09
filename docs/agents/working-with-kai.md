@@ -34,7 +34,8 @@ where things run. Quotes are Kai's words.
   (#92's first version flipped routes and was reworked).
 - **Don't max out Kai's PC:** "you are maxing out my PC". Tests only through `pnpm` or `tools/dev/checks.sh`; never two
   heavy runs at once; skip browser tests when CLAUDE.md allows.
-- **Branches:** "also delete branches on remote that are no longer needed". After each merge only `main` remains.
+- **Branches:** "also delete branches on remote that are no longer needed". After each merge only `main` remains, plus
+  the long-lived `pr-shots` branch, which holds the screenshots PR descriptions show: never delete it.
 - **PM dashboard:** "keep the PM dashboard up to date, or even backfill items if they were not added". Every task gets a
   roadmap entry (P7, or P8 for i18n; id = branch minus `worktree-`), `building` while its PR is open, `done` just before
   merging. Pull main after every merge, roadmap-only ones too, or the dashboard goes stale.
@@ -57,9 +58,11 @@ where things run. Quotes are Kai's words.
   `/code-review:code-review` alongside, saying which found each finding); otherwise plain `general-purpose` subagents.
   **Never give a one-off agent a `name`**: named agents become teammates that don't report back by themselves.
 - **UI changes: Kai sees them first** when asked ("show me the mock server before merging so i can review the ui"): a
-  demo URL on seeded data with the case on screen, then build the test and ship on "ship it". For a layout PR Kai
-  asked for a before-and-after table of screenshots in the PR description ("| Item | Before | After |"), and to merge it
-  himself ("this one dont automerge"): images on a throwaway `pr-shots/<task>` branch, demo data only.
+  demo URL on seeded data with the case on screen, then build the test and ship on "ship it". When Kai says a PR
+  waits for him ("this one dont automerge"), merge only on his word.
+- **Every UI PR shows before and after** (CLAUDE.md, *Git*): "when making a UI change the PR should have before/after
+  screenshot(s) … it doesnt need a huge amount for every data scenario but soenmthign to see what was
+  changed/added/removed". `tools/dev/pr_shots.sh` makes the table.
 - **English text and layout are Kai's call in translation work:** a fix that changes English waits for Kai's yes, and
   language-specific CSS stays as small as possible (`docs/rfc/zh-cn.md`, *Layout*).
 - **Contributors' PRs** (issue #230's author sends the Windows work):
