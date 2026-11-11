@@ -1,55 +1,68 @@
 // Design concepts for the Interviews calendar, for Kai to choose from on a dev server (the page shows
-// the switch only when import.meta.env.DEV). They share the data, the sums (utils/calendar.ts) and the
-// round details with its actions (InterviewCalendar.tsx); only one is meant to survive.
+// the switch only when import.meta.env.DEV). Two families, dot months and clusters, each in a few
+// variations, all with a side panel of the chosen day's rounds. They share the data, the sums
+// (utils/calendar.ts) and the round details with its actions (InterviewCalendar.tsx); one will survive.
 
 import {
   Group,
   Paper,
-  ScrollArea,
   SegmentedControl,
   SimpleGrid,
   Stack,
   Text,
-  Title,
   Tooltip,
   UnstyledButton,
 } from "@mantine/core";
 import { useLocalStorage, useMediaQuery } from "@mantine/hooks";
-import { IconBuilding, IconCalendarEvent, IconCircleCheck, IconClock } from "@tabler/icons-react";
+import { IconBuilding, IconCircleCheck, IconClock } from "@tabler/icons-react";
 import dayjs from "dayjs";
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { Interview } from "../api/interviewHooks";
-import { gridDays, periodRange, summarise, type Summary } from "../utils/calendar";
+import { gridDays, periodRange, shiftPeriod, summarise, type Period, type Summary } from "../utils/calendar";
 import { formatDay } from "../utils/format";
-import { roundLabel } from "../utils/rounds";
 import classes from "./CalendarConcepts.module.css";
-import { HoverDetails, RoundChip, RoundDetails, whenOf } from "./InterviewCalendar";
+import { PeriodSummary, RoundDetails, whenOf } from "./InterviewCalendar";
 import { roundStatus } from "./Interviews";
 
-export type Design = "dotMonths" | "dotYear" | "clusters" | "weekStrip" | "current";
+export type Design =
+  | "monthsA"
+  | "monthsB"
+  | "monthsC"
+  | "monthsD"
+  | "clustersA"
+  | "clustersB"
+  | "clustersC"
+  | "clustersD"
+  | "current";
 
-/** The switch's choices, in order; ?design=1…5 picks by position. */
+/** The switch's choices, in order; ?design=1…8 picks by position. */
 export const DESIGNS = [
-  { value: "dotMonths", key: "calendar.concepts.dotMonths" },
-  { value: "dotYear", key: "calendar.concepts.dotYear" },
-  { value: "clusters", key: "calendar.concepts.clusters" },
-  { value: "weekStrip", key: "calendar.concepts.weekStrip" },
-  { value: "current", key: "calendar.concepts.current" },
+  { value: "monthsA", key: "calendar.concepts.monthsA" },
+  { value: "monthsB", key: "calendar.concepts.monthsB" },
+  { value: "monthsC", key: "calendar.concepts.monthsC" },
+  { value: "monthsD", key: "calendar.concepts.monthsD" },
+  { value: "clustersA", key: "calendar.concepts.clustersA" },
+  { value: "clustersB", key: "calendar.concepts.clustersB" },
+  { value: "clustersC", key: "calendar.concepts.clustersC" },
+  { value: "clustersD", key: "calendar.concepts.clustersD" },
 ] as const satisfies readonly { value: Design; key: string }[];
+
+/** The variations that show several months at once, with no previous and next. */
+export const MANY_MONTHS: readonly Design[] = ["monthsA", "monthsC", "monthsD"];
 
 /**
  * The design to show, and on a dev server the switch to pick it: remembered, or chosen with
- * ?design=1…5. A production build always shows the current design and no switch. Unit tests (also
+ * ?design=1…8. A production build always shows the current design and no switch. Unit tests (also
  * a dev mode) start on the current one, which is what they check.
  */
 export function useDesign(): { design: Design; designSwitch: ReactNode } {
   const { t } = useTranslation("interviews");
   const phone = useMediaQuery("(max-width: 48em)");
-  const [design, setDesign] = useLocalStorage<Design>({
+  const [stored, setDesign] = useLocalStorage<Design>({
     key: "jat.interviews.design",
-    defaultValue: import.meta.env.MODE === "test" ? "current" : "dotMonths",
+    defaultValue: import.meta.env.MODE === "test" ? "current" : "monthsA",
     getInitialValueInEffect: false,
   });
   useEffect(() => {
@@ -58,6 +71,9 @@ export function useDesign(): { design: Design; designSwitch: ReactNode } {
     if (chosen) setDesign(chosen.value);
   }, [setDesign]);
   if (!import.meta.env.DEV) return { design: "current", designSwitch: null };
+  // A choice from the first round of concepts that's gone falls back to the first.
+  const known = stored === "current" || DESIGNS.some((d) => d.value === stored);
+  const design = known ? stored : "monthsA";
   return {
     design,
     designSwitch: (
@@ -92,10 +108,12 @@ export interface ConceptProps {
   now: number;
   names: (r: Interview) => string[];
   anchor: string;
+  period: Period;
 }
 
 const DAY = "YYYY-MM-DD";
 const MONTH = "month" as const;
+const EVER = { first: "0000-01-01", last: "9999-12-31" };
 
 /** A day's colour: what most needs you first (awaiting an outcome), then coming up, held, cancelled. */
 const TONES = ["orange", "blue", "teal", "red", "gray"];
@@ -106,70 +124,95 @@ function tone(rounds: Interview[]): string {
 
 const dotColor = (color: string) => ({ "--dot": `var(--mantine-color-${color}-filled)` }) as CSSProperties;
 
-/** One round's details, or a day's rounds as a list (each with its own details). */
-function DayDetails({
+/** A dot split into a slice per status, in TONES order, for a day with rounds of more than one status. */
+function splitDot(rounds: Interview[]): CSSProperties {
+  const colors = rounds.map((r) => roundStatus(r).color);
+  let at = 0;
+  const stops = TONES.flatMap((c) => {
+    const n = colors.filter((x) => x === c).length;
+    if (!n) return [];
+    const from = at;
+    at += (n / colors.length) * 100;
+    return [`var(--mantine-color-${c}-filled) ${from}% ${at}%`];
+  });
+  // CSS, not words: nobody reads this list.
+  // eslint-disable-next-line no-restricted-syntax
+  return { background: `conic-gradient(${stops.join(", ")})` };
+}
+
+/** "FA" for Fabrikam, "AW" for Adventure Works: a company's initials for a tiny chip. */
+function initials(company: string): string {
+  const words = company.split(/\s+/).filter(Boolean);
+  const letters = words.length > 1 ? words[0]!.charAt(0) + words[1]!.charAt(0) : company.slice(0, 2);
+  return letters.toUpperCase();
+}
+
+/**
+ * The day the panel shows: the one you picked while it's on screen; else today if it has rounds, or the
+ * next day that does; else the period's first day with rounds, or today, or the period's first day.
+ */
+function useChosenDay(days: Map<string, Interview[]>, today: string, first: string, last: string) {
+  const [picked, setPicked] = useState<string | null>(null);
+  const busy = [...days.keys()].filter((d) => d >= first && d <= last).sort();
+  const fallback =
+    busy.find((d) => d >= today) ?? (today >= first && today <= last ? today : (busy[0] ?? first));
+  const day = picked && picked >= first && picked <= last ? picked : fallback;
+  return [day, setPicked] as const;
+}
+
+/** The chosen day's rounds, each as its card with its actions. */
+function DayPanel({
   day,
-  rounds,
+  days,
   names,
 }: {
   day: string;
-  rounds: Interview[];
-  names: (r: Interview) => string[];
+  days: Map<string, Interview[]>;
+  names: ConceptProps["names"];
 }) {
-  const { i18n } = useTranslation("interviews");
-  if (rounds.length === 1) return <RoundDetails round={rounds[0]!} people={names(rounds[0]!)} />;
+  const { t, i18n } = useTranslation("interviews");
+  const here = days.get(day) ?? [];
   return (
-    <Stack gap={4}>
-      <Text size="xs" fw={600} c="dimmed">
+    <div aria-live="polite">
+      <Text fw={650} mb="sm">
         {formatDay(day, "weekdayDayMonth", i18n.language)}
       </Text>
-      {rounds.map((r) => (
-        <RoundChip key={r.id} round={r} people={names(r)} full />
-      ))}
-    </Stack>
+      <Stack gap="sm">
+        {here.length ? (
+          here.map((r) => (
+            <Paper key={r.id} withBorder radius="md" p="sm">
+              <RoundDetails round={r} people={names(r)} />
+            </Paper>
+          ))
+        ) : (
+          <Text size="sm" c="dimmed">
+            {t("calendar.concepts.noRoundsDay")}
+          </Text>
+        )}
+      </Stack>
+    </div>
   );
 }
 
-/** A day with rounds, as a button: its rounds on hover, focus or click. */
-function DayButton({
-  day,
-  rounds,
-  names,
-  className,
-  style,
-  children,
-  data,
+/** The calendar beside the panel; on a phone, the panel under it. */
+function WithPanel({
+  main,
+  panel,
+  sticky = true,
+  panelFirstOnPhone = false,
 }: {
-  day: string;
-  rounds: Interview[];
-  names: (r: Interview) => string[];
-  className?: string;
-  style?: CSSProperties;
-  children?: ReactNode;
-  data?: Record<string, string | boolean | undefined>;
+  main: ReactNode;
+  panel: ReactNode;
+  sticky?: boolean;
+  panelFirstOnPhone?: boolean;
 }) {
-  const { t, i18n } = useTranslation("interviews");
   return (
-    <HoverDetails
-      width={rounds.length === 1 ? 340 : 280}
-      position="bottom"
-      details={() => <DayDetails day={day} rounds={rounds} names={names} />}
-      target={(props) => (
-        <UnstyledButton
-          className={className}
-          style={style}
-          data-day={day}
-          aria-label={t("calendar.concepts.dayLabel", {
-            count: rounds.length,
-            day: formatDay(day, "weekdayDayMonth", i18n.language),
-          })}
-          {...data}
-          {...props}
-        >
-          {children}
-        </UnstyledButton>
-      )}
-    />
+    <div className={classes.withPanel} data-panel-first={panelFirstOnPhone || undefined}>
+      <div className={classes.main}>{main}</div>
+      <div className={classes.panel} data-sticky={sticky || undefined}>
+        {panel}
+      </div>
+    </div>
   );
 }
 
@@ -186,17 +229,10 @@ function IconStat({ icon, n, label }: { icon: ReactNode; n: number; label: strin
 }
 
 /** Held, coming up and companies, as small figures with icons. */
-function Stats({ s, rounds = false }: { s: Summary; rounds?: boolean }) {
+function Stats({ s }: { s: Summary }) {
   const { t } = useTranslation("interviews");
   return (
     <Group gap={12} wrap="nowrap">
-      {rounds && (
-        <IconStat
-          icon={<IconCalendarEvent size={15} stroke={1.8} />}
-          n={s.total - s.cancelled}
-          label={t("calendar.concepts.rounds", { count: s.total - s.cancelled })}
-        />
-      )}
       <IconStat
         icon={<IconCircleCheck size={15} stroke={1.8} />}
         n={s.held}
@@ -229,315 +265,317 @@ function monthsToShow(days: Map<string, Interview[]>, today: string): string[] {
   return months;
 }
 
-/** 1. Dot months: each month a grid of dots, newest first; a bigger, coloured dot on a day with rounds. */
-export function DotMonths({ rounds, days, today, now, names }: ConceptProps) {
-  const { i18n } = useTranslation("interviews");
+type DotStyle = "plain" | "split" | "large";
+
+/** A month as a grid of dots: grey for a quiet day, a bigger coloured one for a day with rounds. */
+function DotMonth({
+  month,
+  days,
+  today,
+  chosen,
+  onChoose,
+  look,
+  stats,
+}: {
+  month: string;
+  days: Map<string, Interview[]>;
+  today: string;
+  chosen: string;
+  onChoose: (day: string) => void;
+  look: DotStyle;
+  stats?: Summary;
+}) {
+  const { t, i18n } = useTranslation("interviews");
   const lang = i18n.language;
+  const cells = gridDays(month, MONTH);
   return (
-    <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing={48} verticalSpacing={40}>
-      {monthsToShow(days, today).map((month) => {
-        const { first, last } = periodRange(month, MONTH);
-        const cells = gridDays(month, MONTH);
-        return (
-          <section key={month} className={classes.month} aria-label={formatDay(month, "monthNameYear", lang)}>
-            <Group justify="space-between" mb="md" wrap="nowrap">
-              <Text fw={650} size="lg">
-                {formatDay(month, "monthNameYear", lang)}
-              </Text>
-              <Stats s={summarise(rounds, first, last, now)} />
-            </Group>
-            <div className={classes.dotGrid}>
-              {cells.slice(0, 7).map((d) => (
-                <span key={`h${d}`} className={classes.dotHead} aria-hidden>
-                  {formatDay(d, "minWeekday", lang)}
-                </span>
-              ))}
-              {cells.map((d) => {
-                if (d.slice(0, 7) !== month.slice(0, 7)) return <span key={d} className={classes.dotCell} />;
-                const here = days.get(d) ?? [];
-                return (
-                  <span key={d} className={classes.dotCell} data-today={d === today || undefined}>
-                    {here.length ? (
-                      <DayButton
-                        day={d}
-                        rounds={here}
-                        names={names}
-                        className={classes.bigDot}
-                        style={dotColor(tone(here))}
-                        data={{ "data-size": String(Math.min(here.length, 3)), "data-tone": tone(here) }}
-                      >
-                        {here.length > 1 ? here.length : null}
-                      </DayButton>
-                    ) : (
-                      <span className={classes.smallDot} />
-                    )}
-                  </span>
-                );
-              })}
-            </div>
-          </section>
-        );
-      })}
-    </SimpleGrid>
+    <section className={classes.month} aria-label={formatDay(month, "monthNameYear", lang)} data-look={look}>
+      {stats && (
+        <Stack gap={4} mb="md">
+          <Text fw={650} size="lg">
+            {formatDay(month, "monthNameYear", lang)}
+          </Text>
+          <Stats s={stats} />
+        </Stack>
+      )}
+      <div className={classes.dotGrid}>
+        {cells.slice(0, 7).map((d) => (
+          <span key={`h${d}`} className={classes.dotHead} aria-hidden>
+            {formatDay(d, look === "large" ? "shortWeekday" : "minWeekday", lang)}
+          </span>
+        ))}
+        {cells.map((d) => {
+          if (d.slice(0, 7) !== month.slice(0, 7)) return <span key={d} className={classes.dotCell} />;
+          const here = days.get(d) ?? [];
+          const mixed = look === "split" && new Set(here.map((r) => roundStatus(r).color)).size > 1;
+          const label = t("calendar.concepts.dayLabel", {
+            count: here.length,
+            day: formatDay(d, "weekdayDayMonth", lang),
+          });
+          return (
+            <span
+              key={d}
+              className={classes.dotCell}
+              data-today={d === today || undefined}
+              data-chosen={d === chosen || undefined}
+            >
+              {look === "large" && (
+                <span className={classes.cellNumber}>{formatDay(d, "dayOfMonth", lang)}</span>
+              )}
+              {here.length ? (
+                <Tooltip label={label} withArrow openDelay={300}>
+                  <UnstyledButton
+                    className={classes.bigDot}
+                    style={mixed ? { ...dotColor(tone(here)), ...splitDot(here) } : dotColor(tone(here))}
+                    data-size={String(Math.min(here.length, 3))}
+                    data-tone={tone(here)}
+                    data-day={d}
+                    aria-label={label}
+                    aria-pressed={d === chosen}
+                    onClick={() => onChoose(d)}
+                  >
+                    {here.length > 1 ? here.length : null}
+                  </UnstyledButton>
+                </Tooltip>
+              ) : (
+                <span className={classes.smallDot} />
+              )}
+            </span>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 
-/** 2. Dot year: the whole search as a grid of days, a column per week, darker for busier days. */
-export function DotYear({ rounds, days, today, now, names }: ConceptProps) {
+/**
+ * Dot months A, C and D: every month of the search at once (A and D three across, C one column), the
+ * chosen month's figures above, and the chosen day's rounds beside.
+ */
+export function DotMonths({ rounds, days, today, now, names, design }: ConceptProps & { design: Design }) {
   const { t, i18n } = useTranslation("interviews");
-  const lang = i18n.language;
-  const viewport = useRef<HTMLDivElement>(null);
-  const keys = [...days.keys()].sort();
-  const monday = (d: dayjs.Dayjs) => d.subtract((d.day() + 6) % 7, "day");
-  const floor = monday(dayjs(today).subtract(51, "week"));
-  const earliest = monday(dayjs(keys[0] ?? today).subtract(1, "week"));
-  const start = earliest.isBefore(floor) ? floor : earliest;
-  const lastKey = keys.at(-1);
-  const end = monday(dayjs(lastKey && lastKey > today ? lastKey : today)).add(6, "day");
-  const weeks: string[][] = [];
-  for (let w = start; !w.isAfter(end); w = w.add(1, "week"))
-    weeks.push(Array.from({ length: 7 }, (_, i) => w.add(i, "day").format(DAY)));
-  const first = weeks[0]![0]!;
-  const last = weeks.at(-1)![6]!;
-  const s = summarise(rounds, first, last, now);
-  // Open on the latest weeks, where a phone can't show them all.
-  useEffect(() => {
-    const el = viewport.current;
-    if (el) el.scrollLeft = el.scrollWidth;
-  }, [weeks.length]);
-  const grid = { gridTemplateColumns: `auto repeat(${weeks.length}, var(--cell))` } as CSSProperties;
+  const [day, setDay] = useChosenDay(days, today, EVER.first, EVER.last);
+  const month = periodRange(day, MONTH);
+  const before = periodRange(shiftPeriod(day, MONTH, -1), MONTH);
+  const heading = formatDay(day, "monthNameYear", i18n.language);
+  const column = design === "monthsC";
+  const months = monthsToShow(days, today).map((m) => {
+    const { first, last } = periodRange(m, MONTH);
+    return (
+      <DotMonth
+        key={m}
+        month={m}
+        days={days}
+        today={today}
+        chosen={day}
+        onChoose={setDay}
+        look={design === "monthsD" ? "split" : "plain"}
+        stats={summarise(rounds, first, last, now)}
+      />
+    );
+  });
   return (
     <Stack gap="lg">
-      <Group justify="space-between" align="flex-end">
-        <Title order={3}>
-          {t("calendar.weekRange", {
-            from: formatDay(weeks[0]![6]!, "monthYear", lang),
-            to: formatDay(last, "monthYear", lang),
-          })}
-        </Title>
-        <Stats s={s} rounds />
-      </Group>
-      {s.total === 0 && (
-        <Text size="sm" c="dimmed">
-          {t("calendar.concepts.noRounds")}
+      <section aria-label={t("calendar.summary.label", { period: heading })}>
+        <Text fw={650} size="sm" c="dimmed" mb={6}>
+          {heading}
         </Text>
-      )}
-      <ScrollArea type="auto" viewportRef={viewport} offsetScrollbars>
-        <div className={classes.year} style={grid}>
-          {weeks.map((w, i) => {
-            const firstOfMonth = w.find((d) => d.endsWith("-01"));
-            const label = firstOfMonth ?? (i === 0 ? w[0] : undefined);
-            return label ? (
-              <span key={`m${w[0]}`} className={classes.yearMonth} style={{ gridColumn: i + 2, gridRow: 1 }}>
-                {formatDay(label, "shortMonth", lang)}
-              </span>
-            ) : null;
-          })}
-          {weeks[0]!.map((d, row) =>
-            row % 2 === 0 ? (
-              <span key={`r${d}`} className={classes.yearWeekday} style={{ gridColumn: 1, gridRow: row + 2 }}>
-                {formatDay(d, "shortWeekday", lang)}
-              </span>
-            ) : null,
-          )}
-          {weeks.flatMap((w, col) =>
-            w.map((d, row) => {
-              const here = days.get(d) ?? [];
-              const active = here.filter((r) => r.status !== "cancelled").length;
-              const place = { gridColumn: col + 2, gridRow: row + 2 };
-              const data = {
-                "data-level": String(Math.min(active, 3)),
-                "data-future": d > today || undefined,
-                "data-today": d === today || undefined,
-              };
-              if (d > last) return null;
-              return (
-                <span key={d} className={classes.yearCell} style={place}>
-                  {here.length ? (
-                    <DayButton day={d} rounds={here} names={names} className={classes.yearDot} data={data} />
-                  ) : (
-                    <span className={classes.yearDot} {...data} />
-                  )}
-                </span>
-              );
-            }),
-          )}
-        </div>
-      </ScrollArea>
-      <Group gap={6} justify="flex-end" aria-hidden>
-        <Text size="xs" c="dimmed">
-          {t("calendar.concepts.fewer")}
-        </Text>
-        {[0, 1, 2, 3].map((level) => (
-          <span key={level} className={classes.yearDot} data-level={level} />
-        ))}
-        <Text size="xs" c="dimmed">
-          {t("calendar.concepts.busier")}
-        </Text>
-      </Group>
+        <PeriodSummary
+          now={summarise(rounds, month.first, month.last, now)}
+          prev={summarise(rounds, before.first, before.last, now)}
+          period={MONTH}
+          anchor={day}
+        />
+      </section>
+      <WithPanel
+        main={
+          column ? (
+            <Stack gap={44} className={classes.column}>
+              {months}
+            </Stack>
+          ) : (
+            <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing={36} verticalSpacing={40}>
+              {months}
+            </SimpleGrid>
+          )
+        }
+        panel={<DayPanel day={day} days={days} names={names} />}
+        panelFirstOnPhone
+      />
     </Stack>
   );
 }
 
-/** 3. Clusters: a compact month, a small dot per round; the day you pick is listed beside it. */
-export function DayClusters({ days, today, names, anchor }: ConceptProps) {
-  const { t, i18n } = useTranslation("interviews");
-  const lang = i18n.language;
-  const [picked, setPicked] = useState<string | null>(null);
-  const month = anchor.slice(0, 7);
-  const cells = gridDays(anchor, "month");
-  // The day you picked; else today or the next day with rounds this month; else its first busy day.
-  const busy = cells.filter((d) => d.startsWith(month) && days.has(d));
-  const day = picked?.startsWith(month) ? picked : (busy.find((d) => d >= today) ?? busy[0] ?? `${month}-01`);
-  const here = days.get(day) ?? [];
+/** Dot months B: one large month, with previous, next and today above (InterviewCalendar's header). */
+export function DotMonthLarge({ days, today, names, anchor }: ConceptProps) {
+  const { first, last } = periodRange(anchor, MONTH);
+  const [day, setDay] = useChosenDay(days, today, first, last);
   return (
-    <div className={classes.clusters}>
-      <div className={classes.clusterGrid}>
-        {cells.slice(0, 7).map((d) => (
-          <span key={`h${d}`} className={classes.dotHead} aria-hidden>
-            {formatDay(d, "minWeekday", lang)}
-          </span>
-        ))}
-        {cells.map((d) => {
-          const rs = days.get(d) ?? [];
-          if (!d.startsWith(month))
-            return (
-              <span key={d} className={classes.clusterDay} data-outside>
-                {formatDay(d, "dayOfMonth", lang)}
-              </span>
-            );
-          return (
-            <UnstyledButton
-              key={d}
-              className={classes.clusterDay}
-              data-day={d}
-              data-today={d === today || undefined}
-              data-selected={d === day || undefined}
-              aria-pressed={d === day}
-              aria-label={t("calendar.concepts.dayLabel", {
-                count: rs.length,
-                day: formatDay(d, "weekdayDayMonth", lang),
-              })}
-              onClick={() => setPicked(d)}
-            >
-              <span className={classes.clusterNumber}>{formatDay(d, "dayOfMonth", lang)}</span>
-              <span className={classes.clusterDots}>
-                {rs.map((r) => (
-                  <span
-                    key={r.id}
-                    className={classes.miniDot}
-                    data-status={r.status}
-                    style={dotColor(roundStatus(r).color)}
-                  />
-                ))}
-              </span>
-            </UnstyledButton>
-          );
-        })}
-      </div>
-      <div className={classes.panel} aria-live="polite">
-        <Text fw={650} mb="sm">
-          {formatDay(day, "weekdayDayMonth", lang)}
-        </Text>
-        <Stack gap="sm">
-          {here.length ? (
-            here.map((r) => (
-              <Paper key={r.id} withBorder radius="md" p="sm">
-                <RoundDetails round={r} people={names(r)} />
-              </Paper>
-            ))
-          ) : (
-            <Text size="sm" c="dimmed">
-              {t("calendar.concepts.noRoundsDay")}
-            </Text>
-          )}
-        </Stack>
-      </div>
-    </div>
+    <WithPanel
+      main={<DotMonth month={first} days={days} today={today} chosen={day} onChoose={setDay} look="large" />}
+      panel={<DayPanel day={day} days={days} names={names} />}
+    />
   );
 }
 
-/** Where in a day's strip a time sits, from 07:00 to 21:00. */
+type ClusterLook = "dots" | "initials" | "tint";
+
+/** Clusters A, B and C: a compact month, each round a small mark in its day; the day you pick, beside. */
+export function DayClusters({ days, today, names, anchor, look }: ConceptProps & { look: ClusterLook }) {
+  const { t, i18n } = useTranslation("interviews");
+  const lang = i18n.language;
+  const { first, last } = periodRange(anchor, MONTH);
+  const [day, setDay] = useChosenDay(days, today, first, last);
+  const month = anchor.slice(0, 7);
+  const cells = gridDays(anchor, MONTH);
+  return (
+    <WithPanel
+      main={
+        <div className={classes.clusterGrid} data-look={look}>
+          {cells.slice(0, 7).map((d) => (
+            <span key={`h${d}`} className={classes.dotHead} aria-hidden>
+              {formatDay(d, "minWeekday", lang)}
+            </span>
+          ))}
+          {cells.map((d) => {
+            const rs = days.get(d) ?? [];
+            if (!d.startsWith(month))
+              return (
+                <span key={d} className={classes.clusterDay} data-outside>
+                  {formatDay(d, "dayOfMonth", lang)}
+                </span>
+              );
+            return (
+              <UnstyledButton
+                key={d}
+                className={classes.clusterDay}
+                data-day={d}
+                data-today={d === today || undefined}
+                data-selected={d === day || undefined}
+                data-busy={
+                  look === "tint"
+                    ? String(Math.min(rs.filter((r) => r.status !== "cancelled").length, 3))
+                    : undefined
+                }
+                aria-pressed={d === day}
+                aria-label={t("calendar.concepts.dayLabel", {
+                  count: rs.length,
+                  day: formatDay(d, "weekdayDayMonth", lang),
+                })}
+                onClick={() => setDay(d)}
+              >
+                <span className={classes.clusterNumber}>{formatDay(d, "dayOfMonth", lang)}</span>
+                <span className={classes.clusterDots}>
+                  {rs.map((r) =>
+                    look === "initials" ? (
+                      <span
+                        key={r.id}
+                        className={classes.initials}
+                        data-status={r.status}
+                        style={dotColor(roundStatus(r).color)}
+                      >
+                        {initials(r.company_name)}
+                      </span>
+                    ) : (
+                      <span
+                        key={r.id}
+                        className={classes.miniDot}
+                        data-status={r.status}
+                        style={dotColor(roundStatus(r).color)}
+                      />
+                    ),
+                  )}
+                </span>
+              </UnstyledButton>
+            );
+          })}
+        </div>
+      }
+      panel={<DayPanel day={day} days={days} names={names} />}
+    />
+  );
+}
+
+/** Where in a day's column a time sits, from 07:00 to 21:00. */
 function dayFraction(iso: string): number {
   const d = dayjs(iso);
   const minutes = d.hour() * 60 + d.minute();
   return Math.min(1, Math.max(0, (minutes - 7 * 60) / (14 * 60)));
 }
 
-/** A round's dot on its day's strip: at its time, lifted a little when it shares the day. */
-function timeDotStyle(r: Interview, n: number): CSSProperties {
+/** A round's dot in its day's column: at its time, nudged sideways when it shares the day. */
+function columnDotStyle(r: Interview, n: number): CSSProperties {
   return {
     ...dotColor(roundStatus(r).color),
-    // Inset from the ends, so a dot at 07:00 or 21:00 stays inside its own day.
-    left: `calc(7px + (100% - 14px) * ${dayFraction(whenOf(r))})`,
-    "--lift": `${(n % 3) * -7}px`,
+    top: `calc(8px + (100% - 16px) * ${dayFraction(whenOf(r))})`,
+    left: `calc(50% + ${((n % 3) - 1) * 14}px)`,
   } as CSSProperties;
 }
 
-/** 4. Week strip: a row per week, each round a dot at its time of day, the week's figures at the end. */
-export function WeekStrip({ rounds, days, today, now, names, anchor }: ConceptProps) {
+/** The hours marked down a week's columns. */
+const HOURS = [9, 12, 15, 18];
+
+/** Clusters D: a week of tall day columns, each round a dot at its time; the day you pick, beside. */
+export function WeekClusters({ days, today, names, anchor }: ConceptProps) {
   const { t, i18n } = useTranslation("interviews");
   const lang = i18n.language;
-  const month = anchor.slice(0, 7);
-  const cells = gridDays(anchor, "month");
-  const weeks = Array.from({ length: cells.length / 7 }, (_, i) => cells.slice(i * 7, i * 7 + 7));
+  const { first, last } = periodRange(anchor, "week");
+  const [day, setDay] = useChosenDay(days, today, first, last);
+  const week = gridDays(anchor, "week");
   return (
-    <div className={classes.strips}>
-      {weeks.map((w) => (
-        <div key={w[0]} className={classes.weekRow}>
-          <Text size="sm" fw={600} className={classes.weekLabel}>
-            {t("calendar.weekRange", {
-              from: formatDay(w[0]!, "dayMonth", lang),
-              to: formatDay(w[6]!, "dayMonth", lang),
-            })}
-          </Text>
-          <div className={classes.track}>
-            {w.map((d, i) => (
-              <div
-                key={d}
-                className={classes.trackDay}
-                data-today={d === today || undefined}
-                data-outside={!d.startsWith(month) || undefined}
-                data-weekend={i >= 5 || undefined}
-              >
-                <div className={classes.trackLine}>
-                  {(days.get(d) ?? []).map((r, n) => {
-                    const time = formatDay(whenOf(r), "time", lang);
-                    const style = timeDotStyle(r, n);
-                    return (
-                      <HoverDetails
-                        key={r.id}
-                        position="bottom"
-                        details={() => <RoundDetails round={r} people={names(r)} />}
-                        target={(props) => (
-                          <UnstyledButton
-                            className={classes.timeDot}
-                            data-status={r.status}
-                            style={style}
-                            aria-label={t("calendar.roundLabel", {
-                              label: roundLabel(r),
-                              company: r.company_name,
-                              when: time,
-                            })}
-                            {...props}
-                          />
-                        )}
-                      />
-                    );
-                  })}
-                </div>
-                <span className={classes.trackLabel}>
-                  <span>{formatDay(d, "minWeekday", lang)}</span>
-                  <span>{formatDay(d, "dayOfMonth", lang)}</span>
-                </span>
-              </div>
+    <WithPanel
+      main={
+        <div className={classes.weekCols}>
+          <div className={classes.hours} aria-hidden>
+            {HOURS.map((h) => (
+              <span key={h} style={{ top: `calc(8px + (100% - 16px) * ${(h - 7) / 14})` }}>
+                {formatDay(dayjs().hour(h).minute(0), "time", lang)}
+              </span>
             ))}
           </div>
-          <div className={classes.weekSum}>
-            <Stats s={summarise(rounds, w[0]!, w[6]!, now)} rounds />
-          </div>
+          {week.map((d) => {
+            const rs = days.get(d) ?? [];
+            return (
+              <UnstyledButton
+                key={d}
+                className={classes.weekCol}
+                data-day={d}
+                data-today={d === today || undefined}
+                data-selected={d === day || undefined}
+                aria-pressed={d === day}
+                aria-label={t("calendar.concepts.dayLabel", {
+                  count: rs.length,
+                  day: formatDay(d, "weekdayDayMonth", lang),
+                })}
+                onClick={() => setDay(d)}
+              >
+                <span className={classes.weekColHead}>
+                  <span>{formatDay(d, "minWeekday", lang)}</span>
+                  <span className={classes.clusterNumber}>{formatDay(d, "dayOfMonth", lang)}</span>
+                </span>
+                <span className={classes.weekColBody}>
+                  {HOURS.map((h) => (
+                    <span
+                      key={h}
+                      className={classes.hourLine}
+                      style={{ top: `calc(8px + (100% - 16px) * ${(h - 7) / 14})` }}
+                    />
+                  ))}
+                  {rs.map((r, n) => (
+                    <span
+                      key={r.id}
+                      className={classes.columnDot}
+                      data-status={r.status}
+                      style={columnDotStyle(r, n)}
+                    />
+                  ))}
+                </span>
+              </UnstyledButton>
+            );
+          })}
         </div>
-      ))}
-    </div>
+      }
+      panel={<DayPanel day={day} days={days} names={names} />}
+    />
   );
 }

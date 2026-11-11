@@ -38,7 +38,14 @@ import { roundLabel } from "../utils/rounds";
 import { useNow, useToday } from "../utils/useToday";
 import text from "../text.module.css";
 import classes from "./InterviewCalendar.module.css";
-import { DayClusters, DotMonths, DotYear, WeekStrip, type Design } from "./CalendarConcepts";
+import {
+  DayClusters,
+  DotMonthLarge,
+  DotMonths,
+  MANY_MONTHS,
+  WeekClusters,
+  type Design,
+} from "./CalendarConcepts";
 import { roundStatus } from "./Interviews";
 import { RecruiterLine } from "./RecruiterLine";
 import { RescheduledBadge } from "./Reschedule";
@@ -481,22 +488,22 @@ export function InterviewCalendar({ rounds, design = "current" }: { rounds: Inte
     defaultValue: "month",
     getInitialValueInEffect: false,
   });
-  // The design concepts (dev only) work on months.
-  const period = design === "current" ? chosenPeriod : "month";
+  // The design concepts (dev only) work on months, apart from the week of clusters.
+  const period: Period = design === "current" ? chosenPeriod : design === "clustersD" ? "week" : "month";
   const { data: contacts } = useContacts();
   const contactNames = new Map((contacts ?? []).map((c) => [c.id, c.name]));
   const names = (r: Interview) => r.interviewer_ids.flatMap((id) => contactNames.get(id) ?? []);
+  const days = byDay(rounds);
+  const concept = { rounds, days, today, now, names, anchor, period };
 
-  if (design === "dotMonths" || design === "dotYear") {
-    const Concept = design === "dotMonths" ? DotMonths : DotYear;
+  if (MANY_MONTHS.includes(design)) {
     return (
       <Card withBorder padding="lg" className={classes.root}>
-        <Concept rounds={rounds} days={byDay(rounds)} today={today} now={now} names={names} anchor={anchor} />
+        <DotMonths {...concept} design={design} />
       </Card>
     );
   }
 
-  const days = byDay(rounds);
   const { first, last } = periodRange(anchor, period);
   const before = periodRange(shiftPeriod(anchor, period, -1), period);
   const summary = summarise(rounds, first, last, now);
@@ -554,10 +561,16 @@ export function InterviewCalendar({ rounds, design = "current" }: { rounds: Inte
         <section aria-label={t("calendar.summary.label", { period: heading })}>
           <PeriodSummary now={summary} prev={previous} period={period} anchor={anchor} />
         </section>
-        {design === "clusters" ? (
-          <DayClusters rounds={rounds} days={days} today={today} now={now} names={names} anchor={anchor} />
-        ) : design === "weekStrip" ? (
-          <WeekStrip rounds={rounds} days={days} today={today} now={now} names={names} anchor={anchor} />
+        {design === "monthsB" ? (
+          <DotMonthLarge {...concept} />
+        ) : design === "clustersA" ? (
+          <DayClusters {...concept} look="dots" />
+        ) : design === "clustersB" ? (
+          <DayClusters {...concept} look="initials" />
+        ) : design === "clustersC" ? (
+          <DayClusters {...concept} look="tint" />
+        ) : design === "clustersD" ? (
+          <WeekClusters {...concept} />
         ) : phone ? (
           <Agenda {...props} />
         ) : (

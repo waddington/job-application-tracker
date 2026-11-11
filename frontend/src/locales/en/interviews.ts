@@ -97,27 +97,24 @@ export default {
     // Design concepts for the calendar, offered only on a dev server while one is chosen.
     concepts: {
       design: "Calendar design (dev only)",
-      dotMonths: "Dot months",
-      dotYear: "Dot year",
-      clusters: "Clusters",
-      weekStrip: "Week strip",
-      current: "Current",
-      // Read out by screen readers for a day with rounds: "Thursday 12 November: 2 rounds".
+      monthsA: "Months A",
+      monthsB: "Months B",
+      monthsC: "Months C",
+      monthsD: "Months D",
+      clustersA: "Clusters A",
+      clustersB: "Clusters B",
+      clustersC: "Clusters C",
+      clustersD: "Clusters D",
+      // Read out by screen readers for a day: "Thursday 12 November: 2 rounds".
       dayLabel_one: "{{day}}: {{count}} round",
       dayLabel_other: "{{day}}: {{count}} rounds",
-      rounds_one: "{{count}} round",
-      rounds_other: "{{count}} rounds",
       held_one: "{{count}} held",
       held_other: "{{count}} held",
       comingUp_one: "{{count}} coming up",
       comingUp_other: "{{count}} coming up",
       companies_one: "{{count}} company",
       companies_other: "{{count}} companies",
-      // The ends of the dot year's scale.
-      fewer: "Fewer",
-      busier: "More",
       noRoundsDay: "No rounds on this day.",
-      noRounds: "No rounds yet.",
     },
     // The figures for the month or week on screen, each a number then these words.
     summary: {
