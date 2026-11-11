@@ -94,6 +94,31 @@ export default {
     noRoundsWeek: "No rounds this week.",
     // Open rounds without a time, or whose time has to move, under the calendar.
     toBook: "Still to book",
+    // Design concepts for the calendar, offered only on a dev server while one is chosen.
+    concepts: {
+      design: "Calendar design (dev only)",
+      dotMonths: "Dot months",
+      dotYear: "Dot year",
+      clusters: "Clusters",
+      weekStrip: "Week strip",
+      current: "Current",
+      // Read out by screen readers for a day with rounds: "Thursday 12 November: 2 rounds".
+      dayLabel_one: "{{day}}: {{count}} round",
+      dayLabel_other: "{{day}}: {{count}} rounds",
+      rounds_one: "{{count}} round",
+      rounds_other: "{{count}} rounds",
+      held_one: "{{count}} held",
+      held_other: "{{count}} held",
+      comingUp_one: "{{count}} coming up",
+      comingUp_other: "{{count}} coming up",
+      companies_one: "{{count}} company",
+      companies_other: "{{count}} companies",
+      // The ends of the dot year's scale.
+      fewer: "Fewer",
+      busier: "More",
+      noRoundsDay: "No rounds on this day.",
+      noRounds: "No rounds yet.",
+    },
     // The figures for the month or week on screen, each a number then these words.
     summary: {
       label: "Summary for {{period}}",

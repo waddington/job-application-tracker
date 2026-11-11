@@ -17,6 +17,7 @@ import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useInterviews, type Interview } from "../api/interviewHooks";
+import { useDesign } from "../components/CalendarConcepts";
 import { InterviewCalendar } from "../components/InterviewCalendar";
 import { roundStatus } from "../components/Interviews";
 import { RescheduledBadge, wasText } from "../components/Reschedule";
@@ -136,6 +137,7 @@ export function InterviewsPage() {
   const rest = all.filter((i) => !upcomingIds.has(i.id) && !waiting.includes(i)).reverse();
   // On the calendar: those waiting for a new time and those with no time yet, under it.
   const unbooked = toBook(all);
+  const { design, designSwitch } = useDesign();
 
   return (
     <Stack maw={1100}>
@@ -158,7 +160,8 @@ export function InterviewsPage() {
         <Loader />
       ) : view === "calendar" ? (
         <>
-          <InterviewCalendar rounds={all} />
+          {designSwitch}
+          <InterviewCalendar rounds={all} design={design} />
           {unbooked.length > 0 && (
             <Card withBorder>
               <Title order={4} mb="sm">

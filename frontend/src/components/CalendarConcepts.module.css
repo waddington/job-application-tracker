@@ -1,0 +1,404 @@
+/*
+ * The calendar design concepts (dev only). Colours are Mantine's; the few that differ in dark mode
+ * are custom properties set again below (the build drops light-dark()).
+ */
+.month,
+.year,
+.clusters,
+.strips,
+.yearDot {
+  --c-empty: var(--mantine-color-gray-3);
+  --c-line: var(--mantine-color-gray-2);
+  --c-soft: var(--mantine-color-gray-0);
+  --c-level1: var(--mantine-color-indigo-2);
+  --c-level2: var(--mantine-color-indigo-4);
+  --c-level3: var(--mantine-color-indigo-7);
+  --c-ring: var(--mantine-primary-color-filled);
+}
+
+:where([data-mantine-color-scheme="dark"]) :is(.month, .year, .clusters, .strips, .yearDot) {
+  --c-empty: var(--mantine-color-dark-4);
+  --c-line: var(--mantine-color-dark-4);
+  --c-soft: var(--mantine-color-dark-6);
+  --c-level1: var(--mantine-color-indigo-9);
+  --c-level2: var(--mantine-color-indigo-7);
+  --c-level3: var(--mantine-color-indigo-4);
+  --c-ring: var(--mantine-color-indigo-4);
+}
+
+.iconStat {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--mantine-color-dimmed);
+}
+
+.iconStat > span {
+  color: var(--mantine-color-text);
+}
+
+/* 1. Dot months */
+.dotGrid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  row-gap: 6px;
+}
+
+.dotHead {
+  text-align: center;
+  font-size: var(--mantine-font-size-xs);
+  color: var(--mantine-color-dimmed);
+  padding-bottom: 6px;
+}
+
+.dotCell {
+  position: relative;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dotCell[data-today]::before {
+  content: "";
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid var(--c-ring);
+}
+
+.smallDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--c-empty);
+}
+
+.bigDot {
+  --size: 16px;
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  background: var(--dot);
+  color: var(--mantine-color-white);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 120ms ease;
+}
+
+.bigDot[data-size="2"] {
+  --size: 22px;
+}
+
+.bigDot[data-size="3"] {
+  --size: 27px;
+}
+
+.bigDot[data-tone="gray"] {
+  opacity: 0.45;
+}
+
+.bigDot:hover,
+.bigDot[aria-expanded="true"] {
+  transform: scale(1.12);
+}
+
+.bigDot:focus-visible,
+.yearDot:focus-visible,
+.timeDot:focus-visible,
+.clusterDay:focus-visible {
+  outline: 2px solid var(--c-ring);
+  outline-offset: 2px;
+}
+
+/* 2. Dot year */
+.year {
+  --cell: 24px;
+  display: grid;
+  grid-template-rows: auto repeat(7, var(--cell));
+  gap: 4px;
+  width: max-content;
+  padding-bottom: 4px;
+}
+
+.yearMonth {
+  font-size: var(--mantine-font-size-xs);
+  color: var(--mantine-color-dimmed);
+  white-space: nowrap;
+  overflow: visible;
+  width: 0;
+}
+
+.yearWeekday {
+  font-size: 10px;
+  color: var(--mantine-color-dimmed);
+  padding-right: 6px;
+  line-height: var(--cell);
+}
+
+.yearCell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.yearDot {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--c-empty);
+  opacity: 0.6;
+}
+
+.yearDot[data-level="1"] {
+  background: var(--c-level1);
+  opacity: 1;
+}
+
+.yearDot[data-level="2"] {
+  background: var(--c-level2);
+  opacity: 1;
+}
+
+.yearDot[data-level="3"] {
+  background: var(--c-level3);
+  opacity: 1;
+}
+
+/* Booked, still to come: a ring rather than a filled dot. */
+.yearDot[data-future]:not([data-level="0"]) {
+  background: transparent;
+  box-shadow: inset 0 0 0 3px var(--c-level3);
+}
+
+.yearDot[data-today] {
+  outline: 2px solid var(--c-ring);
+  outline-offset: 2px;
+}
+
+/* 3. Clusters */
+.clusters {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 28px;
+  align-items: start;
+}
+
+.clusterGrid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.clusterDay {
+  min-height: 64px;
+  padding: 6px 8px;
+  border-radius: var(--mantine-radius-md);
+  background: var(--c-soft);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-size: var(--mantine-font-size-sm);
+  font-variant-numeric: tabular-nums;
+  transition: background 120ms ease;
+}
+
+.clusterDay[data-outside] {
+  background: transparent;
+  color: var(--mantine-color-dimmed);
+  opacity: 0.5;
+}
+
+button.clusterDay:hover {
+  background: var(--mantine-color-default-hover);
+}
+
+.clusterDay[data-today] .clusterNumber {
+  color: var(--c-ring);
+  font-weight: 700;
+}
+
+.clusterDay[data-selected] {
+  background: var(--mantine-primary-color-light);
+  box-shadow: inset 0 0 0 2px var(--c-ring);
+}
+
+.clusterDots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.miniDot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--dot);
+}
+
+.miniDot[data-status="cancelled"] {
+  opacity: 0.4;
+}
+
+.panel {
+  position: sticky;
+  top: 72px;
+}
+
+/* 4. Week strip */
+.strips {
+  display: flex;
+  flex-direction: column;
+}
+
+.weekRow {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr) 210px;
+  align-items: center;
+  gap: 20px;
+  padding: 14px 0;
+  border-top: 1px solid var(--c-line);
+}
+
+.weekRow:first-child {
+  border-top: 0;
+}
+
+.weekLabel {
+  white-space: nowrap;
+}
+
+.track {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.trackDay {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.trackDay[data-outside] {
+  opacity: 0.4;
+}
+
+.trackLine {
+  position: relative;
+  height: 26px;
+  border-radius: 13px;
+  background: var(--c-soft);
+}
+
+.trackDay[data-weekend] .trackLine {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--c-line);
+}
+
+.trackDay[data-today] .trackLine {
+  box-shadow: inset 0 0 0 2px var(--c-ring);
+}
+
+.trackLabel {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  font-size: var(--mantine-font-size-xs);
+  color: var(--mantine-color-dimmed);
+  font-variant-numeric: tabular-nums;
+}
+
+.trackDay[data-today] .trackLabel {
+  color: var(--c-ring);
+  font-weight: 700;
+}
+
+.timeDot {
+  position: absolute;
+  top: calc(50% - 6px + var(--lift, 0px));
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;
+  border-radius: 50%;
+  background: var(--dot);
+  box-shadow: 0 0 0 2px var(--mantine-color-body);
+}
+
+.timeDot[data-status="cancelled"] {
+  opacity: 0.45;
+}
+
+.weekSum {
+  justify-self: end;
+}
+
+@media (max-width: 48em) {
+  .year {
+    --cell: 18px;
+  }
+
+  .year .yearDot {
+    width: 13px;
+    height: 13px;
+  }
+
+  .clusters {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .clusterGrid {
+    gap: 4px;
+  }
+
+  .clusterDay {
+    min-height: 48px;
+    padding: 4px 5px;
+  }
+
+  .miniDot {
+    width: 7px;
+    height: 7px;
+  }
+
+  .panel {
+    position: static;
+  }
+
+  .weekRow {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "label sum"
+      "track track";
+    row-gap: 10px;
+  }
+
+  .weekLabel {
+    grid-area: label;
+  }
+
+  .track {
+    grid-area: track;
+    gap: 3px;
+  }
+
+  .weekSum {
+    grid-area: sum;
+  }
+}
+
+/* The dev-only design switch: dashed, so it reads as scaffolding. */
+.switch {
+  border-style: dashed;
+  align-self: flex-start;
+  max-width: 100%;
+}

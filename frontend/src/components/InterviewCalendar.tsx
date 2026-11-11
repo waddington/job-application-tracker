@@ -12,11 +12,12 @@ import {
   Text,
   Title,
   UnstyledButton,
+  type FloatingPosition,
 } from "@mantine/core";
 import { useLocalStorage, useMediaQuery } from "@mantine/hooks";
 import { IconChevronLeft, IconChevronRight, IconRepeat } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
-import { useRef, useState, type CSSProperties } from "react";
+import { useRef, useState, type CSSProperties, type ReactElement, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useContacts } from "../api/hooks";
@@ -37,6 +38,7 @@ import { roundLabel } from "../utils/rounds";
 import { useNow, useToday } from "../utils/useToday";
 import text from "../text.module.css";
 import classes from "./InterviewCalendar.module.css";
+import { DayClusters, DotMonths, DotYear, WeekStrip, type Design } from "./CalendarConcepts";
 import { roundStatus } from "./Interviews";
 import { RecruiterLine } from "./RecruiterLine";
 import { RescheduledBadge } from "./Reschedule";
@@ -53,10 +55,10 @@ const FORMATS = {
 const MONTH_FITS = 3;
 
 /** A round's time on the calendar: its start, else its deadline. */
-const whenOf = (r: Interview) => (r.starts_at ?? r.deadline_at)!;
+export const whenOf = (r: Interview) => (r.starts_at ?? r.deadline_at)!;
 
 /** Everything about a round, shown on hover or focus, and kept open with a click, with its actions. */
-function RoundDetails({ round, people }: { round: Interview; people: string[] }) {
+export function RoundDetails({ round, people }: { round: Interview; people: string[] }) {
   const { t, i18n } = useTranslation("interviews");
   const lang = i18n.language;
   const status = roundStatus(round);
@@ -123,13 +125,32 @@ function RoundDetails({ round, people }: { round: Interview; people: string[] })
   );
 }
 
+/** What a hover target spreads onto its button: open on hover or focus, keep open on click. */
+export interface HoverTargetProps {
+  "aria-expanded": boolean;
+  onMouseEnter: () => void;
+  onMouseLeave: () => void;
+  onFocus: () => void;
+  onBlur: () => void;
+  onClick: () => void;
+}
+
 /**
- * A round on its day: a ticket in its status's colour. Hovering or focusing it shows its details;
- * clicking keeps them open until you click elsewhere or press Escape. The details stay mounted once
- * shown, so a dialog opened from their actions (Edit, Done, Reschedule) survives the card closing.
+ * Details on hover or keyboard focus; a click keeps them open until you click elsewhere or press
+ * Escape. The details stay mounted once shown, so a dialog opened from their actions (Edit, Done,
+ * Reschedule) survives the card closing.
  */
-function RoundChip({ round, people, full }: { round: Interview; people: string[]; full: boolean }) {
-  const { t, i18n } = useTranslation("interviews");
+export function HoverDetails({
+  target,
+  details,
+  width = 340,
+  position = "right-start",
+}: {
+  target: (props: HoverTargetProps) => ReactElement;
+  details: () => ReactNode;
+  width?: number;
+  position?: FloatingPosition;
+}) {
   const [hovered, setHovered] = useState(false);
   const [pinned, setPinned] = useState(false);
   const [shown, setShown] = useState(false);
@@ -142,6 +163,53 @@ function RoundChip({ round, people, full }: { round: Interview; people: string[]
     }, delay);
   };
   const keep = () => window.clearTimeout(timer.current);
+  return (
+    <Popover
+      opened={hovered || pinned}
+      onChange={(open) => {
+        if (!open) {
+          setPinned(false);
+          setHovered(false);
+        }
+      }}
+      position={position}
+      width={width}
+      withArrow
+      shadow="md"
+      keepMounted
+    >
+      <Popover.Target>
+        {/* The handlers read the timer ref when they run, not during render. */}
+        {/* eslint-disable-next-line react-hooks/refs */}
+        {target({
+          "aria-expanded": hovered || pinned,
+          onMouseEnter: () => hover(true, 120),
+          onMouseLeave: () => hover(false, 200),
+          onFocus: () => hover(true, 0),
+          onBlur: () => hover(false, 200),
+          onClick: () => {
+            keep();
+            setShown(true);
+            setHovered(false);
+            setPinned((p) => !p);
+          },
+        })}
+      </Popover.Target>
+      <Popover.Dropdown
+        onMouseEnter={keep}
+        onMouseLeave={() => hover(false, 200)}
+        onFocusCapture={keep}
+        onBlurCapture={() => hover(false, 200)}
+      >
+        {shown && details()}
+      </Popover.Dropdown>
+    </Popover>
+  );
+}
+
+/** A round on its day: a ticket in its status's colour, with its details on hover, focus or click. */
+export function RoundChip({ round, people, full }: { round: Interview; people: string[]; full: boolean }) {
+  const { t, i18n } = useTranslation("interviews");
   const status = roundStatus(round);
   // A take-home's deadline reads "Due 18:00".
   const at = formatDay(whenOf(round), "time", i18n.language);
@@ -153,37 +221,15 @@ function RoundChip({ round, people, full }: { round: Interview; people: string[]
     "--chip-text": `var(--mantine-color-${status.color}-light-color)`,
   } as CSSProperties;
   return (
-    <Popover
-      opened={hovered || pinned}
-      onChange={(open) => {
-        if (!open) {
-          setPinned(false);
-          setHovered(false);
-        }
-      }}
-      position="right-start"
-      width={340}
-      withArrow
-      shadow="md"
-      keepMounted
-    >
-      <Popover.Target>
+    <HoverDetails
+      details={() => <RoundDetails round={round} people={people} />}
+      target={(props) => (
         <UnstyledButton
           className={classes.chip}
           style={style}
           data-status={round.status}
           aria-label={t("calendar.roundLabel", { label, company: round.company_name, when: time })}
-          aria-expanded={hovered || pinned}
-          onMouseEnter={() => hover(true, 120)}
-          onMouseLeave={() => hover(false, 200)}
-          onFocus={() => hover(true, 0)}
-          onBlur={() => hover(false, 200)}
-          onClick={() => {
-            keep();
-            setShown(true);
-            setHovered(false);
-            setPinned((p) => !p);
-          }}
+          {...props}
         >
           <span className={classes.chipLine}>
             <span className={classes.chipTime}>{time}</span>
@@ -192,16 +238,8 @@ function RoundChip({ round, people, full }: { round: Interview; people: string[]
           </span>
           {full && <span className={`${classes.chipText} ${classes.chipSub}`}>{label}</span>}
         </UnstyledButton>
-      </Popover.Target>
-      <Popover.Dropdown
-        onMouseEnter={keep}
-        onMouseLeave={() => hover(false, 200)}
-        onFocusCapture={keep}
-        onBlurCapture={() => hover(false, 200)}
-      >
-        {shown && <RoundDetails round={round} people={people} />}
-      </Popover.Dropdown>
-    </Popover>
+      )}
+    />
   );
 }
 
@@ -252,7 +290,7 @@ interface DayProps {
 }
 
 /** The figures for the month or week on screen, a bar of how they split, and the period before. */
-function PeriodSummary({
+export function PeriodSummary({
   now,
   prev,
   period,
@@ -431,21 +469,32 @@ function Agenda({ anchor, period, days, today, names }: GridProps) {
  * The Interviews page's calendar: a month (or a week) of rounds on their days, the period's figures
  * above it, and previous, next and today. Rounds not booked yet are listed by the page, under it.
  */
-export function InterviewCalendar({ rounds }: { rounds: Interview[] }) {
+export function InterviewCalendar({ rounds, design = "current" }: { rounds: Interview[]; design?: Design }) {
   const { t, i18n } = useTranslation("interviews");
   const lang = i18n.language;
   const today = useToday();
   const now = useNow();
   const phone = useMediaQuery("(max-width: 48em)");
   const [anchor, setAnchor] = useState(today);
-  const [period, setPeriod] = useLocalStorage<Period>({
+  const [chosenPeriod, setPeriod] = useLocalStorage<Period>({
     key: "jat.interviews.period",
     defaultValue: "month",
     getInitialValueInEffect: false,
   });
+  // The design concepts (dev only) work on months.
+  const period = design === "current" ? chosenPeriod : "month";
   const { data: contacts } = useContacts();
   const contactNames = new Map((contacts ?? []).map((c) => [c.id, c.name]));
   const names = (r: Interview) => r.interviewer_ids.flatMap((id) => contactNames.get(id) ?? []);
+
+  if (design === "dotMonths" || design === "dotYear") {
+    const Concept = design === "dotMonths" ? DotMonths : DotYear;
+    return (
+      <Card withBorder padding="lg" className={classes.root}>
+        <Concept rounds={rounds} days={byDay(rounds)} today={today} now={now} names={names} anchor={anchor} />
+      </Card>
+    );
+  }
 
   const days = byDay(rounds);
   const { first, last } = periodRange(anchor, period);
@@ -488,22 +537,32 @@ export function InterviewCalendar({ rounds }: { rounds: Interview[] }) {
             <Button size="xs" variant="default" onClick={() => setAnchor(today)}>
               {t("calendar.today")}
             </Button>
-            <SegmentedControl
-              size="xs"
-              value={period}
-              onChange={(v) => setPeriod(v as Period)}
-              data={[
-                { value: "month", label: t("calendar.month") },
-                { value: "week", label: t("calendar.week") },
-              ]}
-              aria-label={t("calendar.period")}
-            />
+            {design === "current" && (
+              <SegmentedControl
+                size="xs"
+                value={period}
+                onChange={(v) => setPeriod(v as Period)}
+                data={[
+                  { value: "month", label: t("calendar.month") },
+                  { value: "week", label: t("calendar.week") },
+                ]}
+                aria-label={t("calendar.period")}
+              />
+            )}
           </Group>
         </Group>
         <section aria-label={t("calendar.summary.label", { period: heading })}>
           <PeriodSummary now={summary} prev={previous} period={period} anchor={anchor} />
         </section>
-        {phone ? <Agenda {...props} /> : <Grid {...props} />}
+        {design === "clusters" ? (
+          <DayClusters rounds={rounds} days={days} today={today} now={now} names={names} anchor={anchor} />
+        ) : design === "weekStrip" ? (
+          <WeekStrip rounds={rounds} days={days} today={today} now={now} names={names} anchor={anchor} />
+        ) : phone ? (
+          <Agenda {...props} />
+        ) : (
+          <Grid {...props} />
+        )}
       </Stack>
     </Card>
   );

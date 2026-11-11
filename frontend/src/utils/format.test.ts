@@ -33,6 +33,8 @@ const TODAY_SHOWS: Record<DatePattern, [string, string]> = {
   monthName: ["MMMM", "March"],
   shortWeekday: ["ddd", "Thu"],
   dayOfMonth: ["D", "5"],
+  minWeekday: ["dd", "Th"],
+  shortMonth: ["MMM", "Mar"],
   pickerDate: ["D MMM YYYY", "5 Mar 2026"],
   pickerDateTime: ["D MMM YYYY HH:mm", "5 Mar 2026 09:07"],
 };
