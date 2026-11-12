@@ -16,8 +16,10 @@ interface Props {
   current: string;
   title: string;
   theme: "espresso" | "liquid" | "bubbles";
+  // The hero's app demo speed (1g-1i); 1 by default.
+  speed?: number;
 }
-const { current, title, theme } = Astro.props;
+const { current, title, theme, speed = 1 } = Astro.props;
 // 1f (Bubbles) shows the app in light mode everywhere; 1d and 1e keep the dark captures.
 const light = theme === "bubbles";
 const today = light ? todayLight : todayDark;
@@ -64,7 +66,7 @@ const install = [
   </a>
 
   <main id="top">
-    <Hero light={light}>
+    <Hero light={light} speed={speed}>
       <slot name="hero" slot="texture" />
     </Hero>
 

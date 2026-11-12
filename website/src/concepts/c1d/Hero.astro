@@ -9,8 +9,10 @@ import zh from "../c1/shots/today-zh-light.png";
 interface Props {
   // 1f: the app in light mode, in a light window frame with a soft plum shadow.
   light?: boolean;
+  // How fast the app demo in the window plays (see AppDemo.astro).
+  speed?: number;
 }
-const { light = false } = Astro.props;
+const { light = false, speed = 1 } = Astro.props;
 ---
 
 <section class:list={["hero", { light }]} data-c1-tint="ink" data-hero aria-labelledby="c1-hero-h">
@@ -72,7 +74,7 @@ const { light = false } = Astro.props;
             127.0.0.1<span data-c1-url>/</span>
           </span>
         </div>
-        <AppDemo light={light} />
+        <AppDemo light={light} speed={speed} />
         <span class="c1-sr">
           The app's Today page, then the board, a role and the insights Sankey, being used on made-up demo
           data.
