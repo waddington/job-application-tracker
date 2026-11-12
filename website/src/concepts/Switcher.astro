@@ -1,27 +1,58 @@
 ---
-// Design concepts only (docs/rfc/website-redesign.md): a floating pill to jump between the five concept pages and
-// the current site. Keys 1-5 and 0 do the same.
+// Design concepts only (docs/rfc/website-redesign.md): a floating pill to jump between the concept pages and the
+// current site. Round 2 (Kai, 2026-11-12): Espresso, Liquid and Bubbles kept, each with sub-variations.
+// Keys 1-9 follow the order shown; 0 is the current site.
 interface Props {
-  current: number;
+  current: string;
 }
 const { current } = Astro.props;
 const base = import.meta.env.BASE_URL;
-const names = ["Espresso", "Liquid", "Paper", "Night shift", "Bubbles"];
+const groups: { name: string; pages: { id: string; title: string }[] }[] = [
+  {
+    name: "Espresso",
+    pages: [
+      { id: "1", title: "Espresso (round 1)" },
+      { id: "1a", title: "Espresso: line work" },
+      { id: "1b", title: "Espresso: grain and light" },
+      { id: "1c", title: "Espresso: card mosaic" },
+    ],
+  },
+  {
+    name: "Liquid",
+    pages: [
+      { id: "2", title: "Liquid (round 1)" },
+      { id: "2a", title: "Liquid: deeper 3D" },
+      { id: "2b", title: "Liquid in Espresso's layout" },
+    ],
+  },
+  {
+    name: "Bubbles",
+    pages: [
+      { id: "5", title: "Bubbles (round 1)" },
+      { id: "5a", title: "Bubbles: calmer" },
+      { id: "5b", title: "Bubbles in espresso" },
+    ],
+  },
+];
+const order = groups.flatMap((g) => g.pages.map((p) => p.id));
 ---
 
 <nav class="concept-switcher" aria-label="Design concepts">
-  <span class="label">Concept</span>
   {
-    names.map((name, i) => (
-      <a
-        href={`${base}concepts/${i + 1}/`}
-        aria-current={current === i + 1 ? "page" : undefined}
-        title={name}
-        data-key={String(i + 1)}
-      >
-        <b>{i + 1}</b>
-        <span>{name}</span>
-      </a>
+    groups.map((g) => (
+      <div class="group">
+        <span class="label">{g.name}</span>
+        {g.pages.map((p) => (
+          <a
+            href={`${base}concepts/${p.id}/`}
+            aria-current={current === p.id ? "page" : undefined}
+            title={p.title}
+            data-key={String(order.indexOf(p.id) + 1)}
+          >
+            {p.id}
+          </a>
+        ))}
+      </div>
     ))
   }
   <a href={base} class="current-site" data-key="0" title="The current site">Current</a>
@@ -55,19 +86,26 @@ const names = ["Espresso", "Liquid", "Paper", "Night shift", "Bubbles"];
     border: 1px solid rgb(255 255 255 / 0.16);
     box-shadow: 0 10px 40px rgb(0 0 0 / 0.35);
     backdrop-filter: blur(16px) saturate(1.4);
+    max-width: calc(100vw - 16px);
+    overflow-x: auto;
+  }
+  .group {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding-right: 6px;
+    border-right: 1px solid rgb(255 255 255 / 0.16);
   }
   .label {
-    padding: 0 8px 0 10px;
+    padding: 0 6px 0 10px;
     opacity: 0.6;
     font-size: 11px;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+    white-space: nowrap;
   }
   a {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 12px;
+    padding: 8px 10px;
     border-radius: 999px;
     color: inherit;
     text-decoration: none;
@@ -80,18 +118,13 @@ const names = ["Espresso", "Liquid", "Paper", "Night shift", "Bubbles"];
   }
   a[aria-current="page"] {
     opacity: 1;
-    background: rgb(255 255 255 / 0.18);
-  }
-  a b {
-    font-weight: 600;
+    background: rgb(255 255 255 / 0.2);
   }
   .current-site {
-    margin-left: 4px;
-    border-left: 1px solid rgb(255 255 255 / 0.16);
-    border-radius: 0 999px 999px 0;
+    margin-left: 2px;
   }
   @media (max-width: 720px) {
-    a span {
+    .label {
       display: none;
     }
   }

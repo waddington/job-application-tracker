@@ -96,3 +96,32 @@ Narrow down in rounds (sub-variations of the favourites), then plan the real cha
 components reworked, zh-CN parity, performance and accessibility checks, screenshots before and after. If the live
 3D browser is too heavy on phones, HyperFrames (Apache-2.0, HTML to MP4) could render the same animation to a video
 for small screens; that would be a build-time tool, not a site dependency.
+
+## 6. Round 2 (Kai, 2026-11-12)
+
+Kai's notes on round 1:
+
+- **Espresso** leads ("colours are nice"), but its dot texture is "way too similar to cleo, its too close to a straight
+  rip off", and the sticky "whole search" section has "too much scroll jacking that it feels like youve reached the
+  end of the page, need more obvious that youre still scrolling down the page".
+- **Liquid**: "cool colour scheme … it feels good but the graphics/motion just arent as good".
+- **Paper**: "too similar to what we have now". Dropped.
+- **Night shift**: "the moving dots feel like data moving through cloud or space/time, an agentic feel which is the
+  opposite of what this project is … feels too dark, the motion of the app views not enough". Dropped.
+- **Bubbles**: "interesting".
+
+So the signature texture can't be a dot or halftone field at all (rule 6 now reads: no dots). Round 2's variations,
+with round 1's 1, 2 and 5 kept in the switcher to compare:
+
+| Page | What changes |
+|---|---|
+| 1a Espresso: line work | Fine contour lines that draw themselves into our shapes (board columns, a calendar, a funnel); no dots. |
+| 1b Espresso: grain and light | No pattern: film grain, soft copper light and frosted glass cards. |
+| 1c Espresso: card mosaic | Small rounded application cards in stage colours that tile, stack and move: the motif comes from the app. |
+| 2a Liquid: deeper 3D | Same palette; real depth layers, smoother page transitions, a richer cursor, better graphics. |
+| 2b Liquid in Espresso's layout | Liquid's palette and glass on Espresso's long-scroll structure. |
+| 5a Bubbles: calmer | Softer pastels, better motion. |
+| 5b Bubbles in espresso | The bento playground in Espresso's warm palette. |
+
+Every Espresso variation also fixes the sticky section: shorter, with a visible progress line, and the next section
+peeking in below so it's clear the page goes on.
