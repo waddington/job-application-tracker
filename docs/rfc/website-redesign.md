@@ -148,3 +148,8 @@ The switcher shows only these now; the other pages stay in the branch.
 
 "show me 1e, and 1e in the same colour scheme as 5a". The switcher shows 1e and 1f, the same page in Bubbles 5a's
 calmer pastels.
+
+## 9. Round 5 (Kai, 2026-11-12)
+
+Kai picked 1f: "1f but with the screenshots in light mode not dark mode". 1f's app now shows in its light theme
+everywhere (the hero window and its live sequence, the Today card, Insights, the sticky section's panels).
