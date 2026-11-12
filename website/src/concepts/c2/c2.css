@@ -1,0 +1,381 @@
+/* Concept 2, "Liquid": the page's base, the mesh and the liquid-glass kit. Everything is under html.c2 or a c2- class,
+   so it can't reach the current site. */
+
+html.c2 {
+  --c2-ink: #211c3b;
+  --c2-ink-2: #5d5780;
+  --c2-ink-3: #8b86a8;
+  --c2-lilac: #c9b8ff;
+  --c2-sky: #a9d8ff;
+  --c2-peach: #ffc6ab;
+  --c2-dusk: #1b1634;
+  --c2-violet: #6a54f2;
+  --c2-display: "Inter Variable", "Inter", system-ui, sans-serif;
+  --c2-mono: "JetBrains Mono Variable", ui-monospace, monospace;
+  --c2-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  overflow-x: clip;
+}
+@media (prefers-reduced-motion: reduce) {
+  html.c2 {
+    scroll-behavior: auto;
+  }
+}
+html.c2 *,
+html.c2 *::before,
+html.c2 *::after {
+  box-sizing: border-box;
+}
+.c2-body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--c2-ink);
+  background: #f2eeff;
+  font: 400 17px/1.55 var(--c2-display);
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+  transition: color 0.8s var(--c2-ease);
+}
+.c2-body[data-tint="dusk"] {
+  color: #f3f0ff;
+}
+.c2-body a {
+  color: inherit;
+}
+.c2-body h1,
+.c2-body h2,
+.c2-body h3,
+.c2-body p {
+  margin: 0;
+}
+.c2-body :focus-visible {
+  outline: 2px solid var(--c2-violet);
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+.c2-skip {
+  position: absolute;
+  left: 12px;
+  top: -60px;
+  z-index: 100;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: var(--c2-ink);
+  color: #fff !important;
+}
+.c2-skip:focus {
+  top: 12px;
+}
+.c2-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------- The mesh ---------- */
+.c2-mesh {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: #f1ecff;
+}
+.c2-blob {
+  position: absolute;
+  width: 78vmax;
+  height: 78vmax;
+  border-radius: 50%;
+  will-change: transform;
+  animation: c2-float 34s var(--c2-ease) infinite alternate;
+}
+.c2-blob--a {
+  left: -22vmax;
+  top: -26vmax;
+  background: radial-gradient(closest-side, #c3b0ff 0%, rgb(195 176 255 / 0.55) 45%, transparent 100%);
+}
+.c2-blob--b {
+  right: -26vmax;
+  top: -10vmax;
+  background: radial-gradient(closest-side, #9fd3ff 0%, rgb(159 211 255 / 0.5) 45%, transparent 100%);
+  animation-duration: 41s;
+  animation-delay: -12s;
+}
+.c2-blob--c {
+  left: 4vmax;
+  bottom: -40vmax;
+  background: radial-gradient(closest-side, #ffc0a2 0%, rgb(255 192 162 / 0.5) 45%, transparent 100%);
+  animation-duration: 38s;
+  animation-delay: -20s;
+}
+.c2-blob--d {
+  right: -10vmax;
+  bottom: -46vmax;
+  width: 60vmax;
+  height: 60vmax;
+  background: radial-gradient(closest-side, #f7b6e6 0%, rgb(247 182 230 / 0.35) 50%, transparent 100%);
+  animation-duration: 46s;
+  animation-delay: -5s;
+}
+@keyframes c2-float {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(9vmax, 6vmax, 0) scale(1.12) rotate(25deg);
+  }
+  100% {
+    transform: translate3d(-6vmax, 10vmax, 0) scale(0.94) rotate(-15deg);
+  }
+}
+/* Tint washes: one per section mood, only opacity changes. */
+.c2-wash {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 1.4s var(--c2-ease);
+}
+.c2-wash--lilac {
+  background:
+    radial-gradient(60% 60% at 20% 15%, rgb(205 188 255 / 0.75), transparent 70%),
+    radial-gradient(50% 50% at 90% 80%, rgb(255 205 235 / 0.45), transparent 70%);
+}
+.c2-wash--sky {
+  background:
+    radial-gradient(65% 60% at 85% 10%, rgb(160 214 255 / 0.85), transparent 70%),
+    radial-gradient(55% 55% at 10% 90%, rgb(190 240 236 / 0.6), transparent 70%);
+}
+.c2-wash--peach {
+  background:
+    radial-gradient(60% 60% at 80% 85%, rgb(255 196 168 / 0.9), transparent 70%),
+    radial-gradient(55% 50% at 15% 20%, rgb(255 226 196 / 0.7), transparent 70%);
+}
+.c2-wash--dusk {
+  background:
+    radial-gradient(55% 55% at 15% 20%, rgb(122 92 255 / 0.55), transparent 70%),
+    radial-gradient(55% 55% at 85% 85%, rgb(255 132 120 / 0.35), transparent 70%),
+    linear-gradient(160deg, #1d1838, #2b1f55 55%, #1a1530);
+}
+.c2-body[data-tint="lilac"] .c2-wash--lilac,
+.c2-body[data-tint="sky"] .c2-wash--sky,
+.c2-body[data-tint="peach"] .c2-wash--peach,
+.c2-body[data-tint="dusk"] .c2-wash--dusk {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .c2-blob {
+    animation: none;
+  }
+}
+
+/* ---------- Liquid glass (chrome only) ---------- */
+.c2-glass {
+  position: relative;
+  isolation: isolate;
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.62), rgb(255 255 255 / 0.2));
+  -webkit-backdrop-filter: blur(20px) saturate(1.8);
+  backdrop-filter: blur(20px) saturate(1.8);
+  border-radius: 999px;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.95),
+    inset 0 -1px 1px rgb(255 255 255 / 0.4),
+    inset 0 0 20px rgb(255 255 255 / 0.28),
+    0 12px 32px -10px rgb(48 32 120 / 0.3),
+    0 2px 6px rgb(48 32 120 / 0.08);
+  transition:
+    background 0.8s var(--c2-ease),
+    box-shadow 0.8s var(--c2-ease),
+    color 0.8s var(--c2-ease);
+}
+/* The refraction edge: a hairline that shifts from white through lilac and sky to peach. */
+.c2-glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  padding: 1.2px;
+  background: linear-gradient(
+    135deg,
+    rgb(255 255 255 / 0.95),
+    rgb(196 176 255 / 0.55) 28%,
+    rgb(255 255 255 / 0.08) 52%,
+    rgb(160 212 255 / 0.65) 76%,
+    rgb(255 200 176 / 0.9)
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+  pointer-events: none;
+}
+/* The sheen: a soft highlight across the top half. */
+.c2-glass::after {
+  content: "";
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  top: 1px;
+  height: 46%;
+  z-index: -1;
+  border-radius: 999px 999px 50% 50% / 999px 999px 30% 30%;
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.7), rgb(255 255 255 / 0));
+  opacity: 0.65;
+  pointer-events: none;
+}
+.c2-body[data-tint="dusk"] .c2-glass {
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.2), rgb(255 255 255 / 0.05));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.35),
+    inset 0 0 20px rgb(255 255 255 / 0.06),
+    0 12px 32px -10px rgb(0 0 0 / 0.5);
+}
+.c2-body[data-tint="dusk"] .c2-glass::after {
+  opacity: 0.18;
+}
+
+/* ---------- Eyebrows, type, buttons ---------- */
+.c2-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font: 500 11.5px/1 var(--c2-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--c2-ink-2);
+}
+.c2-eyebrow::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  background: currentColor;
+  border-radius: 1.5px;
+}
+.c2-display {
+  font-weight: 300;
+  letter-spacing: -0.035em;
+  line-height: 1.02;
+}
+.c2-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 50px;
+  padding: 0 24px;
+  font: 500 15px/1 var(--c2-display);
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  color: var(--c2-ink);
+  white-space: nowrap;
+  transition: transform 0.35s var(--c2-ease);
+}
+.c2-btn:hover {
+  transform: translateY(-2px);
+}
+.c2-body .c2-btn--ink {
+  color: #fff;
+  background: linear-gradient(180deg, #3a3170, #1f1940);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.28),
+    inset 0 -2px 6px rgb(0 0 0 / 0.25),
+    0 14px 30px -10px rgb(40 24 120 / 0.55);
+}
+.c2-btn--ink::before {
+  background: linear-gradient(135deg, rgb(255 255 255 / 0.6), rgb(255 255 255 / 0) 40%, rgb(255 190 170 / 0.6));
+}
+.c2-btn--ink::after {
+  opacity: 0.25;
+}
+
+/* ---------- Chrome ---------- */
+.c2-chrome {
+  position: fixed;
+  inset: 14px 14px auto;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+}
+.c2-chrome > * {
+  pointer-events: auto;
+}
+.c2-logo {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+}
+.c2-navpill {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 2px;
+  padding: 5px;
+}
+.c2-navpill a {
+  position: relative;
+  z-index: 2;
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 450;
+  text-decoration: none;
+  transition: background 0.3s;
+}
+.c2-navpill a:hover {
+  background: rgb(255 255 255 / 0.55);
+}
+.c2-body[data-tint="dusk"] .c2-navpill a:hover {
+  background: rgb(255 255 255 / 0.12);
+}
+.c2-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 48px;
+  padding: 0 20px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+}
+.c2-cta > *,
+.c2-btn > * {
+  position: relative;
+  z-index: 2;
+}
+.c2-totop {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 15px;
+}
+.c2-totop svg {
+  position: relative;
+  z-index: 2;
+}
+@media (max-width: 760px) {
+  .c2-navpill {
+    display: none;
+  }
+  .c2-chrome {
+    inset: 10px 10px auto;
+  }
+  .c2-totop {
+    display: none;
+  }
+}
