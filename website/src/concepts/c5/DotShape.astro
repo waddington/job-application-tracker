@@ -53,14 +53,17 @@ for (let y = 0; y < rows; y++) {
 }
 ---
 
-<svg class={`c5-dots ${cls}`} viewBox={`0 0 ${cols * gap} ${rows * gap}`} aria-hidden="true" focusable="false">
-  {
-    rowsOut.map((row) => (
-      <g style={`--i:${row.y}`} fill="currentColor">
-        {row.xs.map((x) => (
-          <circle cx={x * gap + gap / 2} cy={row.y * gap + gap / 2} r={r} />
-        ))}
-      </g>
-    ))
-  }
+<svg
+  class={`c5-dots ${cls}`}
+  viewBox={`0 0 ${cols * gap} ${rows * gap}`}
+  aria-hidden="true"
+  focusable="false"
+>
+  {rowsOut.map((row) => (
+    <g style={`--i:${row.y}`} fill="currentColor">
+      {row.xs.map((x) => (
+        <circle cx={x * gap + gap / 2} cy={row.y * gap + gap / 2} r={r} />
+      ))}
+    </g>
+  ))}
 </svg>

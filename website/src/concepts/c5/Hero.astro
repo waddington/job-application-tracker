@@ -23,14 +23,23 @@ const chips = [
   <div class="c5-wrap c5-hero-grid">
     <div class="c5-hero-copy">
       <p class="c5-eyebrow">Free, open source, in daily use</p>
-      <h1 class="c5-display" id="c5-hero-h">Your job search, on your own computer.</h1>
+      <h1 class="c5-display" id="c5-hero-h">
+        Track the hunt.
+        <br />
+        Keep it yours.
+      </h1>
       <p class="c5-lede">
-        Track every application, recruiter, interview round, follow-up and offer, and see exactly who to chase
-        today. No account, no subscription, nobody watching.
+        A job application tracker that runs on your own computer. Every application, recruiter, interview
+        round, follow-up and offer, and exactly who to chase today. No account, no subscription, nobody
+        watching.
       </p>
       <div class="c5-ctas">
-        <a class="c5-btn c5-btn-ink" href="#c5-start">Get started, it's free</a>
-        <a class="c5-btn c5-glass" href="#c5-play">Try the pieces</a>
+        <a class="c5-btn c5-btn-ink" href="#c5-start">
+          Get started, it's free
+        </a>
+        <a class="c5-btn c5-glass" href="#c5-play">
+          Try the pieces
+        </a>
       </div>
       <ul class="c5-promises" aria-label="Promises">
         <li>No sign-up</li>
@@ -47,7 +56,12 @@ const chips = [
           <div class="c5-plate2" aria-hidden="true"></div>
           <div class="c5-plate" aria-hidden="true"></div>
           <div class="c5-win">
-            <div class="c5-bar" aria-hidden="true"><i></i><i></i><i></i><span>127.0.0.1:8770</span></div>
+            <div class="c5-bar" aria-hidden="true">
+              <i></i>
+              <i></i>
+              <i></i>
+              <span>127.0.0.1:8770</span>
+            </div>
             <div
               class="c5-screen"
               data-c5-screen
@@ -63,9 +77,13 @@ const chips = [
                       <Image src={todayFull} alt="" class="c5-shot" {...shotProps} loading="eager" />
                       <div class="c5-ov c5-ov-box"></div>
                       <div class="c5-ov c5-ov-tick" data-tick>
-                        <svg viewBox="0 0 20 20" fill="none" stroke="#fff" stroke-width="2.4"
-                          ><path d="M5 10.5l3.2 3.2L15 7" stroke-linecap="round" stroke-linejoin="round"></path></svg
-                        >
+                        <svg viewBox="0 0 20 20" fill="none" stroke="#fff" stroke-width="2.4">
+                          <path
+                            d="M5 10.5l3.2 3.2L15 7"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          ></path>
+                        </svg>
                       </div>
                       <div class="c5-ov c5-ov-strike" data-strike></div>
                       <div class="c5-ov c5-ov-fade" data-rowfade></div>
@@ -75,16 +93,26 @@ const chips = [
                     <Image src={board} alt="" class="c5-shot" {...shotProps} />
                     <div class="c5-ov c5-ov-mask" data-mask></div>
                     <div class="c5-ov c5-ov-col" data-colgrow></div>
-                    <div class="c5-ov c5-ov-count" style="left:500px;top:188px" data-count-a>3</div>
-                    <div class="c5-ov c5-ov-count" style="left:763px;top:188px" data-count-b>1</div>
+                    <div class="c5-ov c5-ov-count" style="left:500px;top:188px" data-count-a>
+                      3
+                    </div>
+                    <div class="c5-ov c5-ov-count" style="left:763px;top:188px" data-count-b>
+                      1
+                    </div>
                     <div class="c5-ov c5-ov-card" data-card>
-                      <b>Adventure Works</b><small>Backend Engineer (Go)</small><small>3 days ago</small>
+                      <b>Adventure Works</b>
+                      <small>Backend Engineer (Go)</small>
+                      <small>3 days ago</small>
                     </div>
                   </div>
                   <div class="c5-pg" data-pg="role">
                     <Image src={role} alt="" class="c5-shot" {...shotProps} />
-                    <div class="c5-ov c5-ov-badge a" data-badge-a>TO DECIDE</div>
-                    <div class="c5-ov c5-ov-badge b" data-badge-b>APPLIED</div>
+                    <div class="c5-ov c5-ov-badge a" data-badge-a>
+                      TO DECIDE
+                    </div>
+                    <div class="c5-ov c5-ov-badge b" data-badge-b>
+                      APPLIED
+                    </div>
                   </div>
                   <div class="c5-pg" data-pg="insights">
                     <Image src={insights} alt="" class="c5-shot" {...shotProps} />
@@ -93,14 +121,15 @@ const chips = [
                 </div>
                 <div class="c5-ripple" data-ripple></div>
                 <div class="c5-cursor" data-cursor>
-                  <svg viewBox="0 0 24 24"
-                    ><path
+                  <svg viewBox="0 0 24 24">
+                    <path
                       d="M4 2.5l15.5 9.2-6.9 1.5 3.9 7.2-2.8 1.5-3.9-7.2L4.6 19z"
                       fill="#111"
                       stroke="#fff"
                       stroke-width="1.4"
-                      stroke-linejoin="round"></path></svg
-                  >
+                      stroke-linejoin="round"
+                    ></path>
+                  </svg>
                 </div>
               </div>
             </div>
@@ -108,60 +137,58 @@ const chips = [
 
           <div class="c5-orbit-tilt" aria-hidden="true">
             <div class="c5-orbit">
-              {
-                chips.map((c) => (
-                  <div class="c5-chip" style={`--a:${c.a};--y:${c.y}`}>
-                    <div class="c5-chip-face">
-                      {c.kind === "stage" && (
-                        <div class="c5-chip-in">
-                          <span class="c5-ico" style="background:var(--c5-mint)">
-                            ↗
+              {chips.map((c) => (
+                <div class="c5-chip" style={`--a:${c.a};--y:${c.y}`}>
+                  <div class="c5-chip-face">
+                    {c.kind === "stage" && (
+                      <div class="c5-chip-in">
+                        <span class="c5-ico" style="background:var(--c5-mint)">
+                          ↗
+                        </span>
+                        <div>
+                          <small>Contoso</small>
+                          <span class="c5-pillbadge" style="background:#e5dbff;color:#5f3dc4">
+                            Interviewing
                           </span>
-                          <div>
-                            <small>Contoso</small>
-                            <span class="c5-pillbadge" style="background:#e5dbff;color:#5f3dc4">
-                              Interviewing
-                            </span>
-                          </div>
                         </div>
-                      )}
-                      {c.kind === "todo" && (
-                        <div class="c5-chip-in">
-                          <span class="c5-ico" style="background:var(--c5-ink);color:#fff">
-                            ✓
-                          </span>
-                          <div>
-                            <b>Ask who's on the platform team</b>
-                            <small>To-do · by 14 Nov</small>
-                          </div>
+                      </div>
+                    )}
+                    {c.kind === "todo" && (
+                      <div class="c5-chip-in">
+                        <span class="c5-ico" style="background:var(--c5-ink);color:#fff">
+                          ✓
+                        </span>
+                        <div>
+                          <b>Ask who's on the platform team</b>
+                          <small>To-do · by 14 Nov</small>
                         </div>
-                      )}
-                      {c.kind === "round" && (
-                        <div class="c5-chip-in">
-                          <span class="c5-ico" style="background:var(--c5-butter)">
-                            3
-                          </span>
-                          <div>
-                            <b>Round 3 · System design</b>
-                            <small>Fri 14 Nov, 14:30</small>
-                          </div>
+                      </div>
+                    )}
+                    {c.kind === "round" && (
+                      <div class="c5-chip-in">
+                        <span class="c5-ico" style="background:var(--c5-butter)">
+                          3
+                        </span>
+                        <div>
+                          <b>Round 3 · System design</b>
+                          <small>Fri 14 Nov, 14:30</small>
                         </div>
-                      )}
-                      {c.kind === "star" && (
-                        <div class="c5-chip-in">
-                          <span class="c5-ico" style="background:var(--c5-pink)">
-                            ★
-                          </span>
-                          <div>
-                            <b>Jordan Lee</b>
-                            <small>Northwind Talent · replies in a day</small>
-                          </div>
+                      </div>
+                    )}
+                    {c.kind === "star" && (
+                      <div class="c5-chip-in">
+                        <span class="c5-ico" style="background:var(--c5-pink)">
+                          ★
+                        </span>
+                        <div>
+                          <b>Jordan Lee</b>
+                          <small>Northwind Talent · replies in a day</small>
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
-                ))
-              }
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -283,9 +310,16 @@ const chips = [
     };
     const navTo = async (name: string, hlTop: number, from: string) => {
       const prev = getComputedStyle(hl).transform;
-      await run(hl, [{ transform: prev === "none" ? "translateY(0)" : prev }, { transform: `translateY(${hlTop - 66}px)` }], {
-        duration: 320,
-      });
+      await run(
+        hl,
+        [
+          { transform: prev === "none" ? "translateY(0)" : prev },
+          { transform: `translateY(${hlTop - 66}px)` },
+        ],
+        {
+          duration: 320,
+        },
+      );
       const next = pages[name];
       const old = pages[from];
       next.style.zIndex = "2";
@@ -320,18 +354,29 @@ const chips = [
         await sleep(700);
         // Today: scroll down to the to-dos and tick one
         await Promise.all([
-          run($("[data-today-scroll]"), [{ transform: "translateY(0)" }, { transform: "translateY(-480px)" }], {
-            duration: 1700,
-          }),
+          run(
+            $("[data-today-scroll]"),
+            [{ transform: "translateY(0)" }, { transform: "translateY(-480px)" }],
+            {
+              duration: 1700,
+            },
+          ),
           move(700, 520, 1200),
         ]);
         await move(286, 398, 800);
         await click();
         await Promise.all([
-          run($("[data-tick]"), [{ opacity: 0, transform: "scale(.4)" }, { opacity: 1, transform: "scale(1)" }], {
-            duration: 260,
-            easing: "cubic-bezier(.3,1.6,.5,1)",
-          }),
+          run(
+            $("[data-tick]"),
+            [
+              { opacity: 0, transform: "scale(.4)" },
+              { opacity: 1, transform: "scale(1)" },
+            ],
+            {
+              duration: 260,
+              easing: "cubic-bezier(.3,1.6,.5,1)",
+            },
+          ),
           run($("[data-strike]"), [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }], {
             duration: 450,
             delay: 120,
@@ -349,7 +394,10 @@ const chips = [
           card,
           [
             { transform: "translate(0,0) rotate(0) scale(1)", boxShadow: "0 0 0 rgba(0,0,0,0)" },
-            { transform: "translate(0,-6px) rotate(2.5deg) scale(1.04)", boxShadow: "0 24px 40px -12px rgba(0,0,0,.3)" },
+            {
+              transform: "translate(0,-6px) rotate(2.5deg) scale(1.04)",
+              boxShadow: "0 24px 40px -12px rgba(0,0,0,.3)",
+            },
           ],
           { duration: 220 },
         );
@@ -372,7 +420,10 @@ const chips = [
         await run(
           card,
           [
-            { transform: "translate(262px,-6px) rotate(2.5deg) scale(1.04)", boxShadow: "0 24px 40px -12px rgba(0,0,0,.3)" },
+            {
+              transform: "translate(262px,-6px) rotate(2.5deg) scale(1.04)",
+              boxShadow: "0 24px 40px -12px rgba(0,0,0,.3)",
+            },
             { transform: "translate(262px,0) rotate(0) scale(1)", boxShadow: "0 0 0 rgba(0,0,0,0)" },
           ],
           { duration: 300, easing: "cubic-bezier(.3,1.5,.5,1)" },
@@ -387,9 +438,16 @@ const chips = [
         await move(1090, 122, 1000);
         await click();
         await Promise.all([
-          run($("[data-badge-a]"), [{ opacity: 1, transform: "scale(1)" }, { opacity: 0, transform: "scale(.6)" }], {
-            duration: 220,
-          }),
+          run(
+            $("[data-badge-a]"),
+            [
+              { opacity: 1, transform: "scale(1)" },
+              { opacity: 0, transform: "scale(.6)" },
+            ],
+            {
+              duration: 220,
+            },
+          ),
           run(
             $("[data-badge-b]"),
             [

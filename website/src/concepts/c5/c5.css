@@ -113,7 +113,7 @@
 .c5-display {
   margin: 0;
   font-weight: 380;
-  font-size: clamp(40px, 5.6vw, 76px);
+  font-size: clamp(44px, 5.4vw, 74px);
   line-height: 1.02;
   letter-spacing: -0.035em;
 }
@@ -160,7 +160,7 @@
 .c5-btn:hover {
   transform: translateY(-2px);
 }
-.c5-btn-ink {
+.c5-body .c5-btn-ink {
   color: #fff;
   background: linear-gradient(180deg, rgb(74 58 104 / 0.92), rgb(42 30 63 / 0.94));
   border: 1px solid rgb(255 255 255 / 0.18);
@@ -287,7 +287,7 @@
 }
 .c5-hero-grid {
   display: grid;
-  grid-template-columns: minmax(0, 470px) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 520px) minmax(0, 1fr);
   gap: 24px;
   align-items: center;
 }
@@ -659,7 +659,7 @@
   left: 50%;
   top: 50%;
   transform-style: preserve-3d;
-  transform: rotateX(-8deg) rotateZ(4deg) scale3d(1, 1, 0.42);
+  transform: rotateX(-8deg) rotateZ(4deg) scale3d(var(--ox, 0.62), 1, 0.42);
 }
 .c5-orbit {
   transform-style: preserve-3d;
@@ -675,7 +675,7 @@
   left: 0;
   top: 0;
   transform-style: preserve-3d;
-  transform: rotateY(var(--a)) translateZ(var(--R, 560px)) translateY(var(--y)) rotateY(calc(var(--a) * -1));
+  transform: rotateY(var(--a)) translateZ(var(--R, 520px)) translateY(var(--y)) rotateY(calc(var(--a) * -1));
 }
 .c5-chip-face {
   animation: c5-spin-back 34s linear infinite;
@@ -690,6 +690,7 @@
   align-items: center;
   gap: 10px;
   translate: -50% -50%;
+  scale: calc(1 / var(--ox, 0.62)) 1;
   padding: 12px 18px 12px 12px;
   border-radius: 22px 22px 22px 4px;
   background: #fff;
@@ -730,7 +731,7 @@
     --bw: min(680px, 86%);
   }
   .c5-chip {
-    --R: 380px;
+    --R: 480px;
   }
 }
 @media (max-width: 600px) {
@@ -740,10 +741,13 @@
     margin-inline: -8px;
   }
   .c5-chip {
-    --R: 200px;
+    --R: 260px;
   }
   .c5-chip-in {
-    scale: 0.62;
+    scale: calc(0.56 / var(--ox, 0.62)) 0.56;
+  }
+  .c5-hero .c5-lede {
+    font-size: 17px;
   }
   .c5-bar {
     height: 24px;
@@ -768,8 +772,8 @@
 }
 .c5-chapter-grid {
   display: grid;
-  grid-template-columns: minmax(0, 380px) minmax(0, 1fr);
-  gap: 56px;
+  grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
+  gap: 48px;
   align-items: start;
 }
 .c5-chat {
@@ -1650,6 +1654,13 @@ button.c5-day[aria-pressed="true"] {
   display: block;
   font-size: 12.5px;
   color: var(--c5-ink-3);
+}
+
+@media (max-width: 600px) {
+  .c5-copy {
+    position: static;
+    margin-bottom: 8px;
+  }
 }
 
 /* FAQ as a chat thread */
