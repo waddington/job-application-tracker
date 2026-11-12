@@ -107,28 +107,31 @@ const spots = [
           <div class="c2-layer c2-data">
             <p class="c2-data-path">~/job-search-data</p>
             <ul>
-              {
-                tree.map(([f, why]) => (
-                  <li>
-                    <code>{f}</code>
-                    <span>{why}</span>
-                  </li>
-                ))
-              }
+              {tree.map(([f, why]) => (
+                <li>
+                  <code>{f}</code>
+                  <span>{why}</span>
+                </li>
+              ))}
             </ul>
             <p class="c2-data-foot">One folder. Ordinary files. On your computer.</p>
           </div>
           <div class="c2-layer c2-frame">
             <div class="c2-titlebar">
-              <span class="c2-lights"><i></i><i></i><i></i></span>
+              <span class="c2-lights">
+                <i></i>
+                <i></i>
+                <i></i>
+              </span>
               <span class="c2-url">
-                <svg viewBox="0 0 16 16" width="11" height="11"
-                  ><path
+                <svg viewBox="0 0 16 16" width="11" height="11">
+                  <path
                     d="M4.5 7V5a3.5 3.5 0 0 1 7 0v2M3.5 7h9v6.5h-9z"
                     fill="none"
                     stroke="currentColor"
-                    stroke-width="1.4"></path></svg
-                >
+                    stroke-width="1.4"
+                  ></path>
+                </svg>
                 127.0.0.1:8770
               </span>
             </div>
@@ -139,11 +142,11 @@ const spots = [
                 <div class="c2-pg is-on" data-page="today">
                   <div class="c2-pg-in" data-scroll>
                     <Image src={mToday} alt="" loading="eager" />
-                    <span class="c2-tick" data-tick
-                      ><svg viewBox="0 0 16 16"
-                        ><path d="m3.5 8.5 3 3 6-7" fill="none" stroke="#fff" stroke-width="2.2"></path></svg
-                      ></span
-                    >
+                    <span class="c2-tick" data-tick>
+                      <svg viewBox="0 0 16 16">
+                        <path d="m3.5 8.5 3 3 6-7" fill="none" stroke="#fff" stroke-width="2.2"></path>
+                      </svg>
+                    </span>
                     <span class="c2-strike" data-strike></span>
                   </div>
                 </div>
@@ -156,14 +159,18 @@ const spots = [
                     <Image src={bAppliedBottom} alt="" class="c2-b c2-b-abot" data-b="abot" />
                     <span class="c2-b c2-b-ext" data-b="ext"></span>
                     <Image src={bScreenBottom} alt="" class="c2-b c2-b-sbot" data-b="sbot" />
-                    <span class="c2-b c2-b-count" data-b="count">1</span>
+                    <span class="c2-b c2-b-count" data-b="count">
+                      1
+                    </span>
                     <Image src={bCard} alt="" class="c2-b c2-b-card" data-b="card" />
                   </div>
                 </div>
                 <div class="c2-pg" data-page="role">
                   <div class="c2-pg-in" data-scroll>
                     <Image src={mRole} alt="" />
-                    <span class="c2-badge" data-badge><b>Applied</b></span>
+                    <span class="c2-badge" data-badge>
+                      <b>Applied</b>
+                    </span>
                   </div>
                 </div>
                 <div class="c2-pg" data-page="interviews">
@@ -187,17 +194,20 @@ const spots = [
                 <Image src={header} alt="" loading="eager" />
               </div>
               <div class="c2-layer c2-touch">
-                <span class="c2-tip c2-glass" data-tip>Offer · 2 roles deciding</span>
+                <span class="c2-tip c2-glass" data-tip>
+                  Offer · 2 roles deciding
+                </span>
                 <span class="c2-cursor" data-cursor>
                   <span class="c2-ripple" data-ripple></span>
-                  <svg viewBox="0 0 24 24" width="26" height="26"
-                    ><path
+                  <svg viewBox="0 0 24 24" width="26" height="26">
+                    <path
                       d="M5 3.2v15.6l4.3-4.1 2.7 6.1 2.8-1.2-2.7-6h6z"
                       fill="#1d1838"
                       stroke="#fff"
                       stroke-width="1.6"
-                      stroke-linejoin="round"></path></svg
-                  >
+                      stroke-linejoin="round"
+                    ></path>
+                  </svg>
                 </span>
               </div>
             </div>
@@ -208,29 +218,38 @@ const spots = [
   </div>
 
   <nav class="c2-rail c2-glass" aria-label="Tour chapters" data-rail>
-    {
-      chapters.map((c, i) => (
-        <a href={`#${c.id}`} data-rail-i={i + 2}>
-          <i />
-          <span>{c.eyebrow}</span>
-        </a>
-      ))
-    }
-    <a href="#c2-privacy" data-rail-i="7"><i /><span>Under the glass</span></a>
+    {chapters.map((c, i) => (
+      <a href={`#${c.id}`} data-rail-i={i + 2}>
+        <i />
+        <span>{c.eyebrow}</span>
+      </a>
+    ))}
+    <a href="#c2-privacy" data-rail-i="7">
+      <i />
+      <span>Under the glass</span>
+    </a>
   </nav>
 
   <main class="c2-chapters" id="c2-main">
     <section class="c2-ch c2-ch--hero" data-ch="0" data-tint-block="lilac" aria-labelledby="c2-h1">
       <div class="c2-hero">
         <p class="c2-eyebrow">Private job application tracker</p>
-        <h1 class="c2-display" id="c2-h1">Your job search,<br />on your machine.</h1>
+        <h1 class="c2-display" id="c2-h1">
+          Your job search,
+          <br />
+          on your machine.
+        </h1>
         <p class="c2-hero-sub">
-          Track every application, recruiter, interview round, follow-up and offer. It runs on your own computer: no
-          account, no subscription, nobody watching.
+          Track every application, recruiter, interview round, follow-up and offer. It runs on your own
+          computer: no account, no subscription, nobody watching.
         </p>
         <div class="c2-hero-ctas">
-          <a class="c2-glass c2-btn c2-btn--ink" href="#c2-quickstart"><span>Get started, it's free</span></a>
-          <a class="c2-glass c2-btn" href="#c2-today"><span>Take the tour</span></a>
+          <a class="c2-glass c2-btn c2-btn--ink" href="#c2-quickstart">
+            <span>Get started, it's free</span>
+          </a>
+          <a class="c2-glass c2-btn" href="#c2-today">
+            <span>Take the tour</span>
+          </a>
         </div>
         <ul class="c2-promises" aria-label="Promises">
           <li>Free and open source</li>
@@ -239,79 +258,91 @@ const spots = [
           <li>No tracking</li>
         </ul>
       </div>
-      <figure class="c2-still c2-still--hero">
-        <Image src={mToday} alt="The Today page of the app (made-up demo data)" />
-      </figure>
     </section>
 
     <section class="c2-ch c2-ch--problem" data-ch="1" data-tint-block="sky" aria-labelledby="c2-problem">
       <div class="c2-problem c2-glass">
-        <p class="c2-eyebrow" id="c2-problem">The problem</p>
+        <p class="c2-eyebrow" id="c2-problem">
+          The problem
+        </p>
         <p class="c2-words" data-words>
-          {problem.split(" ").map((w) => <span>{w} </span>)}
+          {problem.split(" ").map((w) => (
+            <span>{w} </span>
+          ))}
         </p>
         <p class="c2-answer">So here's a CRM for your job hunt.</p>
       </div>
     </section>
 
-    {
-      chapters.map((c, i) => (
-        <section class="c2-ch c2-ch--app" id={c.id} data-ch={i + 2} data-tint-block={c.tint}>
-          <div class="c2-cap c2-glass">
-            <p class="c2-eyebrow">{c.eyebrow}</p>
-            <h2 class="c2-display">{c.title}</h2>
-            <p>{c.body}</p>
-          </div>
-          <figure class="c2-still">
-            <Image src={c.still} alt={`${c.alt} (made-up demo data)`} />
-          </figure>
-        </section>
-      ))
-    }
+    {chapters.map((c, i) => (
+      <section class="c2-ch c2-ch--app" id={c.id} data-ch={i + 2} data-tint-block={c.tint}>
+        <div class="c2-cap c2-glass">
+          <p class="c2-eyebrow">{c.eyebrow}</p>
+          <h2 class="c2-display">{c.title}</h2>
+          <p>{c.body}</p>
+        </div>
+        <figure class="c2-still">
+          <Image src={c.still} alt={`${c.alt} (made-up demo data)`} />
+        </figure>
+      </section>
+    ))}
 
     <section class="c2-ch c2-ch--privacy" id="c2-privacy" data-ch="7" data-tint-block="dusk">
       <div class="c2-cap c2-cap--left c2-glass">
         <p class="c2-eyebrow">Under the glass</p>
-        <h2 class="c2-display">Three layers.<br />All of them yours.</h2>
+        <h2 class="c2-display">
+          Three layers.
+          <br />
+          All of them yours.
+        </h2>
         <p>
-          Your browser, the app on 127.0.0.1, and one folder of ordinary files you can read without it. No AI, no
-          cloud, no account and no tracking. It never sends email, contacts anyone or calls out to the web.
+          Your browser, the app on 127.0.0.1, and one folder of ordinary files you can read without it. No AI,
+          no cloud, no account and no tracking. It never sends email, contacts anyone or calls out to the web.
         </p>
         <p class="c2-cap-small">
-          Back up with one zip from the sidebar, or let the folder keep its own git history and <code>jat push</code>
+          Back up with one zip from the sidebar, or let the folder keep its own git history and{" "}
+          <code>jat push</code>
           it to a private repo you own.
         </p>
       </div>
       <figure class="c2-still c2-still--data">
         <p class="c2-data-path">~/job-search-data</p>
         <ul>
-          {
-            tree.map(([f, why]) => (
-              <li>
-                <code>{f}</code> <span>{why}</span>
-              </li>
-            ))
-          }
+          {tree.map(([f, why]) => (
+            <li>
+              <code>{f}</code> <span>{why}</span>
+            </li>
+          ))}
         </ul>
       </figure>
     </section>
 
-    <section class="c2-ch c2-ch--outro" data-ch="8" data-tint-block="lilac" aria-labelledby="c2-extras" data-outro>
+    <section
+      class="c2-ch c2-ch--outro"
+      data-ch="8"
+      data-tint-block="lilac"
+      aria-labelledby="c2-extras"
+      data-outro
+    >
       <div class="c2-outro">
         <div class="c2-outro-head">
-          <p class="c2-eyebrow" id="c2-extras">Also in the box</p>
-          <h2 class="c2-display">The small things that<br />save an afternoon.</h2>
+          <p class="c2-eyebrow" id="c2-extras">
+            Also in the box
+          </p>
+          <h2 class="c2-display">
+            The small things that
+            <br />
+            save an afternoon.
+          </h2>
         </div>
         <ul class="c2-chips">
-          {
-            extras.map((x, i) => (
-              <li
-                class="c2-glass"
-                style={`--l:${spots[i % spots.length][0]}%;--t:${spots[i % spots.length][1]}%;--i:${i}`}
-                set:html={x.replace(/[一-鿿]+/g, '<span lang="zh-CN">$&</span>')}
-              />
-            ))
-          }
+          {extras.map((x, i) => (
+            <li
+              class="c2-glass"
+              style={`--l:${spots[i % spots.length][0]}%;--t:${spots[i % spots.length][1]}%;--i:${i}`}
+              set:html={x.replace(/[一-鿿]+/g, '<span lang="zh-CN">$&</span>')}
+            />
+          ))}
         </ul>
       </div>
     </section>
@@ -663,7 +694,9 @@ const spots = [
     top: 189px;
     width: 18px;
     height: 18px;
-    font: 400 12px/18px "Inter Variable", sans-serif;
+    font:
+      400 12px/18px "Inter Variable",
+      sans-serif;
     text-align: center;
     color: #868e96;
     background: #f8f9fa;
@@ -694,7 +727,9 @@ const spots = [
   .c2-badge b {
     padding: 3px 10px;
     border-radius: 999px;
-    font: 700 11.5px/1.2 "Inter Variable", sans-serif;
+    font:
+      700 11.5px/1.2 "Inter Variable",
+      sans-serif;
     letter-spacing: 0.03em;
     text-transform: uppercase;
     color: #1971c2;
@@ -1151,6 +1186,9 @@ const spots = [
       display: block;
       width: 100%;
       height: auto;
+      aspect-ratio: 1210 / 844;
+      object-fit: cover;
+      object-position: top;
     }
     .c2-still--data {
       width: min(720px, 100%);

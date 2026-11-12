@@ -289,7 +289,12 @@ html.c2 *::after {
     0 14px 30px -10px rgb(40 24 120 / 0.55);
 }
 .c2-btn--ink::before {
-  background: linear-gradient(135deg, rgb(255 255 255 / 0.6), rgb(255 255 255 / 0) 40%, rgb(255 190 170 / 0.6));
+  background: linear-gradient(
+    135deg,
+    rgb(255 255 255 / 0.6),
+    rgb(255 255 255 / 0) 40%,
+    rgb(255 190 170 / 0.6)
+  );
 }
 .c2-btn--ink::after {
   opacity: 0.25;

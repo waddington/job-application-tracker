@@ -2,12 +2,15 @@
 // app's page; a small director then "uses" that page with a cursor (tick a to-do, drag a card, apply to a role…),
 // looping while the window is on screen. Transform and opacity only. Reduced motion: nothing here runs.
 
+export {};
+
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 type Pose = { tx: number; ty: number; sc: number; rx: number; ry: number; rz: number; x: number };
 type PageName = "today" | "board" | "role" | "interviews" | "insights";
 
-const $ = <T extends Element = HTMLElement>(sel: string, root: ParentNode = document) => root.querySelector<T>(sel)!;
+const $ = <T extends Element = HTMLElement>(sel: string, root: ParentNode = document) =>
+  root.querySelector<T>(sel)!;
 const $$ = <T extends Element = HTMLElement>(sel: string, root: ParentNode = document) => [
   ...root.querySelectorAll<T>(sel),
 ];
@@ -213,7 +216,12 @@ function init() {
     }
     return !stale(page);
   }
-  async function anim(el: HTMLElement, frames: Keyframe[], duration: number, easing = "cubic-bezier(.22,.61,.36,1)") {
+  async function anim(
+    el: HTMLElement,
+    frames: Keyframe[],
+    duration: number,
+    easing = "cubic-bezier(.22,.61,.36,1)",
+  ) {
     const a = el.animate(frames, { duration, easing, fill: "forwards" });
     await a.finished.catch(() => undefined);
     try {
@@ -307,7 +315,11 @@ function init() {
         ],
         260,
       );
-      await anim($("[data-strike]", pages.today), [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }], 420);
+      await anim(
+        $("[data-strike]", pages.today),
+        [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }],
+        420,
+      );
       moveTo(760, 700, 1100);
       if (!(await wait(2600, "today"))) return;
       await Promise.all(
@@ -323,7 +335,11 @@ function init() {
       card.classList.add("is-lifted");
       b("bg").style.opacity = "1";
       cursor.animate([{ scale: "1" }, { scale: "0.9" }], { duration: 180, fill: "forwards" });
-      await anim(card, [{ transform: "none" }, { transform: "translate(4px,-6px) rotate(2.5deg) scale(1.04)" }], 220);
+      await anim(
+        card,
+        [{ transform: "none" }, { transform: "translate(4px,-6px) rotate(2.5deg) scale(1.04)" }],
+        220,
+      );
       await Promise.all([
         anim(
           card,
@@ -348,7 +364,14 @@ function init() {
       cursor.getAnimations().forEach((a) => a.cancel());
       cursor.style.transform = `translate(902px, 316px)`;
       await Promise.all([
-        anim(card, [{ transform: "translate(266px,-6px) rotate(1.5deg) scale(1.04)" }, { transform: "translate(262px,0)" }], 240),
+        anim(
+          card,
+          [
+            { transform: "translate(266px,-6px) rotate(1.5deg) scale(1.04)" },
+            { transform: "translate(262px,0)" },
+          ],
+          240,
+        ),
         anim(b("ext"), [{ transform: "scaleY(0)" }, { transform: "scaleY(1)" }], 300),
         anim(b("sbot"), [{ transform: "translateY(0)" }, { transform: "translateY(92px)" }], 300),
         anim(b("count"), [{ opacity: 0 }, { opacity: 1 }], 300),
