@@ -631,7 +631,8 @@
   left: 0;
   top: 0;
   transform-style: preserve-3d;
-  transform: rotateY(var(--a)) translateZ(var(--R, 440px)) translateY(var(--y)) rotateY(calc(var(--a) * -1));
+  transform: rotateY(var(--a)) translateZ(var(--R, 440px)) translateY(calc(var(--y) * var(--yk, 1)))
+    rotateY(calc(var(--a) * -1));
 }
 .c5-chip-face {
   animation: c5-spin-back 34s linear infinite;
@@ -714,7 +715,8 @@
     margin-inline: -8px;
   }
   .c5-chip {
-    --R: 260px;
+    --R: 215px;
+    --yk: 0.42;
   }
   .c5-chip-in {
     scale: calc(0.56 / var(--ox, 0.62)) 0.56;
