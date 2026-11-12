@@ -8,4 +8,6 @@ export default defineConfig({
   base: "/job-application-tracker",
   trailingSlash: "always",
   integrations: [sitemap()],
+  // Concepts branch only: the dev toolbar sat under the concept switcher.
+  devToolbar: { enabled: false },
 });
