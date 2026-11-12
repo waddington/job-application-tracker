@@ -153,3 +153,9 @@ calmer pastels.
 
 Kai picked 1f: "1f but with the screenshots in light mode not dark mode". 1f's app now shows in its light theme
 everywhere (the hero window and its live sequence, the Today card, Insights, the sticky section's panels).
+
+## 10. Round 6 (Kai, 2026-11-12)
+
+"now show me a version(s) where the hero animation plays slightly faster to varying degrees. I want to be able to
+see different screens sooner". 1g, 1h and 1i are 1f with the hero's app sequence about 1.3, 1.6 and 2 times faster
+(mostly shorter holds on each screen, gentler speed-up of the movements); `?speed=` fine-tunes any of them.
