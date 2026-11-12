@@ -1,0 +1,681 @@
+---
+// Design concept 1, "Espresso" (docs/rfc/website-redesign.md). A mockup, not the live page.
+import { Image } from "astro:assets";
+import Layout from "../../concepts/c1/Layout.astro";
+import Hero from "../../concepts/c1/Hero.astro";
+import DotBoard from "../../concepts/c1/DotBoard.astro";
+import Story from "../../concepts/c1/Story.astro";
+import { GUIDE, MARQUEE, README_ZH, REPO } from "../../data";
+import insights from "../../concepts/c1/shots/insights.png";
+import today from "../../concepts/c1/shots/today.png";
+import offersLight from "../../concepts/c1/shots/offers-light.png";
+
+const chips = MARQUEE.flat();
+const install = [
+  "git clone https://github.com/waddington/job-application-tracker.git",
+  "cd job-application-tracker",
+  "uv sync",
+  "pnpm --dir frontend install && pnpm --dir frontend build",
+  "uv run python scripts/seed_demo.py /tmp/jat-demo",
+  "uv run jat --data-dir /tmp/jat-demo serve",
+];
+---
+
+<Layout>
+  <header class="c1-chrome">
+    <a class="logo c1-glass" href="#top" aria-label="Job Application Tracker, back to the top">
+      <svg viewBox="0 0 24 24" aria-hidden="true"
+        ><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="4.5"></circle><circle
+          cx="12"
+          cy="12"
+          r="1.2"
+          fill="currentColor"></circle></svg
+      >
+    </a>
+    <nav class="links c1-glass" aria-label="Sections">
+      <a href="#private">Private</a>
+      <a href="#features">Features</a>
+      <a href="#languages">Languages</a>
+      <a href="#get">Quick start</a>
+    </nav>
+    <div class="right">
+      <a class="c1-pill c1-glass gh" href={REPO}>GitHub <span class="c1-arr">↗</span></a>
+      <a class="c1-pill c1-pill--copper" href="#get">Get it</a>
+    </div>
+  </header>
+  <a class="totop c1-glass" href="#top" aria-label="Back to the top">↑</a>
+
+  <main id="top">
+    <Hero />
+
+    <!-- Statement -->
+    <section class="statement" id="private" data-c1-tint="paper" aria-labelledby="c1-private-h">
+      <div class="wrap two">
+        <p class="c1-eyebrow">Private by design</p>
+        <div>
+          <h2 class="lead" id="c1-private-h">
+            No AI reads your notes. No cloud keeps your CVs. No account, no tracking, no ads. Your whole job search
+            lives in one folder on your own computer: a SQLite database, a readable export, your Markdown notes and
+            your files.
+          </h2>
+          <dl class="stats">
+            <div><dt>0</dt><dd>accounts to create</dd></div>
+            <div><dt>0</dt><dd>trackers or ads</dd></div>
+            <div><dt>0</dt><dd>subscription fees</dd></div>
+            <div><dt>100%</dt><dd>of your data on your computer</dd></div>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+    <!-- Two cards -->
+    <section class="cards" data-c1-tint="paper" aria-label="The board and Today">
+      <article class="card board">
+        <div class="art"><DotBoard /></div>
+        <div class="txt">
+          <h3>The board</h3>
+          <p>Every application, one drag away. See the interview round on each card, and who's gone quiet in red.</p>
+        </div>
+      </article>
+      <article class="card today">
+        <div class="art tilt">
+          <div class="mini">
+            <Image
+              src={today}
+              widths={[1100]}
+              sizes="560px"
+              alt="The Today page: replies to read, offers to answer, to-dos, and who you're waiting on"
+            />
+          </div>
+        </div>
+        <div class="txt">
+          <h3>Today</h3>
+          <p>
+            Know exactly who to chase. Your move, what's coming up, and who you're waiting on, red once it's been
+            too long.
+          </p>
+        </div>
+      </article>
+    </section>
+
+    <!-- Big panel -->
+    <section class="panelwrap" data-c1-tint="paper" aria-labelledby="c1-insights-h">
+      <div class="panel">
+        <div class="ptxt">
+          <p class="c1-eyebrow">Insights</p>
+          <h2 class="c1-h2" id="c1-insights-h">See where it all leaks.</h2>
+          <p class="c1-soft">
+            Every role's path, from who brought it to an offer, or to ghosted, and what's still waiting.
+          </p>
+        </div>
+        <div class="pimg">
+          <Image
+            src={insights}
+            widths={[1100, 1440]}
+            sizes="(max-width: 760px) 100vw, 66vw"
+            alt="A Sankey diagram of a whole job search, from where roles came from to where they are now"
+          />
+        </div>
+      </div>
+    </section>
+
+    <!-- Centre line -->
+    <section class="centre" data-c1-tint="taupe">
+      <p class="c1-display">One folder on your computer.<br /><span class="c1-soft">Nothing leaves it.</span></p>
+    </section>
+
+    <Story />
+
+    <!-- Languages and the rest -->
+    <section class="rest" id="languages" data-c1-tint="cream" aria-labelledby="c1-lang-h">
+      <div class="wrap two">
+        <p class="c1-eyebrow">English and <span lang="zh-CN">简体中文</span></p>
+        <div>
+          <h2 class="lead" id="c1-lang-h">
+            The whole app in English and <span lang="zh-CN">简体中文</span>, from buttons to dates. It follows your browser,
+            and you can switch in the header. The README is <a href={README_ZH}>in <span lang="zh-CN">简体中文</span></a> too.
+          </h2>
+          <ul class="chips" aria-label="Also in the box">
+            {chips.map((c) => <li class="c1-glass">{c}</li>)}
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Get it -->
+    <section class="get" id="get" data-c1-tint="cream" aria-labelledby="c1-get-h">
+      <p class="c1-eyebrow">Quick start · open source, Apache-2.0</p>
+      <h2 class="c1-display" id="c1-get-h">Set up in about ten minutes.</h2>
+      <p class="c1-soft sub">
+        With uv and Node.js on your Mac or Linux computer, paste a few commands into the Terminal, once. After that
+        it's a web page in your browser. Windows is next on the roadmap.
+      </p>
+      <div class="btns">
+        <a class="c1-pill c1-pill--copper" href={`${GUIDE}install.md`}>Read the install guide <span class="c1-arr">→</span></a>
+        <a class="c1-pill c1-glass" href={REPO}>View on GitHub <span class="c1-arr">↗</span></a>
+      </div>
+      <figure class="term">
+        <figcaption><i></i><i></i><i></i><span>Terminal · try it with demo data</span></figcaption>
+        <pre>{install.map((l) => <code><span aria-hidden="true">$ </span>{l}{"\n"}</code>)}<code class="out">→ http://127.0.0.1:8770</code></pre>
+      </figure>
+      <div class="ghost" aria-hidden="true">
+        <Image src={offersLight} widths={[700]} sizes="360px" alt="" />
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot" data-c1-tint="espresso">
+    <div class="fpanel">
+      <div class="fbig">
+        <p class="c1-eyebrow">Job application tracker</p>
+        <p class="fline">Your search, on your machine.</p>
+        <a class="c1-pill c1-pill--copper" href="#get">Get started <span class="c1-arr">→</span></a>
+      </div>
+      <div class="fcols">
+        <div>
+          <h4>Project</h4>
+          <a href={REPO}>GitHub</a>
+          <a href={`${REPO}/blob/main/CHANGELOG.md`}>Changelog</a>
+          <a href={`${REPO}/issues`}>Issues</a>
+        </div>
+        <div>
+          <h4>Read</h4>
+          <a href={GUIDE}>User guide</a>
+          <a href={`${GUIDE}install.md`}>Install guide</a>
+          <a href={README_ZH}>README in <span lang="zh-CN">简体中文</span></a>
+        </div>
+        <div>
+          <h4>Promise</h4>
+          <span>No AI · no cloud</span>
+          <span>No account · no tracking</span>
+          <span>Apache-2.0 licence</span>
+        </div>
+      </div>
+      <p class="fine">Free and open source. Screens show made-up demo data. Design concept 1 of 5.</p>
+    </div>
+  </footer>
+</Layout>
+
+<style>
+  /* Chrome: logo bubble, glass nav pill group, CTA pill, back-to-top square. */
+  .c1-chrome {
+    position: fixed;
+    z-index: 50;
+    top: 16px;
+    left: 16px;
+    right: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    pointer-events: none;
+    color: var(--c1-fg);
+    transition: color 0.6s var(--c1-ease);
+  }
+  .c1-chrome > * {
+    pointer-events: auto;
+  }
+  .logo {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    color: inherit;
+  }
+  .logo svg {
+    width: 24px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+  }
+  .links {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 2px;
+    padding: 5px;
+    border-radius: 999px;
+  }
+  .links a {
+    padding: 9px 16px;
+    border-radius: 999px;
+    font-size: 14px;
+    text-decoration: none;
+    transition: background-color 0.3s;
+  }
+  .links a:hover {
+    background: rgb(255 255 255 / 0.18);
+  }
+  .right {
+    display: flex;
+    gap: 8px;
+  }
+  .right .c1-pill {
+    padding: 11px 18px;
+    font-size: 14px;
+  }
+  .gh {
+    color: inherit;
+  }
+  .totop {
+    position: fixed;
+    z-index: 50;
+    right: 16px;
+    bottom: 16px;
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    text-decoration: none;
+    color: var(--c1-fg);
+    font-size: 18px;
+  }
+
+  .wrap {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 0 max(5vw, 20px);
+  }
+  .two {
+    display: grid;
+    grid-template-columns: 1fr 2.2fr;
+    align-items: start;
+    gap: 40px;
+  }
+  .lead {
+    margin: 0;
+    font-weight: 300;
+    font-size: clamp(24px, 2.4vw, 32px);
+    line-height: 1.32;
+    letter-spacing: -0.015em;
+  }
+  .lead a {
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+  }
+
+  .statement {
+    padding: 200px 0 140px;
+  }
+  .stats {
+    margin: 72px 0 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+  .stats div {
+    border-top: 1px solid rgb(36 25 18 / 0.16);
+    padding-top: 16px;
+  }
+  .stats dt {
+    font-weight: 300;
+    font-size: clamp(40px, 4vw, 60px);
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+  .stats dd {
+    margin: 10px 0 0;
+    font-size: 14px;
+    color: var(--c1-fg-soft);
+  }
+
+  /* Two tall media cards. */
+  .cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 0 8px;
+  }
+  .card {
+    position: relative;
+    min-height: min(78vh, 720px);
+    border-radius: 34px;
+    overflow: hidden;
+    color: #f3ece2;
+    display: flex;
+    flex-direction: column;
+  }
+  .card.board {
+    background: radial-gradient(90% 70% at 30% 20%, #3b281c, var(--c1-espresso-deep));
+  }
+  .card.today {
+    background:
+      radial-gradient(70% 60% at 70% 30%, rgb(224 160 114 / 0.55), transparent 70%),
+      linear-gradient(160deg, #8a7564, #4a382b);
+  }
+  .art {
+    flex: 1;
+    display: grid;
+    place-items: center;
+    padding: 56px 40px 0;
+  }
+  .tilt {
+    perspective: 1400px;
+  }
+  .mini {
+    width: 92%;
+    border-radius: 14px;
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+    box-shadow: 0 50px 90px -30px rgb(20 10 5 / 0.7);
+    transform: rotateY(-16deg) rotateX(10deg) rotateZ(2deg);
+    animation: c1-float 9s ease-in-out infinite alternate;
+  }
+  .mini :global(img) {
+    width: 170%;
+    max-width: none;
+    transform: translate(-27%, -2%);
+  }
+  @keyframes c1-float {
+    to {
+      transform: rotateY(-8deg) rotateX(6deg) rotateZ(1deg) translateY(-14px);
+    }
+  }
+  .txt {
+    padding: 28px 36px 34px;
+  }
+  .txt h3 {
+    margin: 0 0 6px;
+    font-weight: 400;
+    font-size: 24px;
+    letter-spacing: -0.02em;
+  }
+  .txt p {
+    margin: 0;
+    max-width: 30em;
+    font-weight: 300;
+    color: rgb(243 236 226 / 0.72);
+  }
+
+  /* Big dark panel with the Sankey. */
+  .panelwrap {
+    padding: 8px 8px 0;
+  }
+  .panel {
+    position: relative;
+    border-radius: 34px;
+    overflow: hidden;
+    min-height: min(86vh, 800px);
+    background: var(--c1-espresso);
+    color: #f3ece2;
+    --c1-fg-soft: rgb(243 236 226 / 0.62);
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+  }
+  .ptxt {
+    padding: 56px 0 56px 56px;
+    max-width: 380px;
+  }
+  .ptxt .c1-h2 {
+    margin-bottom: 18px;
+  }
+  .pimg {
+    position: relative;
+    margin: 56px 0 56px 0;
+    border-radius: 18px 0 0 18px;
+    overflow: hidden;
+    box-shadow: 0 40px 80px -30px rgb(0 0 0 / 0.8);
+  }
+  .pimg :global(img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 22% 30%;
+    transform: scale(1.35);
+    transform-origin: 30% 40%;
+  }
+
+  .centre {
+    padding: 34vh 20px;
+    text-align: center;
+  }
+
+  .rest {
+    padding: 200px 0 120px;
+  }
+  .chips {
+    list-style: none;
+    padding: 0;
+    margin: 56px 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .chips li {
+    padding: 9px 16px;
+    border-radius: 999px;
+    font-size: 14px;
+  }
+
+  .get {
+    position: relative;
+    padding: 120px 20px 200px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .get .sub {
+    max-width: 34em;
+    margin: 24px 0 34px;
+    font-weight: 300;
+    font-size: 18px;
+  }
+  .btns {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+  }
+  .btns .c1-glass {
+    color: inherit;
+  }
+  .term {
+    position: relative;
+    z-index: 1;
+    margin: 90px 0 0;
+    width: min(720px, 100%);
+    text-align: left;
+    border-radius: 28px;
+    background: #1e1510;
+    color: #eadfce;
+    box-shadow:
+      0 60px 100px -40px rgb(60 30 10 / 0.55),
+      0 20px 40px -20px rgb(60 30 10 / 0.35);
+    transform: rotate(-2.5deg);
+    overflow: hidden;
+  }
+  .term figcaption {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 16px 22px;
+    font: 12px/1 "JetBrains Mono Variable", ui-monospace, monospace;
+    color: rgb(234 223 206 / 0.55);
+    border-bottom: 1px solid rgb(255 255 255 / 0.07);
+  }
+  .term figcaption i {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgb(255 255 255 / 0.15);
+  }
+  .term figcaption i:first-child {
+    background: var(--c1-copper);
+  }
+  .term figcaption span {
+    margin-left: 10px;
+  }
+  .term pre {
+    margin: 0;
+    padding: 22px 26px 26px;
+    overflow-x: auto;
+    font: 13.5px/1.9 "JetBrains Mono Variable", ui-monospace, monospace;
+  }
+  .term code span {
+    color: var(--c1-copper-hi);
+  }
+  .term .out {
+    color: #9fd3a6;
+  }
+  .ghost {
+    position: absolute;
+    right: max(4vw, 20px);
+    bottom: 140px;
+    width: 300px;
+    border-radius: 18px;
+    overflow: hidden;
+    transform: rotate(5deg);
+    box-shadow: 0 40px 80px -30px rgb(60 30 10 / 0.5);
+    opacity: 0.9;
+  }
+
+  .foot {
+    padding: 8px;
+  }
+  .fpanel {
+    border-radius: 34px;
+    background: var(--c1-espresso);
+    color: #eadfce;
+    padding: clamp(36px, 5vw, 72px);
+    padding-bottom: 96px;
+    display: grid;
+    grid-template-columns: 1.3fr 2fr;
+    gap: 48px;
+  }
+  .fline {
+    margin: 0 0 28px;
+    font-weight: 300;
+    font-size: clamp(30px, 3vw, 44px);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+  .fcols {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    font-size: 14px;
+  }
+  .fcols div {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .fcols h4 {
+    margin: 0 0 6px;
+    font: 500 11px/1 "JetBrains Mono Variable", ui-monospace, monospace;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgb(234 223 206 / 0.5);
+  }
+  .fcols a,
+  .fcols span {
+    text-decoration: none;
+    color: rgb(234 223 206 / 0.85);
+  }
+  .fcols a:hover {
+    color: #fff;
+  }
+  .fine {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-size: 12.5px;
+    color: rgb(234 223 206 / 0.45);
+  }
+
+  @media (max-width: 960px) {
+    .links {
+      display: none;
+    }
+    .ghost {
+      display: none;
+    }
+  }
+  @media (max-width: 760px) {
+    .c1-chrome {
+      top: 12px;
+      left: 12px;
+      right: 12px;
+    }
+    .gh {
+      display: none;
+    }
+    .totop {
+      display: none;
+    }
+    .two {
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+    .statement,
+    .rest {
+      padding: 120px 0 80px;
+    }
+    .stats {
+      grid-template-columns: 1fr 1fr;
+      margin-top: 48px;
+    }
+    .cards {
+      grid-template-columns: 1fr;
+    }
+    .card {
+      min-height: 0;
+      border-radius: 26px;
+    }
+    .art {
+      padding: 32px 18px 0;
+    }
+    .txt {
+      padding: 22px 22px 26px;
+    }
+    .panel {
+      grid-template-columns: 1fr;
+      border-radius: 26px;
+      min-height: 0;
+    }
+    .ptxt {
+      padding: 36px 24px 0;
+    }
+    .pimg {
+      margin: 28px 0 28px 24px;
+      aspect-ratio: 4 / 3;
+    }
+    .centre {
+      padding: 22vh 20px;
+    }
+    .centre .c1-display {
+      font-size: 32px;
+    }
+    .term {
+      margin-top: 56px;
+      border-radius: 20px;
+      transform: rotate(-1.5deg);
+    }
+    .term pre {
+      font-size: 11.5px;
+      padding: 16px 18px 20px;
+    }
+    .get {
+      padding: 80px 16px 140px;
+    }
+    .fpanel {
+      grid-template-columns: 1fr;
+      border-radius: 26px;
+    }
+    .fcols {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .mini {
+      animation: none;
+    }
+    .c1-chrome {
+      transition: none;
+    }
+  }
+</style>

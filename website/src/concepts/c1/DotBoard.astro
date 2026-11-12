@@ -1,0 +1,126 @@
+---
+// The signature texture: a field of dots that draws a kanban board, copper on the left fading to grey on
+// the right. One card keeps moving on through the stages. SVG, so it scales; motion is transform/opacity.
+const C = 14; // one dot cell, px in the viewBox
+const cols = [
+  { label: 5, fill: "#e6a97c", cards: 4 },
+  { label: 4, fill: "#c98a5c", cards: 3 },
+  { label: 6, fill: "#a99383", cards: 2 },
+  { label: 3, fill: "#8c8781", cards: 1 },
+];
+const W = 46;
+const H = 30;
+const colX = (i: number) => 2 + i * 11; // in cells
+---
+
+<svg
+  class="c1-dotboard"
+  viewBox={`0 0 ${W * C} ${H * C}`}
+  role="img"
+  aria-label="A kanban board drawn in dots: four stage columns, and a card moving on from one to the next"
+>
+  <defs>
+    <pattern id="c1-d-field" width={C} height={C} patternUnits="userSpaceOnUse">
+      <circle cx={C / 2} cy={C / 2} r="1.1" fill="rgb(214 196 178 / .22)"></circle>
+    </pattern>
+    {
+      cols.map((c, i) => (
+        <>
+          <pattern id={`c1-d-col${i}`} width={C} height={C} patternUnits="userSpaceOnUse">
+            <circle cx={C / 2} cy={C / 2} r="1.7" fill={c.fill} opacity=".38" />
+          </pattern>
+          <pattern id={`c1-d-card${i}`} width={C} height={C} patternUnits="userSpaceOnUse">
+            <circle cx={C / 2} cy={C / 2} r="2.6" fill={c.fill} />
+          </pattern>
+        </>
+      ))
+    }
+    <pattern id="c1-d-hot" width={C} height={C} patternUnits="userSpaceOnUse">
+      <circle cx={C / 2} cy={C / 2} r="3" fill="#ffc79c"></circle>
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#c1-d-field)"></rect>
+  {
+    cols.map((c, i) => (
+      <g>
+        <rect x={colX(i) * C} y={2 * C} width={c.label * C} height={C} rx="7" fill={`url(#c1-d-card${i})`} />
+        <rect x={colX(i) * C} y={4 * C} width={9 * C} height={24 * C} rx="14" fill={`url(#c1-d-col${i})`} />
+        {Array.from({ length: c.cards }, (_, k) => (
+          <rect
+            class:list={["card", { pulse: i === 2 }]}
+            style={`animation-delay:${-k * 1.3}s`}
+            x={(colX(i) + 1) * C}
+            y={(5 + k * 4) * C}
+            width={7 * C}
+            height={3 * C}
+            rx="8"
+            fill={`url(#c1-d-card${i})`}
+          />
+        ))}
+      </g>
+    ))
+  }
+  <g class="mover">
+    <rect x={(colX(0) + 1) * C} y={(5 + 4 * 4) * C} width={7 * C} height={3 * C} rx="8" fill="url(#c1-d-hot)"
+    ></rect>
+  </g>
+</svg>
+
+<style>
+  .c1-dotboard {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+  .pulse {
+    animation: c1-pulse 3.2s ease-in-out infinite alternate;
+  }
+  @keyframes c1-pulse {
+    to {
+      opacity: 0.45;
+    }
+  }
+  /* Applied → Screen → Interviewing → Offer, resting between moves; then it fades back to the start. */
+  .mover {
+    animation: c1-move 13s cubic-bezier(0.6, 0, 0.25, 1) infinite;
+  }
+  @keyframes c1-move {
+    0%,
+    14% {
+      transform: translate(0, 0);
+      opacity: 1;
+    }
+    24%,
+    38% {
+      transform: translate(154px, -56px);
+    }
+    48%,
+    62% {
+      transform: translate(308px, -112px);
+    }
+    72%,
+    88% {
+      transform: translate(462px, -168px);
+      opacity: 1;
+    }
+    94% {
+      transform: translate(462px, -168px);
+      opacity: 0;
+    }
+    96% {
+      transform: translate(0, 0);
+      opacity: 0;
+    }
+    100% {
+      transform: translate(0, 0);
+      opacity: 1;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pulse,
+    .mover {
+      animation: none;
+    }
+  }
+</style>
