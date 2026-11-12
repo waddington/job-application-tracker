@@ -41,6 +41,18 @@ const cols = Array.from({ length: 8 }, (_, c) =>
   :global([data-theme="liquid"]) .c1d-cards {
     opacity: 0.32;
   }
+  /* On 1f's pale hero the pastel cards show at full strength, with a plum title line and a soft edge. */
+  :global([data-theme="bubbles"]) .c1d-cards {
+    opacity: 0.85;
+  }
+  :global([data-theme="bubbles"]) .mc {
+    box-shadow:
+      inset 0 0 0 1px rgb(42 30 63 / 0.06),
+      0 8px 20px -12px rgb(42 30 63 / 0.25);
+  }
+  :global([data-theme="bubbles"]) .mc b {
+    background: rgb(42 30 63 / 0.18);
+  }
   .col {
     animation: c1d-up var(--dur) linear infinite;
     animation-delay: var(--delay);
