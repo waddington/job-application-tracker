@@ -73,6 +73,8 @@ export class AppCtl {
   private h = 540;
   private pan = { x: 0, y: 0 };
   private zoomed = false;
+  /** App x range the zoomed camera keeps in view, if any. */
+  private focus: [number, number] | null = null;
   private raf = 0;
   private cardPos = new Map<string, { x: number; y: number }>();
   private colH = new Map<string, number>();
@@ -143,9 +145,12 @@ export class AppCtl {
         `translateY(${(-this.innerS[p]).toFixed(1)}px)`;
     }
     if (this.zoomed) {
+      // The camera follows the cursor, or frames a focus area (the search results) so it fits on screen.
       const vw = this.w / this.s;
-      const tx = -clamp(this.cx - vw / 2, 0, 1440 - vw) * this.s;
-      this.pan.x += (tx - this.pan.x) * 0.07;
+      const f = this.focus;
+      const centre = f ? (f[1] - f[0] > vw ? f[0] + vw / 2 : (f[0] + f[1]) / 2) : this.cx;
+      const tx = -clamp(centre - vw / 2, 0, 1440 - vw) * this.s;
+      this.pan.x += (tx - this.pan.x) * (f ? 0.16 : 0.07);
       this.appEl.style.setProperty("--panx", `${this.pan.x.toFixed(1)}px`);
     } else if (this.pan.x) {
       this.pan.x = 0;
@@ -352,6 +357,8 @@ export class AppCtl {
     await sleep(120);
     await this.click();
     this.hand(false);
+    // On a zoomed (phone) window, frame the field and its results so none of them is cut off.
+    this.focus = [920, 1336];
     field.style.opacity = "1";
     for (const ch of "contoso") {
       typed.textContent += ch;
@@ -387,6 +394,7 @@ export class AppCtl {
     await Promise.all([this.fade(results, 0, 200), this.fade(field, 0, 200)]);
     this.q("[data-res-hov]").style.opacity = "";
     rows.forEach((r) => (r.style.opacity = ""));
+    this.focus = null;
   }
 
   // ---------- The board ----------

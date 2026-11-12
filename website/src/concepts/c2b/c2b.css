@@ -247,6 +247,8 @@ html.c2b *::after {
   display: inline-flex;
   align-items: center;
   gap: 10px;
+  /* An eyebrow is one short label: it never breaks mid-label. */
+  white-space: nowrap;
   font: 500 11.5px/1 var(--c2b-mono);
   letter-spacing: 0.14em;
   text-transform: uppercase;
