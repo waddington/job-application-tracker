@@ -1,0 +1,1010 @@
+---
+// Round 2's browser window with the app inside, shared by concepts 2a, 2b and 6. Real screenshots (made-up demo
+// data, captured at 2x) are laid out on a 1440 x 900 stage at the app's own pixel positions, in separate layers
+// (header, sidebar, page, touch) so the window can come apart in 3D. The moving parts are rebuilt in HTML: the
+// board (cards drag and the others reflow), the search box (typed into, with results), a ticked to-do, a stage
+// badge, the Sankey drawing in, toasts and hover states. engine.ts drives it with a cursor.
+import { Image } from "astro:assets";
+import lHeader from "../shots/l-header.png";
+import lSidebar from "../shots/l-sidebar.png";
+import lToday from "../shots/l-today.png";
+import lBoard from "../shots/l-board.png";
+import lRole from "../shots/l-role.png";
+import lInterviews from "../shots/l-interviews.png";
+import lInsights from "../shots/l-insights.png";
+import lApplication from "../shots/l-application.png";
+import dHeader from "../shots/d-header.png";
+import dSidebar from "../shots/d-sidebar.png";
+import dToday from "../shots/d-today.png";
+import dBoard from "../shots/d-board.png";
+import dRole from "../shots/d-role.png";
+import dInterviews from "../shots/d-interviews.png";
+import dInsights from "../shots/d-insights.png";
+import dApplication from "../shots/d-application.png";
+
+interface Props {
+  scheme?: "light" | "dark";
+  /** Include the data-folder layer that shows when the window comes apart. */
+  data?: boolean;
+  /** The URL shown in the title bar. */
+  url?: string;
+  class?: string;
+}
+const { scheme = "light", data = false, url = "127.0.0.1:8770", class: cls } = Astro.props;
+const L = scheme === "light";
+const img = {
+  header: L ? lHeader : dHeader,
+  sidebar: L ? lSidebar : dSidebar,
+  today: L ? lToday : dToday,
+  board: L ? lBoard : dBoard,
+  role: L ? lRole : dRole,
+  interviews: L ? lInterviews : dInterviews,
+  insights: L ? lInsights : dInsights,
+  application: L ? lApplication : dApplication,
+};
+const pageSizes = "(max-width: 760px) 800px, 1210px";
+
+type Card = { id: string; co: string; role: string; when: string; extra?: string; tag?: string; round?: string; late?: boolean };
+const columns: { id: string; x: number; label: string; cards: Card[] }[] = [
+  { id: "interested", x: 246, label: "Interested", cards: [{ id: "nw", co: "Northwind Traders", role: "Lead Engineer", when: "2 days ago" }] },
+  {
+    id: "applied",
+    x: 508,
+    label: "Applied",
+    cards: [
+      { id: "aw", co: "Adventure Works", role: "Backend Engineer (Go)", when: "3 days ago" },
+      { id: "cw", co: "Coho Winery", role: "Full-stack Engineer", when: "9 days ago", extra: "★ Jordan Lee" },
+      { id: "fk", co: "Fabrikam", role: "Staff Platform Engineer", when: "12 days ago", tag: "Reply to read" },
+      { id: "cw2", co: "Coho Winery", role: "Senior Full-stack Engineer", when: "2 weeks ago", late: true },
+    ],
+  },
+  { id: "screen", x: 770, label: "Screen", cards: [] },
+  {
+    id: "interviewing",
+    x: 1032,
+    label: "Interviewing",
+    cards: [
+      {
+        id: "ct",
+        co: "Contoso",
+        role: "Senior Backend Engineer",
+        when: "9 days ago",
+        extra: "Alex Morgan",
+        round: "Round 3 · System design test · Sat 14 Nov",
+      },
+    ],
+  },
+  { id: "final", x: 1294, label: "Final", cards: [] },
+];
+const results = [
+  { kind: "Application", title: "Contoso · Senior Backend Engineer", icon: "M3 7h14v9H3zM7 7V5h6v2" },
+  { kind: "Company", title: "Contoso", icon: "M4 17V4h8v13M12 9h4v8M7 7h2M7 10h2M7 13h2" },
+  { kind: "Note", title: "Call with Alex about Contoso", icon: "M5 3h8l3 3v11H5zM8 9h5M8 12h5" },
+];
+---
+
+<div class:list={["aw", `aw--${scheme}`, cls]} data-aw data-scheme={scheme}>
+  {
+    data && (
+      <div class="aw-layer aw-data">
+        <p class="aw-data-path">~/job-search-data</p>
+        <ul>
+          <li>
+            <code>jat.sqlite</code>
+            <span>the database</span>
+          </li>
+          <li>
+            <code>export/applications.jsonl</code>
+            <span>readable without the app</span>
+          </li>
+          <li>
+            <code>notes/contoso-backend.md</code>
+            <span>your notes, plain Markdown</span>
+          </li>
+          <li>
+            <code>files/backend-cv-v3.pdf</code>
+            <span>CVs, briefs, emails</span>
+          </li>
+          <li>
+            <code>.git/</code>
+            <span>snapshots, if you want them</span>
+          </li>
+        </ul>
+        <p class="aw-data-foot">One folder. Ordinary files. On your computer.</p>
+      </div>
+    )
+  }
+  <div class="aw-layer aw-slab" aria-hidden="true"></div>
+  <div class="aw-layer aw-frame">
+    <div class="aw-bar">
+      <span class="aw-lights"><i></i><i></i><i></i></span>
+      <span class="aw-url">
+        <svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true"
+          ><path d="M4.5 7V5a3.5 3.5 0 0 1 7 0v2M3.5 7h9v6.5h-9z" fill="none" stroke="currentColor" stroke-width="1.4"
+          ></path></svg
+        >
+        <span>{url}</span><span data-aw-path>/</span>
+      </span>
+    </div>
+  </div>
+  <div class="aw-screen" data-aw-screen>
+    <div class="aw-app" data-aw-app>
+      <div class="aw-layer aw-main">
+        <span class="aw-load" data-aw-load></span>
+        <div class="aw-pg is-on" data-page="today">
+          <div class="aw-in" data-scroll>
+            <Image src={img.today} widths={[1210, 2420]} sizes={pageSizes} alt="" loading="eager" />
+            <span class="aw-tick" data-tick
+              ><svg viewBox="0 0 16 16"><path d="m3.5 8.5 3 3 6-7" fill="none" stroke="#fff" stroke-width="2.2"></path></svg
+              ></span
+            >
+            <span class="aw-strike" data-strike></span>
+            <span class="aw-hovbox" data-hov-todo></span>
+          </div>
+        </div>
+        <div class="aw-pg" data-page="application">
+          <div class="aw-in" data-scroll>
+            <Image src={img.application} widths={[1210, 2420]} sizes={pageSizes} alt="" />
+          </div>
+        </div>
+        <div class="aw-pg" data-page="board">
+          <div class="aw-in" data-scroll>
+            <Image src={img.board} widths={[1210, 2420]} sizes={pageSizes} alt="" />
+            <div class="aw-board" data-board>
+              {
+                columns.map((c) => (
+                  <div class="aw-col" data-col={c.id} style={`--cx:${c.x - 230}px`}>
+                    <span class="aw-col-top" />
+                    <span class="aw-col-mid" data-col-mid />
+                    <span class="aw-col-bot" data-col-bot />
+                    <span class="aw-col-drop" data-col-drop />
+                    <b class={`aw-stage aw-stage--${c.id}`}>{c.label}</b>
+                    <span class="aw-count" data-count>
+                      {c.cards.length}
+                    </span>
+                  </div>
+                ))
+              }
+              {
+                columns.flatMap((c) =>
+                  c.cards.map((k) => (
+                    <div class:list={["aw-card", { "aw-card--late": k.late }]} data-card={k.id} data-in={c.id}>
+                      <b>{k.co}</b>
+                      <span class="aw-sub">{k.role}</span>
+                      {k.tag && <em class="aw-tag">{k.tag}</em>}
+                      {k.round && <em class="aw-round">{k.round}</em>}
+                      <span class="aw-meta">
+                        <span class:list={{ "aw-late": k.late }}>{k.when}</span>
+                        {k.extra && <span>{k.extra}</span>}
+                      </span>
+                    </div>
+                  )),
+                )
+              }
+            </div>
+          </div>
+        </div>
+        <div class="aw-pg" data-page="role">
+          <div class="aw-in" data-scroll>
+            <Image src={img.role} widths={[1210, 2420]} sizes={pageSizes} alt="" />
+            <span class="aw-badge" data-badge><b>Applied</b></span>
+            <span class="aw-hovbox aw-hovbox--btn" data-hov-apply></span>
+          </div>
+        </div>
+        <div class="aw-pg" data-page="interviews">
+          <div class="aw-in" data-scroll>
+            <Image src={img.interviews} widths={[1210, 2420]} sizes={pageSizes} alt="" />
+            <span class="aw-ring" data-ring></span>
+          </div>
+        </div>
+        <div class="aw-pg" data-page="insights">
+          <div class="aw-in" data-scroll>
+            <Image src={img.insights} widths={[1210, 2420]} sizes={pageSizes} alt="" />
+            <span class="aw-cover" data-cover></span>
+          </div>
+        </div>
+      </div>
+      <div class="aw-layer aw-side">
+        <span class="aw-navhov" data-navhov></span>
+        <span class="aw-hl" data-hl></span>
+        <Image src={img.sidebar} widths={[230, 460]} sizes="230px" alt="" loading="eager" />
+      </div>
+      <div class="aw-layer aw-head">
+        <Image src={img.header} widths={[1440, 2880]} sizes="1440px" alt="" loading="eager" />
+        <span class="aw-search" data-search>
+          <span class="aw-search-ring"></span>
+          <span class="aw-search-field"><span data-typed></span><i class="aw-caret"></i></span>
+        </span>
+      </div>
+      <div class="aw-layer aw-touch">
+        <div class="aw-results" data-results>
+          {
+            results.map((r, i) => (
+              <div class="aw-res" data-res={i}>
+                <svg viewBox="0 0 20 20" width="18" height="18">
+                  <path d={r.icon} fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
+                </svg>
+                <span>
+                  <b>{r.title}</b>
+                  <small>{r.kind}</small>
+                </span>
+              </div>
+            ))
+          }
+          <span class="aw-res-hov" data-res-hov></span>
+        </div>
+        <div class="aw-toast" data-toast>
+          <span class="aw-toast-dot"></span>
+          <span>Moved <b>Adventure Works</b> to Screen</span>
+          <span class="aw-toast-undo" data-undo>Undo</span>
+        </div>
+        <span class="aw-tip" data-tip>Offer · 2 roles deciding</span>
+        <span class="aw-cursor" data-cursor>
+          <span class="aw-ripple" data-ripple></span>
+          <svg class="aw-arrow" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"
+            ><path
+              d="M5 3.2v15.6l4.3-4.1 2.7 6.1 2.8-1.2-2.7-6h6z"
+              fill="#16131f"
+              stroke="#fff"
+              stroke-width="1.6"
+              stroke-linejoin="round"></path></svg
+          >
+          <svg class="aw-hand" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"
+            ><path
+              d="M9 11V4.5a1.5 1.5 0 0 1 3 0V10m0-1a1.5 1.5 0 0 1 3 0v2m0-1a1.5 1.5 0 0 1 3 0v4.5c0 3.6-2.4 6.5-6 6.5h-1c-2.2 0-3.6-1-4.8-2.7L3.6 15a1.6 1.6 0 0 1 2.5-2L9 15.5"
+              fill="#fff"
+              stroke="#16131f"
+              stroke-width="1.5"
+              stroke-linejoin="round"></path></svg
+          >
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style is:global>
+  .aw {
+    --s: 0.6;
+    --x: 0;
+    --sw: calc(1440px * var(--s));
+    --sh: calc(900px * var(--s));
+    --bar: 44px;
+    --page: #fff;
+    --ink: #000;
+    --soft: #868e96;
+    --col: #f8f9fa;
+    --col-line: #ced4da;
+    --card: #fff;
+    --card-line: #dee2e6;
+    --hov: rgb(0 0 0 / 0.05);
+    --hl: rgb(219 228 255);
+    --hl-blend: multiply;
+    --focus: #4c6ef5;
+    --frame-a: rgb(255 255 255 / 0.86);
+    --frame-b: rgb(244 240 255 / 0.62);
+    --frame-ink: #5d5780;
+    position: relative;
+    width: var(--sw);
+    height: calc(var(--sh) + var(--bar));
+    transform-style: preserve-3d;
+    font-family: "Inter Variable", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .aw--dark {
+    --page: #242424;
+    --ink: #c9c9c9;
+    --soft: #828282;
+    --col: #3b3b3b;
+    --col-line: #424242;
+    --card: #2e2e2e;
+    --card-line: #424242;
+    --hov: rgb(255 255 255 / 0.06);
+    --hl: rgb(27 40 100);
+    --hl-blend: screen;
+    --frame-a: rgb(52 40 32 / 0.92);
+    --frame-b: rgb(30 22 17 / 0.88);
+    --frame-ink: #d9c9b6;
+  }
+  .aw-layer {
+    position: absolute;
+    backface-visibility: hidden;
+  }
+  .aw img {
+    display: block;
+    max-width: none;
+    height: auto;
+  }
+
+  /* Frame: frosted glass with a thin slab behind it, so the edge shows when the window turns. */
+  .aw-frame {
+    inset: -9px;
+    border-radius: 24px;
+    background:
+      linear-gradient(125deg, rgb(255 255 255 / 0.5), transparent 32%, transparent 62%, rgb(255 255 255 / 0.18)),
+      linear-gradient(180deg, var(--frame-a), var(--frame-b));
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.9),
+      inset 0 0 0 1px rgb(255 255 255 / 0.35),
+      inset 1px 0 0 rgb(255 120 200 / 0.18),
+      inset -1px 0 0 rgb(90 200 255 / 0.22),
+      0 60px 120px -40px rgb(40 24 110 / 0.55),
+      0 24px 50px -24px rgb(40 24 110 / 0.35);
+    transform: translateZ(calc(var(--x) * -260px));
+    opacity: calc(1 - var(--x) * 0.6);
+  }
+  .aw--dark .aw-frame {
+    box-shadow:
+      inset 0 1px 0 rgb(255 230 200 / 0.3),
+      inset 0 0 0 1px rgb(255 220 190 / 0.12),
+      0 60px 120px -40px rgb(0 0 0 / 0.75),
+      0 24px 50px -24px rgb(0 0 0 / 0.5);
+  }
+  .aw-slab {
+    inset: -9px;
+    border-radius: 24px;
+    background: linear-gradient(180deg, rgb(200 190 240 / 0.7), rgb(150 130 210 / 0.6));
+    transform: translateZ(calc(var(--x) * -260px - 12px));
+    opacity: calc(1 - var(--x));
+  }
+  .aw--dark .aw-slab {
+    background: linear-gradient(180deg, #4a3527, #20150f);
+  }
+  .aw-bar {
+    position: relative;
+    height: calc(var(--bar) + 9px);
+    display: flex;
+    align-items: center;
+    padding: 0 18px;
+  }
+  .aw-lights {
+    display: flex;
+    gap: 7px;
+  }
+  .aw-lights i {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: #ff8a7a;
+    box-shadow: inset 0 -1px 2px rgb(0 0 0 / 0.18);
+  }
+  .aw-lights i:nth-child(2) {
+    background: #ffcc66;
+  }
+  .aw-lights i:nth-child(3) {
+    background: #7fd6a0;
+  }
+  .aw-url {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 16px;
+    border-radius: 999px;
+    font: 450 12px/1 "JetBrains Mono Variable", ui-monospace, monospace;
+    color: var(--frame-ink);
+    background: rgb(255 255 255 / 0.55);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.9),
+      0 1px 3px rgb(40 24 110 / 0.12);
+    white-space: nowrap;
+  }
+  .aw--dark .aw-url {
+    background: rgb(255 255 255 / 0.08);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.12);
+  }
+  .aw-url svg {
+    flex: none;
+  }
+
+  .aw-screen {
+    position: absolute;
+    left: 0;
+    top: var(--bar);
+    width: var(--sw);
+    height: var(--sh);
+    transform-style: preserve-3d;
+  }
+  .aw.is-clip .aw-screen {
+    overflow: hidden;
+    transform-style: flat;
+    border-radius: 0 0 14px 14px;
+  }
+  .aw-app {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1440px;
+    height: 900px;
+    transform-origin: 0 0;
+    transform: translate(var(--panx, 0px), var(--pany, 0px)) scale(var(--s));
+    transform-style: preserve-3d;
+  }
+  .aw-main {
+    left: 230px;
+    top: 56px;
+    width: 1210px;
+    height: 844px;
+    overflow: hidden;
+    background: var(--page);
+    border-radius: 0 0 14px 0;
+    box-shadow: 0 calc(var(--x) * 40px) calc(var(--x) * 80px) rgb(30 20 80 / calc(var(--x) * 0.35));
+  }
+  .aw-main .aw-in > img {
+    width: 1210px;
+  }
+  .aw-side {
+    left: 0;
+    top: 56px;
+    width: 230px;
+    height: 844px;
+    background: var(--page);
+    border-radius: 0 0 0 14px;
+    isolation: isolate;
+    transform: translateZ(calc(var(--x) * 180px));
+    box-shadow: calc(var(--x) * 30px) calc(var(--x) * 30px) calc(var(--x) * 60px) rgb(30 20 80 / calc(var(--x) * 0.3));
+  }
+  .aw-side img {
+    position: relative;
+    width: 230px;
+    mix-blend-mode: var(--hl-blend);
+  }
+  .aw-hl,
+  .aw-navhov {
+    position: absolute;
+    left: 10px;
+    top: 0;
+    width: 209px;
+    height: 41px;
+    border-radius: 6px;
+    background: var(--hl);
+    transform: translateY(10px);
+    transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .aw-navhov {
+    background: var(--hov);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .aw-head {
+    left: 0;
+    top: 0;
+    width: 1440px;
+    height: 56px;
+    overflow: hidden;
+    background: var(--page);
+    border-radius: 0;
+    transform: translateZ(calc(var(--x) * 340px));
+    box-shadow: 0 calc(var(--x) * 24px) calc(var(--x) * 50px) rgb(30 20 80 / calc(var(--x) * 0.3));
+  }
+  .aw-head > img {
+    width: 1440px;
+  }
+  .aw-touch {
+    inset: 0;
+    pointer-events: none;
+    transform: translateZ(calc(var(--x) * 460px + 1px));
+  }
+  .aw-load {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 5;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, var(--focus), #9b7bff);
+    transform: scaleX(0);
+    transform-origin: 0 50%;
+    opacity: 0;
+  }
+
+  /* Pages. */
+  .aw-pg {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    visibility: hidden;
+    background: var(--page);
+  }
+  .aw-pg.is-on {
+    opacity: 1;
+    visibility: visible;
+  }
+  .aw-in {
+    position: relative;
+    will-change: transform;
+  }
+  .aw-tick {
+    position: absolute;
+    left: 751px;
+    top: 390px;
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    background: var(--focus);
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  .aw-tick svg {
+    display: block;
+    width: 20px;
+    height: 20px;
+  }
+  .aw-strike {
+    position: absolute;
+    left: 779px;
+    top: 397px;
+    width: 213px;
+    height: 2px;
+    background: var(--ink);
+    opacity: 0.8;
+    transform: scaleX(0);
+    transform-origin: 0 50%;
+  }
+  .aw-hovbox {
+    position: absolute;
+    left: 747px;
+    top: 386px;
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    box-shadow: 0 0 0 2px var(--focus);
+    opacity: 0;
+  }
+  .aw-hovbox--btn {
+    left: 838px;
+    top: 55px;
+    width: 50px;
+    height: 22px;
+    border-radius: 6px;
+    box-shadow: none;
+    background: rgb(76 110 245 / 0.18);
+  }
+  .aw-badge {
+    position: absolute;
+    left: 417px;
+    top: 58px;
+    width: 104px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    background: var(--page);
+    opacity: 0;
+  }
+  .aw-badge b,
+  .aw-stage {
+    padding: 0 8px;
+    border-radius: 4px;
+    font: 700 11px/18px "Inter Variable", sans-serif;
+    letter-spacing: 0.25px;
+    text-transform: uppercase;
+    color: #1864ab;
+    background: #e7f5ff;
+  }
+  .aw--dark .aw-badge b {
+    color: #e7f5ff;
+    background: #0c3256;
+  }
+  .aw-ring {
+    position: absolute;
+    left: 158px;
+    top: 428px;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: rgb(76 110 245 / 0.2);
+    box-shadow: 0 0 0 1.5px rgb(76 110 245 / 0.6);
+    opacity: 0;
+  }
+  .aw-cover {
+    position: absolute;
+    left: 30px;
+    top: 222px;
+    width: 1150px;
+    height: 440px;
+    background: var(--page);
+    transform-origin: 100% 50%;
+  }
+
+  /* The board, rebuilt: columns of three pieces (so only transforms move), cards placed by the engine. */
+  .aw-board {
+    position: absolute;
+    left: 0;
+    top: 172px;
+    width: 1210px;
+    height: 560px;
+    background: var(--page);
+  }
+  .aw-col {
+    position: absolute;
+    left: var(--cx);
+    top: 6px;
+    width: 250px;
+  }
+  .aw-col-top,
+  .aw-col-mid,
+  .aw-col-bot,
+  .aw-col-drop {
+    position: absolute;
+    left: 0;
+    width: 250px;
+    background: var(--col);
+    border: 1px solid var(--col-line);
+  }
+  .aw-col-top {
+    top: 0;
+    height: 42px;
+    border-bottom: 0;
+    border-radius: 8px 8px 0 0;
+  }
+  .aw-col-mid {
+    top: 42px;
+    height: 100px;
+    border-block: 0;
+    transform-origin: 50% 0;
+  }
+  .aw-col-bot {
+    top: 0;
+    height: 12px;
+    border-top: 0;
+    border-radius: 0 0 8px 8px;
+  }
+  .aw-col-drop {
+    top: 0;
+    height: 100px;
+    border: 2px dashed var(--focus);
+    border-radius: 8px;
+    background: rgb(76 110 245 / 0.07);
+    transform-origin: 50% 0;
+    opacity: 0;
+  }
+  .aw-stage {
+    position: absolute;
+    left: 11px;
+    top: 12px;
+  }
+  .aw-stage--interested {
+    color: #495057;
+    background: #f1f3f5;
+  }
+  .aw-stage--screen {
+    color: #0b7285;
+    background: #e3fafc;
+  }
+  .aw-stage--interviewing {
+    color: #364fc7;
+    background: #edf2ff;
+  }
+  .aw-stage--final {
+    color: #5f3dc4;
+    background: #f3f0ff;
+  }
+  .aw--dark .aw-stage--interested {
+    color: #fff;
+    background: #111315;
+  }
+  .aw--dark .aw-stage--applied {
+    color: #e7f5ff;
+    background: #0c3256;
+  }
+  .aw--dark .aw-stage--screen {
+    color: #e3fafc;
+    background: #063943;
+  }
+  .aw--dark .aw-stage--interviewing {
+    color: #edf2ff;
+    background: #1b2864;
+  }
+  .aw--dark .aw-stage--final {
+    color: #f3f0ff;
+    background: #301f62;
+  }
+  .aw-count {
+    position: absolute;
+    right: 11px;
+    top: 12px;
+    font: 400 12px/17px "Inter Variable", sans-serif;
+    color: var(--soft);
+    background: var(--col);
+  }
+  .aw-card {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 228px;
+    padding: 10px;
+    border: 1px solid var(--card-line);
+    border-radius: 8px;
+    background: var(--card);
+    color: var(--ink);
+    font: 400 12px/16.8px "Inter Variable", sans-serif;
+    will-change: transform;
+    transition: box-shadow 0.25s;
+  }
+  .aw-card--late {
+    border-left: 3px solid #fa5252;
+  }
+  .aw-card b {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20.3px;
+  }
+  .aw-card.is-hover {
+    box-shadow: 0 4px 14px rgb(0 0 0 / 0.1);
+  }
+  .aw-card.is-lifted {
+    box-shadow: 0 22px 36px -10px rgb(20 10 60 / 0.4);
+    z-index: 3;
+  }
+  .aw-sub {
+    display: block;
+    color: var(--soft);
+  }
+  .aw-tag,
+  .aw-round {
+    display: inline-block;
+    margin-top: 6px;
+    padding: 0 6px;
+    border-radius: 4px;
+    font: 700 9.5px/16px "Inter Variable", sans-serif;
+    font-style: normal;
+    letter-spacing: 0.2px;
+    text-transform: uppercase;
+    color: #e8590c;
+    background: #fff4e6;
+  }
+  .aw-round {
+    display: block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    text-transform: none;
+    font-size: 9.5px;
+    line-height: 13px;
+    color: #5f3dc4;
+    background: #e5dbff;
+  }
+  .aw--dark .aw-tag {
+    color: #fff;
+    background: #7a2a0b;
+  }
+  .aw--dark .aw-round {
+    color: #fff;
+    background: #3b2a8a;
+  }
+  .aw-meta {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    color: var(--soft);
+  }
+  .aw-late {
+    color: #fa5252;
+    font-weight: 600;
+  }
+
+  /* Search: the field typed into, and its results. */
+  .aw-search {
+    position: absolute;
+    left: 928px;
+    top: 10px;
+    width: 280px;
+    height: 36px;
+    opacity: 0;
+  }
+  .aw-search-ring {
+    position: absolute;
+    inset: -1px;
+    border-radius: 9px;
+    box-shadow: 0 0 0 2px var(--focus);
+  }
+  .aw-search-field {
+    position: absolute;
+    left: 33px;
+    top: 2px;
+    right: 36px;
+    bottom: 2px;
+    display: flex;
+    align-items: center;
+    background: var(--page);
+    font: 400 14px/1 "Inter Variable", sans-serif;
+    color: var(--ink);
+  }
+  .aw--dark .aw-search-field {
+    background: #2e2e2e;
+  }
+  .aw-caret {
+    width: 1.5px;
+    height: 17px;
+    margin-left: 1px;
+    background: var(--ink);
+    animation: aw-blink 1s steps(1) infinite;
+  }
+  @keyframes aw-blink {
+    50% {
+      opacity: 0;
+    }
+  }
+  .aw-results {
+    position: absolute;
+    left: 928px;
+    top: 52px;
+    width: 400px;
+    padding: 6px;
+    border-radius: 10px;
+    background: var(--card);
+    border: 1px solid var(--card-line);
+    box-shadow: 0 20px 40px -12px rgb(20 10 60 / 0.3);
+    opacity: 0;
+    transform-origin: 30% 0;
+  }
+  .aw-res {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 48px;
+    padding: 0 12px;
+    color: var(--soft);
+    opacity: 0;
+  }
+  .aw-res b {
+    display: block;
+    font: 500 14px/1.3 "Inter Variable", sans-serif;
+    color: var(--ink);
+  }
+  .aw-res small {
+    font-size: 12px;
+  }
+  .aw-res-hov {
+    position: absolute;
+    left: 6px;
+    top: 6px;
+    width: calc(100% - 12px);
+    height: 48px;
+    border-radius: 7px;
+    background: var(--hl);
+    opacity: 0;
+  }
+  .aw-toast {
+    position: absolute;
+    right: 24px;
+    bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border-radius: 10px;
+    background: var(--card);
+    border: 1px solid var(--card-line);
+    box-shadow: 0 18px 40px -12px rgb(20 10 60 / 0.35);
+    font: 400 14px/1.2 "Inter Variable", sans-serif;
+    color: var(--ink);
+    opacity: 0;
+  }
+  .aw-toast-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #12b886;
+  }
+  .aw-toast-undo {
+    margin-left: 8px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-weight: 600;
+    color: var(--focus);
+    background: rgb(76 110 245 / 0.1);
+  }
+  .aw-tip {
+    position: absolute;
+    left: 1090px;
+    top: 330px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font: 500 14px/1 "Inter Variable", sans-serif;
+    color: var(--ink);
+    background: var(--card);
+    border: 1px solid var(--card-line);
+    box-shadow: 0 14px 30px -10px rgb(20 10 60 / 0.3);
+    opacity: 0;
+    white-space: nowrap;
+  }
+
+  /* The cursor: an arrow, a hand over things you can press, and a ripple. */
+  .aw-cursor {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 0;
+    height: 0;
+    z-index: 9;
+    transform: translate(700px, 620px);
+    will-change: transform;
+  }
+  .aw-cursor svg {
+    position: absolute;
+    left: -5px;
+    top: -3px;
+    transform: scale(var(--ci, 1));
+    transform-origin: 5px 3px;
+    filter: drop-shadow(0 5px 6px rgb(20 10 60 / 0.35));
+    transition: opacity 0.15s;
+  }
+  .aw-hand {
+    left: -9px !important;
+    top: -2px !important;
+    opacity: 0;
+  }
+  .aw-cursor.is-hand .aw-arrow {
+    opacity: 0;
+  }
+  .aw-cursor.is-hand .aw-hand {
+    opacity: 1;
+  }
+  .aw-ripple {
+    position: absolute;
+    left: -24px;
+    top: -24px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgb(110 90 255 / 0.5), rgb(110 90 255 / 0.12) 60%, transparent 70%);
+    box-shadow: 0 0 0 2px rgb(110 90 255 / 0.35);
+    opacity: 0;
+  }
+
+  /* The data folder, under everything; seen only when the window comes apart. */
+  .aw-data {
+    left: 0;
+    top: var(--bar);
+    width: var(--sw);
+    height: var(--sh);
+    padding: calc(var(--s) * 70px) calc(var(--s) * 80px);
+    border-radius: 18px;
+    color: #211c3b;
+    font-size: calc(var(--s) * 30px);
+    background:
+      radial-gradient(70% 80% at 0% 0%, rgb(201 184 255 / 0.9), transparent 70%),
+      radial-gradient(60% 70% at 100% 100%, rgb(255 198 171 / 0.9), transparent 70%),
+      linear-gradient(160deg, #f4f0ff, #e2f1ff);
+    box-shadow:
+      inset 0 1px 0 #fff,
+      0 40px 80px -30px rgb(0 0 0 / 0.6);
+    transform: translateZ(calc(var(--x) * -540px));
+    opacity: var(--x);
+  }
+  .aw-data-path {
+    margin: 0 0 1.2em;
+    font: 500 1.3em/1 "JetBrains Mono Variable", monospace;
+  }
+  .aw-data ul {
+    display: grid;
+    gap: 0.7em;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .aw-data li {
+    display: flex;
+    justify-content: space-between;
+    padding-bottom: 0.7em;
+    border-bottom: 1px solid rgb(33 28 59 / 0.12);
+  }
+  .aw-data code {
+    font-family: "JetBrains Mono Variable", monospace;
+  }
+  .aw-data li span {
+    opacity: 0.6;
+  }
+  .aw-data-foot {
+    position: absolute;
+    bottom: calc(var(--s) * 60px);
+    margin: 0;
+    font-size: 1.4em;
+    font-weight: 300;
+  }
+</style>

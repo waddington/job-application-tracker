@@ -1,0 +1,1026 @@
+---
+// Concept 2a: the whole page is one glass browser in a deep scene. Frosted slabs float behind it at different
+// depths, small glass cards from the app float in front, and the pointer tilts the world. Scroll grows the window
+// to fill the screen and drives the app (Today → search → board → a role → interviews → insights) under glass
+// captions; then it comes apart into its layers and shrinks back out. Reduced motion: stacked stills.
+import { Image } from "astro:assets";
+import { MARQUEE } from "../../data";
+import AppWindow from "./app/AppWindow.astro";
+import sToday from "./shots/l-today.png";
+import sApplication from "./shots/l-application.png";
+import sBoard from "./shots/l-board.png";
+import sRole from "./shots/l-role.png";
+import sInterviews from "./shots/l-interviews.png";
+import sInsights from "./shots/l-insights.png";
+
+const problem =
+  "Recruiters pitch five roles in one call. Processes drag on for six rounds. Half the companies ghost you. And your spreadsheet has no idea who to chase today.";
+
+const chapters = [
+  {
+    id: "c2a-ch-today",
+    tint: "sky",
+    eyebrow: "Today",
+    title: "Know exactly who to chase today.",
+    body: "Your move, what's coming up and who you're waiting on, before the coffee's cool. Tick a to-do, chase, snooze or call it ghosted in one click.",
+    still: sToday,
+    alt: "The Today page: your move, what's coming up and who you're waiting on",
+  },
+  {
+    id: "c2a-ch-search",
+    tint: "lilac",
+    eyebrow: "Search",
+    title: "Find anything in a keystroke.",
+    body: "Press / and type. Applications, people, debriefs, notes, files and links, searched on your own computer.",
+    still: sApplication,
+    alt: "An application's page: interview rounds, notes, links, files and its history",
+  },
+  {
+    id: "c2a-ch-board",
+    tint: "peach",
+    eyebrow: "The board",
+    title: "Every application, one drag away.",
+    body: "Drag between stages, see the interview round on each card and who's gone quiet in red. Undo a move you didn't mean.",
+    still: sBoard,
+    alt: "The board of applications by stage",
+  },
+  {
+    id: "c2a-ch-roles",
+    tint: "lilac",
+    eyebrow: "Recruiters and roles",
+    title: "One recruiter, five roles, zero chaos.",
+    body: "Log the call, add each role they pitched, then apply or pass with a reason. Drop the job description on the role: it follows it onto your application.",
+    still: sRole,
+    alt: "A role's page: pay, the recruiter who pitched it, notes, to-dos and links",
+  },
+  {
+    id: "c2a-ch-interviews",
+    tint: "sky",
+    eyebrow: "Interviews",
+    title: "Every round, on one calendar.",
+    body: "Rounds in your own words, with prep and debrief notes. See what's held, what's coming up and what moved.",
+    still: sInterviews,
+    alt: "The interviews calendar for November, with one round coming up",
+  },
+  {
+    id: "c2a-ch-insights",
+    tint: "peach",
+    eyebrow: "Insights",
+    title: "See where it all leaks.",
+    body: "Every role's path, from who brought it to an offer or to ghosted. Conversion per stage, time in stage and a scorecard for every recruiter.",
+    still: sInsights,
+    alt: "A Sankey diagram of a whole job search, from where roles came from to where they ended",
+  },
+];
+const railNames = [...chapters.map((c) => c.eyebrow), "Under the glass"];
+
+const tree = [
+  ["jat.sqlite", "the database"],
+  ["export/applications.jsonl", "readable without the app"],
+  ["notes/contoso-backend.md", "your notes, plain Markdown"],
+  ["files/backend-cv-v3.pdf", "CVs, briefs, emails"],
+  [".git/", "snapshots, if you want them"],
+];
+
+// Little pieces of the app, floating in front of the window in the hero (left %, top %, depth px).
+const chips = [
+  { l: -9, t: 14, z: 190, html: '<i class="c2a-dot c2a-dot--pink"></i><b>Sam Patel replied</b><small>Blue Yonder · to read</small>' },
+  { l: 78, t: -9, z: 260, html: '<span class="c2a-mini c2a-mini--blue">Applied</span><span class="c2a-arrow">→</span><span class="c2a-mini c2a-mini--cyan">Screen</span>' },
+  { l: 84, t: 52, z: 150, html: '<i class="c2a-dot c2a-dot--green"></i><b>£95,000 a year</b><small>Offer · reply by 16 Nov</small>' },
+  { l: -6, t: 72, z: 230, html: '<i class="c2a-box"></i><b>Ask who\'s on the platform team</b>' },
+  { l: 40, t: 92, z: 120, html: '<i class="c2a-dot c2a-dot--violet"></i><b>Round 3 · System design test</b><small>Sat 14 Nov</small>' },
+];
+
+const extras = [...MARQUEE[1], "English and 简体中文", "Offers side by side", "Timeline"];
+const spots = [
+  [6, 22],
+  [74, 18],
+  [3, 46],
+  [80, 40],
+  [9, 70],
+  [76, 64],
+  [20, 86],
+  [62, 86],
+];
+---
+
+<div class="c2a-tour" id="c2a-top" data-tour>
+  <div class="c2a-stage" aria-hidden="true" data-stage>
+    <div class="c2a-world" data-world>
+      <i class="c2a-slab c2a-slab--1" data-slab="0.9"></i>
+      <i class="c2a-slab c2a-slab--2" data-slab="1.5"></i>
+      <i class="c2a-slab c2a-slab--3" data-slab="0.6"></i>
+      <i class="c2a-slab c2a-slab--4" data-slab="1.2"></i>
+      <div class="c2a-pose" data-pose>
+        <div class="c2a-drift">
+          <i class="c2a-shadow"></i>
+          <AppWindow scheme="light" data />
+          {
+            chips.map((c, i) => (
+              <span
+                class="c2a-chip c2a-glass"
+                style={`left:${c.l}%;top:${c.t}%;--z:${c.z}px;--d:${i * -1.7}s`}
+                set:html={c.html}
+              />
+            ))
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="c2a-progress c2a-glass" aria-label="Tour chapters" data-progress>
+    <span class="c2a-progress-label" data-progress-label>Tour</span>
+    <span class="c2a-progress-bars">
+      {
+        railNames.map((n, i) => (
+          <a href={i < chapters.length ? `#${chapters[i].id}` : "#c2a-privacy"} data-seg={i + 2} title={n}>
+            <i />
+            <span class="c2a-sr">{n}</span>
+          </a>
+        ))
+      }
+    </span>
+    <span class="c2a-progress-hint" aria-hidden="true">
+      Scroll
+      <svg viewBox="0 0 12 12" width="11" height="11"
+        ><path d="M6 2v8M2.5 6.5 6 10l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.4"></path></svg
+      >
+    </span>
+  </nav>
+
+  <main class="c2a-chapters" id="c2a-main">
+    <section class="c2a-ch c2a-ch--hero" data-ch="0" data-tint-block="lilac" aria-labelledby="c2a-h1">
+      <div class="c2a-hero">
+        <p class="c2a-eyebrow">Private job application tracker</p>
+        <h1 class="c2a-display" id="c2a-h1">Your job search,<br />on your machine.</h1>
+        <p class="c2a-hero-sub">
+          Track every application, recruiter, interview round, follow-up and offer. It runs on your own computer: no
+          account, no subscription, nobody watching.
+        </p>
+        <div class="c2a-hero-ctas">
+          <a class="c2a-glass c2a-btn c2a-btn--ink" href="#c2a-quickstart"><span>Get started, it's free</span></a>
+          <a class="c2a-glass c2a-btn" href="#c2a-ch-today"><span>Take the tour</span></a>
+        </div>
+        <ul class="c2a-promises" aria-label="Promises">
+          <li>Free and open source</li>
+          <li>No sign-up</li>
+          <li>No AI, no cloud</li>
+          <li>No tracking</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="c2a-ch c2a-ch--problem" data-ch="1" data-tint-block="sky" aria-labelledby="c2a-problem">
+      <div class="c2a-problem c2a-glass">
+        <p class="c2a-eyebrow" id="c2a-problem">The problem</p>
+        <p class="c2a-words" data-words>
+          {problem.split(" ").map((w) => <span>{w} </span>)}
+        </p>
+        <p class="c2a-answer">So here's a CRM for your job hunt.</p>
+      </div>
+    </section>
+
+    {
+      chapters.map((c, i) => (
+        <section class="c2a-ch c2a-ch--app" id={c.id} data-ch={i + 2} data-tint-block={c.tint}>
+          <div class="c2a-cap c2a-glass">
+            <p class="c2a-eyebrow">
+              <span class="c2a-step">
+                {String(i + 1).padStart(2, "0")} / {String(railNames.length).padStart(2, "0")}
+              </span>
+              {c.eyebrow}
+            </p>
+            <h2 class="c2a-display">{c.title}</h2>
+            <p>{c.body}</p>
+          </div>
+          <figure class="c2a-still">
+            <Image src={c.still} widths={[1210, 2420]} sizes="(max-width: 1100px) 100vw, 1100px" alt={`${c.alt} (made-up demo data)`} />
+          </figure>
+        </section>
+      ))
+    }
+
+    <section class="c2a-ch c2a-ch--privacy" id="c2a-privacy" data-ch="8" data-tint-block="dusk">
+      <div class="c2a-cap c2a-cap--left c2a-glass">
+        <p class="c2a-eyebrow">
+          <span class="c2a-step">07 / 07</span>Under the glass
+        </p>
+        <h2 class="c2a-display">Three layers.<br />All of them yours.</h2>
+        <p>
+          Your browser, the app on 127.0.0.1, and one folder of ordinary files you can read without it. No AI, no
+          cloud, no account and no tracking. It never sends email, contacts anyone or calls out to the web.
+        </p>
+        <p class="c2a-cap-small">
+          Back up with one zip from the sidebar, or let the folder keep its own git history and <code>jat push</code> it
+          to a private repo you own.
+        </p>
+      </div>
+      <figure class="c2a-still c2a-still--data">
+        <p class="c2a-data-path">~/job-search-data</p>
+        <ul>
+          {
+            tree.map(([f, why]) => (
+              <li>
+                <code>{f}</code> <span>{why}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </figure>
+    </section>
+
+    <section class="c2a-ch c2a-ch--outro" data-ch="9" data-tint-block="lilac" aria-labelledby="c2a-extras" data-outro>
+      <div class="c2a-outro">
+        <div class="c2a-outro-head">
+          <p class="c2a-eyebrow" id="c2a-extras">Also in the box</p>
+          <h2 class="c2a-display">The small things that<br />save an afternoon.</h2>
+        </div>
+        <ul class="c2a-chips">
+          {
+            extras.map((x, i) => (
+              <li
+                class="c2a-glass"
+                style={`--l:${spots[i % spots.length][0]}%;--t:${spots[i % spots.length][1]}%;--i:${i}`}
+                set:html={x.replace(/[一-鿿]+/g, '<span lang="zh-CN">$&</span>')}
+              />
+            ))
+          }
+        </ul>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+  import "./tour";
+</script>
+
+<style is:global>
+  .c2a-tour {
+    position: relative;
+    z-index: 1;
+  }
+  .c2a-stage {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    height: 100svh;
+    perspective: 1800px;
+    perspective-origin: 50% 42%;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .c2a-world,
+  .c2a-pose,
+  .c2a-drift {
+    transform-style: preserve-3d;
+  }
+  .c2a-world {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+  }
+  .c2a-pose {
+    transform: translate3d(20vw, 5vh, 0) scale(0.52) rotateX(12deg) rotateY(-24deg) rotateZ(2.5deg);
+    will-change: transform;
+  }
+  .c2a-drift {
+    position: relative;
+    animation: c2a-drift 16s ease-in-out infinite alternate;
+  }
+  @keyframes c2a-drift {
+    0% {
+      transform: rotateX(1.4deg) rotateY(-1.8deg) translate3d(0, -6px, 0);
+    }
+    50% {
+      transform: rotateX(-1.1deg) rotateY(1.6deg) translate3d(0, 8px, 0);
+    }
+    100% {
+      transform: rotateX(0.7deg) rotateY(-0.5deg) translate3d(0, -3px, 0);
+    }
+  }
+  .c2a-stage.is-paused .c2a-drift,
+  .c2a-stage.is-paused .c2a-chip {
+    animation-play-state: paused;
+  }
+
+  /* Frosted slabs at depth behind the window. */
+  .c2a-slab {
+    position: absolute;
+    border-radius: 44px;
+    background: linear-gradient(150deg, rgb(255 255 255 / 0.55), rgb(255 255 255 / 0.08) 60%, rgb(255 255 255 / 0.25));
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.9),
+      inset 1.5px 0 0 rgb(255 120 200 / 0.2),
+      inset -1.5px 0 0 rgb(90 200 255 / 0.25),
+      0 40px 80px -30px rgb(50 30 130 / 0.25);
+    will-change: transform;
+  }
+  .c2a-slab--1 {
+    left: 6%;
+    top: 12%;
+    width: 30vw;
+    height: 42vh;
+    --z: -700px;
+    --r: -8deg;
+  }
+  .c2a-slab--2 {
+    right: 4%;
+    top: 4%;
+    width: 22vw;
+    height: 30vh;
+    border-radius: 999px;
+    --z: -1100px;
+    --r: 12deg;
+  }
+  .c2a-slab--3 {
+    left: 30%;
+    bottom: -6%;
+    width: 44vw;
+    height: 28vh;
+    --z: -500px;
+    --r: 4deg;
+  }
+  .c2a-slab--4 {
+    right: 12%;
+    bottom: 18%;
+    width: 14vw;
+    height: 14vw;
+    border-radius: 50%;
+    --z: -300px;
+    --r: 0deg;
+  }
+  .c2a-body[data-tint="dusk"] .c2a-slab {
+    background: linear-gradient(150deg, rgb(255 255 255 / 0.12), rgb(255 255 255 / 0.02) 60%, rgb(255 255 255 / 0.06));
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.25);
+  }
+
+  .c2a-shadow {
+    position: absolute;
+    left: 6%;
+    right: 6%;
+    bottom: -90px;
+    height: 120px;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgb(40 20 110 / 0.35), transparent);
+    transform: translateZ(-160px) rotateX(70deg);
+    opacity: calc(1 - var(--expl, 0));
+  }
+
+  /* App pieces in front of the window. */
+  .c2a-chip {
+    position: absolute;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 22px 30px;
+    border-radius: 30px;
+    font-size: 27px;
+    white-space: nowrap;
+    opacity: var(--chips, 1);
+    transform: translateZ(var(--z));
+    animation: c2a-bob 7s ease-in-out infinite alternate;
+    animation-delay: var(--d);
+    color: var(--c2a-ink);
+  }
+  .c2a-chip > * {
+    position: relative;
+    z-index: 2;
+  }
+  .c2a-chip b {
+    font-weight: 550;
+  }
+  .c2a-chip small {
+    color: var(--c2a-ink-2);
+    font-size: 23px;
+  }
+  .c2a-chip .c2a-mini {
+    font-size: 20px;
+    line-height: 32px;
+    padding: 2px 14px;
+    border-radius: 7px;
+  }
+  .c2a-chip .c2a-dot {
+    width: 16px;
+    height: 16px;
+  }
+  .c2a-chip .c2a-box {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+  }
+  @keyframes c2a-bob {
+    to {
+      transform: translateZ(var(--z)) translateY(-14px);
+    }
+  }
+  .c2a-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #f06595;
+    box-shadow: 0 0 0 4px rgb(240 101 149 / 0.18);
+  }
+  .c2a-dot--green {
+    background: #12b886;
+    box-shadow: 0 0 0 4px rgb(18 184 134 / 0.18);
+  }
+  .c2a-dot--violet {
+    background: #7950f2;
+    box-shadow: 0 0 0 4px rgb(121 80 242 / 0.18);
+  }
+  .c2a-box {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    border: 1.5px solid #adb5bd;
+    background: #fff;
+  }
+  .c2a-mini {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font: 700 11px/18px var(--c2a-display);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: #1864ab;
+    background: #e7f5ff;
+  }
+  .c2a-mini--cyan {
+    color: #0b7285;
+    background: #e3fafc;
+  }
+  .c2a-arrow {
+    color: var(--c2a-ink-3);
+  }
+
+  /* Progress: which chapter of the tour, and a reminder that the page goes on. */
+  .c2a-progress {
+    position: fixed;
+    left: 22px;
+    top: 50%;
+    z-index: 45;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 8px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    transform: translate(-180%, -50%);
+    transition:
+      transform 0.6s var(--c2a-ease),
+      background 0.8s,
+      box-shadow 0.8s;
+  }
+  .c2a-body.c2a-in-tour .c2a-progress {
+    transform: translate(0, -50%);
+  }
+  .c2a-progress > * {
+    position: relative;
+    z-index: 2;
+  }
+  .c2a-progress-label {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    min-height: 8.5em;
+    font-weight: 500;
+    text-align: right;
+  }
+  .c2a-progress-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .c2a-progress-bars a {
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+  }
+  .c2a-progress-bars i {
+    width: 4px;
+    height: 14px;
+    border-radius: 2px;
+    background: currentColor;
+    opacity: 0.22;
+    transition:
+      opacity 0.3s,
+      transform 0.3s var(--c2a-ease);
+  }
+  .c2a-progress-bars a.is-done i {
+    opacity: 0.6;
+  }
+  .c2a-progress-bars a.is-on i {
+    opacity: 1;
+    transform: scaleX(1.6);
+  }
+  .c2a-progress-hint {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    writing-mode: vertical-rl;
+    font: 500 11px/1 var(--c2a-mono);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.6;
+  }
+  .c2a-progress-hint svg {
+    animation: c2a-nudge 1.6s ease-in-out infinite;
+  }
+  @keyframes c2a-nudge {
+    50% {
+      transform: translateY(3px);
+    }
+  }
+  .c2a-step {
+    margin-right: 4px;
+    opacity: 0.55;
+  }
+  .c2a-still--data {
+    color: #f4f0ff;
+  }
+  .c2a-still--data .c2a-data-path {
+    font: 500 1.3em/1 var(--c2a-mono);
+    margin: 0 0 1.2em;
+  }
+  .c2a-still--data ul {
+    display: grid;
+    gap: 0.7em;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .c2a-still--data li {
+    display: flex;
+    justify-content: space-between;
+    padding-bottom: 0.7em;
+    border-bottom: 1px solid rgb(255 255 255 / 0.12);
+  }
+  .c2a-still--data code {
+    font-family: var(--c2a-mono);
+  }
+  @media (max-width: 760px) {
+    .c2a-progress {
+      left: 50%;
+      top: 72px;
+      flex-direction: row;
+      padding: 6px 14px;
+      transform: translate(-50%, -300%);
+    }
+    .c2a-body.c2a-in-tour .c2a-progress {
+      transform: translateX(-50%);
+    }
+    .c2a-progress-label {
+      writing-mode: horizontal-tb;
+      transform: none;
+      min-height: 0;
+      min-width: 7.5em;
+    }
+    .c2a-progress-bars {
+      flex-direction: row;
+    }
+    .c2a-progress-bars i {
+      width: 14px;
+      height: 4px;
+    }
+    .c2a-progress-bars a.is-on i {
+      transform: scaleY(1.6);
+    }
+    .c2a-progress-hint,
+    .c2a-chip {
+      display: none;
+    }
+  }
+  /* ---------- The chapter rail ---------- */
+  .c2a-rail {
+    position: fixed;
+    left: 18px;
+    top: 50%;
+    z-index: 40;
+    display: grid;
+    gap: 2px;
+    padding: 6px;
+    border-radius: 22px;
+    transform: translate(-160%, -50%);
+    transition:
+      transform 0.6s var(--c2a-ease),
+      background 0.8s,
+      box-shadow 0.8s;
+  }
+  .c2a-body.c2a-in-tour .c2a-rail {
+    transform: translate(0, -50%);
+  }
+  .c2a-rail a {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 999px;
+    text-decoration: none;
+    opacity: 0.5;
+    transition:
+      opacity 0.3s,
+      background 0.3s;
+  }
+  .c2a-rail a i {
+    width: 7px;
+    height: 7px;
+    border-radius: 2px;
+    background: currentColor;
+    transition: transform 0.3s var(--c2a-ease);
+  }
+  .c2a-rail a span {
+    position: absolute;
+    left: calc(100% + 14px);
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    white-space: nowrap;
+    color: #fff;
+    background: rgb(33 28 59 / 0.82);
+    opacity: 0;
+    transform: translateX(-6px);
+    transition:
+      opacity 0.25s,
+      transform 0.25s var(--c2a-ease);
+    pointer-events: none;
+  }
+  .c2a-rail a:hover span,
+  .c2a-rail a:focus-visible span {
+    opacity: 1;
+    transform: none;
+  }
+  .c2a-rail a.is-on {
+    opacity: 1;
+    background: rgb(255 255 255 / 0.5);
+  }
+  .c2a-body[data-tint="dusk"] .c2a-rail a.is-on {
+    background: rgb(255 255 255 / 0.12);
+  }
+  .c2a-rail a.is-on i {
+    transform: scale(1.3) rotate(45deg);
+  }
+  @media (max-width: 1100px) {
+    .c2a-rail {
+      display: none;
+    }
+  }
+
+  /* ---------- Chapters ---------- */
+  .c2a-chapters {
+    position: relative;
+    z-index: 2;
+    margin-top: -100vh;
+    margin-top: -100svh;
+  }
+  .c2a-ch {
+    position: relative;
+    padding: 0 clamp(16px, 4vw, 56px);
+  }
+  .c2a-ch--hero {
+    height: 100vh;
+    height: 100svh;
+    display: flex;
+    align-items: center;
+  }
+  .c2a-hero {
+    max-width: 640px;
+    padding-top: 40px;
+  }
+  .c2a-hero h1 {
+    margin: 24px 0 24px;
+    font-size: clamp(42px, 5vw, 78px);
+  }
+  .c2a-hero-sub {
+    max-width: 30em;
+    font-size: 18px;
+    font-weight: 350;
+    color: var(--c2a-ink-2);
+  }
+  .c2a-hero-ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 34px;
+  }
+  .c2a-promises {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    margin: 30px 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: 13.5px;
+    color: var(--c2a-ink-2);
+  }
+  .c2a-promises li {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .c2a-promises li::before {
+    content: "";
+    width: 5px;
+    height: 5px;
+    border-radius: 1px;
+    background: var(--c2a-violet);
+  }
+
+  .c2a-ch--problem {
+    height: 170vh;
+  }
+  .c2a-problem {
+    position: sticky;
+    top: max(90px, calc(50vh - 220px));
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: clamp(28px, 4vw, 56px);
+    border-radius: 36px;
+  }
+  .c2a-problem > * {
+    position: relative;
+    z-index: 2;
+  }
+  .c2a-words {
+    margin-top: 26px !important;
+    font-size: clamp(26px, 3.3vw, 46px);
+    font-weight: 300;
+    line-height: 1.18;
+    letter-spacing: -0.03em;
+  }
+  .c2a-words span {
+    opacity: 0.18;
+    transition: opacity 0.4s;
+  }
+  .c2a-words span.is-lit {
+    opacity: 1;
+  }
+  .c2a-answer {
+    margin-top: 26px !important;
+    font-size: clamp(18px, 1.6vw, 22px);
+    font-weight: 400;
+    color: var(--c2a-violet);
+  }
+
+  .c2a-ch--app {
+    height: 170vh;
+  }
+  .c2a-cap {
+    position: sticky;
+    top: max(110px, calc(100vh - 380px));
+    width: min(440px, 100%);
+    margin-left: auto;
+    margin-right: clamp(0px, 3vw, 60px);
+    padding: 30px 32px 32px;
+    border-radius: 32px 32px 32px 8px;
+    background: linear-gradient(165deg, rgb(255 255 255 / 0.72), rgb(246 240 255 / 0.5));
+  }
+  .c2a-cap > * {
+    position: relative;
+    z-index: 2;
+  }
+  .c2a-cap h2 {
+    margin: 16px 0 12px;
+    font-size: clamp(28px, 2.6vw, 38px);
+    line-height: 1.06;
+  }
+  .c2a-cap p:not(.c2a-eyebrow) {
+    font-size: 16px;
+    font-weight: 350;
+    color: var(--c2a-ink-2);
+  }
+  .c2a-cap--left {
+    margin-left: clamp(0px, 3vw, 60px);
+    margin-right: auto;
+    top: max(100px, calc(50vh - 220px));
+    width: min(470px, 100%);
+    border-radius: 32px 32px 8px 32px;
+  }
+  .c2a-ch--privacy {
+    height: 260vh;
+  }
+  .c2a-ch--privacy .c2a-cap p:not(.c2a-eyebrow),
+  .c2a-ch--privacy .c2a-eyebrow {
+    color: rgb(240 236 255 / 0.78);
+  }
+  .c2a-ch--privacy .c2a-cap {
+    background: linear-gradient(165deg, rgb(255 255 255 / 0.16), rgb(255 255 255 / 0.04));
+  }
+  .c2a-cap-small {
+    margin-top: 14px !important;
+    font-size: 14px !important;
+  }
+  .c2a-cap code {
+    font: 0.92em var(--c2a-mono);
+  }
+
+  .c2a-ch--outro {
+    height: 190vh;
+  }
+  .c2a-outro {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    height: 100svh;
+  }
+  .c2a-outro-head {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 13vh;
+    text-align: center;
+    opacity: var(--p, 0);
+    transform: translateY(calc((1 - var(--p, 0)) * 30px));
+  }
+  .c2a-outro-head h2 {
+    margin-top: 16px;
+    font-size: clamp(30px, 3.6vw, 52px);
+  }
+  .c2a-chips {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .c2a-chips li {
+    position: absolute;
+    left: var(--l);
+    top: var(--t);
+    padding: 12px 20px;
+    font-size: 15px;
+    white-space: nowrap;
+    --q: clamp(0, calc(var(--p, 0) * 2.2 - var(--i) * 0.09), 1);
+    opacity: var(--q);
+    transform: translateY(calc((1 - var(--q)) * 40px)) scale(calc(0.85 + var(--q) * 0.15));
+  }
+  .c2a-chips li:nth-child(n + 9) {
+    display: none;
+  }
+
+  /* Stills: only for reduced motion. */
+  .c2a-still {
+    display: none;
+  }
+
+  @media (max-width: 760px) {
+    .c2a-ch--hero {
+      align-items: flex-start;
+    }
+    .c2a-hero {
+      padding-top: 92px;
+    }
+    .c2a-hero-sub {
+      font-size: 16px;
+    }
+    .c2a-hero-ctas {
+      margin-top: 22px;
+    }
+    .c2a-promises {
+      display: none;
+    }
+    .c2a-cap {
+      top: auto;
+      bottom: 14px;
+      margin: 0 auto;
+      padding: 22px 22px 24px;
+      position: sticky;
+    }
+    .c2a-ch--app {
+      padding-top: 70vh;
+    }
+    .c2a-cap h2 {
+      margin: 12px 0 8px;
+      font-size: 24px;
+    }
+    .c2a-cap p:not(.c2a-eyebrow) {
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .c2a-cap--left {
+      margin-top: 8vh;
+      top: 70px;
+      bottom: auto;
+    }
+    .c2a-screen {
+      overflow: hidden;
+      transform-style: flat;
+      border-radius: 0 0 14px 14px;
+    }
+    .c2a-data {
+      display: none;
+    }
+    .c2a-chips {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: 86px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+    }
+    .c2a-chips li {
+      position: relative;
+      left: auto;
+      top: auto;
+      font-size: 13px;
+      padding: 9px 14px;
+    }
+    .c2a-chips li:nth-child(n + 7) {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .c2a-stage,
+    .c2a-rail {
+      display: none;
+    }
+    .c2a-chapters {
+      margin-top: 0;
+    }
+    .c2a-ch,
+    .c2a-ch--hero,
+    .c2a-ch--problem,
+    .c2a-ch--app,
+    .c2a-ch--privacy,
+    .c2a-ch--outro {
+      height: auto;
+      display: grid;
+      gap: 28px;
+      padding-block: 72px;
+    }
+    .c2a-ch--hero {
+      padding-top: 120px;
+    }
+    .c2a-cap,
+    .c2a-cap--left,
+    .c2a-problem {
+      position: static;
+      margin: 0 auto;
+      width: min(720px, 100%);
+    }
+    .c2a-ch--app .c2a-cap {
+      margin-top: 0;
+    }
+    .c2a-words span {
+      opacity: 1;
+    }
+    .c2a-still {
+      display: block;
+      margin: 0 auto;
+      width: min(1100px, 100%);
+      border-radius: 22px;
+      overflow: hidden;
+      border: 8px solid rgb(255 255 255 / 0.75);
+      box-shadow: 0 40px 80px -40px rgb(50 30 130 / 0.45);
+      background: #fff;
+    }
+    .c2a-still img {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 1210 / 844;
+      object-fit: cover;
+      object-position: top;
+    }
+    .c2a-still--data {
+      width: min(720px, 100%);
+      padding: 32px;
+      color: #f4f0ff;
+      background: #241c4a;
+      border-color: rgb(255 255 255 / 0.15);
+      font-size: 15px;
+    }
+    .c2a-outro {
+      position: static;
+      height: auto;
+    }
+    .c2a-outro-head {
+      position: static;
+      opacity: 1;
+      transform: none;
+    }
+    .c2a-chips {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 28px;
+    }
+    .c2a-chips li,
+    .c2a-chips li:nth-child(n) {
+      position: static;
+      display: block;
+      opacity: 1;
+      transform: none;
+    }
+  }
+</style>

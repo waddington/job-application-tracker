@@ -1,0 +1,564 @@
+---
+// After the window shrinks away: quick start (a glass segmented control over a terminal), a short FAQ and the
+// rounded inset footer panel. Same commands and facts as the current site's Quickstart and Faq.
+import { FAQ, GUIDE, README_ZH, REPO, markZh } from "../../data";
+
+type Line = { cmd?: string; out?: string; note?: string };
+const tabs: { id: string; label: string; lines: Line[] }[] = [
+  {
+    id: "install",
+    label: "Install",
+    lines: [
+      { cmd: "git clone https://github.com/waddington/job-application-tracker.git" },
+      { cmd: "cd job-application-tracker" },
+      { cmd: "uv sync" },
+      { cmd: "pnpm --dir frontend install && pnpm --dir frontend build" },
+      { out: "✓ built the web UI into frontend/dist" },
+    ],
+  },
+  {
+    id: "demo",
+    label: "Try the demo",
+    lines: [
+      { note: "# made-up companies and people; needs a new or empty folder" },
+      { cmd: "uv run python scripts/seed_demo.py /tmp/jat-demo" },
+      { cmd: "uv run jat --data-dir /tmp/jat-demo serve" },
+      { out: "→ http://127.0.0.1:8770" },
+    ],
+  },
+  {
+    id: "real",
+    label: "Use it for real",
+    lines: [
+      { cmd: "mkdir -p ~/job-search-data && git -C ~/job-search-data init" },
+      { cmd: "git -C ~/job-search-data remote add origin <your-private-repo-url>" },
+      { cmd: "cp .env.example .env" },
+      { note: "# then set JAT_DATA_DIR=~/job-search-data in .env" },
+      { cmd: "uv run jat init" },
+      { cmd: "uv run jat serve" },
+      { out: "→ http://127.0.0.1:8770 (keeps running)" },
+      { cmd: "uv run jat push" },
+      { out: "✓ snapshots sent to your private repo" },
+    ],
+  },
+];
+const needs = ["Python 3.12 to 3.14", "uv", "Node.js 22.12+", "pnpm", "git (optional)"];
+// The questions a first-time visitor asks; the rest are on the current site.
+const picked = [
+  "Is it free?",
+  "Do I need to be technical?",
+  "Is it like Huntr or Teal?",
+  "Does it use AI?",
+  "Where is my data stored?",
+  "Does it run on Windows?",
+  "Is it available in my language?",
+  "Is it ready?",
+];
+const faq = FAQ.filter((f) => picked.includes(f.q));
+// FAQ answers hold `code` and [links](https://…): escape, then turn those two into markup.
+const esc = (s: string) => s.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+const rich = (a: string) =>
+  markZh(esc(a))
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\[([^\]]+)\]\((https:\/\/[^)\s]+)\)/g, '<a href="$2">$1</a>');
+const year = new Date().getFullYear();
+---
+
+<section class="c2a-qs" id="c2a-quickstart" data-tint-block="sky" aria-labelledby="c2a-qs-h">
+  <div class="c2a-qs-head">
+    <p class="c2a-eyebrow">Quick start</p>
+    <h2 class="c2a-display" id="c2a-qs-h">
+      Set up in about
+      <br />
+      ten minutes.
+    </h2>
+    <p class="c2a-qs-lede">
+      No installer yet: with uv and Node.js on your computer, you paste a few commands into the Terminal once.
+      After that it's a web page in your browser. The <a href={`${GUIDE}install.md`}>install guide</a> lists
+      what you need and where to get it.
+    </p>
+    <ul class="c2a-needs" aria-label="What you need">
+      {needs.map((n) => (
+        <li>{n}</li>
+      ))}
+    </ul>
+    <p class="c2a-os">
+      <b>Mac or Linux.</b> Windows support is next on the roadmap.
+    </p>
+  </div>
+
+  <div class="c2a-term-wrap" data-c2a-tabs>
+    <div class="c2a-seg c2a-glass" role="tablist" aria-label="Quick start steps">
+      <span class="c2a-seg-thumb" aria-hidden="true" data-thumb></span>
+      {tabs.map((t, i) => (
+        <button
+          type="button"
+          role="tab"
+          id={`c2a-tab-${t.id}`}
+          aria-controls={`c2a-panel-${t.id}`}
+          aria-selected={i === 0 ? "true" : "false"}
+          tabindex={i === 0 ? 0 : -1}
+        >
+          <span class="c2a-seg-n">{i + 1}</span>
+          {t.label}
+        </button>
+      ))}
+    </div>
+    <div class="c2a-term">
+      <div class="c2a-term-bar" aria-hidden="true">
+        <i></i>
+        <i></i>
+        <i></i>
+        <span>Terminal</span>
+      </div>
+      {tabs.map((t, i) => (
+        <div
+          class="c2a-panel"
+          role="tabpanel"
+          id={`c2a-panel-${t.id}`}
+          aria-labelledby={`c2a-tab-${t.id}`}
+          hidden={i !== 0}
+        >
+          {t.lines.map((l) =>
+            l.cmd ? (
+              <p class="c2a-cmd">
+                <span aria-hidden="true">$</span> {l.cmd}
+              </p>
+            ) : l.out ? (
+              <p class="c2a-out">{l.out}</p>
+            ) : (
+              <p class="c2a-note">{l.note}</p>
+            ),
+          )}
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<section class="c2a-faq" id="c2a-faq" data-tint-block="peach" aria-labelledby="c2a-faq-h">
+  <div class="c2a-faq-head">
+    <p class="c2a-eyebrow">Questions</p>
+    <h2 class="c2a-display" id="c2a-faq-h">
+      Asked before
+      <br />
+      you install.
+    </h2>
+    <p class="c2a-faq-more">
+      The README is also{" "}
+      <a href={README_ZH}>
+        in <span lang="zh-CN">简体中文</span>
+      </a>
+      .
+    </p>
+  </div>
+  <div class="c2a-faq-list">
+    {faq.map((f) => (
+      <details>
+        <summary>{f.q}</summary>
+        <p set:html={rich(f.a)} />
+      </details>
+    ))}
+  </div>
+</section>
+
+<footer class="c2a-foot" data-tint-block="lilac">
+  <div class="c2a-foot-panel">
+    <div class="c2a-foot-top">
+      <h2 class="c2a-display">
+        Your next offer is
+        <br />
+        in there somewhere.
+      </h2>
+      <div class="c2a-foot-ctas">
+        <a class="c2a-glass c2a-btn c2a-foot-btn" href={`${GUIDE}install.md`}>
+          <span>Get started</span>
+        </a>
+        <a class="c2a-glass c2a-btn c2a-foot-btn c2a-foot-btn--ghost" href={REPO}>
+          <span>View on GitHub</span>
+        </a>
+      </div>
+    </div>
+    <nav class="c2a-foot-cols" aria-label="Footer">
+      <div>
+        <h3>Product</h3>
+        <a href="#c2a-today">The tour</a>
+        <a href="#c2a-privacy">Privacy</a>
+        <a href="#c2a-quickstart">Quick start</a>
+        <a href="#c2a-faq">FAQ</a>
+      </div>
+      <div>
+        <h3>Docs</h3>
+        <a href={`${GUIDE}install.md`}>Install</a>
+        <a href={`${GUIDE}your-data.md`}>Your data</a>
+        <a href={`${GUIDE}using-the-app.md`}>Using the app</a>
+        <a href={`${GUIDE}commands.md`}>Commands</a>
+      </div>
+      <div>
+        <h3>Project</h3>
+        <a href={REPO}>GitHub</a>
+        <a href={`${REPO}/issues`}>Issues</a>
+        <a href={`${REPO}/blob/main/CONTRIBUTING.md`}>Contributing</a>
+        <a href={`${REPO}/blob/main/CHANGELOG.md`}>Changelog</a>
+      </div>
+    </nav>
+    <div class="c2a-legal">
+      <span>
+        © {year} Kai Waddington · <a href={`${REPO}/blob/main/LICENSE`}>Apache-2.0</a>
+      </span>
+      <span>Screenshots show made-up demo data. This site adds no cookies, analytics or trackers.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // The segmented control: click or arrow keys; the glass thumb slides under the chosen tab.
+  for (const root of document.querySelectorAll<HTMLElement>("[data-c2a-tabs]")) {
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+    const thumb = root.querySelector<HTMLElement>("[data-thumb]")!;
+    const place = (tab: HTMLButtonElement) => {
+      thumb.style.width = `${tab.offsetWidth}px`;
+      thumb.style.transform = `translateX(${tab.offsetLeft}px)`;
+    };
+    const select = (tab: HTMLButtonElement) => {
+      for (const t of tabs) {
+        const on = t === tab;
+        t.setAttribute("aria-selected", String(on));
+        t.tabIndex = on ? 0 : -1;
+        document.getElementById(t.getAttribute("aria-controls")!)!.hidden = !on;
+      }
+      place(tab);
+    };
+    tabs.forEach((t, i) => {
+      t.addEventListener("click", () => select(t));
+      t.addEventListener("keydown", (e) => {
+        const d = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+        if (!d) return;
+        const next = tabs[(i + d + tabs.length) % tabs.length];
+        next.focus();
+        select(next);
+      });
+    });
+    const sel = () => tabs.find((t) => t.getAttribute("aria-selected") === "true")!;
+    place(sel());
+    addEventListener("resize", () => place(sel()));
+    document.fonts?.ready.then(() => place(sel()));
+  }
+</script>
+
+<style is:global>
+  .c2a-qs,
+  .c2a-faq {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: clamp(32px, 5vw, 90px);
+    align-items: start;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: clamp(96px, 14vh, 170px) clamp(18px, 4vw, 56px);
+  }
+  .c2a-qs h2,
+  .c2a-faq h2 {
+    margin: 20px 0 22px;
+    font-size: clamp(38px, 4.4vw, 64px);
+  }
+  .c2a-qs-lede {
+    max-width: 30em;
+    font-weight: 350;
+    color: var(--c2a-ink-2);
+  }
+  .c2a-qs-lede a,
+  .c2a-faq a {
+    text-decoration-color: rgb(106 84 242 / 0.4);
+    text-underline-offset: 3px;
+  }
+  .c2a-needs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 28px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .c2a-needs li {
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 13.5px;
+    background: rgb(255 255 255 / 0.55);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.9);
+  }
+  .c2a-os {
+    margin-top: 18px !important;
+    font-size: 14px;
+    color: var(--c2a-ink-2);
+  }
+  .c2a-os b {
+    color: var(--c2a-ink);
+    font-weight: 550;
+  }
+  .c2a-term-wrap {
+    position: relative;
+    padding-top: 30px;
+    perspective: 1400px;
+  }
+  .c2a-seg {
+    position: relative;
+    z-index: 3;
+    display: flex;
+    width: max-content;
+    max-width: 100%;
+    margin: 0 auto -26px;
+    padding: 5px;
+  }
+  .c2a-seg-thumb {
+    position: absolute;
+    left: 0;
+    top: 5px;
+    bottom: 5px;
+    z-index: 1;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #fff, rgb(255 255 255 / 0.75));
+    box-shadow:
+      0 4px 14px rgb(60 40 140 / 0.18),
+      inset 0 -1px 0 rgb(200 190 255 / 0.5);
+    transition:
+      transform 0.45s var(--c2a-ease),
+      width 0.45s var(--c2a-ease);
+  }
+  .c2a-seg button {
+    position: relative;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 18px;
+    border: 0;
+    border-radius: 999px;
+    background: none;
+    font: 500 14px/1 var(--c2a-display);
+    color: var(--c2a-ink-2);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .c2a-seg button[aria-selected="true"] {
+    color: var(--c2a-ink);
+  }
+  .c2a-seg-n {
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    font: 600 11px/1 var(--c2a-mono);
+    color: #fff;
+    background: var(--c2a-ink-3);
+  }
+  .c2a-seg button[aria-selected="true"] .c2a-seg-n {
+    background: var(--c2a-violet);
+  }
+  .c2a-term {
+    min-height: 330px;
+    padding: 50px 0 26px;
+    border-radius: 30px;
+    color: #e9e5ff;
+    background:
+      radial-gradient(80% 60% at 100% 0%, rgb(120 90 255 / 0.35), transparent 60%),
+      linear-gradient(170deg, #241d48, #17122e);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.18),
+      0 60px 100px -40px rgb(40 24 120 / 0.6),
+      0 20px 40px -24px rgb(40 24 120 / 0.4);
+    transform: rotateX(8deg) rotateY(-6deg);
+    transform-origin: 50% 0;
+    font: 400 13.5px/1.7 var(--c2a-mono);
+    overflow: hidden;
+  }
+  .c2a-term-bar {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 0 22px 14px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid rgb(255 255 255 / 0.08);
+  }
+  .c2a-term-bar i {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgb(255 255 255 / 0.2);
+  }
+  .c2a-term-bar span {
+    margin-left: auto;
+    font-size: 11px;
+    opacity: 0.5;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .c2a-panel {
+    padding: 0 26px;
+    overflow-x: auto;
+  }
+  .c2a-panel p {
+    white-space: pre;
+  }
+  .c2a-cmd span {
+    color: #b9a8ff;
+  }
+  .c2a-out {
+    color: #9ee6b8;
+  }
+  .c2a-note {
+    color: rgb(233 229 255 / 0.5);
+  }
+
+  .c2a-faq-more {
+    font-size: 15px;
+    color: var(--c2a-ink-2);
+  }
+  .c2a-faq-list {
+    display: grid;
+  }
+  .c2a-faq details {
+    border-bottom: 1px solid rgb(33 28 59 / 0.12);
+  }
+  .c2a-faq summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 22px 0;
+    font-size: clamp(19px, 1.6vw, 23px);
+    font-weight: 350;
+    letter-spacing: -0.02em;
+    cursor: pointer;
+    list-style: none;
+  }
+  .c2a-faq summary::-webkit-details-marker {
+    display: none;
+  }
+  .c2a-faq summary::after {
+    content: "";
+    flex: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background:
+      linear-gradient(var(--c2a-ink), var(--c2a-ink)) center / 11px 1.5px no-repeat,
+      linear-gradient(var(--c2a-ink), var(--c2a-ink)) center / 1.5px 11px no-repeat,
+      rgb(255 255 255 / 0.6);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.9);
+    transition: transform 0.3s var(--c2a-ease);
+  }
+  .c2a-faq details[open] summary::after {
+    transform: rotate(45deg);
+  }
+  .c2a-faq details p {
+    max-width: 38em;
+    padding: 0 0 24px;
+    font-weight: 350;
+    color: var(--c2a-ink-2);
+  }
+  .c2a-faq code {
+    font: 0.9em var(--c2a-mono);
+  }
+
+  .c2a-foot {
+    position: relative;
+    z-index: 2;
+    padding: 8px 8px 84px;
+  }
+  .c2a-foot-panel {
+    padding: clamp(40px, 6vw, 88px) clamp(24px, 5vw, 72px) 36px;
+    border-radius: 40px;
+    color: #efeaff;
+    background:
+      radial-gradient(60% 80% at 100% 0%, rgb(255 150 130 / 0.28), transparent 60%),
+      radial-gradient(70% 90% at 0% 100%, rgb(120 90 255 / 0.38), transparent 60%), #1d1739;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.12);
+  }
+  .c2a-foot-top {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: end;
+    gap: 32px;
+    padding-bottom: 56px;
+    border-bottom: 1px solid rgb(255 255 255 / 0.1);
+  }
+  .c2a-foot-top h2 {
+    font-size: clamp(38px, 5vw, 76px);
+  }
+  .c2a-foot-ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .c2a-body .c2a-foot-btn {
+    color: var(--c2a-ink);
+    background: linear-gradient(180deg, #fff, rgb(255 255 255 / 0.82));
+  }
+  .c2a-body .c2a-foot-btn--ghost {
+    color: #fff;
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.18), rgb(255 255 255 / 0.04));
+  }
+  .c2a-foot-btn--ghost::after {
+    opacity: 0.2;
+  }
+  .c2a-foot-cols {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 180px));
+    gap: 24px;
+    padding: 40px 0 56px;
+  }
+  .c2a-foot-cols h3 {
+    margin: 0 0 14px;
+    font: 500 11px/1 var(--c2a-mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    opacity: 0.55;
+  }
+  .c2a-foot-cols a {
+    display: block;
+    padding: 5px 0;
+    font-size: 15px;
+    font-weight: 350;
+    text-decoration: none;
+    opacity: 0.85;
+  }
+  .c2a-foot-cols a:hover {
+    opacity: 1;
+  }
+  .c2a-legal {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 13px;
+    opacity: 0.6;
+  }
+
+  @media (max-width: 860px) {
+    .c2a-qs,
+    .c2a-faq {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .c2a-term {
+      transform: none;
+    }
+    .c2a-seg button {
+      padding: 10px 12px;
+      font-size: 13px;
+    }
+    .c2a-seg-n {
+      display: none;
+    }
+    .c2a-foot-cols {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .c2a-foot-panel {
+      border-radius: 30px;
+    }
+  }
+</style>
