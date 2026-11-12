@@ -1,0 +1,293 @@
+---
+// Variation 1a, "line work": hairlines that draw themselves (stroke-dashoffset on pathLength 1) into the
+// app's own shapes: the flows of a funnel, a board's columns and cards, a calendar's grid.
+// Drawn when they come into view; afterwards a short bright dash runs along the funnel lines now and then.
+interface Props {
+  kind: "hero" | "board" | "calendar" | "funnel";
+}
+const { kind } = Astro.props;
+
+// The funnel: lines leave the left edge spread out and gather into five stages on the right.
+const flows = Array.from({ length: 18 }, (_, i) => {
+  const y0 = 70 + i * 44;
+  const stage = [0, 0, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4][i];
+  const y1 = 250 + stage * 95 + (i % 3) * 7;
+  return `M -20 ${y0} C 520 ${y0}, 820 ${y1}, 1460 ${y1}`;
+});
+
+// The board: four columns of cards (in viewBox units).
+const cols = [4, 3, 2, 1];
+
+// The calendar: seven columns, five weeks.
+const cw = 1440 / 7;
+const ch = 900 / 5;
+---
+
+{kind === "hero" && (
+  <svg class="c1a-lines hero" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" data-c1a-draw>
+    <defs>
+      <linearGradient id="c1a-g-hero" x1="0" x2="1" y1="0" y2="0">
+        <stop offset="0" stop-color="#e0a072" />
+        <stop offset="0.6" stop-color="#b9876a" />
+        <stop offset="1" stop-color="#8c8781" />
+      </linearGradient>
+    </defs>
+    <g stroke="url(#c1a-g-hero)" opacity="0.42">
+      {flows.map((d, i) => (
+        <path d={d} pathLength="1" style={`--d:${i * 0.07}s`} />
+      ))}
+    </g>
+    <g class="run" stroke="#ffc79c">
+      {flows.map((d, i) => (
+        <path d={d} pathLength="1" style={`animation-delay:${-i * 1.7}s`} />
+      ))}
+    </g>
+  </svg>
+)}
+
+{kind === "board" && (
+  <svg
+    class="c1a-lines board"
+    viewBox="0 0 644 420"
+    role="img"
+    aria-label="A kanban board drawn in fine lines: four stage columns, and a card moving on from one to the next"
+    data-c1a-draw
+  >
+    {cols.map((n, i) => {
+      const x = 28 + i * 154;
+      const tone = ["#e6a97c", "#c98a5c", "#a99383", "#8c8781"][i];
+      return (
+        <g stroke={tone}>
+          <line x1={x} y1="40" x2={x + 70} y2="40" pathLength="1" style={`--d:${i * 0.15}s`} />
+          <rect
+            x={x}
+            y="60"
+            width="126"
+            height="332"
+            rx="14"
+            pathLength="1"
+            opacity="0.55"
+            style={`--d:${0.2 + i * 0.15}s`}
+          />
+          {Array.from({ length: n }, (_, k) => (
+            <rect
+              x={x + 12}
+              y={74 + k * 58}
+              width="102"
+              height="46"
+              rx="8"
+              pathLength="1"
+              style={`--d:${0.8 + i * 0.15 + k * 0.12}s`}
+            />
+          ))}
+        </g>
+      );
+    })}
+    <g class="mover" stroke="#ffc79c">
+      <rect x="40" y="306" width="102" height="46" rx="8" pathLength="1" style="--d:1.6s" />
+      <line x1="52" y1="322" x2="112" y2="322" pathLength="1" style="--d:1.9s" />
+      <line x1="52" y1="336" x2="90" y2="336" pathLength="1" style="--d:2s" />
+    </g>
+  </svg>
+)}
+
+{kind === "calendar" && (
+  <svg class="c1a-lines calendar" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" data-c1a-draw>
+    <g stroke="#241912" opacity="0.18">
+      {Array.from({ length: 6 }, (_, i) => (
+        <line x1={(i + 1) * cw} y1="0" x2={(i + 1) * cw} y2="900" pathLength="1" style={`--d:${i * 0.1}s`} />
+      ))}
+      {Array.from({ length: 4 }, (_, i) => (
+        <line
+          x1="0"
+          y1={(i + 1) * ch}
+          x2="1440"
+          y2={(i + 1) * ch}
+          pathLength="1"
+          style={`--d:${0.3 + i * 0.1}s`}
+        />
+      ))}
+    </g>
+    <g stroke="#241912" opacity="0.32">
+      {[3, 6, 10, 14].map((d, i) => (
+        <line
+          x1={(d % 7) * cw + 22}
+          y1={Math.floor(d / 7) * ch + 30}
+          x2={(d % 7) * cw + 52}
+          y2={Math.floor(d / 7) * ch + 30}
+          pathLength="1"
+          style={`--d:${1 + i * 0.15}s`}
+        />
+      ))}
+    </g>
+    <circle
+      class="ring"
+      cx={5 * cw + cw / 2}
+      cy={3 * ch + ch / 2}
+      r="54"
+      stroke="#b4673a"
+      pathLength="1"
+      style="--d:1.6s"
+    />
+  </svg>
+)}
+
+{kind === "funnel" && (
+  <svg class="c1a-lines funnel" viewBox="0 0 600 420" preserveAspectRatio="xMinYMax meet" data-c1a-draw>
+    <g stroke="#e0a072" opacity="0.5">
+      {Array.from({ length: 12 }, (_, i) => {
+        const y0 = 30 + i * 30;
+        const y1 = 170 + i * 8;
+        return (
+          <path d={`M 0 ${y0} C 260 ${y0}, 340 ${y1}, 600 ${y1}`} pathLength="1" style={`--d:${i * 0.08}s`} />
+        );
+      })}
+    </g>
+    <g class="run" stroke="#ffc79c">
+      {Array.from({ length: 12 }, (_, i) => {
+        const y0 = 30 + i * 30;
+        const y1 = 170 + i * 8;
+        return (
+          <path
+            d={`M 0 ${y0} C 260 ${y0}, 340 ${y1}, 600 ${y1}`}
+            pathLength="1"
+            style={`animation-delay:${-i * 1.3}s`}
+          />
+        );
+      })}
+    </g>
+  </svg>
+)}
+
+<script>
+  const io = new IntersectionObserver(
+    (entries) => {
+      for (const e of entries) {
+        if (e.isIntersecting) {
+          e.target.classList.add("drawn");
+          io.unobserve(e.target);
+        }
+      }
+    },
+    { threshold: 0.15 },
+  );
+  document.querySelectorAll("[data-c1a-draw]").forEach((el) => io.observe(el));
+</script>
+
+<style>
+  .c1a-lines {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .c1a-lines :is(path, line, rect, circle) {
+    fill: none;
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+    stroke-linecap: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    transition: stroke-dashoffset 2.4s var(--d, 0s) cubic-bezier(0.5, 0, 0.2, 1);
+  }
+  .c1a-lines:global(.drawn) :is(path, line, rect, circle) {
+    stroke-dashoffset: 0;
+  }
+  .hero {
+    position: absolute;
+    inset: 0;
+    /* Quiet behind the headline, full strength behind the window. */
+    mask-image: linear-gradient(90deg, rgb(0 0 0 / 0.15) 0%, rgb(0 0 0 / 0.25) 35%, #000 62%);
+  }
+  .board {
+    height: auto;
+  }
+  .board :is(rect, line) {
+    stroke-width: 1.2;
+  }
+  .ring {
+    stroke-width: 1.5;
+  }
+  .calendar {
+    position: absolute;
+    inset: 0;
+    mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, #000 40%, transparent 100%);
+  }
+  .funnel {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: min(46%, 520px);
+    height: 60%;
+  }
+
+  /* A short bright dash travelling along each flow, once the lines are drawn. */
+  .c1a-lines .run :is(path) {
+    stroke-dasharray: 0.035 0.965;
+    stroke-dashoffset: 1;
+    stroke-width: 1.4;
+    opacity: 0;
+    transition: none;
+  }
+  .c1a-lines:global(.drawn) .run path {
+    opacity: 0.9;
+    animation: c1a-run 22s linear infinite;
+  }
+  @keyframes c1a-run {
+    from {
+      stroke-dashoffset: 1;
+    }
+    to {
+      stroke-dashoffset: -1;
+    }
+  }
+
+  /* The bright card moves on, column by column, then draws itself again at the start. */
+  .mover {
+    animation: c1a-move 13s cubic-bezier(0.6, 0, 0.25, 1) infinite;
+  }
+  @keyframes c1a-move {
+    0%,
+    14% {
+      transform: translate(0, 0);
+      opacity: 1;
+    }
+    24%,
+    38% {
+      transform: translate(154px, -58px);
+    }
+    48%,
+    62% {
+      transform: translate(308px, -116px);
+    }
+    72%,
+    88% {
+      transform: translate(462px, -174px);
+      opacity: 1;
+    }
+    94% {
+      transform: translate(462px, -174px);
+      opacity: 0;
+    }
+    96% {
+      transform: translate(0, 0);
+      opacity: 0;
+    }
+    100% {
+      transform: translate(0, 0);
+      opacity: 1;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .c1a-lines :is(path, line, rect, circle) {
+      stroke-dashoffset: 0;
+      transition: none;
+    }
+    .c1a-lines .run path {
+      display: none;
+    }
+    .mover {
+      animation: none;
+    }
+  }
+</style>

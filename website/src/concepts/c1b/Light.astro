@@ -1,0 +1,402 @@
+---
+// Variation 1b, "grain and light": no pattern at all. A fine film grain over the whole page, soft pools and
+// beams of copper light that drift, and frosted glass cards catching that light. Transform and opacity only.
+interface Props {
+  kind: "grain" | "hero" | "board" | "centre" | "panel";
+}
+const { kind } = Astro.props;
+
+// Film grain: an SVG turbulence tile, greyscale, as a data URI.
+const noise =
+  "data:image/svg+xml;utf8," +
+  encodeURIComponent(
+    `<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 1.1 0'/></filter><rect width='100%' height='100%' filter='url(#n)'/></svg>`,
+  );
+
+const stages = [
+  { label: "Applied", cards: 3 },
+  { label: "Screen", cards: 2 },
+  { label: "Interviewing", cards: 1 },
+  { label: "Offer", cards: 1 },
+];
+---
+
+{kind === "grain" && <div class="c1b-grain" aria-hidden="true" style={`background-image:url("${noise}")`} />}
+
+{kind === "hero" && (
+  <div class="c1b-light hero" aria-hidden="true">
+    <i class="pool p1" />
+    <i class="pool p2" />
+    <i class="beam" />
+  </div>
+)}
+
+{kind === "board" && (
+  <div
+    class="c1b-board"
+    role="img"
+    aria-label="A board of frosted glass: four stage columns lit from behind, and a card moving on from one to the next"
+  >
+    <i class="pool b1" aria-hidden="true" />
+    <i class="pool b2" aria-hidden="true" />
+    <div class="cols" aria-hidden="true">
+      {stages.map((s) => (
+        <div class="col">
+          <span class="lab">{s.label}</span>
+          {Array.from({ length: s.cards }, () => (
+            <span class="card">
+              <b />
+              <em />
+            </span>
+          ))}
+        </div>
+      ))}
+      <span class="card mover">
+        <b />
+        <em />
+      </span>
+    </div>
+  </div>
+)}
+
+{kind === "centre" && (
+  <div class="c1b-light centre" aria-hidden="true">
+    <i class="pool c1" />
+    <i class="beam cb" />
+  </div>
+)}
+
+{kind === "panel" && (
+  <div class="c1b-light panel" aria-hidden="true">
+    <i class="beam pb" />
+    <i class="pool pp" />
+  </div>
+)}
+
+<style>
+  .c1b-grain {
+    position: fixed;
+    inset: -60px;
+    z-index: 45;
+    pointer-events: none;
+    background-size: 220px 220px;
+    opacity: 0.12;
+    mix-blend-mode: overlay;
+    animation: c1b-grain 1s steps(5) infinite;
+  }
+  @keyframes c1b-grain {
+    0% {
+      transform: translate(0, 0);
+    }
+    20% {
+      transform: translate(-23px, 14px);
+    }
+    40% {
+      transform: translate(17px, -31px);
+    }
+    60% {
+      transform: translate(-9px, 27px);
+    }
+    80% {
+      transform: translate(29px, 8px);
+    }
+  }
+
+  .c1b-light {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+  .pool {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(40px);
+    will-change: transform;
+  }
+  .beam {
+    position: absolute;
+    filter: blur(28px);
+    will-change: transform, opacity;
+  }
+
+  /* Hero: two pools behind the window and a slow beam falling across from the top right. */
+  .p1 {
+    left: 46%;
+    top: 22%;
+    width: 52vw;
+    height: 52vw;
+    background: radial-gradient(closest-side, rgb(214 132 76 / 0.42), rgb(150 80 40 / 0.14) 55%, transparent);
+    animation: c1b-drift-a 16s ease-in-out infinite alternate;
+  }
+  .p2 {
+    left: 8%;
+    top: 55%;
+    width: 36vw;
+    height: 36vw;
+    background: radial-gradient(closest-side, rgb(180 110 70 / 0.22), transparent);
+    animation: c1b-drift-b 21s ease-in-out infinite alternate;
+  }
+  .hero .beam {
+    right: -10%;
+    top: -30%;
+    width: 34vw;
+    height: 150%;
+    background: linear-gradient(180deg, rgb(255 210 170 / 0.18), rgb(255 190 140 / 0.06) 60%, transparent);
+    transform-origin: 50% 0;
+    transform: rotate(28deg);
+    animation: c1b-sweep 18s ease-in-out infinite alternate;
+  }
+  @keyframes c1b-drift-a {
+    to {
+      transform: translate(-8vw, 6vh) scale(1.12);
+    }
+  }
+  @keyframes c1b-drift-b {
+    to {
+      transform: translate(10vw, -8vh) scale(0.9);
+    }
+  }
+  @keyframes c1b-sweep {
+    from {
+      transform: rotate(22deg);
+      opacity: 0.7;
+    }
+    to {
+      transform: rotate(36deg);
+      opacity: 1;
+    }
+  }
+
+  /* The board card: frosted glass columns over moving copper light. */
+  .c1b-board {
+    --card: 52px;
+    --gap: 10px;
+    --top: 40px;
+    --pad: 10px;
+    --step: calc(var(--card) + var(--gap));
+    position: relative;
+    width: 100%;
+    aspect-ratio: 644 / 420;
+  }
+  .b1 {
+    left: 2%;
+    top: 10%;
+    width: 60%;
+    height: 90%;
+    background: radial-gradient(closest-side, rgb(224 150 96 / 0.75), rgb(170 90 50 / 0.25) 60%, transparent);
+    animation: c1b-drift-c 12s ease-in-out infinite alternate;
+  }
+  .b2 {
+    right: -6%;
+    top: -10%;
+    width: 50%;
+    height: 80%;
+    background: radial-gradient(closest-side, rgb(200 180 160 / 0.45), transparent);
+    animation: c1b-drift-b 15s ease-in-out infinite alternate;
+  }
+  @keyframes c1b-drift-c {
+    to {
+      transform: translate(45%, -8%) scale(0.9);
+    }
+  }
+  .cols {
+    position: absolute;
+    inset: 6% 4%;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 3.5%;
+  }
+  .col {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap);
+    padding: var(--top) var(--pad) var(--pad);
+    border-radius: 16px;
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.1), rgb(255 255 255 / 0.03));
+    border: 1px solid rgb(255 255 255 / 0.14);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.2);
+    backdrop-filter: blur(18px) saturate(1.3);
+    -webkit-backdrop-filter: blur(18px) saturate(1.3);
+  }
+  .lab {
+    position: absolute;
+    left: 12px;
+    top: 14px;
+    font:
+      500 10px/1 "JetBrains Mono Variable",
+      ui-monospace,
+      monospace;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgb(243 236 226 / 0.7);
+  }
+  .card {
+    height: var(--card);
+    flex: none;
+    border-radius: 10px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.2), rgb(255 255 255 / 0.08));
+    border: 1px solid rgb(255 255 255 / 0.22);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.35),
+      0 10px 24px -12px rgb(0 0 0 / 0.5);
+  }
+  .card b,
+  .card em {
+    display: block;
+    height: 5px;
+    border-radius: 3px;
+    background: rgb(255 255 255 / 0.55);
+    width: 70%;
+  }
+  .card em {
+    width: 45%;
+    background: rgb(255 255 255 / 0.28);
+  }
+  /* The moving card sits where Applied's fourth card would be, then glides on through the stages. */
+  .mover {
+    position: absolute;
+    left: var(--pad);
+    top: calc(var(--top) + 3 * var(--step));
+    width: calc((100% - 3 * 3.5%) / 4 - 2 * var(--pad));
+    background: linear-gradient(180deg, rgb(255 226 200 / 0.42), rgb(255 200 160 / 0.16));
+    border-color: rgb(255 220 190 / 0.5);
+    animation: c1b-move 13s cubic-bezier(0.6, 0, 0.25, 1) infinite;
+  }
+  @keyframes c1b-move {
+    0%,
+    14% {
+      transform: translate(0, 0);
+      opacity: 1;
+    }
+    24%,
+    38% {
+      transform: translate(calc(100% + 2 * var(--pad) + 3.5cqw), calc(-1 * var(--step)));
+    }
+    48%,
+    62% {
+      transform: translate(calc(200% + 4 * var(--pad) + 7cqw), calc(-2 * var(--step)));
+    }
+    72%,
+    88% {
+      transform: translate(calc(300% + 6 * var(--pad) + 10.5cqw), calc(-2 * var(--step)));
+      opacity: 1;
+    }
+    94% {
+      transform: translate(calc(300% + 6 * var(--pad) + 10.5cqw), calc(-2 * var(--step)));
+      opacity: 0;
+    }
+    96% {
+      transform: translate(0, 0);
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+  .cols {
+    container-type: inline-size;
+  }
+  @media (max-width: 760px) {
+    .c1b-board {
+      --card: 28px;
+      --gap: 6px;
+      --top: 30px;
+      --pad: 6px;
+    }
+    .col {
+      border-radius: 10px;
+    }
+    .card {
+      padding: 7px;
+      gap: 5px;
+      border-radius: 7px;
+    }
+    .card b,
+    .card em {
+      height: 3px;
+    }
+    .lab {
+      left: 7px;
+      top: 11px;
+      font-size: 7px;
+    }
+  }
+
+  /* The centre line: one pool under the words and a faint beam. */
+  .c1 {
+    left: 50%;
+    top: 50%;
+    width: 60vw;
+    height: 40vw;
+    margin: -20vw 0 0 -30vw;
+    background: radial-gradient(
+      closest-side,
+      rgb(255 236 214 / 0.5),
+      rgb(240 200 160 / 0.3) 35%,
+      rgb(224 160 114 / 0.12) 65%,
+      transparent
+    );
+    animation: c1b-breathe 9s ease-in-out infinite alternate;
+  }
+  .cb {
+    left: 20%;
+    top: -40%;
+    width: 18vw;
+    height: 180%;
+    background: linear-gradient(180deg, rgb(255 244 230 / 0.6), transparent 80%);
+    transform: rotate(-24deg);
+    transform-origin: 50% 0;
+    animation: c1b-sweep-2 14s ease-in-out infinite alternate;
+  }
+  @keyframes c1b-breathe {
+    to {
+      transform: scale(1.12);
+      opacity: 0.75;
+    }
+  }
+  @keyframes c1b-sweep-2 {
+    to {
+      transform: rotate(-12deg);
+    }
+  }
+
+  /* The Insights panel: a beam across the dark, from the top left. */
+  .pb {
+    left: -10%;
+    top: -60%;
+    width: 30%;
+    height: 220%;
+    background: linear-gradient(180deg, rgb(255 200 150 / 0.22), transparent 70%);
+    transform: rotate(-38deg);
+    transform-origin: 50% 0;
+    animation: c1b-sweep-3 16s ease-in-out infinite alternate;
+  }
+  .pp {
+    left: -10%;
+    bottom: -30%;
+    width: 50%;
+    height: 80%;
+    background: radial-gradient(closest-side, rgb(196 122 72 / 0.35), transparent);
+    animation: c1b-drift-b 18s ease-in-out infinite alternate;
+  }
+  @keyframes c1b-sweep-3 {
+    to {
+      transform: rotate(-28deg);
+      opacity: 0.6;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .c1b-grain,
+    .pool,
+    .beam,
+    .mover {
+      animation: none;
+    }
+  }
+</style>

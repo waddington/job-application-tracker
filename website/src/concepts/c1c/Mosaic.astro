@@ -1,0 +1,435 @@
+---
+// Variation 1c, "card mosaic": the motif is the app's own application card, small and rounded, in warm stage
+// colours. They tile into columns, stack, slide between columns and settle. Transform and opacity only.
+interface Props {
+  kind: "hero" | "board" | "centre" | "panel";
+}
+const { kind } = Astro.props;
+
+// Stage colours, warmed to sit in the palette: interested, applied, screen, interviewing, offer.
+const tones = ["#8c8781", "#a98a72", "#c98a5c", "#e0a072", "#86a27c"];
+// A small fixed pseudo-random sequence, so the build is the same every time.
+const rnd = (i: number) => (((Math.sin(i * 12.9898) * 43758.5453) % 1) + 1) % 1;
+
+// Hero: eight columns of cards that drift slowly upwards (each column is doubled for a seamless loop).
+const heroCols = Array.from({ length: 8 }, (_, c) =>
+  Array.from({ length: 9 }, (_, k) => ({
+    tone: tones[Math.min(4, Math.floor(rnd(c * 31 + k) * 5))],
+    w: 60 + Math.round(rnd(c * 7 + k * 3) * 35),
+  })),
+);
+
+// Board: four columns; counts fall as the stages go on.
+const board = [
+  { label: "Applied", tone: tones[1], n: 4 },
+  { label: "Screen", tone: tones[2], n: 3 },
+  { label: "Interviewing", tone: tones[3], n: 2 },
+  { label: "Offer", tone: tones[4], n: 1 },
+];
+
+// Panel: a funnel of stacked cards, column heights falling left to right.
+const funnel = [9, 7, 5, 3, 2];
+
+// Centre: three rows of cards sliding slowly past each other.
+const rows = Array.from({ length: 3 }, (_, r) =>
+  Array.from({ length: 16 }, (_, k) => ({
+    tone: tones[Math.floor(rnd(r * 53 + k) * 5)],
+    w: 90 + Math.round(rnd(r * 11 + k * 5) * 70),
+  })),
+);
+---
+
+{kind === "hero" && (
+  <div class="c1c hero" aria-hidden="true">
+    {heroCols.map((col, c) => (
+      <div class="hcol" style={`--dur:${38 + (c % 3) * 9}s;--delay:${-c * 4.3}s`}>
+        {[0, 1].map(() => (
+          <div class="hstack">
+            {col.map((m) => (
+              <span class="mc" style={`--tone:${m.tone};--w:${m.w}%`}>
+                <b />
+              </span>
+            ))}
+          </div>
+        ))}
+      </div>
+    ))}
+  </div>
+)}
+
+{kind === "board" && (
+  <div
+    class="c1c board"
+    role="img"
+    aria-label="A board of small cards in stage colours: four columns, and a card sliding on from one to the next"
+    data-c1c-settle
+  >
+    {board.map((col, c) => (
+      <div class="bcol">
+        <span class="lab" style={`--tone:${col.tone}`}>
+          {col.label}
+        </span>
+        {Array.from({ length: col.n }, (_, k) => (
+          <span class="mc big" style={`--tone:${col.tone};--i:${c * 4 + k}`}>
+            <b />
+            <em />
+          </span>
+        ))}
+      </div>
+    ))}
+    <span class="mc big mover" style={`--tone:${tones[3]}`}>
+      <b />
+      <em />
+    </span>
+  </div>
+)}
+
+{kind === "centre" && (
+  <div class="c1c centre" aria-hidden="true">
+    {rows.map((row, r) => (
+      <div class="row" style={`--dur:${60 + r * 14}s;--dir:${r % 2 ? "reverse" : "normal"}`}>
+        {[0, 1].map(() => (
+          <div class="rstrip">
+            {row.map((m) => (
+              <span class="mc" style={`--tone:${m.tone};--wpx:${m.w}px`}>
+                <b />
+              </span>
+            ))}
+          </div>
+        ))}
+      </div>
+    ))}
+  </div>
+)}
+
+{kind === "panel" && (
+  <div class="c1c panel" aria-hidden="true" data-c1c-settle>
+    {funnel.map((n, c) => (
+      <div class="fcol">
+        {Array.from({ length: n }, (_, k) => (
+          <span class="mc" style={`--tone:${tones[Math.min(4, c)]};--i:${c * 3 + k}`}>
+            <b />
+          </span>
+        ))}
+      </div>
+    ))}
+  </div>
+)}
+
+<script>
+  const io = new IntersectionObserver(
+    (entries) => {
+      for (const e of entries) {
+        if (e.isIntersecting) {
+          e.target.classList.add("settled");
+          io.unobserve(e.target);
+        }
+      }
+    },
+    { threshold: 0.2 },
+  );
+  document.querySelectorAll("[data-c1c-settle]").forEach((el) => io.observe(el));
+</script>
+
+<style>
+  /* The card: a rounded tile with a title line. */
+  .mc {
+    position: relative;
+    display: block;
+    height: 22px;
+    border-radius: 6px;
+    background: var(--tone);
+    flex: none;
+  }
+  .mc b {
+    position: absolute;
+    left: 8px;
+    top: 8px;
+    height: 5px;
+    width: 46%;
+    border-radius: 3px;
+    background: rgb(255 255 255 / 0.45);
+  }
+
+  /* Hero: columns drifting upwards on the right, faded towards the headline. */
+  .hero {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 14px;
+    padding: 0 14px;
+    overflow: hidden;
+    opacity: 0.2;
+    mask-image: linear-gradient(90deg, transparent 0%, transparent 38%, #000 78%);
+  }
+  .hcol {
+    animation: c1c-up var(--dur) linear infinite;
+    animation-delay: var(--delay);
+  }
+  .hstack {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding-bottom: 14px;
+  }
+  .hero .mc {
+    width: var(--w);
+    height: 46px;
+    border-radius: 10px;
+  }
+  .hero .mc b {
+    left: 12px;
+    top: 14px;
+    height: 6px;
+  }
+  @keyframes c1c-up {
+    to {
+      transform: translateY(-50%);
+    }
+  }
+
+  /* Board: real columns; cards drop in and settle when seen, then one card keeps moving on. */
+  .board {
+    --card: 52px;
+    --gap: 10px;
+    --step: calc(var(--card) + var(--gap));
+    --cg: 14px;
+    position: relative;
+    width: 100%;
+    aspect-ratio: 644 / 420;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--cg);
+    container-type: inline-size;
+  }
+  .bcol {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap);
+    padding: 40px 0 0;
+    border-top: 1px solid rgb(243 236 226 / 0.14);
+  }
+  .lab {
+    position: absolute;
+    top: 14px;
+    left: 0;
+    font:
+      500 10px/1 "JetBrains Mono Variable",
+      ui-monospace,
+      monospace;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--tone);
+  }
+  .big {
+    height: var(--card);
+    border-radius: 10px;
+    box-shadow: 0 12px 24px -14px rgb(0 0 0 / 0.7);
+  }
+  .big b {
+    left: 12px;
+    top: 14px;
+    width: 58%;
+    height: 6px;
+  }
+  .big em {
+    position: absolute;
+    left: 12px;
+    top: 28px;
+    width: 34%;
+    height: 5px;
+    border-radius: 3px;
+    background: rgb(255 255 255 / 0.25);
+  }
+  .board .mc:not(.mover),
+  .panel .mc {
+    opacity: 0;
+    transform: translateY(-26px) rotate(-3deg);
+    transition:
+      opacity 0.5s calc(var(--i) * 70ms),
+      transform 0.7s calc(var(--i) * 70ms) cubic-bezier(0.3, 1.25, 0.4, 1);
+  }
+  .board:global(.settled) .mc:not(.mover),
+  .panel:global(.settled) .mc {
+    opacity: 1;
+    transform: none;
+  }
+  .mover {
+    position: absolute;
+    left: 0;
+    top: calc(40px + 4 * var(--step));
+    width: calc((100% - 3 * var(--cg)) / 4);
+    box-shadow: 0 18px 30px -12px rgb(0 0 0 / 0.8);
+    animation: c1c-move 12s cubic-bezier(0.6, 0, 0.25, 1) infinite;
+  }
+  @keyframes c1c-move {
+    0%,
+    12% {
+      transform: translate(0, 0) rotate(0);
+    }
+    17% {
+      transform: translate(calc(50% + 0.5 * var(--cg)), calc(-0.5 * var(--step) - 12px)) rotate(3deg);
+    }
+    22%,
+    36% {
+      transform: translate(calc(100% + 1 * var(--cg)), calc(-1 * var(--step))) rotate(0);
+    }
+    41% {
+      transform: translate(calc(150% + 1.5 * var(--cg)), calc(-1.5 * var(--step) - 12px)) rotate(3deg);
+    }
+    46%,
+    60% {
+      transform: translate(calc(200% + 2 * var(--cg)), calc(-2 * var(--step))) rotate(0);
+    }
+    65% {
+      transform: translate(calc(250% + 2.5 * var(--cg)), calc(-2.5 * var(--step) - 12px)) rotate(3deg);
+    }
+    70%,
+    88% {
+      transform: translate(calc(300% + 3 * var(--cg)), calc(-3 * var(--step))) rotate(0);
+      opacity: 1;
+    }
+    94% {
+      opacity: 0;
+      transform: translate(calc(300% + 3 * var(--cg)), calc(-3 * var(--step)));
+    }
+    96% {
+      opacity: 0;
+      transform: translate(0, 0);
+    }
+    100% {
+      opacity: 1;
+      transform: translate(0, 0);
+    }
+  }
+
+  /* Centre: rows of cards sliding past, faded at the edges. */
+  .centre {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding-bottom: 12vh;
+    gap: 16px;
+    overflow: hidden;
+    opacity: 0.3;
+    mask-image: linear-gradient(90deg, transparent, #000 25%, #000 75%, transparent);
+  }
+  .row {
+    display: flex;
+    width: max-content;
+    animation: c1c-side var(--dur) linear infinite;
+    animation-direction: var(--dir);
+  }
+  .rstrip {
+    display: flex;
+    gap: 16px;
+    padding-right: 16px;
+  }
+  .centre .mc {
+    width: var(--wpx);
+    height: 40px;
+    border-radius: 10px;
+  }
+  .centre .mc b {
+    left: 12px;
+    top: 13px;
+    height: 6px;
+  }
+  @keyframes c1c-side {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  /* Panel: a funnel of card stacks, bottom-left, behind the words. */
+  .panel {
+    position: absolute;
+    left: 56px;
+    bottom: 56px;
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    opacity: 0.85;
+  }
+  .fcol {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 6px;
+  }
+  .panel .mc {
+    width: 46px;
+    height: 16px;
+    border-radius: 5px;
+  }
+  .panel .mc b {
+    left: 6px;
+    top: 6px;
+    height: 4px;
+  }
+
+  @media (max-width: 760px) {
+    .hero {
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+    }
+    .hero {
+      mask-image: linear-gradient(180deg, transparent 0%, transparent 48%, #000 85%);
+    }
+    .hcol:nth-child(n + 6) {
+      display: none;
+    }
+    .hero .mc {
+      height: 30px;
+      border-radius: 7px;
+    }
+    .board {
+      --card: 28px;
+      --gap: 6px;
+      --cg: 8px;
+    }
+    .bcol {
+      padding-top: 28px;
+    }
+    .lab {
+      top: 10px;
+      font-size: 7px;
+    }
+    .big {
+      border-radius: 7px;
+    }
+    .big b {
+      left: 7px;
+      top: 8px;
+      height: 4px;
+    }
+    .big em {
+      left: 7px;
+      top: 16px;
+      height: 3px;
+    }
+    .mover {
+      top: calc(28px + 4 * var(--step));
+    }
+    .panel {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hcol,
+    .row,
+    .mover {
+      animation: none;
+    }
+    .board .mc:not(.mover),
+    .panel .mc {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+</style>
