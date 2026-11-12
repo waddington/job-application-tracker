@@ -84,11 +84,31 @@ const tree = [
 
 // Little pieces of the app, floating in front of the window in the hero (left %, top %, depth px).
 const chips = [
-  { l: -9, t: 14, z: 190, html: '<i class="c2a-dot c2a-dot--pink"></i><b>Sam Patel replied</b><small>Blue Yonder · to read</small>' },
-  { l: 78, t: -9, z: 260, html: '<span class="c2a-mini c2a-mini--blue">Applied</span><span class="c2a-arrow">→</span><span class="c2a-mini c2a-mini--cyan">Screen</span>' },
-  { l: 84, t: 52, z: 150, html: '<i class="c2a-dot c2a-dot--green"></i><b>£95,000 a year</b><small>Offer · reply by 16 Nov</small>' },
+  {
+    l: -9,
+    t: 14,
+    z: 190,
+    html: '<i class="c2a-dot c2a-dot--pink"></i><b>Sam Patel replied</b><small>Blue Yonder · to read</small>',
+  },
+  {
+    l: 78,
+    t: -9,
+    z: 260,
+    html: '<span class="c2a-mini c2a-mini--blue">Applied</span><span class="c2a-arrow">→</span><span class="c2a-mini c2a-mini--cyan">Screen</span>',
+  },
+  {
+    l: 84,
+    t: 52,
+    z: 150,
+    html: '<i class="c2a-dot c2a-dot--green"></i><b>£95,000 a year</b><small>Offer · reply by 16 Nov</small>',
+  },
   { l: -6, t: 72, z: 230, html: '<i class="c2a-box"></i><b>Ask who\'s on the platform team</b>' },
-  { l: 40, t: 92, z: 120, html: '<i class="c2a-dot c2a-dot--violet"></i><b>Round 3 · System design test</b><small>Sat 14 Nov</small>' },
+  {
+    l: 40,
+    t: 92,
+    z: 120,
+    html: '<i class="c2a-dot c2a-dot--violet"></i><b>Round 3 · System design test</b><small>Sat 14 Nov</small>',
+  },
 ];
 
 const extras = [...MARQUEE[1], "English and 简体中文", "Offers side by side", "Timeline"];
@@ -115,37 +135,35 @@ const spots = [
         <div class="c2a-drift">
           <i class="c2a-shadow"></i>
           <AppWindow scheme="light" data />
-          {
-            chips.map((c, i) => (
-              <span
-                class="c2a-chip c2a-glass"
-                style={`left:${c.l}%;top:${c.t}%;--z:${c.z}px;--d:${i * -1.7}s`}
-                set:html={c.html}
-              />
-            ))
-          }
+          {chips.map((c, i) => (
+            <span
+              class="c2a-chip c2a-glass"
+              style={`left:${c.l}%;top:${c.t}%;--z:${c.z}px;--d:${i * -1.7}s`}
+              set:html={c.html}
+            />
+          ))}
         </div>
       </div>
     </div>
   </div>
 
   <nav class="c2a-progress c2a-glass" aria-label="Tour chapters" data-progress>
-    <span class="c2a-progress-label" data-progress-label>Tour</span>
+    <span class="c2a-progress-label" data-progress-label>
+      Tour
+    </span>
     <span class="c2a-progress-bars">
-      {
-        railNames.map((n, i) => (
-          <a href={i < chapters.length ? `#${chapters[i].id}` : "#c2a-privacy"} data-seg={i + 2} title={n}>
-            <i />
-            <span class="c2a-sr">{n}</span>
-          </a>
-        ))
-      }
+      {railNames.map((n, i) => (
+        <a href={i < chapters.length ? `#${chapters[i].id}` : "#c2a-privacy"} data-seg={i + 2} title={n}>
+          <i />
+          <span class="c2a-sr">{n}</span>
+        </a>
+      ))}
     </span>
     <span class="c2a-progress-hint" aria-hidden="true">
       Scroll
-      <svg viewBox="0 0 12 12" width="11" height="11"
-        ><path d="M6 2v8M2.5 6.5 6 10l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.4"></path></svg
-      >
+      <svg viewBox="0 0 12 12" width="11" height="11">
+        <path d="M6 2v8M2.5 6.5 6 10l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.4"></path>
+      </svg>
     </span>
   </nav>
 
@@ -153,14 +171,22 @@ const spots = [
     <section class="c2a-ch c2a-ch--hero" data-ch="0" data-tint-block="lilac" aria-labelledby="c2a-h1">
       <div class="c2a-hero">
         <p class="c2a-eyebrow">Private job application tracker</p>
-        <h1 class="c2a-display" id="c2a-h1">Your job search,<br />on your machine.</h1>
+        <h1 class="c2a-display" id="c2a-h1">
+          Your job search,
+          <br />
+          on your machine.
+        </h1>
         <p class="c2a-hero-sub">
-          Track every application, recruiter, interview round, follow-up and offer. It runs on your own computer: no
-          account, no subscription, nobody watching.
+          Track every application, recruiter, interview round, follow-up and offer. It runs on your own
+          computer: no account, no subscription, nobody watching.
         </p>
         <div class="c2a-hero-ctas">
-          <a class="c2a-glass c2a-btn c2a-btn--ink" href="#c2a-quickstart"><span>Get started, it's free</span></a>
-          <a class="c2a-glass c2a-btn" href="#c2a-ch-today"><span>Take the tour</span></a>
+          <a class="c2a-glass c2a-btn c2a-btn--ink" href="#c2a-quickstart">
+            <span>Get started, it's free</span>
+          </a>
+          <a class="c2a-glass c2a-btn" href="#c2a-ch-today">
+            <span>Take the tour</span>
+          </a>
         </div>
         <ul class="c2a-promises" aria-label="Promises">
           <li>Free and open source</li>
@@ -173,79 +199,98 @@ const spots = [
 
     <section class="c2a-ch c2a-ch--problem" data-ch="1" data-tint-block="sky" aria-labelledby="c2a-problem">
       <div class="c2a-problem c2a-glass">
-        <p class="c2a-eyebrow" id="c2a-problem">The problem</p>
+        <p class="c2a-eyebrow" id="c2a-problem">
+          The problem
+        </p>
         <p class="c2a-words" data-words>
-          {problem.split(" ").map((w) => <span>{w} </span>)}
+          {problem.split(" ").map((w) => (
+            <span>{w} </span>
+          ))}
         </p>
         <p class="c2a-answer">So here's a CRM for your job hunt.</p>
       </div>
     </section>
 
-    {
-      chapters.map((c, i) => (
-        <section class="c2a-ch c2a-ch--app" id={c.id} data-ch={i + 2} data-tint-block={c.tint}>
-          <div class="c2a-cap c2a-glass">
-            <p class="c2a-eyebrow">
-              <span class="c2a-step">
-                {String(i + 1).padStart(2, "0")} / {String(railNames.length).padStart(2, "0")}
-              </span>
-              {c.eyebrow}
-            </p>
-            <h2 class="c2a-display">{c.title}</h2>
-            <p>{c.body}</p>
-          </div>
-          <figure class="c2a-still">
-            <Image src={c.still} widths={[1210, 2420]} sizes="(max-width: 1100px) 100vw, 1100px" alt={`${c.alt} (made-up demo data)`} />
-          </figure>
-        </section>
-      ))
-    }
+    {chapters.map((c, i) => (
+      <section class="c2a-ch c2a-ch--app" id={c.id} data-ch={i + 2} data-tint-block={c.tint}>
+        <div class="c2a-cap c2a-glass">
+          <p class="c2a-eyebrow">
+            <span class="c2a-step">
+              {String(i + 1).padStart(2, "0")} / {String(railNames.length).padStart(2, "0")}
+            </span>
+            {c.eyebrow}
+          </p>
+          <h2 class="c2a-display">{c.title}</h2>
+          <p>{c.body}</p>
+        </div>
+        <figure class="c2a-still">
+          <Image
+            src={c.still}
+            widths={[1210, 2420]}
+            sizes="(max-width: 1100px) 100vw, 1100px"
+            alt={`${c.alt} (made-up demo data)`}
+          />
+        </figure>
+      </section>
+    ))}
 
     <section class="c2a-ch c2a-ch--privacy" id="c2a-privacy" data-ch="8" data-tint-block="dusk">
       <div class="c2a-cap c2a-cap--left c2a-glass">
         <p class="c2a-eyebrow">
           <span class="c2a-step">07 / 07</span>Under the glass
         </p>
-        <h2 class="c2a-display">Three layers.<br />All of them yours.</h2>
+        <h2 class="c2a-display">
+          Three layers.
+          <br />
+          All of them yours.
+        </h2>
         <p>
-          Your browser, the app on 127.0.0.1, and one folder of ordinary files you can read without it. No AI, no
-          cloud, no account and no tracking. It never sends email, contacts anyone or calls out to the web.
+          Your browser, the app on 127.0.0.1, and one folder of ordinary files you can read without it. No AI,
+          no cloud, no account and no tracking. It never sends email, contacts anyone or calls out to the web.
         </p>
         <p class="c2a-cap-small">
-          Back up with one zip from the sidebar, or let the folder keep its own git history and <code>jat push</code> it
-          to a private repo you own.
+          Back up with one zip from the sidebar, or let the folder keep its own git history and{" "}
+          <code>jat push</code> it to a private repo you own.
         </p>
       </div>
       <figure class="c2a-still c2a-still--data">
         <p class="c2a-data-path">~/job-search-data</p>
         <ul>
-          {
-            tree.map(([f, why]) => (
-              <li>
-                <code>{f}</code> <span>{why}</span>
-              </li>
-            ))
-          }
+          {tree.map(([f, why]) => (
+            <li>
+              <code>{f}</code> <span>{why}</span>
+            </li>
+          ))}
         </ul>
       </figure>
     </section>
 
-    <section class="c2a-ch c2a-ch--outro" data-ch="9" data-tint-block="lilac" aria-labelledby="c2a-extras" data-outro>
+    <section
+      class="c2a-ch c2a-ch--outro"
+      data-ch="9"
+      data-tint-block="lilac"
+      aria-labelledby="c2a-extras"
+      data-outro
+    >
       <div class="c2a-outro">
         <div class="c2a-outro-head">
-          <p class="c2a-eyebrow" id="c2a-extras">Also in the box</p>
-          <h2 class="c2a-display">The small things that<br />save an afternoon.</h2>
+          <p class="c2a-eyebrow" id="c2a-extras">
+            Also in the box
+          </p>
+          <h2 class="c2a-display">
+            The small things that
+            <br />
+            save an afternoon.
+          </h2>
         </div>
         <ul class="c2a-chips">
-          {
-            extras.map((x, i) => (
-              <li
-                class="c2a-glass"
-                style={`--l:${spots[i % spots.length][0]}%;--t:${spots[i % spots.length][1]}%;--i:${i}`}
-                set:html={x.replace(/[一-鿿]+/g, '<span lang="zh-CN">$&</span>')}
-              />
-            ))
-          }
+          {extras.map((x, i) => (
+            <li
+              class="c2a-glass"
+              style={`--l:${spots[i % spots.length][0]}%;--t:${spots[i % spots.length][1]}%;--i:${i}`}
+              set:html={x.replace(/[一-鿿]+/g, '<span lang="zh-CN">$&</span>')}
+            />
+          ))}
         </ul>
       </div>
     </section>
@@ -312,7 +357,12 @@ const spots = [
   .c2a-slab {
     position: absolute;
     border-radius: 44px;
-    background: linear-gradient(150deg, rgb(255 255 255 / 0.55), rgb(255 255 255 / 0.08) 60%, rgb(255 255 255 / 0.25));
+    background: linear-gradient(
+      150deg,
+      rgb(255 255 255 / 0.55),
+      rgb(255 255 255 / 0.08) 60%,
+      rgb(255 255 255 / 0.25)
+    );
     box-shadow:
       inset 0 1px 0 rgb(255 255 255 / 0.9),
       inset 1.5px 0 0 rgb(255 120 200 / 0.2),
@@ -355,7 +405,12 @@ const spots = [
     --r: 0deg;
   }
   .c2a-body[data-tint="dusk"] .c2a-slab {
-    background: linear-gradient(150deg, rgb(255 255 255 / 0.12), rgb(255 255 255 / 0.02) 60%, rgb(255 255 255 / 0.06));
+    background: linear-gradient(
+      150deg,
+      rgb(255 255 255 / 0.12),
+      rgb(255 255 255 / 0.02) 60%,
+      rgb(255 255 255 / 0.06)
+    );
     box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.25);
   }
 
@@ -887,7 +942,7 @@ const spots = [
     }
     .c2a-cap {
       top: auto;
-      bottom: 14px;
+      bottom: 66px;
       margin: 0 auto;
       padding: 22px 22px 24px;
       position: sticky;

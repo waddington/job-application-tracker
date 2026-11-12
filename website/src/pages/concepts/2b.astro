@@ -23,14 +23,27 @@ const chips = MARQUEE.flat();
         <p class="c2b-eyebrow">Private by design</p>
         <div>
           <h2 class="c2b-lead" id="c2b-private-h">
-            No AI reads your notes. No cloud keeps your CVs. No account, no tracking, no ads. Your whole job search lives
-            in one folder on your own computer: a SQLite database, a readable export, your Markdown notes and your files.
+            No AI reads your notes. No cloud keeps your CVs. No account, no tracking, no ads. Your whole job
+            search lives in one folder on your own computer: a SQLite database, a readable export, your
+            Markdown notes and your files.
           </h2>
           <dl class="c2b-stats">
-            <div><dt>0</dt><dd>accounts to create</dd></div>
-            <div><dt>0</dt><dd>trackers or ads</dd></div>
-            <div><dt>0</dt><dd>subscription fees</dd></div>
-            <div><dt>100%</dt><dd>of your data on your computer</dd></div>
+            <div>
+              <dt>0</dt>
+              <dd>accounts to create</dd>
+            </div>
+            <div>
+              <dt>0</dt>
+              <dd>trackers or ads</dd>
+            </div>
+            <div>
+              <dt>0</dt>
+              <dd>subscription fees</dd>
+            </div>
+            <div>
+              <dt>100%</dt>
+              <dd>of your data on your computer</dd>
+            </div>
           </dl>
         </div>
       </div>
@@ -40,7 +53,12 @@ const chips = MARQUEE.flat();
       <article class="c2b-card c2b-card--board" data-c2b-card>
         <div class="c2b-card-art">
           <div class="c2b-card-shot" data-c2b-shot>
-            <Image src={board} widths={[1210, 2420]} sizes="(max-width: 760px) 90vw, 640px" alt="The board: applications by stage, with an interview round on a card" />
+            <Image
+              src={board}
+              widths={[1210, 2420]}
+              sizes="(max-width: 760px) 90vw, 640px"
+              alt="The board: applications by stage, with an interview round on a card"
+            />
           </div>
         </div>
         <div class="c2b-card-txt">
@@ -51,7 +69,12 @@ const chips = MARQUEE.flat();
       <article class="c2b-card c2b-card--today" data-c2b-card>
         <div class="c2b-card-art">
           <div class="c2b-card-shot" data-c2b-shot>
-            <Image src={today} widths={[1210, 2420]} sizes="(max-width: 760px) 90vw, 640px" alt="The Today page: replies to read, offers to answer and what's coming up" />
+            <Image
+              src={today}
+              widths={[1210, 2420]}
+              sizes="(max-width: 760px) 90vw, 640px"
+              alt="The Today page: replies to read, offers to answer and what's coming up"
+            />
           </div>
         </div>
         <div class="c2b-card-txt">
@@ -65,31 +88,52 @@ const chips = MARQUEE.flat();
       <div class="c2b-bigpanel">
         <div class="c2b-ptxt">
           <p class="c2b-eyebrow">Insights</p>
-          <h2 class="c2b-display" id="c2b-insights-h">See where it all leaks.</h2>
+          <h2 class="c2b-display" id="c2b-insights-h">
+            See where it all leaks.
+          </h2>
           <p>Every role's path, from who brought it to an offer, or to ghosted, and what's still waiting.</p>
         </div>
         <div class="c2b-pimg" data-c2b-par>
-          <Image src={insights} widths={[1210, 2420]} sizes="(max-width: 760px) 100vw, 66vw" alt="A Sankey diagram of a whole job search, from where roles came from to where they are now (made-up demo data)" />
+          <Image
+            src={insights}
+            widths={[1210, 2420]}
+            sizes="(max-width: 760px) 100vw, 66vw"
+            alt="A Sankey diagram of a whole job search, from where roles came from to where they are now (made-up demo data)"
+          />
         </div>
       </div>
     </section>
 
     <section class="c2b-centre" data-tint-block="lilac">
-      <p class="c2b-display">One folder on your computer.<br /><span>Nothing leaves it.</span></p>
+      <p class="c2b-display">
+        One folder on your computer.
+        <br />
+        <span>Nothing leaves it.</span>
+      </p>
     </section>
 
     <Story />
 
     <section class="c2b-rest" id="c2b-languages" data-tint-block="peach" aria-labelledby="c2b-lang-h">
       <div class="c2b-wrap c2b-two">
-        <p class="c2b-eyebrow">English and <span lang="zh-CN">简体中文</span></p>
+        <p class="c2b-eyebrow">
+          English and <span lang="zh-CN">简体中文</span>
+        </p>
         <div>
           <h2 class="c2b-lead" id="c2b-lang-h">
-            The whole app in English and <span lang="zh-CN">简体中文</span>, from buttons to dates. It follows your
-            browser, and you can switch in the header. The README is <a href={README_ZH}>in <span lang="zh-CN">简体中文</span></a> too.
+            The whole app in English and <span lang="zh-CN">简体中文</span>, from buttons to dates. It follows
+            your browser, and you can switch in the header. The README is{" "}
+            <a href={README_ZH}>
+              in <span lang="zh-CN">简体中文</span>
+            </a>{" "}
+            too.
           </h2>
           <ul class="c2b-chiplist" aria-label="Also in the box">
-            {chips.map((c) => <li class="c2b-glass"><span>{c}</span></li>)}
+            {chips.map((c) => (
+              <li class="c2b-glass">
+                <span>{c}</span>
+              </li>
+            ))}
           </ul>
         </div>
       </div>
@@ -261,8 +305,7 @@ const chips = MARQUEE.flat();
     color: #f4f0ff;
     background:
       radial-gradient(60% 80% at 100% 0%, rgb(255 150 130 / 0.35), transparent 60%),
-      radial-gradient(70% 90% at 0% 100%, rgb(120 90 255 / 0.5), transparent 60%),
-      #241c4a;
+      radial-gradient(70% 90% at 0% 100%, rgb(120 90 255 / 0.5), transparent 60%), #241c4a;
   }
   .c2b-ptxt {
     padding: clamp(36px, 5vw, 64px);

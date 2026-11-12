@@ -405,7 +405,12 @@ html.c2b *::after {
   width: 220px;
   height: 220px;
   border-radius: 50%;
-  background: radial-gradient(closest-side, rgb(255 255 255 / 0.75), rgb(255 255 255 / 0.18) 55%, transparent);
+  background: radial-gradient(
+    closest-side,
+    rgb(255 255 255 / 0.75),
+    rgb(255 255 255 / 0.18) 55%,
+    transparent
+  );
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.4s;

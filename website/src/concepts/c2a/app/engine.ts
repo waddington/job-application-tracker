@@ -51,7 +51,8 @@ const BOARD0: BoardState = {
 export class AppCtl {
   root: HTMLElement;
   private appEl: HTMLElement;
-  private q = <T extends HTMLElement = HTMLElement>(s: string, r: ParentNode = this.root) => r.querySelector<T>(s)!;
+  private q = <T extends HTMLElement = HTMLElement>(s: string, r: ParentNode = this.root) =>
+    r.querySelector<T>(s)!;
   private pages: Record<PageName, HTMLElement>;
   private cursor: HTMLElement;
   private cx = 700;
@@ -138,7 +139,8 @@ export class AppCtl {
       const t = this.innerT[p];
       const v = (this.innerS[p] += (t - this.innerS[p]) * this.innerK);
       if (Math.abs(t - v) < 0.1) this.innerS[p] = t;
-      this.q("[data-scroll]", this.pages[p]).style.transform = `translateY(${(-this.innerS[p]).toFixed(1)}px)`;
+      this.q("[data-scroll]", this.pages[p]).style.transform =
+        `translateY(${(-this.innerS[p]).toFixed(1)}px)`;
     }
     if (this.zoomed) {
       const vw = this.w / this.s;
@@ -410,7 +412,9 @@ export class AppCtl {
         this.cardPos.set(id, target);
         const to = `translate(${target.x}px, ${target.y}px)`;
         if (animate && prev && (prev.x !== target.x || prev.y !== target.y)) {
-          jobs.push(this.anim(el, [{ transform: `translate(${prev.x}px, ${prev.y}px)` }, { transform: to }], 420));
+          jobs.push(
+            this.anim(el, [{ transform: `translate(${prev.x}px, ${prev.y}px)` }, { transform: to }], 420),
+          );
         } else el.style.transform = to;
       }
       const H = ids.length ? y - 10 + 11 - 6 : 112;
@@ -421,7 +425,13 @@ export class AppCtl {
       const midT = `scaleY(${((H - 54) / 100).toFixed(4)})`;
       const botT = `translateY(${H - 12}px)`;
       if (animate && prevH !== undefined && prevH !== H) {
-        jobs.push(this.anim(mid, [{ transform: `scaleY(${((prevH - 54) / 100).toFixed(4)})` }, { transform: midT }], 420));
+        jobs.push(
+          this.anim(
+            mid,
+            [{ transform: `scaleY(${((prevH - 54) / 100).toFixed(4)})` }, { transform: midT }],
+            420,
+          ),
+        );
         jobs.push(this.anim(bot, [{ transform: `translateY(${prevH - 12}px)` }, { transform: botT }], 420));
       } else {
         mid.style.transform = midT;
@@ -463,7 +473,10 @@ export class AppCtl {
       card,
       [
         { transform: lift },
-        { transform: `translate(${start.x + dx * 0.55}px, ${start.y - 16}px) rotate(3.5deg) scale(1.05)`, offset: 0.5 },
+        {
+          transform: `translate(${start.x + dx * 0.55}px, ${start.y - 16}px) rotate(3.5deg) scale(1.05)`,
+          offset: 0.5,
+        },
         { transform: `translate(${tx + 4}px, ${start.y - 6}px) rotate(1.5deg) scale(1.04)` },
       ],
       1150,
@@ -483,7 +496,10 @@ export class AppCtl {
     await Promise.all([
       this.anim(
         card,
-        [{ transform: `translate(${tx + 4}px, ${start.y - 6}px) rotate(1.5deg) scale(1.04)` }, { transform: `translate(${end.x}px, ${end.y}px)` }],
+        [
+          { transform: `translate(${tx + 4}px, ${start.y - 6}px) rotate(1.5deg) scale(1.04)` },
+          { transform: `translate(${end.x}px, ${end.y}px)` },
+        ],
         260,
       ),
       this.fade(drop, 0, 260),
@@ -522,7 +538,11 @@ export class AppCtl {
         300,
       );
       this.fade(this.q("[data-hov-todo]", pg), 0, 200);
-      await this.anim(this.q("[data-strike]", pg), [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }], 420);
+      await this.anim(
+        this.q("[data-strike]", pg),
+        [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }],
+        420,
+      );
       this.hand(false);
       this.moveTo(820, 700, 1100);
       if (this.mode === "auto") {
@@ -625,7 +645,11 @@ export class AppCtl {
       if (!(await this.wait(700, "interviews"))) return;
       await this.moveTo(806, 510, 560);
       await this.click();
-      await this.anim(ring, [{ transform: "translate(294px,-84px)" }, { transform: "translate(392px,0)" }], 420);
+      await this.anim(
+        ring,
+        [{ transform: "translate(294px,-84px)" }, { transform: "translate(392px,0)" }],
+        420,
+      );
       this.hand(false);
       if (!(await this.wait(2000, "interviews"))) return;
       await this.fade(ring, 0, 400);
@@ -637,7 +661,12 @@ export class AppCtl {
       const pg = this.pages.insights;
       const cover = this.q("[data-cover]", pg);
       if (getComputedStyle(cover).transform !== "matrix(0, 0, 0, 1, 0, 0)") {
-        await this.anim(cover, [{ transform: "scaleX(1)" }, { transform: "scaleX(0)" }], 1500, "cubic-bezier(.6,0,.2,1)");
+        await this.anim(
+          cover,
+          [{ transform: "scaleX(1)" }, { transform: "scaleX(0)" }],
+          1500,
+          "cubic-bezier(.6,0,.2,1)",
+        );
       }
       if (!(await this.wait(300, "insights"))) return;
       const tip = this.q("[data-tip]");

@@ -20,7 +20,9 @@ const base = import.meta.env.BASE_URL;
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
   </head>
   <body class="c6-body">
-    <a class="c6-skip" href="#c6-main">Skip to content</a>
+    <a class="c6-skip" href="#c6-main">
+      Skip to content
+    </a>
     <div class="c6-mesh" aria-hidden="true">
       <i data-t="ink"></i>
       <i data-t="paper"></i>
@@ -48,8 +50,12 @@ const base = import.meta.env.BASE_URL;
         <a href="#c6-get">Quick start</a>
       </nav>
       <div class="c6-right">
-        <a class="c6-pill c6-glass c6-gh" href={REPO}><span>GitHub</span></a>
-        <a class="c6-pill c6-pill--copper" href="#c6-get"><span>Get it</span></a>
+        <a class="c6-pill c6-glass c6-gh" href={REPO}>
+          <span>GitHub</span>
+        </a>
+        <a class="c6-pill c6-pill--copper" href="#c6-get">
+          <span>Get it</span>
+        </a>
       </div>
     </header>
 
@@ -61,7 +67,8 @@ const base = import.meta.env.BASE_URL;
       const root = document.documentElement;
       const io = new IntersectionObserver(
         (entries) => {
-          for (const e of entries) if (e.isIntersecting) root.dataset.tint = (e.target as HTMLElement).dataset.c6Tint;
+          for (const e of entries)
+            if (e.isIntersecting) root.dataset.tint = (e.target as HTMLElement).dataset.c6Tint;
         },
         { rootMargin: "-50% 0px -50% 0px" },
       );
@@ -85,7 +92,8 @@ const base = import.meta.env.BASE_URL;
           panes.forEach((p, i) => {
             const r = p.getBoundingClientRect();
             if (r.bottom < 0 || r.top > innerHeight) return;
-            sheens[i].style.transform = `translate(${(mx - r.left).toFixed(0)}px, ${(my - r.top).toFixed(0)}px)`;
+            sheens[i].style.transform =
+              `translate(${(mx - r.left).toFixed(0)}px, ${(my - r.top).toFixed(0)}px)`;
             sheens[i].style.opacity = String(
               Math.max(0, 1 - Math.hypot(mx - (r.left + r.width / 2), my - (r.top + r.height / 2)) / 600),
             );
@@ -145,7 +153,10 @@ const base = import.meta.env.BASE_URL;
   .c6-body {
     margin: 0;
     color: var(--c6-fg);
-    font: 400 17px/1.55 "Inter Variable", system-ui, sans-serif;
+    font:
+      400 17px/1.55 "Inter Variable",
+      system-ui,
+      sans-serif;
     -webkit-font-smoothing: antialiased;
     overflow-x: clip;
     transition: color 0.6s var(--c6-ease);
@@ -237,7 +248,12 @@ const base = import.meta.env.BASE_URL;
   .c6-blob--b {
     right: -30vmax;
     top: 10vmax;
-    background: radial-gradient(closest-side, rgb(238 210 170 / 0.7), rgb(238 210 170 / 0.18) 50%, transparent);
+    background: radial-gradient(
+      closest-side,
+      rgb(238 210 170 / 0.7),
+      rgb(238 210 170 / 0.18) 50%,
+      transparent
+    );
     animation-duration: 46s;
     animation-delay: -14s;
   }
@@ -363,7 +379,12 @@ const base = import.meta.env.BASE_URL;
     width: 220px;
     height: 220px;
     border-radius: 50%;
-    background: radial-gradient(closest-side, rgb(255 230 200 / 0.55), rgb(255 230 200 / 0.12) 55%, transparent);
+    background: radial-gradient(
+      closest-side,
+      rgb(255 230 200 / 0.55),
+      rgb(255 230 200 / 0.12) 55%,
+      transparent
+    );
     opacity: 0;
     pointer-events: none;
   }

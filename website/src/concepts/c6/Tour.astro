@@ -71,47 +71,54 @@ const chapters = [
   </div>
 
   <nav class="c6-prog c6-glass" aria-label="Tour chapters" data-c6-prog>
-    <span class="c6-prog-label" data-c6-prog-label>The tour</span>
-    <span class="c6-prog-bars">
-      {
-        chapters.map((c, i) => (
-          <a href={`#c6-ch-${i + 1}`} data-c6-seg={i + 1} title={c.eyebrow}>
-            <i />
-            <span class="c6-sr">{c.eyebrow}</span>
-          </a>
-        ))
-      }
+    <span class="c6-prog-label" data-c6-prog-label>
+      The tour
     </span>
-    <span class="c6-prog-hint" aria-hidden="true">More below</span>
+    <span class="c6-prog-bars">
+      {chapters.map((c, i) => (
+        <a href={`#c6-ch-${i + 1}`} data-c6-seg={i + 1} title={c.eyebrow}>
+          <i />
+          <span class="c6-sr">{c.eyebrow}</span>
+        </a>
+      ))}
+    </span>
+    <span class="c6-prog-hint" aria-hidden="true">
+      More below
+    </span>
   </nav>
 
   <div class="c6-tchapters">
     <div class="c6-tch c6-tch--intro" data-c6-ch="0">
       <div class="c6-tcap c6-tcap--intro c6-glass">
         <p class="c6-eyebrow">A day in the app</p>
-        <h2 class="c6-h2" id="c6-tour-h">Now open it up.</h2>
+        <h2 class="c6-h2" id="c6-tour-h">
+          Now open it up.
+        </h2>
         <p class="c6-soft">Keep scrolling: the window fills the screen and you use the app, page by page.</p>
       </div>
     </div>
-    {
-      chapters.map((c, i) => (
-        <div class="c6-tch" id={`c6-ch-${i + 1}`} data-c6-ch={i + 1}>
-          <div class="c6-tcap c6-glass">
-            <p class="c6-eyebrow">
-              <span class="c6-step">
-                {i + 1} / {chapters.length}
-              </span>
-              {c.eyebrow}
-            </p>
-            <h3 class="c6-h2">{c.title}</h3>
-            <p class="c6-soft">{c.body}</p>
-          </div>
-          <figure class="c6-tstill">
-            <Image src={c.still} widths={[1210, 2420]} sizes="(max-width: 1100px) 100vw, 1100px" alt={`${c.alt} (made-up demo data)`} />
-          </figure>
+    {chapters.map((c, i) => (
+      <div class="c6-tch" id={`c6-ch-${i + 1}`} data-c6-ch={i + 1}>
+        <div class="c6-tcap c6-glass">
+          <p class="c6-eyebrow">
+            <span class="c6-step">
+              {i + 1} / {chapters.length}
+            </span>
+            {c.eyebrow}
+          </p>
+          <h3 class="c6-h2">{c.title}</h3>
+          <p class="c6-soft">{c.body}</p>
         </div>
-      ))
-    }
+        <figure class="c6-tstill">
+          <Image
+            src={c.still}
+            widths={[1210, 2420]}
+            sizes="(max-width: 1100px) 100vw, 1100px"
+            alt={`${c.alt} (made-up demo data)`}
+          />
+        </figure>
+      </div>
+    ))}
     <div class="c6-tch c6-tch--outro" data-c6-ch="7">
       <div class="c6-tcap c6-tcap--intro c6-glass">
         <p class="c6-eyebrow">That's the tour</p>
@@ -148,7 +155,14 @@ const chapters = [
     let vw = 0;
     let vh = 0;
     let keys: [number, Pose][] = [];
-    const P = (tx: number, ty: number, sc: number, rx: number, ry: number, rz: number): Pose => ({ tx, ty, sc, rx, ry, rz });
+    const P = (tx: number, ty: number, sc: number, rx: number, ry: number, rz: number): Pose => ({
+      tx,
+      ty,
+      sc,
+      rx,
+      ry,
+      rz,
+    });
 
     function layout() {
       vw = innerWidth;
@@ -160,7 +174,7 @@ const chapters = [
         ctl.size(Math.round(1440 * s), Math.round(900 * s));
       }
       const S = mobile ? P(0, vh * 0.3, 0.7, 22, 0, 0) : P(0, vh * 0.3, 0.42, 28, 0, 0);
-      const F = mobile ? P(0, -vh * 0.12, 1, 0, 0, 0) : P(0, 12, 1, 0, 0, 0);
+      const F = mobile ? P(0, -vh * 0.07, 1, 0, 0, 0) : P(0, 12, 1, 0, 0, 0);
       const O = mobile ? P(0, vh * 0.22, 0.66, 18, 0, 0) : P(0, vh * 0.2, 0.46, 24, 0, 0);
       keys = [
         [0, S],
@@ -194,7 +208,17 @@ const chapters = [
       return t;
     }
     const pageFor = (t: number): PageName =>
-      t < 2 ? "today" : t < 3 ? "application" : t < 4 ? "board" : t < 5 ? "role" : t < 6 ? "interviews" : "insights";
+      t < 2
+        ? "today"
+        : t < 3
+          ? "application"
+          : t < 4
+            ? "board"
+            : t < 5
+              ? "role"
+              : t < 6
+                ? "interviews"
+                : "insights";
 
     let t = 0;
     let tS = 0;
@@ -335,8 +359,7 @@ const chapters = [
     border-radius: 30px 30px 30px 8px;
     --c6-glass-a: 0.08;
     background:
-      linear-gradient(160deg, rgb(255 236 214 / 0.16), rgb(255 236 214 / 0.03) 55%),
-      rgb(42 28 20 / 0.55);
+      linear-gradient(160deg, rgb(255 236 214 / 0.16), rgb(255 236 214 / 0.03) 55%), rgb(42 28 20 / 0.55);
     border-color: rgb(255 220 190 / 0.22);
     color: #f3ece2;
   }
@@ -452,7 +475,7 @@ const chapters = [
     }
     .c6-tcap {
       top: auto;
-      bottom: 14px;
+      bottom: 66px;
       margin: 0 auto;
       padding: 20px 22px 22px;
     }

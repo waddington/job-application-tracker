@@ -59,14 +59,27 @@ const tabs: { id: string; label: string; lines: Line[] }[] = [
         <p class="c6-eyebrow">Private by design</p>
         <div>
           <h2 class="c6-lead" id="c6-private-h">
-            No AI reads your notes. No cloud keeps your CVs. No account, no tracking, no ads. Your whole job search lives
-            in one folder on your own computer: a SQLite database, a readable export, your Markdown notes and your files.
+            No AI reads your notes. No cloud keeps your CVs. No account, no tracking, no ads. Your whole job
+            search lives in one folder on your own computer: a SQLite database, a readable export, your
+            Markdown notes and your files.
           </h2>
           <dl class="c6-stats">
-            <div><dt>0</dt><dd>accounts to create</dd></div>
-            <div><dt>0</dt><dd>trackers or ads</dd></div>
-            <div><dt>0</dt><dd>subscription fees</dd></div>
-            <div><dt>100%</dt><dd>of your data on your computer</dd></div>
+            <div>
+              <dt>0</dt>
+              <dd>accounts to create</dd>
+            </div>
+            <div>
+              <dt>0</dt>
+              <dd>trackers or ads</dd>
+            </div>
+            <div>
+              <dt>0</dt>
+              <dd>subscription fees</dd>
+            </div>
+            <div>
+              <dt>100%</dt>
+              <dd>of your data on your computer</dd>
+            </div>
           </dl>
         </div>
       </div>
@@ -76,7 +89,12 @@ const tabs: { id: string; label: string; lines: Line[] }[] = [
       <article class="c6-card c6-card--board" data-c6-card>
         <div class="c6-card-art">
           <div class="c6-card-shot" data-c6-shot>
-            <Image src={board} widths={[1210, 2420]} sizes="(max-width: 760px) 90vw, 640px" alt="The board: applications by stage, with an interview round on a card" />
+            <Image
+              src={board}
+              widths={[1210, 2420]}
+              sizes="(max-width: 760px) 90vw, 640px"
+              alt="The board: applications by stage, with an interview round on a card"
+            />
           </div>
         </div>
         <div class="c6-card-txt">
@@ -87,7 +105,12 @@ const tabs: { id: string; label: string; lines: Line[] }[] = [
       <article class="c6-card c6-card--today" data-c6-card>
         <div class="c6-card-art">
           <div class="c6-card-shot" data-c6-shot>
-            <Image src={today} widths={[1210, 2420]} sizes="(max-width: 760px) 90vw, 640px" alt="The Today page: replies to read, offers to answer and what's coming up" />
+            <Image
+              src={today}
+              widths={[1210, 2420]}
+              sizes="(max-width: 760px) 90vw, 640px"
+              alt="The Today page: replies to read, offers to answer and what's coming up"
+            />
           </div>
         </div>
         <div class="c6-card-txt">
@@ -98,12 +121,16 @@ const tabs: { id: string; label: string; lines: Line[] }[] = [
     </section>
 
     <section class="c6-centre" data-c6-tint="taupe">
-      <p class="c6-display">One folder on your computer.<br /><span class="c6-soft">Nothing leaves it.</span></p>
+      <p class="c6-display">
+        One folder on your computer.
+        <br />
+        <span class="c6-soft">Nothing leaves it.</span>
+      </p>
       <p class="c6-centre-next" aria-hidden="true">
         A day in the app, below
-        <svg viewBox="0 0 12 12" width="12" height="12"
-          ><path d="M6 2v8M2.5 6.5 6 10l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.4"></path></svg
-        >
+        <svg viewBox="0 0 12 12" width="12" height="12">
+          <path d="M6 2v8M2.5 6.5 6 10l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.4"></path>
+        </svg>
       </p>
     </section>
 
@@ -111,14 +138,22 @@ const tabs: { id: string; label: string; lines: Line[] }[] = [
 
     <section class="c6-rest" id="c6-languages" data-c6-tint="cream" aria-labelledby="c6-lang-h">
       <div class="c6-wrap c6-two">
-        <p class="c6-eyebrow">English and <span lang="zh-CN">简体中文</span></p>
+        <p class="c6-eyebrow">
+          English and <span lang="zh-CN">简体中文</span>
+        </p>
         <div>
           <h2 class="c6-lead" id="c6-lang-h">
-            The whole app in English and <span lang="zh-CN">简体中文</span>, from buttons to dates. It follows your
-            browser, and you can switch in the header. The README is <a href={README_ZH}>in <span lang="zh-CN">简体中文</span></a> too.
+            The whole app in English and <span lang="zh-CN">简体中文</span>, from buttons to dates. It follows
+            your browser, and you can switch in the header. The README is{" "}
+            <a href={README_ZH}>
+              in <span lang="zh-CN">简体中文</span>
+            </a>{" "}
+            too.
           </h2>
           <ul class="c6-chips" aria-label="Also in the box">
-            {chips.map((c) => <li class="c6-glass">{c}</li>)}
+            {chips.map((c) => (
+              <li class="c6-glass">{c}</li>
+            ))}
           </ul>
         </div>
       </div>
@@ -127,53 +162,66 @@ const tabs: { id: string; label: string; lines: Line[] }[] = [
     <section class="c6-get" id="c6-get" data-c6-tint="cream" aria-labelledby="c6-get-h">
       <div class="c6-get-head">
         <p class="c6-eyebrow">Quick start · open source, Apache-2.0</p>
-        <h2 class="c6-display" id="c6-get-h">Set up in about ten minutes.</h2>
+        <h2 class="c6-display" id="c6-get-h">
+          Set up in about ten minutes.
+        </h2>
         <p class="c6-soft">
-          With uv and Node.js on your Mac or Linux computer, paste a few commands into the Terminal, once. After that
-          it's a web page in your browser. Windows is next on the roadmap.
+          With uv and Node.js on your Mac or Linux computer, paste a few commands into the Terminal, once.
+          After that it's a web page in your browser. Windows is next on the roadmap.
         </p>
         <div class="c6-get-btns">
-          <a class="c6-pill c6-pill--copper" href={`${GUIDE}install.md`}><span>Read the install guide</span></a>
-          <a class="c6-pill c6-glass" href={REPO}><span>View on GitHub</span></a>
+          <a class="c6-pill c6-pill--copper" href={`${GUIDE}install.md`}>
+            <span>Read the install guide</span>
+          </a>
+          <a class="c6-pill c6-glass" href={REPO}>
+            <span>View on GitHub</span>
+          </a>
         </div>
       </div>
       <div class="c6-term-wrap" data-c6-tabs>
         <div class="c6-seg c6-glass" role="tablist" aria-label="Quick start steps">
           <span class="c6-seg-thumb" aria-hidden="true" data-thumb></span>
-          {
-            tabs.map((t, i) => (
-              <button
-                type="button"
-                role="tab"
-                id={`c6-tab-${t.id}`}
-                aria-controls={`c6-panel-${t.id}`}
-                aria-selected={i === 0 ? "true" : "false"}
-                tabindex={i === 0 ? 0 : -1}
-              >
-                {t.label}
-              </button>
-            ))
-          }
+          {tabs.map((t, i) => (
+            <button
+              type="button"
+              role="tab"
+              id={`c6-tab-${t.id}`}
+              aria-controls={`c6-panel-${t.id}`}
+              aria-selected={i === 0 ? "true" : "false"}
+              tabindex={i === 0 ? 0 : -1}
+            >
+              {t.label}
+            </button>
+          ))}
         </div>
         <div class="c6-term">
-          <div class="c6-term-bar" aria-hidden="true"><i></i><i></i><i></i><span>Terminal</span></div>
-          {
-            tabs.map((t, i) => (
-              <div class="c6-panel" role="tabpanel" id={`c6-panel-${t.id}`} aria-labelledby={`c6-tab-${t.id}`} hidden={i !== 0}>
-                {t.lines.map((l) =>
-                  l.cmd ? (
-                    <p class="c6-cmd">
-                      <span aria-hidden="true">$</span> {l.cmd}
-                    </p>
-                  ) : l.out ? (
-                    <p class="c6-out">{l.out}</p>
-                  ) : (
-                    <p class="c6-note">{l.note}</p>
-                  ),
-                )}
-              </div>
-            ))
-          }
+          <div class="c6-term-bar" aria-hidden="true">
+            <i></i>
+            <i></i>
+            <i></i>
+            <span>Terminal</span>
+          </div>
+          {tabs.map((t, i) => (
+            <div
+              class="c6-panel"
+              role="tabpanel"
+              id={`c6-panel-${t.id}`}
+              aria-labelledby={`c6-tab-${t.id}`}
+              hidden={i !== 0}
+            >
+              {t.lines.map((l) =>
+                l.cmd ? (
+                  <p class="c6-cmd">
+                    <span aria-hidden="true">$</span> {l.cmd}
+                  </p>
+                ) : l.out ? (
+                  <p class="c6-out">{l.out}</p>
+                ) : (
+                  <p class="c6-note">{l.note}</p>
+                ),
+              )}
+            </div>
+          ))}
         </div>
       </div>
     </section>
@@ -183,8 +231,14 @@ const tabs: { id: string; label: string; lines: Line[] }[] = [
     <div class="c6-fpanel">
       <div class="c6-fbig">
         <p class="c6-eyebrow">Job application tracker</p>
-        <p class="c6-fline">Your search,<br />on your machine.</p>
-        <a class="c6-pill c6-pill--copper" href="#c6-get"><span>Get started</span></a>
+        <p class="c6-fline">
+          Your search,
+          <br />
+          on your machine.
+        </p>
+        <a class="c6-pill c6-pill--copper" href="#c6-get">
+          <span>Get started</span>
+        </a>
       </div>
       <div class="c6-fcols">
         <div>
@@ -197,7 +251,9 @@ const tabs: { id: string; label: string; lines: Line[] }[] = [
           <h4>Read</h4>
           <a href={GUIDE}>User guide</a>
           <a href={`${GUIDE}install.md`}>Install guide</a>
-          <a href={README_ZH}>README in <span lang="zh-CN">简体中文</span></a>
+          <a href={README_ZH}>
+            README in <span lang="zh-CN">简体中文</span>
+          </a>
         </div>
         <div>
           <h4>Promise</h4>
@@ -206,7 +262,10 @@ const tabs: { id: string; label: string; lines: Line[] }[] = [
           <span>Apache-2.0 licence</span>
         </div>
       </div>
-      <p class="c6-ffine">Free and open source. Screens show made-up demo data. This site adds no cookies, analytics or trackers.</p>
+      <p class="c6-ffine">
+        Free and open source. Screens show made-up demo data. This site adds no cookies, analytics or
+        trackers.
+      </p>
     </div>
   </footer>
 </Layout>
@@ -478,7 +537,9 @@ const tabs: { id: string; label: string; lines: Line[] }[] = [
     border: 0;
     border-radius: 999px;
     background: none;
-    font: 500 14px/1 "Inter Variable", sans-serif;
+    font:
+      500 14px/1 "Inter Variable",
+      sans-serif;
     color: var(--c6-fg-soft);
     cursor: pointer;
     white-space: nowrap;
@@ -551,8 +612,7 @@ const tabs: { id: string; label: string; lines: Line[] }[] = [
     border-radius: 40px;
     color: #f0e6da;
     background:
-      radial-gradient(60% 80% at 100% 0%, rgb(196 122 72 / 0.35), transparent 60%),
-      var(--c6-espresso);
+      radial-gradient(60% 80% at 100% 0%, rgb(196 122 72 / 0.35), transparent 60%), var(--c6-espresso);
   }
   .c6-fbig {
     display: flex;

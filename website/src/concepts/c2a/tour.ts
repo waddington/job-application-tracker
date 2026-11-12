@@ -3,7 +3,16 @@
 // is driven by app/engine.ts. Reduced motion: nothing here runs (the page shows stacked stills).
 import { app, type PageName } from "./app/engine";
 
-type Pose = { tx: number; ty: number; sc: number; rx: number; ry: number; rz: number; x: number; chips: number };
+type Pose = {
+  tx: number;
+  ty: number;
+  sc: number;
+  rx: number;
+  ry: number;
+  rz: number;
+  x: number;
+  chips: number;
+};
 
 const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 const smooth = (v: number, a: number, b: number) => {
@@ -27,12 +36,31 @@ function init() {
   const segs = $$("[data-seg]");
   const label = $("[data-progress-label]");
   const slabs = $$("[data-slab]");
-  const names = ["", "", "Today", "Search", "The board", "Roles", "Interviews", "Insights", "Under the glass"];
+  const names = [
+    "",
+    "",
+    "Today",
+    "Search",
+    "The board",
+    "Roles",
+    "Interviews",
+    "Insights",
+    "Under the glass",
+  ];
 
   let vw = 0;
   let vh = 0;
   let keys: [number, Pose][] = [];
-  const P = (tx: number, ty: number, sc: number, rx: number, ry: number, rz: number, x = 0, chips = 0): Pose => ({
+  const P = (
+    tx: number,
+    ty: number,
+    sc: number,
+    rx: number,
+    ry: number,
+    rz: number,
+    x = 0,
+    chips = 0,
+  ): Pose => ({
     tx,
     ty,
     sc,
@@ -52,8 +80,10 @@ function init() {
       const s = Math.min((vw - 140) / 1440, (vh - 44 - 130) / 900);
       ctl.size(Math.round(1440 * s), Math.round(900 * s));
     }
-    const H = mobile ? P(0, vh * 0.36, 0.82, 18, -14, 2, 0, 1) : P(vw * 0.2, vh * 0.05, 0.52, 12, -24, 2.5, 0, 1);
-    const F = mobile ? P(0, -vh * 0.13, 1, 0, 0, 0) : P(0, 12, 1, 0, 0, 0);
+    const H = mobile
+      ? P(0, vh * 0.36, 0.82, 18, -14, 2, 0, 1)
+      : P(vw * 0.2, vh * 0.05, 0.52, 12, -24, 2.5, 0, 1);
+    const F = mobile ? P(0, -vh * 0.07, 1, 0, 0, 0) : P(0, 12, 1, 0, 0, 0);
     const E = mobile ? P(0, vh * 0.2, 0.86, 10, -24, 0, 1) : P(vw * 0.15, -vh * 0.04, 0.44, 54, 0, -32, 1);
     const E0 = mobile ? P(0, vh * 0.2, 0.86, 4, -8, 0) : P(vw * 0.17, 14, 0.58, 4, -10, 0);
     const O = mobile ? P(0, -vh * 0.03, 0.55, 10, 0, 0) : P(0, vh * 0.07, 0.38, 12, 0, 0, 0, 0);

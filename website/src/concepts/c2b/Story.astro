@@ -41,49 +41,71 @@ const steps: { tab: string; title: string; body: string; img: ImageMetadata; alt
 ];
 ---
 
-<section class="c2b-story" id="c2b-features" data-tint-block="sky" data-c2b-story aria-labelledby="c2b-story-h">
+<section
+  class="c2b-story"
+  id="c2b-features"
+  data-tint-block="sky"
+  data-c2b-story
+  aria-labelledby="c2b-story-h"
+>
   <div class="c2b-story-pin">
     <div class="c2b-story-copy">
       <p class="c2b-eyebrow">Everything in one place</p>
-      <h2 class="c2b-display" id="c2b-story-h">The whole search,<br />not just the board.</h2>
+      <h2 class="c2b-display" id="c2b-story-h">
+        The whole search,
+        <br />
+        not just the board.
+      </h2>
       <ol class="c2b-steps">
-        {
-          steps.map((s, i) => (
-            <li class:list={{ "is-on": i === 0 }} data-step={i}>
-              <b>{s.title}</b>
-              <span>{s.body}</span>
-            </li>
-          ))
-        }
+        {steps.map((s, i) => (
+          <li class:list={{ "is-on": i === 0 }} data-step={i}>
+            <b>{s.title}</b>
+            <span>{s.body}</span>
+          </li>
+        ))}
       </ol>
     </div>
     <div class="c2b-story-media">
       <div class="c2b-tabs c2b-glass" role="tablist" aria-label="Parts of the app">
         <span class="c2b-tabs-thumb" data-thumb aria-hidden="true"></span>
-        {
-          steps.map((s, i) => (
-            <button type="button" role="tab" aria-selected={i === 0 ? "true" : "false"} aria-controls={`c2b-story-${i}`} data-tab={i}>
-              {s.tab}
-            </button>
-          ))
-        }
-        <span class="c2b-tabs-line" aria-hidden="true"><i data-line></i></span>
+        {steps.map((s, i) => (
+          <button
+            type="button"
+            role="tab"
+            aria-selected={i === 0 ? "true" : "false"}
+            aria-controls={`c2b-story-${i}`}
+            data-tab={i}
+          >
+            {s.tab}
+          </button>
+        ))}
+        <span class="c2b-tabs-line" aria-hidden="true">
+          <i data-line></i>
+        </span>
       </div>
       <div class="c2b-frame">
-        {
-          steps.map((s, i) => (
-            <div class:list={["c2b-shot", { "is-on": i === 0 }]} id={`c2b-story-${i}`} role="tabpanel" data-shot={i}>
-              <Image src={s.img} widths={[1210, 2420]} sizes="(max-width: 760px) 92vw, 800px" alt={`${s.alt} (made-up demo data)`} />
-            </div>
-          ))
-        }
+        {steps.map((s, i) => (
+          <div
+            class:list={["c2b-shot", { "is-on": i === 0 }]}
+            id={`c2b-story-${i}`}
+            role="tabpanel"
+            data-shot={i}
+          >
+            <Image
+              src={s.img}
+              widths={[1210, 2420]}
+              sizes="(max-width: 760px) 92vw, 800px"
+              alt={`${s.alt} (made-up demo data)`}
+            />
+          </div>
+        ))}
       </div>
     </div>
     <p class="c2b-next" aria-hidden="true">
       Next: English and <span lang="zh-CN">简体中文</span>
-      <svg viewBox="0 0 12 12" width="11" height="11"
-        ><path d="M6 2v8M2.5 6.5 6 10l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.4"></path></svg
-      >
+      <svg viewBox="0 0 12 12" width="11" height="11">
+        <path d="M6 2v8M2.5 6.5 6 10l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.4"></path>
+      </svg>
     </p>
   </div>
 </section>
@@ -256,8 +278,7 @@ const steps: { tab: string; title: string; body: string; img: ImageMetadata; alt
     border-radius: 34px;
     background:
       radial-gradient(70% 80% at 0% 0%, rgb(201 184 255 / 0.9), transparent 70%),
-      radial-gradient(60% 70% at 100% 100%, rgb(255 198 171 / 0.9), transparent 70%),
-      #eef4ff;
+      radial-gradient(60% 70% at 100% 100%, rgb(255 198 171 / 0.9), transparent 70%), #eef4ff;
     box-shadow: 0 50px 100px -40px rgb(50 30 130 / 0.45);
   }
   .c2b-shot {

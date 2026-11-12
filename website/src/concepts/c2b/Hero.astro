@@ -11,14 +11,22 @@ import zh from "./shots/d-today-zh.png";
   <div class="c2b-pin">
     <div class="c2b-hero-copy" data-c2b-copy>
       <p class="c2b-eyebrow">Private job application tracker</p>
-      <h1 class="c2b-display" id="c2b-hero-h">Your job search,<br />on your machine.</h1>
+      <h1 class="c2b-display" id="c2b-hero-h">
+        Your job search,
+        <br />
+        on your machine.
+      </h1>
       <p class="c2b-hero-sub">
-        Every application, recruiter, interview and offer in one place, and a clear list of who to chase today. No
-        account, no cloud, no AI, nobody watching.
+        Every application, recruiter, interview and offer in one place, and a clear list of who to chase
+        today. No account, no cloud, no AI, nobody watching.
       </p>
       <div class="c2b-hero-ctas">
-        <a class="c2b-glass c2b-btn c2b-btn--ink" href="#c2b-quickstart"><span>Get started, it's free</span></a>
-        <a class="c2b-glass c2b-btn" href="#c2b-private"><span>Why it's private</span></a>
+        <a class="c2b-glass c2b-btn c2b-btn--ink" href="#c2b-quickstart">
+          <span>Get started, it's free</span>
+        </a>
+        <a class="c2b-glass c2b-btn" href="#c2b-private">
+          <span>Why it's private</span>
+        </a>
       </div>
     </div>
     <div class="c2b-cap c2b-glass" data-c2b-cap="1" aria-hidden="true">
@@ -32,15 +40,32 @@ import zh from "./shots/d-today-zh.png";
 
     <div class="c2b-scene" aria-hidden="true">
       <div class="c2b-back" data-c2b-back>
-        <div class="c2b-back-bar"><i></i><i></i><i></i><span>127.0.0.1 · <span lang="zh-CN">今日</span></span></div>
-        <Image src={zh} widths={[1440, 2880]} sizes="(max-width: 760px) 100vw, 1000px" alt="" loading="eager" />
+        <div class="c2b-back-bar">
+          <i></i>
+          <i></i>
+          <i></i>
+          <span>
+            127.0.0.1 · <span lang="zh-CN">今日</span>
+          </span>
+        </div>
+        <Image
+          src={zh}
+          widths={[1440, 2880]}
+          sizes="(max-width: 760px) 100vw, 1000px"
+          alt=""
+          loading="eager"
+        />
       </div>
       <div class="c2b-front" data-c2b-front>
         <AppWindow scheme="light" />
       </div>
     </div>
-    <div class="c2b-pinbar" aria-hidden="true"><i data-c2b-pinbar></i></div>
-    <p class="c2b-sr">The app's Today page, the board, a role and the insights Sankey, being used on made-up demo data.</p>
+    <div class="c2b-pinbar" aria-hidden="true">
+      <i data-c2b-pinbar></i>
+    </div>
+    <p class="c2b-sr">
+      The app's Today page, the board, a role and the insights Sankey, being used on made-up demo data.
+    </p>
   </div>
 </section>
 
@@ -48,7 +73,16 @@ import zh from "./shots/d-today-zh.png";
   import { app } from "../c2a/app/engine";
 
   type Pose = { x: number; y: number; z: number; rx: number; ry: number; rz: number; s: number; o: number };
-  const P = (x: number, y: number, z: number, rx: number, ry: number, rz: number, s: number, o = 1): Pose => ({
+  const P = (
+    x: number,
+    y: number,
+    z: number,
+    rx: number,
+    ry: number,
+    rz: number,
+    s: number,
+    o = 1,
+  ): Pose => ({
     x,
     y,
     z,
@@ -112,13 +146,13 @@ import zh from "./shots/d-today-zh.png";
           }
         : {
             front: [
-              [0, P(0, 20, 0, 16, -16, -2, 0.92)],
+              [0, P(0, 33, 0, 16, -16, -2, 0.9)],
               [0.36, P(0, 6, 0, 4, 0, 0, 1)],
               [0.55, P(0, 6, 0, 4, 0, 0, 1)],
               [0.9, P(-44, 6, 120, 4, -80, 0, 1, 0)],
             ] as [number, Pose][],
             back: [
-              [0, P(6, 14, -300, 16, -16, -2, 0.85, 0.4)],
+              [0, P(6, 27, -300, 16, -16, -2, 0.85, 0.4)],
               [0.55, P(4, 2, -360, 6, -8, 0, 0.92, 0.5)],
               [0.9, P(0, 6, 0, 4, 0, 0, 1)],
             ] as [number, Pose][],
