@@ -1663,3 +1663,6 @@ html:has(.c3-body) {
     margin: 120px 0 140px;
   }
 }
+.c3-side-col .c3-dotfig {
+  max-width: 400px;
+}

@@ -47,15 +47,13 @@ for (let y = 0; y < rows; y++)
 ---
 
 <svg class="c3-dots" viewBox={`0 0 ${cols * gap} ${rows * gap}`} role="img" aria-label={label}>
-  {
-    dots.map((d) => (
-      <circle
-        cx={d.x * gap + gap / 2}
-        cy={d.y * gap + gap / 2}
-        r={d.k ? 2.6 : 1.1}
-        class={d.k}
-        style={d.k === "hot" ? `animation-delay:${d.d}s` : undefined}
-      />
-    ))
-  }
+  {dots.map((d) => (
+    <circle
+      cx={d.x * gap + gap / 2}
+      cy={d.y * gap + gap / 2}
+      r={d.k ? 2.6 : 1.1}
+      class={d.k}
+      style={d.k === "hot" ? `animation-delay:${d.d}s` : undefined}
+    />
+  ))}
 </svg>

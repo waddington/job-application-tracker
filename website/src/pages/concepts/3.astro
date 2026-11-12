@@ -32,8 +32,18 @@ const chapters = [
 ];
 
 const coverBack = [
-  { img: insights, path: "/insights", label: "Insights", alt: "Insights: a Sankey diagram of a whole job search" },
-  { img: recruiters, path: "/recruiters", label: "Recruiters", alt: "Recruiters with their agencies and roles" },
+  {
+    img: insights,
+    path: "/insights",
+    label: "Insights",
+    alt: "Insights: a Sankey diagram of a whole job search",
+  },
+  {
+    img: recruiters,
+    path: "/recruiters",
+    label: "Recruiters",
+    alt: "Recruiters with their agencies and roles",
+  },
   { img: offers, path: "/offers", label: "Offers", alt: "Two offers compared side by side" },
   { img: timeline, path: "/timeline", label: "Timeline", alt: "The timeline of everything that happened" },
 ];
@@ -41,7 +51,12 @@ const spreadBack = [
   { img: offers, path: "/offers", label: "Offers", alt: "Two offers compared side by side" },
   { img: board, path: "/applications", label: "The board", alt: "The board of applications by stage" },
   { img: today, path: "/", label: "Today", alt: "The Today page" },
-  { img: insights, path: "/insights", label: "Insights", alt: "Insights: a Sankey diagram of a whole job search" },
+  {
+    img: insights,
+    path: "/insights",
+    label: "Insights",
+    alt: "Insights: a Sankey diagram of a whole job search",
+  },
 ];
 
 const stages = ["Interested", "Applied", "Screen", "Interviewing", "Final", "Offer"];
@@ -109,22 +124,20 @@ const rich = (a: string) =>
   </head>
   <body class="c3-body">
     <div class="c3-tints" aria-hidden="true">
-      <i data-tint-layer="white" class="on"></i><i data-tint-layer="cream"></i><i data-tint-layer="sand"></i><i
-        data-tint-layer="ink"></i>
+      <i data-tint-layer="white" class="on"></i>
+      <i data-tint-layer="cream"></i>
+      <i data-tint-layer="sand"></i>
+      <i data-tint-layer="ink"></i>
     </div>
     <div class="c3-grain" aria-hidden="true"></div>
 
     <header class="c3-chrome">
       <a class="c3-logo c3-glass" href="#top" aria-label="Job Application Tracker, back to the cover">
-        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"
-          ><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"></circle><circle
-            cx="12"
-            cy="12"
-            r="4.5"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.8"></circle><circle cx="12" cy="12" r="1.5" fill="#2e6a4c"></circle></svg
-        >
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"></circle>
+          <circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="1.8"></circle>
+          <circle cx="12" cy="12" r="1.5" fill="#2e6a4c"></circle>
+        </svg>
       </a>
       <nav class="c3-nav c3-glass" aria-label="Chapters">
         <a href="#c3-today">Today</a>
@@ -132,27 +145,33 @@ const rich = (a: string) =>
         <a href="#c3-people">People</a>
         <a href="#c3-offers">Insights</a>
         <a href="#c3-yours">Privacy</a>
-        <span class="c3-nav-now" data-now>Contents</span>
+        <span class="c3-nav-now" data-now>
+          Contents
+        </span>
       </nav>
-      <a class="c3-cta c3-glass" href="#c3-start">Get it free</a>
+      <a class="c3-cta c3-glass" href="#c3-start">
+        Get it free
+      </a>
     </header>
 
     <aside class="c3-rail" aria-label="Contents" data-rail>
       <p class="c3-rail-title">Contents</p>
       <ol>
-        {
-          chapters.map((c) => (
-            <li>
-              <a href={`#c3-${c.id}`} data-toc={c.id}>
-                <span>{c.n}</span>
-                {c.title}
-                <i />
-              </a>
-            </li>
-          ))
-        }
+        {chapters.map((c) => (
+          <li>
+            <a href={`#c3-${c.id}`} data-toc={c.id}>
+              <span>{c.n}</span>
+              {c.title}
+              <i />
+            </a>
+          </li>
+        ))}
       </ol>
-      <p class="c3-rail-foot">Free · Apache-2.0<br />v1.24.3</p>
+      <p class="c3-rail-foot">
+        Free · Apache-2.0
+        <br />
+        v1.24.3
+      </p>
     </aside>
 
     <main id="top">
@@ -161,23 +180,31 @@ const rich = (a: string) =>
         <div class="c3-sticky">
           <div class="c3-cover-text" data-cover-text>
             <p class="c3-masthead">
-              <span>Job Application Tracker</span><span>The private edition</span><span>No. 1.24</span>
+              <span>Job Application Tracker</span>
+              <span>The private edition</span>
+              <span>No. 1.24</span>
             </p>
             <div class="c3-cover-grid">
               <div>
                 <p class="c3-eyebrow">A job tracker that stays on your computer</p>
                 <h1 id="c3-h1" class="c3-display">
-                  Your job search,<br />on your own <em>desk.</em>
+                  Your job search,
+                  <br />
+                  on your own <em>desk.</em>
                 </h1>
               </div>
               <div class="c3-cover-side">
                 <p>
-                  Track every application, recruiter, interview round, follow-up and offer, in one folder on your own
-                  computer. No AI, no cloud, no account, no tracking.
+                  Track every application, recruiter, interview round, follow-up and offer, in one folder on
+                  your own computer. No AI, no cloud, no account, no tracking.
                 </p>
                 <div class="c3-btns">
-                  <a class="c3-btn c3-btn-ink" href="#c3-start">Get started, it's free</a>
-                  <a class="c3-btn c3-glass" href={REPO}>View on GitHub</a>
+                  <a class="c3-btn c3-btn-ink" href="#c3-start">
+                    Get started, it's free
+                  </a>
+                  <a class="c3-btn c3-glass" href={REPO}>
+                    View on GitHub
+                  </a>
                 </div>
               </div>
             </div>
@@ -194,14 +221,20 @@ const rich = (a: string) =>
         <!-- 01 Today -->
         <section class="c3-ch" id="c3-today" data-tint="white" data-ch="today" aria-labelledby="c3-h-today">
           <div class="c3-grid">
-            <p class="c3-num" aria-hidden="true">01</p>
+            <p class="c3-num" aria-hidden="true">
+              01
+            </p>
             <header class="c3-ch-head">
               <p class="c3-eyebrow">Chapter 01 · Today</p>
-              <h2 id="c3-h-today" class="c3-display">Start each morning<br />with <em>one</em> list.</h2>
+              <h2 id="c3-h-today" class="c3-display">
+                Start each morning
+                <br />
+                with <em>one</em> list.
+              </h2>
             </header>
             <p class="c3-lede c3-dropcap">
-              Today is the first page you open: your move, what's coming up, and who you're waiting on. Replies to read,
-              offers to answer, calls to write up and to-dos, in the order they need you.
+              Today is the first page you open: your move, what's coming up, and who you're waiting on.
+              Replies to read, offers to answer, calls to write up and to-dos, in the order they need you.
             </p>
             <aside class="c3-note">
               <b>Margin note</b>
@@ -209,7 +242,12 @@ const rich = (a: string) =>
             </aside>
             <figure class="c3-fig c3-fig-wide" data-rise>
               <div class="c3-win">
-                <div class="c3-win-bar"><i></i><i></i><i></i><span>127.0.0.1:8770</span></div>
+                <div class="c3-win-bar">
+                  <i></i>
+                  <i></i>
+                  <i></i>
+                  <span>127.0.0.1:8770</span>
+                </div>
                 <div class="c3-win-body">
                   <Image
                     src={today}
@@ -219,14 +257,19 @@ const rich = (a: string) =>
                   />
                 </div>
               </div>
-              <figcaption><b>Fig. 1</b> Today, with made-up demo data. Your move on the left; on the right, what's coming up and who you're waiting on.</figcaption>
+              <figcaption>
+                <b>Fig. 1</b> Today, with made-up demo data. Your move on the left; on the right, what's
+                coming up and who you're waiting on.
+              </figcaption>
             </figure>
             <blockquote class="c3-pull">
-              <p>Red means it's time to chase. Everything else can <em>wait.</em></p>
+              <p>
+                Red means it's time to chase. Everything else can <em>wait.</em>
+              </p>
             </blockquote>
             <p class="c3-body-text c3-col-b">
-              Wait too long on a reply and the line turns red. Heard back, follow up, snooze or mark it Ghosted in one
-              click, and the list gets shorter.
+              Wait too long on a reply and the line turns red. Heard back, follow up, snooze or mark it
+              Ghosted in one click, and the list gets shorter.
             </p>
           </div>
         </section>
@@ -234,14 +277,25 @@ const rich = (a: string) =>
         <!-- 02 The board -->
         <section class="c3-ch" id="c3-board" data-tint="cream" data-ch="board" aria-labelledby="c3-h-board">
           <div class="c3-grid">
-            <p class="c3-num c3-num-right" aria-hidden="true">02</p>
+            <p class="c3-num c3-num-right" aria-hidden="true">
+              02
+            </p>
             <header class="c3-ch-head c3-ch-head-left">
               <p class="c3-eyebrow">Chapter 02 · The board</p>
-              <h2 id="c3-h-board" class="c3-display">Every application,<br />one <em>drag</em> away.</h2>
+              <h2 id="c3-h-board" class="c3-display">
+                Every application,
+                <br />
+                one <em>drag</em> away.
+              </h2>
             </header>
             <figure class="c3-fig c3-fig-left" data-rise>
               <div class="c3-win">
-                <div class="c3-win-bar"><i></i><i></i><i></i><span>127.0.0.1:8770/applications</span></div>
+                <div class="c3-win-bar">
+                  <i></i>
+                  <i></i>
+                  <i></i>
+                  <span>127.0.0.1:8770/applications</span>
+                </div>
                 <div class="c3-win-body">
                   <Image
                     src={board}
@@ -251,45 +305,69 @@ const rich = (a: string) =>
                   />
                 </div>
               </div>
-              <figcaption><b>Fig. 2</b> The board. Drag a card to a new stage; undo a move you didn't mean.</figcaption>
+              <figcaption>
+                <b>Fig. 2</b> The board. Drag a card to a new stage; undo a move you didn't mean.
+              </figcaption>
             </figure>
             <div class="c3-side-col">
               <p class="c3-body-text">
-                Drag between stages, see the interview round on each card and who's gone quiet in red. The list view
-                sorts and filters the same applications by stage, route, agency or who needs chasing.
+                Drag between stages, see the interview round on each card and who's gone quiet in red. The
+                list view sorts and filters the same applications by stage, route, agency or who needs
+                chasing.
               </p>
               <figure class="c3-dotfig">
                 <DotShape shape="board" label="A dot drawing of a board: four columns, one card lifted" />
-                <figcaption><b>Fig. 3</b> Your own stages: rename, add or remove them in a settings file.</figcaption>
+                <figcaption>
+                  <b>Fig. 3</b> Your own stages: rename, add or remove them in a settings file.
+                </figcaption>
               </figure>
             </div>
             <ol class="c3-stages" aria-label="The stages an application moves through, by default">
-              {stages.map((s) => <li>{s}</li>)}
+              {stages.map((s) => (
+                <li>{s}</li>
+              ))}
             </ol>
           </div>
         </section>
 
         <!-- 03 People -->
-        <section class="c3-ch" id="c3-people" data-tint="cream" data-ch="people" aria-labelledby="c3-h-people">
+        <section
+          class="c3-ch"
+          id="c3-people"
+          data-tint="cream"
+          data-ch="people"
+          aria-labelledby="c3-h-people"
+        >
           <div class="c3-grid">
-            <p class="c3-num" aria-hidden="true">03</p>
+            <p class="c3-num" aria-hidden="true">
+              03
+            </p>
             <header class="c3-ch-head">
               <p class="c3-eyebrow">Chapter 03 · People</p>
-              <h2 id="c3-h-people" class="c3-display">One recruiter, five roles,<br /><em>zero</em> chaos.</h2>
+              <h2 id="c3-h-people" class="c3-display">
+                One recruiter, five roles,
+                <br />
+                <em>zero</em> chaos.
+              </h2>
             </header>
             <div class="c3-two">
               <p class="c3-body-text">
-                Recruiters and agencies get pages of their own: calls with an agenda, the roles they pitched, apply or
-                pass on each, and every application they're part of.
+                Recruiters and agencies get pages of their own: calls with an agenda, the roles they pitched,
+                apply or pass on each, and every application they're part of.
               </p>
               <p class="c3-body-text">
-                It learns how quickly each one usually replies, and tells you when someone is slower than usual. Star the
-                ones worth keeping.
+                It learns how quickly each one usually replies, and tells you when someone is slower than
+                usual. Star the ones worth keeping.
               </p>
             </div>
             <figure class="c3-fig c3-fig-right" data-rise>
               <div class="c3-win">
-                <div class="c3-win-bar"><i></i><i></i><i></i><span>127.0.0.1:8770/recruiters</span></div>
+                <div class="c3-win-bar">
+                  <i></i>
+                  <i></i>
+                  <i></i>
+                  <span>127.0.0.1:8770/recruiters</span>
+                </div>
                 <div class="c3-win-body">
                   <Image
                     src={recruiters}
@@ -299,10 +377,14 @@ const rich = (a: string) =>
                   />
                 </div>
               </div>
-              <figcaption><b>Fig. 4</b> Recruiters, favourites first, with how quickly each one usually replies.</figcaption>
+              <figcaption>
+                <b>Fig. 4</b> Recruiters, favourites first, with how quickly each one usually replies.
+              </figcaption>
             </figure>
             <blockquote class="c3-pull c3-pull-left">
-              <p>Know before two agencies put you forward for the <em>same</em> job.</p>
+              <p>
+                Know before two agencies put you forward for the <em>same</em> job.
+              </p>
               <cite>Duplicate warnings, chapter 03</cite>
             </blockquote>
           </div>
@@ -313,23 +395,42 @@ const rich = (a: string) =>
           <div class="c3-sticky">
             <p class="c3-spread-title">
               <span class="c3-eyebrow">Centre spread</span>
-              <span class="c3-display-s">Every page, <em>laid</em> out.</span>
+              <span class="c3-display-s">
+                Every page, <em>laid</em> out.
+              </span>
             </p>
-            <Fan variant="spread" back={spreadBack} front="A role, live" />
+            <Fan variant="spread" back={spreadBack} front="The app, live" />
           </div>
         </section>
 
         <!-- 04 Interviews -->
-        <section class="c3-ch" id="c3-interviews" data-tint="cream" data-ch="interviews" aria-labelledby="c3-h-int">
+        <section
+          class="c3-ch"
+          id="c3-interviews"
+          data-tint="cream"
+          data-ch="interviews"
+          aria-labelledby="c3-h-int"
+        >
           <div class="c3-grid">
-            <p class="c3-num c3-num-right" aria-hidden="true">04</p>
+            <p class="c3-num c3-num-right" aria-hidden="true">
+              04
+            </p>
             <header class="c3-ch-head c3-ch-head-left">
               <p class="c3-eyebrow">Chapter 04 · Interviews</p>
-              <h2 id="c3-h-int" class="c3-display">Six rounds,<br />every note <em>kept.</em></h2>
+              <h2 id="c3-h-int" class="c3-display">
+                Six rounds,
+                <br />
+                every note <em>kept.</em>
+              </h2>
             </header>
             <figure class="c3-fig c3-fig-tall" data-rise>
               <div class="c3-win">
-                <div class="c3-win-bar"><i></i><i></i><i></i><span>127.0.0.1:8770/applications/contoso</span></div>
+                <div class="c3-win-bar">
+                  <i></i>
+                  <i></i>
+                  <i></i>
+                  <span>127.0.0.1:8770/applications/contoso</span>
+                </div>
                 <div class="c3-win-body c3-win-tall">
                   <Image
                     src={roleContent}
@@ -339,23 +440,29 @@ const rich = (a: string) =>
                   />
                 </div>
               </div>
-              <figcaption><b>Fig. 5</b> One application, top to bottom: rounds, documents sent, notes and its timeline.</figcaption>
+              <figcaption>
+                <b>Fig. 5</b> One application, top to bottom: rounds, documents sent, notes and its timeline.
+              </figcaption>
             </figure>
             <div class="c3-side-col">
               <p class="c3-body-text">
-                Every round on the role, with its date and how it went, and a calendar of what's coming up. Write the
-                debrief while it's fresh.
+                Every round on the role, with its date and how it went, and a calendar of what's coming up.
+                Write the debrief while it's fresh.
               </p>
               <p class="c3-body-text">
-                Notes you write in the app are saved as ordinary Markdown files. Save an email from your mail app and
-                drop it in: it lands on the timeline at the time it was sent. Every tailored CV and cover letter is kept,
-                with which one each company got.
+                Notes you write in the app are saved as ordinary Markdown files. Save an email from your mail
+                app and drop it in: it lands on the timeline at the time it was sent. Every tailored CV and
+                cover letter is kept, with which one each company got.
               </p>
               <figure class="c3-dotfig">
                 <DotShape shape="calendar" label="A dot drawing of a month, with interview days in green" />
-                <figcaption><b>Fig. 6</b> A month of rounds and calls.</figcaption>
+                <figcaption>
+                  <b>Fig. 6</b> A month of rounds and calls.
+                </figcaption>
               </figure>
-              <p class="c3-kbd-line"><kbd>/</kbd> searches applications, people, debriefs, notes, files and links.</p>
+              <p class="c3-kbd-line">
+                <kbd>/</kbd> searches applications, people, debriefs, notes, files and links.
+              </p>
             </div>
           </div>
         </section>
@@ -363,18 +470,27 @@ const rich = (a: string) =>
         <!-- 05 Offers & insights -->
         <section class="c3-ch" id="c3-offers" data-tint="sand" data-ch="offers" aria-labelledby="c3-h-off">
           <div class="c3-grid">
-            <p class="c3-num" aria-hidden="true">05</p>
+            <p class="c3-num" aria-hidden="true">
+              05
+            </p>
             <header class="c3-ch-head">
               <p class="c3-eyebrow">Chapter 05 · Offers & insights</p>
-              <h2 id="c3-h-off" class="c3-display">See where it all <em>leaks.</em></h2>
+              <h2 id="c3-h-off" class="c3-display">
+                See where it all <em>leaks.</em>
+              </h2>
             </header>
             <p class="c3-lede">
-              Compare offers properly: salary, bonus, equity and pension, or a contractor's day rate, side by side with
-              what each is worth a year.
+              Compare offers properly: salary, bonus, equity and pension, or a contractor's day rate, side by
+              side with what each is worth a year.
             </p>
             <figure class="c3-fig c3-fig-pair-a" data-rise>
               <div class="c3-win">
-                <div class="c3-win-bar"><i></i><i></i><i></i><span>127.0.0.1:8770/offers</span></div>
+                <div class="c3-win-bar">
+                  <i></i>
+                  <i></i>
+                  <i></i>
+                  <span>127.0.0.1:8770/offers</span>
+                </div>
                 <div class="c3-win-body">
                   <Image
                     src={offers}
@@ -384,11 +500,18 @@ const rich = (a: string) =>
                   />
                 </div>
               </div>
-              <figcaption><b>Fig. 7</b> Two offers, one worth a year each.</figcaption>
+              <figcaption>
+                <b>Fig. 7</b> Two offers, one worth a year each.
+              </figcaption>
             </figure>
             <figure class="c3-fig c3-fig-pair-b" data-rise>
               <div class="c3-win">
-                <div class="c3-win-bar"><i></i><i></i><i></i><span>127.0.0.1:8770/insights</span></div>
+                <div class="c3-win-bar">
+                  <i></i>
+                  <i></i>
+                  <i></i>
+                  <span>127.0.0.1:8770/insights</span>
+                </div>
                 <div class="c3-win-body">
                   <Image
                     src={insights}
@@ -398,16 +521,23 @@ const rich = (a: string) =>
                   />
                 </div>
               </div>
-              <figcaption><b>Fig. 8</b> Insights: every role's path, from who brought it to an offer, or to ghosted.</figcaption>
+              <figcaption>
+                <b>Fig. 8</b> Insights: every role's path, from who brought it to an offer, or to ghosted.
+              </figcaption>
             </figure>
             <div class="c3-side-col c3-side-low">
               <figure class="c3-dotfig">
-                <DotShape shape="funnel" label="A dot drawing of a funnel, wide at the start and narrow at the offers" />
-                <figcaption><b>Fig. 9</b> Sixteen roles in, two offers out.</figcaption>
+                <DotShape
+                  shape="funnel"
+                  label="A dot drawing of a funnel, wide at the start and narrow at the offers"
+                />
+                <figcaption>
+                  <b>Fig. 9</b> Sixteen roles in, two offers out.
+                </figcaption>
               </figure>
               <p class="c3-body-text">
-                The timeline shows everything that happened, by day or as lanes: stage moves, messages, calls, rounds
-                and offers.
+                The timeline shows everything that happened, by day or as lanes: stage moves, messages, calls,
+                rounds and offers.
               </p>
             </div>
           </div>
@@ -416,108 +546,126 @@ const rich = (a: string) =>
         <!-- 06 Yours to keep -->
         <section class="c3-ch" id="c3-yours" data-tint="sand" data-ch="yours" aria-labelledby="c3-h-yours">
           <div class="c3-grid">
-            <p class="c3-num c3-num-right" aria-hidden="true">06</p>
+            <p class="c3-num c3-num-right" aria-hidden="true">
+              06
+            </p>
             <header class="c3-ch-head c3-ch-head-left">
               <p class="c3-eyebrow">Chapter 06 · Yours to keep</p>
-              <h2 id="c3-h-yours" class="c3-display">No AI. No cloud.<br />No account. No <em>tracking.</em></h2>
+              <h2 id="c3-h-yours" class="c3-display">
+                No AI. No cloud.
+                <br />
+                No account. No <em>tracking.</em>
+              </h2>
             </header>
             <div class="c3-two c3-two-left">
               <p class="c3-body-text">
-                It runs on your own computer and you use it in your browser. Your data is one folder you choose: a SQLite
-                database, a readable JSON Lines export, your Markdown notes and your files. Nothing is uploaded anywhere.
+                It runs on your own computer and you use it in your browser. Your data is one folder you
+                choose: a SQLite database, a readable JSON Lines export, your Markdown notes and your files.
+                Nothing is uploaded anywhere.
               </p>
               <p class="c3-body-text">
-                Download a backup from the sidebar as one zip file. If you use git, the folder keeps its own history and
-                can copy it to a private repo you own.
+                Download a backup from the sidebar as one zip file. If you use git, the folder keeps its own
+                history and can copy it to a private repo you own.
               </p>
             </div>
             <dl class="c3-stats">
-              {
-                STATS.map((s) => (
-                  <div>
-                    <dt>{s.label}</dt>
-                    <dd>
-                      {s.value}
-                      {s.suffix}
-                    </dd>
-                  </div>
-                ))
-              }
+              {STATS.map((s) => (
+                <div>
+                  <dt>{s.label}</dt>
+                  <dd>
+                    {s.value}
+                    {s.suffix}
+                  </dd>
+                </div>
+              ))}
             </dl>
             <div class="c3-colophon">
               <div>
                 <p class="c3-eyebrow">Languages</p>
-                <p class="c3-colo-big">English and <span lang="zh-CN">简体中文</span></p>
+                <p class="c3-colo-big">
+                  English and <span lang="zh-CN">简体中文</span>
+                </p>
                 <p class="c3-body-text">
-                  The whole app, from buttons to dates. It follows your browser's language, and you can switch in the
-                  header.
+                  The whole app, from buttons to dates. It follows your browser's language, and you can switch
+                  in the header.
                 </p>
               </div>
               <div>
                 <p class="c3-eyebrow">Licence</p>
                 <p class="c3-colo-big">Apache-2.0</p>
-                <p class="c3-body-text">Open source and free. No plans, no seats, no trial. Issues and pull requests welcome.</p>
+                <p class="c3-body-text">
+                  Open source and free. No plans, no seats, no trial. Issues and pull requests welcome.
+                </p>
               </div>
             </div>
 
             <div class="c3-start" id="c3-start">
               <p class="c3-eyebrow">Quick start</p>
-              <h3 class="c3-display-s">Set up in about <em>ten</em> minutes.</h3>
+              <h3 class="c3-display-s">
+                Set up in about <em>ten</em> minutes.
+              </h3>
               <p class="c3-body-text">
-                With uv and Node.js on your computer, paste a few commands into the Terminal app, once. After that it's a
-                web page in your browser. Mac or Linux; Windows is next on the roadmap.
+                With uv and Node.js on your computer, paste a few commands into the Terminal app, once. After
+                that it's a web page in your browser. Mac or Linux; Windows is next on the roadmap.
               </p>
               <div class="c3-tabs c3-glass" role="tablist" aria-label="Quick start steps" data-tabs>
                 <i class="c3-tab-ind" data-tab-ind></i>
-                {
-                  tabs.map((t, i) => (
-                    <button
-                      role="tab"
-                      id={`c3-tab-${t.id}`}
-                      aria-controls={`c3-panel-${t.id}`}
-                      aria-selected={i === 0 ? "true" : "false"}
-                      tabindex={i === 0 ? 0 : -1}
-                      data-tab={i}
-                    >
-                      {i + 1}. {t.label}
-                    </button>
-                  ))
-                }
+                {tabs.map((t, i) => (
+                  <button
+                    role="tab"
+                    id={`c3-tab-${t.id}`}
+                    aria-controls={`c3-panel-${t.id}`}
+                    aria-selected={i === 0 ? "true" : "false"}
+                    tabindex={i === 0 ? 0 : -1}
+                    data-tab={i}
+                  >
+                    {i + 1}. {t.label}
+                  </button>
+                ))}
               </div>
               <div class="c3-term">
-                {
-                  tabs.map((t, i) => (
-                    <pre id={`c3-panel-${t.id}`} role="tabpanel" aria-labelledby={`c3-tab-${t.id}`} hidden={i !== 0}>
+                {tabs.map((t, i) => <pre
+                  id={`c3-panel-${t.id}`}
+                  role="tabpanel"
+                  aria-labelledby={`c3-tab-${t.id}`}
+                  hidden={i !== 0}
+                >
                       {t.lines.map((l) => (
                         <code class={l.startsWith("#") ? "note" : l.startsWith("→") ? "out" : ""}>{l}</code>
                       ))}
-                    </pre>
-                  ))
-                }
+                    </pre>)}
               </div>
-              <a class="c3-link" href={`${GUIDE}install.md`}>Read the install guide</a>
+              <a class="c3-link" href={`${GUIDE}install.md`}>
+                Read the install guide
+              </a>
             </div>
 
             <div class="c3-faq">
               <p class="c3-eyebrow">Letters</p>
-              {
-                faqs.map((f) => (
-                  <details>
-                    <summary>{f.q}</summary>
-                    <p set:html={rich(f.a)} />
-                  </details>
-                ))
-              }
+              {faqs.map((f) => (
+                <details>
+                  <summary>{f.q}</summary>
+                  <p set:html={rich(f.a)} />
+                </details>
+              ))}
             </div>
           </div>
         </section>
       </div>
 
       <section class="c3-close" data-tint="ink" aria-labelledby="c3-h-close">
-        <h2 id="c3-h-close" class="c3-display">Your next offer is<br />in there <em>somewhere.</em></h2>
+        <h2 id="c3-h-close" class="c3-display">
+          Your next offer is
+          <br />
+          in there <em>somewhere.</em>
+        </h2>
         <div class="c3-btns c3-btns-center">
-          <a class="c3-btn c3-btn-paper" href={`${GUIDE}install.md`}>Get started</a>
-          <a class="c3-btn c3-glass" href={REPO}>View on GitHub</a>
+          <a class="c3-btn c3-btn-paper" href={`${GUIDE}install.md`}>
+            Get started
+          </a>
+          <a class="c3-btn c3-glass" href={REPO}>
+            View on GitHub
+          </a>
         </div>
       </section>
     </main>
@@ -552,8 +700,8 @@ const rich = (a: string) =>
           </div>
         </nav>
         <p class="c3-foot-legal">
-          © {year} Kai Waddington. <a href={`${REPO}/blob/main/LICENSE`}>Apache-2.0</a>. Screenshots show made-up demo
-          data.
+          © {year} Kai Waddington. <a href={`${REPO}/blob/main/LICENSE`}>Apache-2.0</a>. Screenshots show
+          made-up demo data.
         </p>
       </div>
     </footer>

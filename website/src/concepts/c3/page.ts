@@ -45,7 +45,8 @@ document.querySelectorAll("[data-ch]").forEach((s) => chObserver.observe(s));
 
 // --- The live app scales to its window ---------------------------------------------------------------------------
 const sizer = new ResizeObserver((entries) => {
-  for (const e of entries) (e.target as HTMLElement).style.setProperty("--k", String(e.contentRect.width / 1440));
+  for (const e of entries)
+    (e.target as HTMLElement).style.setProperty("--k", String(e.contentRect.width / 1440));
 });
 document.querySelectorAll("[data-live-body]").forEach((b) => sizer.observe(b));
 
@@ -61,10 +62,10 @@ const fanned = (narrow: boolean): Pose[] =>
   narrow
     ? [
         // On a phone the papers spread down the screen rather than across it.
-        { x: -7, y: -64, z: -220, ry: 0, rz: -3 },
-        { x: 6, y: -33, z: -110, ry: 0, rz: 2 },
-        { x: -6, y: 33, z: -110, ry: 0, rz: -2 },
-        { x: 7, y: 64, z: -220, ry: 0, rz: 3 },
+        { x: -7, y: -58, z: -220, ry: 0, rz: -3 },
+        { x: 6, y: -30, z: -110, ry: 0, rz: 2 },
+        { x: -6, y: 26, z: -110, ry: 0, rz: -2 },
+        { x: 7, y: 50, z: -220, ry: 0, rz: 3 },
       ]
     : [
         { x: -70, y: 8, z: -340, ry: 30, rz: 0 },
@@ -137,7 +138,8 @@ if (reduce) {
   const narrow = innerWidth < 760;
   for (const sec of sections) {
     const fan = sec.querySelector<HTMLElement>("[data-fan]")!;
-    sec.querySelector<HTMLElement>("[data-fan-tilt]")!.style.transform = `rotateX(4deg) scale(${narrow ? 0.8 : 0.66})`;
+    sec.querySelector<HTMLElement>("[data-fan-tilt]")!.style.transform =
+      `rotateX(4deg) scale(${narrow ? 0.8 : 0.66})`;
     poseFan(fan, 0.85, narrow);
     fan.style.setProperty("--labels", "1");
   }

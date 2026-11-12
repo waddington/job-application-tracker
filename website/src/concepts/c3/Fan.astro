@@ -16,22 +16,20 @@ const { back, front, variant } = Astro.props;
 <div class={`c3-fan c3-fan-${variant}`} data-fan={variant}>
   <div class="c3-fan-tilt" data-fan-tilt>
     <div class="c3-fan-drift">
-      {
-        back.map((b, i) => (
-          <figure class="c3-win c3-fan-card" data-fan-card={i}>
-            <div class="c3-win-bar">
-              <i />
-              <i />
-              <i />
-              <span>127.0.0.1:8770{b.path}</span>
-            </div>
-            <div class="c3-win-body">
-              <Image src={b.img} alt={b.alt} widths={[720, 1100]} sizes="(max-width: 700px) 80vw, 640px" />
-            </div>
-            <figcaption class="c3-fan-label">{b.label}</figcaption>
-          </figure>
-        ))
-      }
+      {back.map((b, i) => (
+        <figure class="c3-win c3-fan-card" data-fan-card={i}>
+          <div class="c3-win-bar">
+            <i />
+            <i />
+            <i />
+            <span>127.0.0.1:8770{b.path}</span>
+          </div>
+          <div class="c3-win-body">
+            <Image src={b.img} alt={b.alt} widths={[720, 1100]} sizes="(max-width: 700px) 80vw, 640px" />
+          </div>
+          <figcaption class="c3-fan-label">{b.label}</figcaption>
+        </figure>
+      ))}
       <figure class="c3-win c3-fan-card c3-fan-front" data-fan-card="front">
         <div class="c3-win-bar">
           <i></i>
@@ -42,7 +40,10 @@ const { back, front, variant } = Astro.props;
         <div class="c3-win-body" data-live-body>
           <LiveApp />
         </div>
-        <figcaption class="c3-fan-label"><b class="c3-live-dot"></b>{front}</figcaption>
+        <figcaption class="c3-fan-label">
+          <b class="c3-live-dot"></b>
+          {front}
+        </figcaption>
       </figure>
     </div>
   </div>
