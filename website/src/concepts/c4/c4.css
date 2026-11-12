@@ -1629,12 +1629,12 @@
   }
   .c4-chip-a {
     left: auto;
-    right: 2%;
-    top: -20%;
+    right: 3%;
+    top: auto;
+    bottom: -16%;
   }
   .c4-chip-b {
-    right: 4%;
-    bottom: -14%;
+    display: none;
   }
   .c4-hero .c4-chip {
     font-size: 12px;
