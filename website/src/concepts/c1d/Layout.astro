@@ -1,7 +1,7 @@
 ---
 // Espresso round 3 (docs/rfc/website-redesign.md): 1d's shell, and 1e's. One page, two palettes: `theme` picks
 // Espresso's warm one or Liquid's (lilac, sky and peach mesh, white glass, ink text, a violet accent). Every colour
-// the c1d components use comes from the variables set here. Everything is prefixed `c1-`.
+// the c1d components use comes from the variables set here. 1f's "bubbles" is Bubbles 5a's calm pastels and plum. Everything is prefixed `c1-`.
 import "@fontsource-variable/inter";
 import "@fontsource-variable/jetbrains-mono";
 import Switcher from "../Switcher.astro";
@@ -9,7 +9,7 @@ import Switcher from "../Switcher.astro";
 interface Props {
   current: string;
   title: string;
-  theme: "espresso" | "liquid";
+  theme: "espresso" | "liquid" | "bubbles";
 }
 const { current, title, theme } = Astro.props;
 ---
@@ -211,6 +211,93 @@ const { current, title, theme } = Astro.props;
   }
   .c1-tints [data-t="espresso"] {
     background: var(--c1-espresso-deep);
+  }
+  /* Bubbles 5a (c5a/c5.css): pale lilac, butter, mint, sky and apricot tints, plum ink, plum buttons and footer. */
+  .c1-html[data-theme="bubbles"] {
+    --c1-ink: #f7f5fc;
+    --c1-paper: #fcf9ee;
+    --c1-taupe: #f2f9f5;
+    --c1-cream: #fcf6f0;
+    --c1-espresso: #2a1e3f;
+    --c1-espresso-deep: #2a1e3f;
+    --c1-copper: #2a1e3f;
+    --c1-copper-hi: #4a3a68;
+    --c1-grey: #8a809c;
+    --c1-fg: #2a1e3f;
+    --c1-fg-soft: rgb(42 30 63 / 0.62);
+    --c1-glass-a: 0.5;
+    --c1-glass-line: rgb(255 255 255 / 0.7);
+    --c1-light: #f7f5fc;
+    --c1-light-rgb: 247 245 252;
+    --c1-dark-rgb: 42 30 63;
+    --c1-copper-rgb: 150 130 210;
+    --c1-copper-hi-rgb: 190 176 236;
+    --c1-shadow-rgb: 42 30 63;
+    --c1-panel-a: #4a3a68;
+    --c1-panel-b: #34284d;
+    --c1-board-a: #45375f;
+    --c1-today-a: #a99ad8;
+    --c1-today-b: #5e4d8a;
+    --c1-latte-a: #f8efcd;
+    --c1-latte-b: #f7e5d3;
+    --c1-term: #2a1e3f;
+    --c1-term-ok: #b5e3c9;
+    --c1-bar-a: #3a2e52;
+    --c1-bar-b: #2f2545;
+    --c1-bar-light-a: #f6f4fb;
+    --c1-bar-light-b: #e9e4f8;
+    --c1-bar-light-ink: #5d5272;
+    --c1-on-accent: #fff;
+    --c1-t0: #e9e4f8;
+    --c1-t1: #dde8f7;
+    --c1-t2: #f8efcd;
+    --c1-t3: #f6e0e5;
+    --c1-t4: #d9efe3;
+    background: var(--c1-ink);
+  }
+  .c1-html[data-theme="bubbles"][data-tint] {
+    --c1-fg: #2a1e3f;
+    --c1-fg-soft: rgb(42 30 63 / 0.62);
+    --c1-glass-a: 0.5;
+    --c1-glass-line: rgb(255 255 255 / 0.7);
+  }
+  .c1-html[data-theme="bubbles"][data-tint="espresso"] {
+    --c1-fg: #f7f5fc;
+    --c1-fg-soft: rgb(247 245 252 / 0.66);
+    --c1-glass-a: 0.12;
+    --c1-glass-line: rgb(255 255 255 / 0.22);
+  }
+  /* Buttons as 5a's: plum with white words; on the plum footer, pale lilac with plum words. */
+  .c1-html[data-theme="bubbles"] .c1-body .c1-pill--copper {
+    color: #fff;
+  }
+  .c1-html[data-theme="bubbles"] .fpanel .c1-pill--copper {
+    color: #2a1e3f;
+    background: linear-gradient(180deg, #fff, #e9e4f8);
+  }
+  .c1-html[data-theme="bubbles"] .fpanel .c1-eyebrow::before {
+    background: #c9b8f0;
+  }
+  /* The hero is light here, so its words take the page's ink. */
+  .c1-html[data-theme="bubbles"] [data-hero] {
+    color: var(--c1-fg);
+  }
+  .c1-html[data-theme="bubbles"] .c1-tints [data-t="ink"] {
+    background:
+      radial-gradient(50% 55% at 75% 45%, rgb(221 232 247 / 0.9), transparent 70%),
+      radial-gradient(45% 50% at 20% 80%, rgb(246 224 229 / 0.7), transparent 70%), #f4f1fb;
+  }
+  .c1-html[data-theme="bubbles"] .c1-tints [data-t="paper"] {
+    background: radial-gradient(60% 60% at 80% 20%, rgb(248 239 205 / 0.8), transparent 70%), #fcf9ee;
+  }
+  .c1-html[data-theme="bubbles"] .c1-tints [data-t="taupe"] {
+    background: radial-gradient(60% 60% at 15% 30%, rgb(217 239 227 / 0.9), transparent 70%), #f2f9f5;
+  }
+  .c1-html[data-theme="bubbles"] .c1-tints [data-t="cream"] {
+    background: radial-gradient(60% 60% at 85% 80%, rgb(247 229 211 / 0.9), transparent 70%), #fcf6f0;
+  }
+  .c1-html[data-theme="bubbles"] .c1-tints [data-t="espresso"] {
+    background: #fcf6f0;
   }
   .c1-html[data-theme="liquid"] .c1-tints [data-t="ink"],
   .c1-html[data-theme="liquid"] .c1-tints [data-t="espresso"] {
