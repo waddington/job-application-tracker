@@ -70,7 +70,17 @@ concepts; the chosen one gets its zh-CN text when it's built for real (CLAUDE.md
 ## 4. The five concepts
 
 Each lives at `/concepts/<n>/` with a floating switcher (1–5, plus "Current site") to jump between them. They share
-the language above and differ in mood, palette and how the browser moves.
+the language above and differ in structure as well as mood (Kai: "the concepts dont just have to be colour related"):
+
+| # | Structure |
+|---|---|
+| 1 Espresso | The classic long-scroll story, closest to the reference: a pinned hero where the browser turns, sticky copy beside advancing media, big rounded panels, centred one-line statements between. |
+| 2 Liquid | Immersive: the browser grows to fill the screen and the tour happens inside the app; scroll drives it from page to page with glass captions over it, then it shrinks back out for quick start and the footer. |
+| 3 Paper | An editorial magazine: numbered chapters, an asymmetric grid with big numerals and pull quotes, a sticky contents rail on the left; the stack of windows fans out between chapters. |
+| 4 Night shift | A journey spine: the page is the job search itself, a glowing pipeline (Interested → Applied → Screen → Interview → Offer) running down it, each stage a chapter showing the app at that moment, with a fixed stage tracker. |
+| 5 Bubbles | A bento playground: after the hero, a grid of tiles that are each a small interactive demo (tick a to-do, drag a card, flip a stage, star a recruiter, compare offers); section intros read as a chat of questions and answers. |
+
+Mood, palette and how the browser moves:
 
 | # | Name | Mood and palette | The browser | Texture and scroll colour |
 |---|---|---|---|---|
