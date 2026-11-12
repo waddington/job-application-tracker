@@ -10,7 +10,15 @@ import board from "./shots/board.png";
 import role from "./shots/role.png";
 import insights from "./shots/insights.png";
 
-type Card = { co: string; role: string; when: string; extra?: string; late?: boolean; tag?: string; id?: string };
+type Card = {
+  co: string;
+  role: string;
+  when: string;
+  extra?: string;
+  late?: boolean;
+  tag?: string;
+  id?: string;
+};
 const columns: { x: number; label: string; bg: string; h: number; cards: Card[] }[] = [
   {
     x: 246,
@@ -50,7 +58,13 @@ const columns: { x: number; label: string; bg: string; h: number; cards: Card[] 
   },
   { x: 1294, label: "Final", bg: "#301f62", h: 112, cards: [] },
 ];
-const img = { widths: [1440], sizes: "1100px", loading: "eager", decoding: "async", alt: "" } as const;
+const img = {
+  widths: [1440],
+  sizes: "1100px",
+  loading: "eager" as const,
+  decoding: "async" as const,
+  alt: "",
+};
 ---
 
 <div class="c1-app" data-c1-app>
@@ -63,9 +77,11 @@ const img = { widths: [1440], sizes: "1100px", loading: "eager", decoding: "asyn
         <div class="pin" data-scroll>
           <Image src={today} {...img} />
           <span class="dim" data-todo-dim></span>
-          <span class="check" data-todo-check
-            ><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 6.2l2.4 2.4 4.6-5"></path></svg></span
-          >
+          <span class="check" data-todo-check>
+            <svg viewBox="0 0 12 12" aria-hidden="true">
+              <path d="M2.5 6.2l2.4 2.4 4.6-5"></path>
+            </svg>
+          </span>
           <span class="strike" data-todo-strike></span>
         </div>
       </div>
@@ -74,44 +90,40 @@ const img = { widths: [1440], sizes: "1100px", loading: "eager", decoding: "asyn
         <div class="pin">
           <Image src={board} {...img} />
           <div class="board">
-            {
-              columns.map((c) => (
-                <div class="col" style={`left:${c.x}px;height:${c.h}px`}>
-                  <span class="badge" style={`background:${c.bg}`}>
-                    {c.label}
-                  </span>
-                  <span class="count" data-count={c.label}>
-                    {c.cards.length}
-                  </span>
-                </div>
-              ))
-            }
-            {
-              columns.flatMap((c) => {
-                let y = 276;
-                return c.cards.map((card) => {
-                  const h = card.tag ? (card.id === "open" ? 120 : 103) : 80;
-                  const el = (
-                    <div
-                      class:list={["card", { late: card.late }]}
-                      style={`left:${c.x + 12}px;top:${y}px;height:${h}px`}
-                      data-card={card.id}
-                      data-col={c.label}
-                    >
-                      <b>{card.co}</b>
-                      <span class="r">{card.role}</span>
-                      {card.tag && <span class:list={["tag", { round: card.id === "open" }]}>{card.tag}</span>}
-                      <span class="w">
-                        <span class:list={{ red: card.late }}>{card.when}</span>
-                        {card.extra && <span>{card.extra}</span>}
-                      </span>
-                    </div>
-                  );
-                  y += h + 11;
-                  return el;
-                });
-              })
-            }
+            {columns.map((c) => (
+              <div class="col" style={`left:${c.x}px;height:${c.h}px`}>
+                <span class="badge" style={`background:${c.bg}`}>
+                  {c.label}
+                </span>
+                <span class="count" data-count={c.label}>
+                  {c.cards.length}
+                </span>
+              </div>
+            ))}
+            {columns.flatMap((c) => {
+              let y = 276;
+              return c.cards.map((card) => {
+                const h = card.tag ? (card.id === "open" ? 120 : 103) : 80;
+                const el = (
+                  <div
+                    class:list={["card", { late: card.late }]}
+                    style={`left:${c.x + 12}px;top:${y}px;height:${h}px`}
+                    data-card={card.id}
+                    data-col={c.label}
+                  >
+                    <b>{card.co}</b>
+                    <span class="r">{card.role}</span>
+                    {card.tag && <span class:list={["tag", { round: card.id === "open" }]}>{card.tag}</span>}
+                    <span class="w">
+                      <span class:list={{ red: card.late }}>{card.when}</span>
+                      {card.extra && <span>{card.extra}</span>}
+                    </span>
+                  </div>
+                );
+                y += h + 11;
+                return el;
+              });
+            })}
           </div>
         </div>
       </div>
@@ -119,8 +131,12 @@ const img = { widths: [1440], sizes: "1100px", loading: "eager", decoding: "asyn
       <div class="pg" data-page="role">
         <div class="pin" data-scroll>
           <Image src={role} {...img} />
-          <span class="sbadge old" data-badge-old>Interviewing</span>
-          <span class="sbadge new" data-badge-new>Final</span>
+          <span class="sbadge old" data-badge-old>
+            Interviewing
+          </span>
+          <span class="sbadge new" data-badge-new>
+            Final
+          </span>
           <div class="menu" data-menu>
             <span>Screen</span>
             <span class="cur">Interviewing</span>
@@ -139,13 +155,16 @@ const img = { widths: [1440], sizes: "1100px", loading: "eager", decoding: "asyn
       </div>
     </div>
 
-    <div class="toast" data-toast><i></i><span data-toast-text></span></div>
+    <div class="toast" data-toast>
+      <i></i>
+      <span data-toast-text></span>
+    </div>
 
     <div class="cursor" data-cursor>
       <i class="ripple" data-ripple></i>
-      <svg viewBox="0 0 24 24" aria-hidden="true"
-        ><path d="M4 2.5l15.5 9.2-6.9 1.3 3.9 7.6-3 1.5-3.9-7.6L4.4 19z"></path></svg
-      >
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 2.5l15.5 9.2-6.9 1.3 3.9 7.6-3 1.5-3.9-7.6L4.4 19z"></path>
+      </svg>
     </div>
   </div>
 </div>
@@ -260,7 +279,13 @@ const img = { widths: [1440], sizes: "1100px", loading: "eager", decoding: "asyn
     const count = (label: string, n: number) => ($(`[data-count='${label}']`).textContent = String(n));
 
     function reset() {
-      for (const el of [card, ...below, $("[data-todo-check]"), $("[data-todo-strike]"), $("[data-todo-dim]")]) {
+      for (const el of [
+        card,
+        ...below,
+        $("[data-todo-check]"),
+        $("[data-todo-strike]"),
+        $("[data-todo-dim]"),
+      ]) {
         place(el, "", 0);
         el.classList.remove("on", "lift");
       }

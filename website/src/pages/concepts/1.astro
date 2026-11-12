@@ -8,7 +8,6 @@ import Story from "../../concepts/c1/Story.astro";
 import { GUIDE, MARQUEE, README_ZH, REPO } from "../../data";
 import insights from "../../concepts/c1/shots/insights.png";
 import today from "../../concepts/c1/shots/today.png";
-import offersLight from "../../concepts/c1/shots/offers-light.png";
 
 const chips = MARQUEE.flat();
 const install = [
@@ -24,13 +23,11 @@ const install = [
 <Layout>
   <header class="c1-chrome">
     <a class="logo c1-glass" href="#top" aria-label="Job Application Tracker, back to the top">
-      <svg viewBox="0 0 24 24" aria-hidden="true"
-        ><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="4.5"></circle><circle
-          cx="12"
-          cy="12"
-          r="1.2"
-          fill="currentColor"></circle></svg
-      >
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="9"></circle>
+        <circle cx="12" cy="12" r="4.5"></circle>
+        <circle cx="12" cy="12" r="1.2" fill="currentColor"></circle>
+      </svg>
     </a>
     <nav class="links c1-glass" aria-label="Sections">
       <a href="#private">Private</a>
@@ -39,11 +36,17 @@ const install = [
       <a href="#get">Quick start</a>
     </nav>
     <div class="right">
-      <a class="c1-pill c1-glass gh" href={REPO}>GitHub <span class="c1-arr">↗</span></a>
-      <a class="c1-pill c1-pill--copper" href="#get">Get it</a>
+      <a class="c1-pill c1-glass gh" href={REPO}>
+        GitHub <span class="c1-arr">↗</span>
+      </a>
+      <a class="c1-pill c1-pill--copper" href="#get">
+        Get it
+      </a>
     </div>
   </header>
-  <a class="totop c1-glass" href="#top" aria-label="Back to the top">↑</a>
+  <a class="totop c1-glass" href="#top" aria-label="Back to the top">
+    ↑
+  </a>
 
   <main id="top">
     <Hero />
@@ -54,15 +57,27 @@ const install = [
         <p class="c1-eyebrow">Private by design</p>
         <div>
           <h2 class="lead" id="c1-private-h">
-            No AI reads your notes. No cloud keeps your CVs. No account, no tracking, no ads. Your whole job search
-            lives in one folder on your own computer: a SQLite database, a readable export, your Markdown notes and
-            your files.
+            No AI reads your notes. No cloud keeps your CVs. No account, no tracking, no ads. Your whole job
+            search lives in one folder on your own computer: a SQLite database, a readable export, your
+            Markdown notes and your files.
           </h2>
           <dl class="stats">
-            <div><dt>0</dt><dd>accounts to create</dd></div>
-            <div><dt>0</dt><dd>trackers or ads</dd></div>
-            <div><dt>0</dt><dd>subscription fees</dd></div>
-            <div><dt>100%</dt><dd>of your data on your computer</dd></div>
+            <div>
+              <dt>0</dt>
+              <dd>accounts to create</dd>
+            </div>
+            <div>
+              <dt>0</dt>
+              <dd>trackers or ads</dd>
+            </div>
+            <div>
+              <dt>0</dt>
+              <dd>subscription fees</dd>
+            </div>
+            <div>
+              <dt>100%</dt>
+              <dd>of your data on your computer</dd>
+            </div>
           </dl>
         </div>
       </div>
@@ -71,10 +86,15 @@ const install = [
     <!-- Two cards -->
     <section class="cards" data-c1-tint="paper" aria-label="The board and Today">
       <article class="card board">
-        <div class="art"><DotBoard /></div>
+        <div class="art">
+          <DotBoard />
+        </div>
         <div class="txt">
           <h3>The board</h3>
-          <p>Every application, one drag away. See the interview round on each card, and who's gone quiet in red.</p>
+          <p>
+            Every application, one drag away. See the interview round on each card, and who's gone quiet in
+            red.
+          </p>
         </div>
       </article>
       <article class="card today">
@@ -91,8 +111,8 @@ const install = [
         <div class="txt">
           <h3>Today</h3>
           <p>
-            Know exactly who to chase. Your move, what's coming up, and who you're waiting on, red once it's been
-            too long.
+            Know exactly who to chase. Your move, what's coming up, and who you're waiting on, red once it's
+            been too long.
           </p>
         </div>
       </article>
@@ -103,7 +123,9 @@ const install = [
       <div class="panel">
         <div class="ptxt">
           <p class="c1-eyebrow">Insights</p>
-          <h2 class="c1-h2" id="c1-insights-h">See where it all leaks.</h2>
+          <h2 class="c1-h2" id="c1-insights-h">
+            See where it all leaks.
+          </h2>
           <p class="c1-soft">
             Every role's path, from who brought it to an offer, or to ghosted, and what's still waiting.
           </p>
@@ -121,7 +143,11 @@ const install = [
 
     <!-- Centre line -->
     <section class="centre" data-c1-tint="taupe">
-      <p class="c1-display">One folder on your computer.<br /><span class="c1-soft">Nothing leaves it.</span></p>
+      <p class="c1-display">
+        One folder on your computer.
+        <br />
+        <span class="c1-soft">Nothing leaves it.</span>
+      </p>
     </section>
 
     <Story />
@@ -129,14 +155,22 @@ const install = [
     <!-- Languages and the rest -->
     <section class="rest" id="languages" data-c1-tint="cream" aria-labelledby="c1-lang-h">
       <div class="wrap two">
-        <p class="c1-eyebrow">English and <span lang="zh-CN">简体中文</span></p>
+        <p class="c1-eyebrow">
+          English and <span lang="zh-CN">简体中文</span>
+        </p>
         <div>
           <h2 class="lead" id="c1-lang-h">
-            The whole app in English and <span lang="zh-CN">简体中文</span>, from buttons to dates. It follows your browser,
-            and you can switch in the header. The README is <a href={README_ZH}>in <span lang="zh-CN">简体中文</span></a> too.
+            The whole app in English and <span lang="zh-CN">简体中文</span>, from buttons to dates. It follows
+            your browser, and you can switch in the header. The README is{" "}
+            <a href={README_ZH}>
+              in <span lang="zh-CN">简体中文</span>
+            </a>{" "}
+            too.
           </h2>
           <ul class="chips" aria-label="Also in the box">
-            {chips.map((c) => <li class="c1-glass">{c}</li>)}
+            {chips.map((c) => (
+              <li class="c1-glass">{c}</li>
+            ))}
           </ul>
         </div>
       </div>
@@ -145,31 +179,41 @@ const install = [
     <!-- Get it -->
     <section class="get" id="get" data-c1-tint="cream" aria-labelledby="c1-get-h">
       <p class="c1-eyebrow">Quick start · open source, Apache-2.0</p>
-      <h2 class="c1-display" id="c1-get-h">Set up in about ten minutes.</h2>
+      <h2 class="c1-display" id="c1-get-h">
+        Set up in about ten minutes.
+      </h2>
       <p class="c1-soft sub">
-        With uv and Node.js on your Mac or Linux computer, paste a few commands into the Terminal, once. After that
-        it's a web page in your browser. Windows is next on the roadmap.
+        With uv and Node.js on your Mac or Linux computer, paste a few commands into the Terminal, once. After
+        that it's a web page in your browser. Windows is next on the roadmap.
       </p>
       <div class="btns">
-        <a class="c1-pill c1-pill--copper" href={`${GUIDE}install.md`}>Read the install guide <span class="c1-arr">→</span></a>
-        <a class="c1-pill c1-glass" href={REPO}>View on GitHub <span class="c1-arr">↗</span></a>
+        <a class="c1-pill c1-pill--copper" href={`${GUIDE}install.md`}>
+          Read the install guide <span class="c1-arr">→</span>
+        </a>
+        <a class="c1-pill c1-glass" href={REPO}>
+          View on GitHub <span class="c1-arr">↗</span>
+        </a>
       </div>
       <figure class="term">
-        <figcaption><i></i><i></i><i></i><span>Terminal · try it with demo data</span></figcaption>
+        <figcaption>
+          <i></i>
+          <i></i>
+          <i></i>
+          <span>Terminal · try it with demo data</span>
+        </figcaption>
         <pre>{install.map((l) => <code><span aria-hidden="true">$ </span>{l}{"\n"}</code>)}<code class="out">→ http://127.0.0.1:8770</code></pre>
       </figure>
-      <div class="ghost" aria-hidden="true">
-        <Image src={offersLight} widths={[700]} sizes="360px" alt="" />
-      </div>
     </section>
   </main>
 
-  <footer class="foot" data-c1-tint="espresso">
+  <footer class="foot" data-c1-tint="cream">
     <div class="fpanel">
       <div class="fbig">
         <p class="c1-eyebrow">Job application tracker</p>
         <p class="fline">Your search, on your machine.</p>
-        <a class="c1-pill c1-pill--copper" href="#get">Get started <span class="c1-arr">→</span></a>
+        <a class="c1-pill c1-pill--copper" href="#get">
+          Get started <span class="c1-arr">→</span>
+        </a>
       </div>
       <div class="fcols">
         <div>
@@ -182,7 +226,9 @@ const install = [
           <h4>Read</h4>
           <a href={GUIDE}>User guide</a>
           <a href={`${GUIDE}install.md`}>Install guide</a>
-          <a href={README_ZH}>README in <span lang="zh-CN">简体中文</span></a>
+          <a href={README_ZH}>
+            README in <span lang="zh-CN">简体中文</span>
+          </a>
         </div>
         <div>
           <h4>Promise</h4>
@@ -284,6 +330,9 @@ const install = [
     align-items: start;
     gap: 40px;
   }
+  .two > .c1-eyebrow {
+    margin-top: 0.9em;
+  }
   .lead {
     margin: 0;
     font-weight: 300;
@@ -366,7 +415,7 @@ const install = [
   .mini :global(img) {
     width: 170%;
     max-width: none;
-    transform: translate(-27%, -2%);
+    transform: translate(-16%, -13%);
   }
   @keyframes c1-float {
     to {
@@ -418,15 +467,18 @@ const install = [
     overflow: hidden;
     box-shadow: 0 40px 80px -30px rgb(0 0 0 / 0.8);
   }
+  /* The app's own sidebar is cropped off: the shot is 1440 wide and the content starts at 231. */
+  .pimg {
+    background: #242424;
+  }
   .pimg :global(img) {
     position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: 22% 30%;
-    transform: scale(1.35);
-    transform-origin: 30% 40%;
+    right: 0;
+    top: 0;
+    width: 119.2%;
+    max-width: none;
+    height: auto;
+    transform: translateY(-6.4%);
   }
 
   .centre {
@@ -494,7 +546,10 @@ const install = [
     align-items: center;
     gap: 7px;
     padding: 16px 22px;
-    font: 12px/1 "JetBrains Mono Variable", ui-monospace, monospace;
+    font:
+      12px/1 "JetBrains Mono Variable",
+      ui-monospace,
+      monospace;
     color: rgb(234 223 206 / 0.55);
     border-bottom: 1px solid rgb(255 255 255 / 0.07);
   }
@@ -514,24 +569,16 @@ const install = [
     margin: 0;
     padding: 22px 26px 26px;
     overflow-x: auto;
-    font: 13.5px/1.9 "JetBrains Mono Variable", ui-monospace, monospace;
+    font:
+      13.5px/1.9 "JetBrains Mono Variable",
+      ui-monospace,
+      monospace;
   }
   .term code span {
     color: var(--c1-copper-hi);
   }
   .term .out {
     color: #9fd3a6;
-  }
-  .ghost {
-    position: absolute;
-    right: max(4vw, 20px);
-    bottom: 140px;
-    width: 300px;
-    border-radius: 18px;
-    overflow: hidden;
-    transform: rotate(5deg);
-    box-shadow: 0 40px 80px -30px rgb(60 30 10 / 0.5);
-    opacity: 0.9;
   }
 
   .foot {
@@ -567,7 +614,10 @@ const install = [
   }
   .fcols h4 {
     margin: 0 0 6px;
-    font: 500 11px/1 "JetBrains Mono Variable", ui-monospace, monospace;
+    font:
+      500 11px/1 "JetBrains Mono Variable",
+      ui-monospace,
+      monospace;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: rgb(234 223 206 / 0.5);
@@ -589,9 +639,6 @@ const install = [
 
   @media (max-width: 960px) {
     .links {
-      display: none;
-    }
-    .ghost {
       display: none;
     }
   }

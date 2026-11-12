@@ -23,45 +23,47 @@ const colX = (i: number) => 2 + i * 11; // in cells
     <pattern id="c1-d-field" width={C} height={C} patternUnits="userSpaceOnUse">
       <circle cx={C / 2} cy={C / 2} r="1.1" fill="rgb(214 196 178 / .22)"></circle>
     </pattern>
-    {
-      cols.map((c, i) => (
-        <>
-          <pattern id={`c1-d-col${i}`} width={C} height={C} patternUnits="userSpaceOnUse">
-            <circle cx={C / 2} cy={C / 2} r="1.7" fill={c.fill} opacity=".38" />
-          </pattern>
-          <pattern id={`c1-d-card${i}`} width={C} height={C} patternUnits="userSpaceOnUse">
-            <circle cx={C / 2} cy={C / 2} r="2.6" fill={c.fill} />
-          </pattern>
-        </>
-      ))
-    }
+    {cols.map((c, i) => (
+      <>
+        <pattern id={`c1-d-col${i}`} width={C} height={C} patternUnits="userSpaceOnUse">
+          <circle cx={C / 2} cy={C / 2} r="1.7" fill={c.fill} opacity=".38" />
+        </pattern>
+        <pattern id={`c1-d-card${i}`} width={C} height={C} patternUnits="userSpaceOnUse">
+          <circle cx={C / 2} cy={C / 2} r="2.6" fill={c.fill} />
+        </pattern>
+      </>
+    ))}
     <pattern id="c1-d-hot" width={C} height={C} patternUnits="userSpaceOnUse">
       <circle cx={C / 2} cy={C / 2} r="3" fill="#ffc79c"></circle>
     </pattern>
   </defs>
   <rect width="100%" height="100%" fill="url(#c1-d-field)"></rect>
-  {
-    cols.map((c, i) => (
-      <g>
-        <rect x={colX(i) * C} y={2 * C} width={c.label * C} height={C} rx="7" fill={`url(#c1-d-card${i})`} />
-        <rect x={colX(i) * C} y={4 * C} width={9 * C} height={24 * C} rx="14" fill={`url(#c1-d-col${i})`} />
-        {Array.from({ length: c.cards }, (_, k) => (
-          <rect
-            class:list={["card", { pulse: i === 2 }]}
-            style={`animation-delay:${-k * 1.3}s`}
-            x={(colX(i) + 1) * C}
-            y={(5 + k * 4) * C}
-            width={7 * C}
-            height={3 * C}
-            rx="8"
-            fill={`url(#c1-d-card${i})`}
-          />
-        ))}
-      </g>
-    ))
-  }
+  {cols.map((c, i) => (
+    <g>
+      <rect x={colX(i) * C} y={2 * C} width={c.label * C} height={C} rx="7" fill={`url(#c1-d-card${i})`} />
+      <rect x={colX(i) * C} y={4 * C} width={9 * C} height={24 * C} rx="14" fill={`url(#c1-d-col${i})`} />
+      {Array.from({ length: c.cards }, (_, k) => (
+        <rect
+          class:list={["card", { pulse: i === 2 }]}
+          style={`animation-delay:${-k * 1.3}s`}
+          x={(colX(i) + 1) * C}
+          y={(5 + k * 4) * C}
+          width={7 * C}
+          height={3 * C}
+          rx="8"
+          fill={`url(#c1-d-card${i})`}
+        />
+      ))}
+    </g>
+  ))}
   <g class="mover">
-    <rect x={(colX(0) + 1) * C} y={(5 + 4 * 4) * C} width={7 * C} height={3 * C} rx="8" fill="url(#c1-d-hot)"
+    <rect
+      x={(colX(0) + 1) * C}
+      y={(5 + 4 * 4) * C}
+      width={7 * C}
+      height={3 * C}
+      rx="8"
+      fill="url(#c1-d-hot)"
     ></rect>
   </g>
 </svg>
