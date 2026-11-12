@@ -1,0 +1,182 @@
+---
+// The hero: a dark glass browser with the app in use (Today → board → a role → insights, on a loop) floats at an
+// angle on the ink-and-copper mesh. It drifts, follows the pointer a little, and turns to face you as the hero
+// scrolls away. Not pinned: the statement below peeks in from the first screen.
+import AppWindow from "../c2a/app/AppWindow.astro";
+---
+
+<section class="c6-hero" data-c6-tint="ink" data-c6-hero aria-labelledby="c6-hero-h">
+  <div class="c6-hero-copy">
+    <p class="c6-eyebrow">Job application tracker · local-first</p>
+    <h1 class="c6-display" id="c6-hero-h">
+      Your job search,
+      <br />
+      kept on your machine.
+    </h1>
+    <p class="c6-hero-sub c6-soft">
+      Every application, recruiter, interview and offer in one place, and a clear list of who to chase today.
+      No account, no cloud, no AI, nobody watching.
+    </p>
+    <div class="c6-hero-ctas">
+      <a class="c6-pill c6-pill--copper" href="#c6-get">
+        <span>Get started, it's free</span>
+      </a>
+      <a class="c6-pill c6-glass" href="#c6-tour">
+        <span>Take the tour</span>
+      </a>
+    </div>
+    <p class="c6-fine c6-soft">Free and open source (Apache-2.0) · Mac and Linux</p>
+  </div>
+  <div class="c6-hero-stage" aria-hidden="true">
+    <div class="c6-hero-tilt" data-c6-tilt>
+      <div class="c6-hero-pose" data-c6-pose>
+        <div class="c6-hero-drift">
+          <i class="c6-hero-glow"></i>
+          <AppWindow scheme="dark" />
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="c6-sr">
+    The app's Today page, the board, a role and the insights Sankey, being used on made-up demo data.
+  </p>
+</section>
+
+<script>
+  import { app } from "../c2a/app/engine";
+
+  const hero = document.querySelector<HTMLElement>("[data-c6-hero]");
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (hero) {
+    const aw = hero.querySelector<HTMLElement>("[data-aw]")!;
+    const pose = hero.querySelector<HTMLElement>("[data-c6-pose]")!;
+    const tilt = hero.querySelector<HTMLElement>("[data-c6-tilt]")!;
+    const ctl = app(aw);
+    const size = () => {
+      const narrow = innerWidth < 760;
+      const w = narrow ? innerWidth - 32 : Math.min(820, innerWidth * 0.5);
+      ctl.size(Math.round(w), Math.round(narrow ? Math.min(innerHeight * 0.42, 380) : (w * 900) / 1440));
+    };
+    size();
+    addEventListener("resize", size);
+    if (!reduce) {
+      ctl.auto(["today", "board", "role", "insights"]);
+      let p = 0;
+      let px = 0;
+      let py = 0;
+      let sx = 0;
+      let sy = 0;
+      let on = true;
+      const frame = () => {
+        const r = hero.getBoundingClientRect();
+        p = Math.min(1, Math.max(0, -r.top / r.height));
+        sx += (px - sx) * 0.06;
+        sy += (py - sy) * 0.06;
+        const k = p * p * (3 - 2 * p);
+        pose.style.transform = `rotateX(${(10 - 8 * k).toFixed(2)}deg) rotateY(${(-26 + 22 * k).toFixed(2)}deg) rotateZ(${(-2 + 2 * k).toFixed(2)}deg) translate3d(0, ${(-40 * k).toFixed(1)}px, 0)`;
+        tilt.style.transform = `rotateX(${(-sy * 4).toFixed(2)}deg) rotateY(${(sx * 5).toFixed(2)}deg)`;
+        if (on) requestAnimationFrame(frame);
+      };
+      addEventListener(
+        "pointermove",
+        (e) => {
+          px = e.clientX / innerWidth - 0.5;
+          py = e.clientY / innerHeight - 0.5;
+        },
+        { passive: true },
+      );
+      new IntersectionObserver(([e]) => {
+        const was = on;
+        on = e.isIntersecting && !document.hidden;
+        ctl.active(on);
+        if (on && !was) requestAnimationFrame(frame);
+      }).observe(hero);
+      document.addEventListener("visibilitychange", () => ctl.active(!document.hidden && on));
+      ctl.active(true);
+      requestAnimationFrame(frame);
+    }
+  }
+</script>
+
+<style is:global>
+  .c6-hero {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    align-items: center;
+    min-height: 100vh;
+    min-height: 100svh;
+    padding: 110px max(4vw, 20px) 60px;
+  }
+  .c6-hero-copy {
+    position: relative;
+    z-index: 2;
+    max-width: 560px;
+  }
+  .c6-hero-copy h1 {
+    margin-bottom: 24px;
+  }
+  .c6-hero-sub {
+    max-width: 30em;
+    font-size: 18px;
+    font-weight: 350;
+  }
+  .c6-hero-ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 32px 0 26px;
+  }
+  .c6-hero-ctas .c6-pill {
+    padding: 15px 24px;
+  }
+  .c6-fine {
+    font-size: 13.5px;
+  }
+  .c6-hero-stage {
+    perspective: 1700px;
+    display: grid;
+    place-items: center;
+  }
+  .c6-hero-tilt,
+  .c6-hero-pose,
+  .c6-hero-drift {
+    transform-style: preserve-3d;
+  }
+  .c6-hero-pose {
+    transform: rotateX(10deg) rotateY(-26deg) rotateZ(-2deg);
+    will-change: transform;
+  }
+  .c6-hero-drift {
+    position: relative;
+    animation: c6-drift 15s ease-in-out infinite alternate;
+  }
+  @keyframes c6-drift {
+    0% {
+      transform: rotateX(1.2deg) rotateY(-1.6deg) translate3d(0, -6px, 0);
+    }
+    100% {
+      transform: rotateX(-1deg) rotateY(1.4deg) translate3d(0, 8px, 0);
+    }
+  }
+  .c6-hero-glow {
+    position: absolute;
+    inset: -12% -10%;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgb(196 122 72 / 0.45), transparent);
+    transform: translateZ(-200px);
+  }
+  @media (max-width: 900px) {
+    .c6-hero {
+      grid-template-columns: minmax(0, 1fr);
+      padding-top: 96px;
+      gap: 34px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .c6-hero-drift {
+      animation: none;
+    }
+  }
+</style>

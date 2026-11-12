@@ -1,0 +1,565 @@
+---
+// The immersive moment: partway down the long scroll, a browser rises from the page, grows to fill the screen and the
+// tour happens inside the app (Today → search → board → a role → interviews → insights) under warm glass captions.
+// Then it shrinks back out and the page carries on. A progress pill shows where you are and that more follows.
+// Reduced motion: the captions stack, each with a still.
+import { Image } from "astro:assets";
+import AppWindow from "../c2a/app/AppWindow.astro";
+import sToday from "../c2a/shots/d-today.png";
+import sApplication from "../c2a/shots/d-application.png";
+import sBoard from "../c2a/shots/d-board.png";
+import sRole from "../c2a/shots/d-role.png";
+import sInterviews from "../c2a/shots/d-interviews.png";
+import sInsights from "../c2a/shots/d-insights.png";
+
+const chapters = [
+  {
+    eyebrow: "Today",
+    title: "Know exactly who to chase today.",
+    body: "Your move, what's coming up and who you're waiting on. Tick a to-do, chase, snooze or call it ghosted in one click.",
+    still: sToday,
+    alt: "The Today page",
+  },
+  {
+    eyebrow: "Search",
+    title: "Find anything in a keystroke.",
+    body: "Press / and type: applications, people, debriefs, notes, files and links, searched on your own computer.",
+    still: sApplication,
+    alt: "An application's page with its rounds, notes and files",
+  },
+  {
+    eyebrow: "The board",
+    title: "Every application, one drag away.",
+    body: "Drag between stages, see the round on each card and who's gone quiet in red. Undo a move you didn't mean.",
+    still: sBoard,
+    alt: "The board of applications by stage",
+  },
+  {
+    eyebrow: "Recruiters and roles",
+    title: "One recruiter, five roles, zero chaos.",
+    body: "Log the call, add each role they pitched, then apply or pass with a reason.",
+    still: sRole,
+    alt: "A role's page with pay, the recruiter and notes",
+  },
+  {
+    eyebrow: "Interviews",
+    title: "Every round, on one calendar.",
+    body: "Rounds in your own words, with prep and debrief notes: what's held, what's coming up and what moved.",
+    still: sInterviews,
+    alt: "The interviews calendar",
+  },
+  {
+    eyebrow: "Insights",
+    title: "See where it all leaks.",
+    body: "Every role's path, from who brought it to an offer or to ghosted, and a scorecard for every recruiter.",
+    still: sInsights,
+    alt: "The insights Sankey of a whole search",
+  },
+];
+---
+
+<section class="c6-tour" id="c6-tour" data-c6-tint="espresso" data-c6-tour aria-labelledby="c6-tour-h">
+  <div class="c6-tstage" aria-hidden="true" data-c6-tstage>
+    <div class="c6-ttilt" data-c6-ttilt>
+      <div class="c6-tpose" data-c6-tpose>
+        <div class="c6-tdrift">
+          <i class="c6-tglow"></i>
+          <AppWindow scheme="dark" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="c6-prog c6-glass" aria-label="Tour chapters" data-c6-prog>
+    <span class="c6-prog-label" data-c6-prog-label>
+      The tour
+    </span>
+    <span class="c6-prog-bars">
+      {chapters.map((c, i) => (
+        <a href={`#c6-ch-${i + 1}`} data-c6-seg={i + 1} title={c.eyebrow}>
+          <i />
+          <span class="c6-sr">{c.eyebrow}</span>
+        </a>
+      ))}
+    </span>
+    <span class="c6-prog-hint" aria-hidden="true">
+      More below
+    </span>
+  </nav>
+
+  <div class="c6-tchapters">
+    <div class="c6-tch c6-tch--intro" data-c6-ch="0">
+      <div class="c6-tcap c6-tcap--intro c6-glass">
+        <p class="c6-eyebrow">A day in the app</p>
+        <h2 class="c6-h2" id="c6-tour-h">
+          Now open it up.
+        </h2>
+        <p class="c6-soft">Keep scrolling: the window fills the screen and you use the app, page by page.</p>
+      </div>
+    </div>
+    {chapters.map((c, i) => (
+      <div class="c6-tch" id={`c6-ch-${i + 1}`} data-c6-ch={i + 1}>
+        <div class="c6-tcap c6-glass">
+          <p class="c6-eyebrow">
+            <span class="c6-step">
+              {i + 1} / {chapters.length}
+            </span>
+            {c.eyebrow}
+          </p>
+          <h3 class="c6-h2">{c.title}</h3>
+          <p class="c6-soft">{c.body}</p>
+        </div>
+        <figure class="c6-tstill">
+          <Image
+            src={c.still}
+            widths={[1210, 2420]}
+            sizes="(max-width: 1100px) 100vw, 1100px"
+            alt={`${c.alt} (made-up demo data)`}
+          />
+        </figure>
+      </div>
+    ))}
+    <div class="c6-tch c6-tch--outro" data-c6-ch="7">
+      <div class="c6-tcap c6-tcap--intro c6-glass">
+        <p class="c6-eyebrow">That's the tour</p>
+        <h2 class="c6-h2">Now make it yours.</h2>
+        <p class="c6-soft">It speaks your language, and it takes about ten minutes to set up.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { app, type PageName } from "../c2a/app/engine";
+
+  type Pose = { tx: number; ty: number; sc: number; rx: number; ry: number; rz: number };
+  const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+  const smooth = (v: number, a: number, b: number) => {
+    const k = clamp((v - a) / (b - a));
+    return k * k * (3 - 2 * k);
+  };
+  const mix = (a: number, b: number, k: number) => a + (b - a) * k;
+
+  const tour = document.querySelector<HTMLElement>("[data-c6-tour]");
+  if (tour && !matchMedia("(prefers-reduced-motion: reduce)").matches) run(tour);
+
+  function run(tour: HTMLElement) {
+    const stage = tour.querySelector<HTMLElement>("[data-c6-tstage]")!;
+    const pose = tour.querySelector<HTMLElement>("[data-c6-tpose]")!;
+    const tilt = tour.querySelector<HTMLElement>("[data-c6-ttilt]")!;
+    const ctl = app(tour.querySelector<HTMLElement>("[data-aw]")!);
+    const secs = [...tour.querySelectorAll<HTMLElement>("[data-c6-ch]")];
+    const segs = [...document.querySelectorAll<HTMLElement>("[data-c6-seg]")];
+    const label = document.querySelector<HTMLElement>("[data-c6-prog-label]")!;
+    const names = ["The tour", "Today", "Search", "The board", "Roles", "Interviews", "Insights", "The tour"];
+    let vw = 0;
+    let vh = 0;
+    let keys: [number, Pose][] = [];
+    const P = (tx: number, ty: number, sc: number, rx: number, ry: number, rz: number): Pose => ({
+      tx,
+      ty,
+      sc,
+      rx,
+      ry,
+      rz,
+    });
+
+    function layout() {
+      vw = innerWidth;
+      vh = innerHeight;
+      const mobile = vw < 760;
+      if (mobile) ctl.size(vw - 20, Math.round(Math.min(vh * 0.5, 470)));
+      else {
+        const s = Math.min((vw - 140) / 1440, (vh - 44 - 130) / 900);
+        ctl.size(Math.round(1440 * s), Math.round(900 * s));
+      }
+      const S = mobile ? P(0, vh * 0.3, 0.7, 22, 0, 0) : P(0, vh * 0.3, 0.42, 28, 0, 0);
+      const F = mobile ? P(0, -vh * 0.07, 1, 0, 0, 0) : P(0, 12, 1, 0, 0, 0);
+      const O = mobile ? P(0, vh * 0.22, 0.66, 18, 0, 0) : P(0, vh * 0.2, 0.46, 24, 0, 0);
+      keys = [
+        [0, S],
+        [0.2, S],
+        [0.95, F],
+        [6.85, F],
+        [7.45, O],
+      ];
+    }
+    function poseAt(t: number): Pose {
+      if (t <= keys[0][0]) return keys[0][1];
+      for (let i = 1; i < keys.length; i++) {
+        const [t1, p1] = keys[i];
+        const [t0, p0] = keys[i - 1];
+        if (t <= t1) {
+          const k = smooth(t, t0, t1);
+          const o = {} as Pose;
+          for (const n of Object.keys(p0) as (keyof Pose)[]) o[n] = mix(p0[n], p1[n], k);
+          return o;
+        }
+      }
+      return keys[keys.length - 1][1];
+    }
+    function readT() {
+      const mid = vh * 0.5;
+      let t = 0;
+      for (const s of secs) {
+        const r = s.getBoundingClientRect();
+        if (r.top <= mid) t = Number(s.dataset.c6Ch) + clamp((mid - r.top) / r.height);
+      }
+      return t;
+    }
+    const pageFor = (t: number): PageName =>
+      t < 2
+        ? "today"
+        : t < 3
+          ? "application"
+          : t < 4
+            ? "board"
+            : t < 5
+              ? "role"
+              : t < 6
+                ? "interviews"
+                : "insights";
+
+    let t = 0;
+    let tS = 0;
+    let on = false;
+    let running = false;
+    let seg = -1;
+    let px = 0;
+    let py = 0;
+    let sx = 0;
+    let sy = 0;
+    function frame() {
+      t = readT();
+      tS += (t - tS) * 0.15;
+      const p = poseAt(tS);
+      pose.style.transform = `translate3d(${p.tx.toFixed(1)}px, ${p.ty.toFixed(1)}px, 0) scale(${p.sc.toFixed(4)}) rotateX(${p.rx.toFixed(2)}deg) rotateY(${p.ry.toFixed(2)}deg) rotateZ(${p.rz.toFixed(2)}deg)`;
+      sx += (px - sx) * 0.06;
+      sy += (py - sy) * 0.06;
+      tilt.style.transform = `rotateX(${(-sy * 3).toFixed(2)}deg) rotateY(${(sx * 4).toFixed(2)}deg)`;
+      ctl.want(pageFor(t));
+      ctl.inner("today", smooth(clamp(t - 1), 0.35, 0.92) * 720);
+      ctl.inner("application", smooth(clamp(t - 2), 0.3, 0.95) * 1150);
+      ctl.inner("insights", smooth(clamp(t - 6), 0.5, 0.95) * 100);
+      const r = t >= 1 && t < 7 ? Math.floor(t) : -1;
+      if (r !== seg) {
+        segs.forEach((a) => {
+          const i = Number(a.dataset.c6Seg);
+          a.classList.toggle("is-on", i === r);
+          a.classList.toggle("is-done", i < r);
+        });
+        label.textContent = names[Math.max(0, r)];
+        seg = r;
+      }
+      document.body.classList.toggle("c6-in-tour", t > 0.6 && t < 7.3);
+      if (on) requestAnimationFrame(frame);
+      else running = false;
+    }
+    const kick = () => {
+      if (on && !running) {
+        running = true;
+        requestAnimationFrame(frame);
+      }
+    };
+    layout();
+    addEventListener("resize", () => {
+      layout();
+      kick();
+    });
+    addEventListener(
+      "pointermove",
+      (e) => {
+        px = e.clientX / innerWidth - 0.5;
+        py = e.clientY / innerHeight - 0.5;
+      },
+      { passive: true },
+    );
+    let seen = false;
+    const set = () => {
+      on = seen && !document.hidden;
+      stage.classList.toggle("is-paused", !on);
+      ctl.active(on);
+      if (!on) document.body.classList.remove("c6-in-tour");
+      kick();
+    };
+    new IntersectionObserver(([e]) => {
+      seen = e.isIntersecting;
+      set();
+    }).observe(tour);
+    document.addEventListener("visibilitychange", set);
+    ctl.want("today");
+  }
+</script>
+
+<style is:global>
+  .c6-tour {
+    position: relative;
+    z-index: 1;
+  }
+  .c6-tstage {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    height: 100svh;
+    perspective: 1800px;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .c6-ttilt,
+  .c6-tpose,
+  .c6-tdrift {
+    transform-style: preserve-3d;
+  }
+  .c6-tpose {
+    transform: translate3d(0, 30vh, 0) scale(0.42) rotateX(28deg);
+    will-change: transform;
+  }
+  .c6-tdrift {
+    position: relative;
+    animation: c6-drift 15s ease-in-out infinite alternate;
+  }
+  .c6-tstage.is-paused .c6-tdrift {
+    animation-play-state: paused;
+  }
+  .c6-tglow {
+    position: absolute;
+    inset: -14% -10%;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgb(196 122 72 / 0.4), transparent);
+    transform: translateZ(-220px);
+  }
+  .c6-tchapters {
+    position: relative;
+    z-index: 2;
+    margin-top: -100vh;
+    margin-top: -100svh;
+  }
+  .c6-tch {
+    position: relative;
+    height: 165vh;
+    padding: 0 clamp(16px, 4vw, 56px);
+  }
+  .c6-tch--intro {
+    height: 130vh;
+    padding-top: 16vh;
+  }
+  .c6-tch--outro {
+    height: 100vh;
+    padding-top: 14vh;
+  }
+  .c6-tcap {
+    position: sticky;
+    top: max(110px, calc(100vh - 360px));
+    width: min(440px, 100%);
+    margin-left: auto;
+    margin-right: clamp(0px, 3vw, 60px);
+    padding: 28px 30px 30px;
+    border-radius: 30px 30px 30px 8px;
+    --c6-glass-a: 0.08;
+    background:
+      linear-gradient(160deg, rgb(255 236 214 / 0.16), rgb(255 236 214 / 0.03) 55%), rgb(42 28 20 / 0.55);
+    border-color: rgb(255 220 190 / 0.22);
+    color: #f3ece2;
+  }
+  .c6-tcap .c6-soft {
+    color: rgb(243 236 226 / 0.7);
+  }
+  .c6-tcap h2,
+  .c6-tcap h3 {
+    margin: 0 0 12px;
+    font-size: clamp(28px, 2.6vw, 38px);
+  }
+  .c6-tcap p:not(.c6-eyebrow) {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 350;
+  }
+  .c6-tcap .c6-eyebrow {
+    margin-bottom: 16px;
+  }
+  .c6-tcap--intro {
+    position: relative;
+    top: auto;
+    margin: 0 auto;
+    width: min(620px, 100%);
+    text-align: center;
+    border-radius: 30px;
+  }
+  .c6-tcap--intro .c6-eyebrow {
+    justify-content: center;
+  }
+  .c6-step {
+    margin-right: 4px;
+    opacity: 0.55;
+  }
+  .c6-tstill {
+    display: none;
+  }
+
+  .c6-prog {
+    position: fixed;
+    left: 22px;
+    top: 50%;
+    z-index: 45;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 8px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    color: #f3ece2;
+    transform: translate(-180%, -50%);
+    transition: transform 0.6s var(--c6-ease);
+  }
+  .c6-body.c6-in-tour .c6-prog {
+    transform: translate(0, -50%);
+  }
+  .c6-prog-label,
+  .c6-prog-hint {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+  }
+  .c6-prog-label {
+    min-height: 7em;
+    font-weight: 500;
+    text-align: right;
+  }
+  .c6-prog-hint {
+    font: 500 10.5px/1 var(--c6-mono);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.6;
+  }
+  .c6-prog-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .c6-prog-bars a {
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+  }
+  .c6-prog-bars i {
+    width: 4px;
+    height: 14px;
+    border-radius: 2px;
+    background: currentColor;
+    opacity: 0.25;
+    transition:
+      opacity 0.3s,
+      transform 0.3s var(--c6-ease);
+  }
+  .c6-prog-bars a.is-done i {
+    opacity: 0.6;
+  }
+  .c6-prog-bars a.is-on i {
+    opacity: 1;
+    background: var(--c6-copper-hi);
+    transform: scaleX(1.6);
+  }
+
+  @media (max-width: 760px) {
+    .c6-tch {
+      padding-top: 72vh;
+    }
+    .c6-tch--intro {
+      padding-top: 12vh;
+    }
+    .c6-tch--outro {
+      padding-top: 0;
+    }
+    .c6-tcap {
+      top: auto;
+      bottom: 66px;
+      margin: 0 auto;
+      padding: 20px 22px 22px;
+    }
+    .c6-tcap h2,
+    .c6-tcap h3 {
+      font-size: 24px;
+    }
+    .c6-tcap p {
+      font-size: 14px;
+    }
+    .c6-prog {
+      left: 50%;
+      top: 72px;
+      flex-direction: row;
+      padding: 6px 14px;
+      transform: translate(-50%, -300%);
+    }
+    .c6-body.c6-in-tour .c6-prog {
+      transform: translateX(-50%);
+    }
+    .c6-prog-label,
+    .c6-prog-hint {
+      writing-mode: horizontal-tb;
+      transform: none;
+      min-height: 0;
+    }
+    .c6-prog-label {
+      min-width: 6em;
+    }
+    .c6-prog-hint {
+      display: none;
+    }
+    .c6-prog-bars {
+      flex-direction: row;
+    }
+    .c6-prog-bars i {
+      width: 14px;
+      height: 4px;
+    }
+    .c6-prog-bars a.is-on i {
+      transform: scaleY(1.6);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .c6-tstage,
+    .c6-prog {
+      display: none;
+    }
+    .c6-tchapters {
+      margin-top: 0;
+      padding: 60px 0;
+    }
+    .c6-tch,
+    .c6-tch--intro {
+      height: auto;
+      display: grid;
+      gap: 24px;
+      padding-block: 48px;
+    }
+    .c6-tch--outro {
+      height: auto;
+      padding-block: 48px;
+    }
+    .c6-tcap {
+      position: static;
+      margin: 0 auto;
+      width: min(720px, 100%);
+    }
+    .c6-tstill {
+      display: block;
+      width: min(1100px, 100%);
+      margin: 0 auto;
+      overflow: hidden;
+      border-radius: 20px;
+      border: 8px solid rgb(255 236 214 / 0.12);
+    }
+    .c6-tstill img {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 1210 / 844;
+      object-fit: cover;
+      object-position: top;
+    }
+  }
+</style>

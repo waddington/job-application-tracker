@@ -1,0 +1,362 @@
+---
+// Sticky storytelling, kept short: the copy stays on the left while a big rounded panel on the right steps through
+// four parts of the app, chosen by scroll or by the glass segmented control. A progress line fills as you go and a
+// hint at the bottom says what comes next, so the page never feels finished early.
+import type { ImageMetadata } from "astro";
+import { Image } from "astro:assets";
+import person from "./shots/l-person.png";
+import offers from "./shots/l-offers.png";
+import timeline from "./shots/l-timeline.png";
+import interviews from "../c2a/shots/l-interviews.png";
+
+const steps: { tab: string; title: string; body: string; img: ImageMetadata; alt: string }[] = [
+  {
+    tab: "Recruiters",
+    title: "One recruiter, five roles, zero chaos.",
+    body: "Calls with an agenda, the roles they pitched, apply or pass on each, and how quickly they usually reply.",
+    img: person,
+    alt: "A recruiter's page: calls and meetings, the roles they pitched, to-dos and links",
+  },
+  {
+    tab: "Interviews",
+    title: "Every round, on a calendar.",
+    body: "Rounds, take-home tasks and calls by date, what's coming up, and what needs a new time.",
+    img: interviews,
+    alt: "The Interviews calendar for November, with rounds held and one coming up",
+  },
+  {
+    tab: "Offers",
+    title: "Compare offers properly.",
+    body: "Salary, bonus, equity and pension, or a contractor's day rate, side by side with what each is worth a year.",
+    img: offers,
+    alt: "Two offers side by side: a day rate and a salary package, each with what it's worth a year",
+  },
+  {
+    tab: "Timeline",
+    title: "Everything that happened.",
+    body: "Stage moves, messages, calls, rounds and offers, by day or as lanes, with what's coming up on top.",
+    img: timeline,
+    alt: "The Timeline: what's coming up, then everything that happened by day",
+  },
+];
+---
+
+<section
+  class="c2b-story"
+  id="c2b-features"
+  data-tint-block="sky"
+  data-c2b-story
+  aria-labelledby="c2b-story-h"
+>
+  <div class="c2b-story-pin">
+    <div class="c2b-story-copy">
+      <p class="c2b-eyebrow">Everything in one place</p>
+      <h2 class="c2b-display" id="c2b-story-h">
+        The whole search,
+        <br />
+        not just the board.
+      </h2>
+      <ol class="c2b-steps">
+        {steps.map((s, i) => (
+          <li class:list={{ "is-on": i === 0 }} data-step={i}>
+            <b>{s.title}</b>
+            <span>{s.body}</span>
+          </li>
+        ))}
+      </ol>
+    </div>
+    <div class="c2b-story-media">
+      <div class="c2b-tabs c2b-glass" role="tablist" aria-label="Parts of the app">
+        <span class="c2b-tabs-thumb" data-thumb aria-hidden="true"></span>
+        {steps.map((s, i) => (
+          <button
+            type="button"
+            role="tab"
+            aria-selected={i === 0 ? "true" : "false"}
+            aria-controls={`c2b-story-${i}`}
+            data-tab={i}
+          >
+            {s.tab}
+          </button>
+        ))}
+        <span class="c2b-tabs-line" aria-hidden="true">
+          <i data-line></i>
+        </span>
+      </div>
+      <div class="c2b-frame">
+        {steps.map((s, i) => (
+          <div
+            class:list={["c2b-shot", { "is-on": i === 0 }]}
+            id={`c2b-story-${i}`}
+            role="tabpanel"
+            data-shot={i}
+          >
+            <Image
+              src={s.img}
+              widths={[1210, 2420]}
+              sizes="(max-width: 760px) 92vw, 800px"
+              alt={`${s.alt} (made-up demo data)`}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+    <p class="c2b-next" aria-hidden="true">
+      Next: English and <span lang="zh-CN">简体中文</span>
+      <svg viewBox="0 0 12 12" width="11" height="11">
+        <path d="M6 2v8M2.5 6.5 6 10l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.4"></path>
+      </svg>
+    </p>
+  </div>
+</section>
+
+<script>
+  const story = document.querySelector<HTMLElement>("[data-c2b-story]");
+  if (story) {
+    const tabs = [...story.querySelectorAll<HTMLButtonElement>("[data-tab]")];
+    const shots = [...story.querySelectorAll<HTMLElement>("[data-shot]")];
+    const steps = [...story.querySelectorAll<HTMLElement>("[data-step]")];
+    const thumb = story.querySelector<HTMLElement>("[data-thumb]")!;
+    const line = story.querySelector<HTMLElement>("[data-line]")!;
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)");
+    let current = -1;
+    const show = (i: number) => {
+      if (i === current) return;
+      current = i;
+      tabs.forEach((t, k) => t.setAttribute("aria-selected", String(k === i)));
+      shots.forEach((s, k) => s.classList.toggle("is-on", k === i));
+      steps.forEach((s, k) => s.classList.toggle("is-on", k === i));
+      thumb.style.transform = `translateX(${tabs[i].offsetLeft}px)`;
+      thumb.style.width = `${tabs[i].offsetWidth}px`;
+    };
+    const onScroll = () => {
+      if (reduce.matches || innerWidth < 860) return;
+      const r = story.getBoundingClientRect();
+      const p = Math.min(0.999, Math.max(0, -r.top / (r.height - innerHeight)));
+      line.style.transform = `scaleX(${p.toFixed(4)})`;
+      show(Math.floor(p * tabs.length));
+    };
+    tabs.forEach((t, i) =>
+      t.addEventListener("click", () => {
+        if (reduce.matches || innerWidth < 860) return show(i);
+        const top = story.getBoundingClientRect().top + scrollY;
+        scrollTo({ top: top + (story.offsetHeight - innerHeight) * ((i + 0.5) / tabs.length) });
+      }),
+    );
+    addEventListener("scroll", onScroll, { passive: true });
+    addEventListener("resize", () => {
+      const i = current;
+      current = -1;
+      show(Math.max(0, i));
+    });
+    document.fonts?.ready.then(() => {
+      const i = current;
+      current = -1;
+      show(Math.max(0, i));
+    });
+    show(0);
+    onScroll();
+  }
+</script>
+
+<style is:global>
+  .c2b-story {
+    position: relative;
+    z-index: 1;
+    height: 300vh;
+  }
+  .c2b-story-pin {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    height: 100svh;
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: clamp(28px, 4vw, 64px);
+    align-items: center;
+    padding: 90px max(4vw, 20px) 70px;
+  }
+  .c2b-story-copy h2 {
+    margin: 18px 0 30px;
+    font-size: clamp(34px, 3.6vw, 54px);
+  }
+  .c2b-steps {
+    display: grid;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .c2b-steps li {
+    padding: 12px 0 12px 18px;
+    border-left: 2px solid rgb(33 28 59 / 0.12);
+    opacity: 0.45;
+    transition:
+      opacity 0.4s,
+      border-color 0.4s;
+  }
+  .c2b-steps li.is-on {
+    opacity: 1;
+    border-color: var(--c2b-violet);
+  }
+  .c2b-steps b {
+    display: block;
+    font-weight: 500;
+  }
+  .c2b-steps span {
+    display: block;
+    max-height: 0;
+    overflow: hidden;
+    font-size: 15px;
+    color: var(--c2b-ink-2);
+    transition: max-height 0.5s var(--c2b-ease);
+  }
+  .c2b-steps li.is-on span {
+    max-height: 6em;
+  }
+  .c2b-story-media {
+    position: relative;
+  }
+  .c2b-tabs {
+    position: absolute;
+    left: 50%;
+    top: 18px;
+    z-index: 3;
+    display: flex;
+    padding: 5px;
+    transform: translateX(-50%);
+  }
+  .c2b-tabs-thumb {
+    position: absolute;
+    left: 0;
+    top: 5px;
+    bottom: 5px;
+    z-index: 1;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #fff, rgb(255 255 255 / 0.75));
+    box-shadow: 0 4px 14px rgb(60 40 140 / 0.18);
+    transition:
+      transform 0.45s var(--c2b-ease),
+      width 0.45s var(--c2b-ease);
+  }
+  .c2b-tabs button {
+    position: relative;
+    z-index: 2;
+    padding: 10px 16px;
+    border: 0;
+    border-radius: 999px;
+    background: none;
+    font: 500 14px/1 var(--c2b-display);
+    color: var(--c2b-ink-2);
+    cursor: pointer;
+  }
+  .c2b-tabs button[aria-selected="true"] {
+    color: var(--c2b-ink);
+  }
+  .c2b-tabs-line {
+    position: absolute;
+    left: 18px;
+    right: 18px;
+    bottom: 2px;
+    z-index: 2;
+    height: 2px;
+    border-radius: 2px;
+    background: rgb(33 28 59 / 0.08);
+    overflow: hidden;
+  }
+  .c2b-tabs-line i {
+    display: block;
+    height: 100%;
+    background: var(--c2b-violet);
+    transform: scaleX(0);
+    transform-origin: 0 50%;
+  }
+  .c2b-frame {
+    position: relative;
+    aspect-ratio: 1210 / 844;
+    overflow: hidden;
+    border-radius: 34px;
+    background:
+      radial-gradient(70% 80% at 0% 0%, rgb(201 184 255 / 0.9), transparent 70%),
+      radial-gradient(60% 70% at 100% 100%, rgb(255 198 171 / 0.9), transparent 70%), #eef4ff;
+    box-shadow: 0 50px 100px -40px rgb(50 30 130 / 0.45);
+  }
+  .c2b-shot {
+    position: absolute;
+    inset: 80px 34px -40px;
+    overflow: hidden;
+    border-radius: 16px;
+    box-shadow:
+      0 30px 60px -20px rgb(40 24 110 / 0.4),
+      0 0 0 1px rgb(255 255 255 / 0.8);
+    opacity: 0;
+    transform: translateY(28px) scale(0.985);
+    transition:
+      opacity 0.6s var(--c2b-ease),
+      transform 0.8s var(--c2b-ease);
+  }
+  .c2b-shot.is-on {
+    opacity: 1;
+    transform: none;
+  }
+  .c2b-shot img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .c2b-next {
+    position: absolute;
+    left: 50%;
+    bottom: 78px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transform: translateX(-50%);
+    font: 500 11px/1 var(--c2b-mono);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--c2b-ink-2);
+  }
+  @media (max-width: 860px) {
+    .c2b-story {
+      height: auto;
+    }
+    .c2b-story-pin {
+      position: relative;
+      height: auto;
+      grid-template-columns: minmax(0, 1fr);
+      padding: 100px 16px 60px;
+    }
+    .c2b-steps span {
+      max-height: none;
+    }
+    .c2b-steps li {
+      opacity: 1;
+    }
+    .c2b-tabs button {
+      padding: 9px 11px;
+      font-size: 13px;
+    }
+    .c2b-shot {
+      inset: 64px 14px -30px;
+    }
+    .c2b-next {
+      display: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .c2b-story {
+      height: auto;
+    }
+    .c2b-story-pin {
+      position: relative;
+      height: auto;
+    }
+    .c2b-shot {
+      transition: none;
+    }
+    .c2b-next {
+      display: none;
+    }
+  }
+</style>
