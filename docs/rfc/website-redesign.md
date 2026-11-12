@@ -120,6 +120,7 @@ with round 1's 1, 2 and 5 kept in the switcher to compare:
 | 1c Espresso: card mosaic | Small rounded application cards in stage colours that tile, stack and move: the motif comes from the app. |
 | 2a Liquid: deeper 3D | Same palette; real depth layers, smoother page transitions, a richer cursor, better graphics. |
 | 2b Liquid in Espresso's layout | Liquid's palette and glass on Espresso's long-scroll structure. |
+| 6 Espresso × Liquid | Kai: "try a new version a cross between espresso and liquid". Espresso's palette and long-scroll story, with Liquid's immersive moment: the browser grows to fill the screen and the tour happens inside the app under glass captions; a slow gradient in copper and cream; no dots; stronger motion than round 1's Liquid. |
 | 5a Bubbles: calmer | Softer pastels, better motion. |
 | 5b Bubbles in espresso | The bento playground in Espresso's warm palette. |
 
