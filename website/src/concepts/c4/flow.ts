@@ -45,7 +45,8 @@ export function startFlow(canvas: HTMLCanvasElement, cfg: FlowConfig) {
         const ys = r.path.map((m) => cfg.nodes[m].y);
         const after = ys.slice(k + 1);
         const before = ys.slice(0, k);
-        const key = (after.length ? after.reduce((a, b) => a + b) / after.length : node.y) * 2 +
+        const key =
+          (after.length ? after.reduce((a, b) => a + b) / after.length : node.y) * 2 +
           (before.length ? before.reduce((a, b) => a + b) / before.length : node.y);
         return { i, w: r.weight, key };
       })
@@ -147,12 +148,19 @@ export function startFlow(canvas: HTMLCanvasElement, cfg: FlowConfig) {
     ctx.globalAlpha = 1;
   };
 
+  // A still frame for reduced motion: a few short steps, so each dot keeps a short tail.
+  const still = () => {
+    draw(0, 0);
+    for (let i = 0; i < 6; i++) draw(0.016, 0);
+  };
   resize();
-  new ResizeObserver(resize).observe(canvas);
+  new ResizeObserver(() => {
+    resize();
+    if (reduce) still();
+  }).observe(canvas);
 
   if (reduce) {
-    // One still frame, a little later so fonts and layout have settled.
-    requestAnimationFrame(() => draw(0, 0));
+    still();
     return;
   }
   let visible = false;

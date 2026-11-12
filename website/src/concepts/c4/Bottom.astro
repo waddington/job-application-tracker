@@ -75,81 +75,113 @@ const year = new Date().getFullYear();
 ---
 
 <section class="c4-centre" data-tint="black">
-  <p class="c4-centre-line">No AI. No cloud. No account. No tracking.<br />Nothing leaves your computer.</p>
+  <p class="c4-centre-line">
+    No AI. No cloud. No account. No tracking.
+    <br />
+    Nothing leaves your computer.
+  </p>
 </section>
 
 <section class="c4-privacy" id="privacy" data-tint="black" aria-labelledby="h-priv">
   <div class="c4-panel">
     <div class="c4-panel-copy">
       <p class="c4-eyebrow">Private by design</p>
-      <h2 class="c4-h2" id="h-priv">Your job hunt is nobody else's business.</h2>
+      <h2 class="c4-h2" id="h-priv">
+        Your job hunt is nobody else's business.
+      </h2>
       <p class="c4-body-text">
-        Salaries, recruiters' names, interview notes and the CV you tailored at 1am live in one folder you own, in
-        formats you can read without the app. It never sends email, contacts anyone or calls out to the web.
+        Salaries, recruiters' names, interview notes and the CV you tailored at 1am live in one folder you
+        own, in formats you can read without the app. It never sends email, contacts anyone or calls out to
+        the web.
       </p>
-      <a class="c4-btn c4-glass" href={`${GUIDE}your-data.md`}>How your data is stored</a>
+      <a class="c4-btn c4-glass" href={`${GUIDE}your-data.md`}>
+        How your data is stored
+      </a>
     </div>
     <ol class="c4-stack" aria-label="Where everything runs">
-      <li><small>Your browser</small><b>127.0.0.1:8770</b><span>React · Mantine · d3-sankey</span></li>
-      <li><small>The app</small><b>FastAPI + SQLite</b><span>Python, run with uv</span></li>
-      <li><small>Your folder</small><b>~/job-search-data</b><span>export/*.jsonl · notes/*.md · files/</span></li>
-      <li class="is-opt"><small>Optional</small><b>Your private git repo</b><span>full history, off-machine</span></li>
+      <li>
+        <small>Your browser</small>
+        <b>127.0.0.1:8770</b>
+        <span>React · Mantine · d3-sankey</span>
+      </li>
+      <li>
+        <small>The app</small>
+        <b>FastAPI + SQLite</b>
+        <span>Python, run with uv</span>
+      </li>
+      <li>
+        <small>Your folder</small>
+        <b>~/job-search-data</b>
+        <span>export/*.jsonl · notes/*.md · files/</span>
+      </li>
+      <li class="is-opt">
+        <small>Optional</small>
+        <b>Your private git repo</b>
+        <span>full history, off-machine</span>
+      </li>
     </ol>
   </div>
 </section>
 
 <section class="c4-small" data-tint="black" aria-labelledby="h-small">
   <p class="c4-eyebrow">And the small things</p>
-  <h2 class="c4-h2" id="h-small">Built for the way a search actually goes.</h2>
+  <h2 class="c4-h2" id="h-small">
+    Built for the way a search actually goes.
+  </h2>
   <ul class="c4-small-grid">
-    {
-      small.map(([t, b]) => (
-        <li>
-          <b set:html={markZh(t)} />
-          <span>{b}</span>
-        </li>
-      ))
-    }
+    {small.map(([t, b]) => (
+      <li>
+        <b set:html={markZh(t)} />
+        <span>{b}</span>
+      </li>
+    ))}
   </ul>
 </section>
 
 <section class="c4-qs" id="quickstart" data-tint="black" aria-labelledby="h-qs">
   <p class="c4-eyebrow">Quick start</p>
-  <h2 class="c4-h2" id="h-qs">Set up in about ten minutes.</h2>
+  <h2 class="c4-h2" id="h-qs">
+    Set up in about ten minutes.
+  </h2>
   <p class="c4-body-text c4-qs-lede">
-    No installer yet: with uv and Node.js on your computer, you paste a few commands into the Terminal once. After
-    that it's a web page in your browser. Mac or Linux; Windows is next on the roadmap.
+    No installer yet: with uv and Node.js on your computer, you paste a few commands into the Terminal once.
+    After that it's a web page in your browser. Mac or Linux; Windows is next on the roadmap.
   </p>
-  <ul class="c4-needs" aria-label="What you need">{needs.map((x) => <li>{x}</li>)}</ul>
+  <ul class="c4-needs" aria-label="What you need">
+    {needs.map((x) => (
+      <li>{x}</li>
+    ))}
+  </ul>
   <div class="c4-term-wrap">
     <div class="c4-tabs c4-glass" role="tablist" aria-label="Quick start steps">
-      {
-        tabs.map((t, i) => (
-          <button
-            type="button"
-            role="tab"
-            id={`c4-tab-${t.id}`}
-            aria-controls={`c4-panel-${t.id}`}
-            aria-selected={i === 0 ? "true" : "false"}
-            tabindex={i === 0 ? 0 : -1}
-          >
-            <span class="c4-tab-n">{i + 1}</span> {t.label}
-          </button>
-        ))
-      }
+      {tabs.map((t, i) => (
+        <button
+          type="button"
+          role="tab"
+          id={`c4-tab-${t.id}`}
+          aria-controls={`c4-panel-${t.id}`}
+          aria-selected={i === 0 ? "true" : "false"}
+          tabindex={i === 0 ? 0 : -1}
+        >
+          <span class="c4-tab-n">{i + 1}</span> {t.label}
+        </button>
+      ))}
     </div>
     <div class="c4-term">
-      <div class="c4-term-bar" aria-hidden="true"><i></i><i></i><i></i><span>Terminal</span></div>
-      {
-        tabs.map((t, i) => (
-          <pre
-            class="c4-term-panel"
-            role="tabpanel"
-            id={`c4-panel-${t.id}`}
-            aria-labelledby={`c4-tab-${t.id}`}
-            hidden={i !== 0}
-            tabindex="0"
-          >
+      <div class="c4-term-bar" aria-hidden="true">
+        <i></i>
+        <i></i>
+        <i></i>
+        <span>Terminal</span>
+      </div>
+      {tabs.map((t, i) => <pre
+        class="c4-term-panel"
+        role="tabpanel"
+        id={`c4-panel-${t.id}`}
+        aria-labelledby={`c4-tab-${t.id}`}
+        hidden={i !== 0}
+        tabindex="0"
+      >
             {t.lines.map((l) =>
               l.cmd ? (
                 <span class="c4-l">
@@ -162,31 +194,33 @@ const year = new Date().getFullYear();
                 <span class="c4-l c4-l-out">{l.out}</span>
               ),
             )}
-          </pre>
-        ))
-      }
+          </pre>)}
     </div>
   </div>
   <div class="c4-ctas c4-ctas-c">
-    <a class="c4-btn c4-btn-solid" href={`${GUIDE}install.md`}>Read the install guide</a>
-    <a class="c4-btn c4-glass" href={REPO}>View on GitHub</a>
+    <a class="c4-btn c4-btn-solid" href={`${GUIDE}install.md`}>
+      Read the install guide
+    </a>
+    <a class="c4-btn c4-glass" href={REPO}>
+      View on GitHub
+    </a>
   </div>
 </section>
 
 <section class="c4-faq" id="faq" data-tint="black" aria-labelledby="h-faq">
   <div class="c4-faq-head">
     <p class="c4-eyebrow">Questions</p>
-    <h2 class="c4-h2" id="h-faq">Asked before you install.</h2>
+    <h2 class="c4-h2" id="h-faq">
+      Asked before you install.
+    </h2>
   </div>
   <div class="c4-faq-list">
-    {
-      faqs.map((f) => (
-        <details>
-          <summary>{f.q}</summary>
-          <p set:html={rich(f.a)} />
-        </details>
-      ))
-    }
+    {faqs.map((f) => (
+      <details>
+        <summary>{f.q}</summary>
+        <p set:html={rich(f.a)} />
+      </details>
+    ))}
   </div>
 </section>
 
@@ -194,7 +228,9 @@ const year = new Date().getFullYear();
   <div class="c4-foot-panel">
     <div class="c4-foot-top">
       <p class="c4-foot-big">Your next offer is in there somewhere.</p>
-      <a class="c4-btn c4-btn-solid" href={`${GUIDE}install.md`}>Get started</a>
+      <a class="c4-btn c4-btn-solid" href={`${GUIDE}install.md`}>
+        Get started
+      </a>
     </div>
     <div class="c4-foot-cols">
       <div>
@@ -217,8 +253,8 @@ const year = new Date().getFullYear();
       </nav>
     </div>
     <p class="c4-foot-fine">
-      © {year} Kai Waddington · <a href={`${REPO}/blob/main/LICENSE`}>Apache-2.0</a>. Screenshots show made-up demo
-      data. This site adds no cookies, analytics or trackers.
+      © {year} Kai Waddington · <a href={`${REPO}/blob/main/LICENSE`}>Apache-2.0</a>. Screenshots show made-up
+      demo data. This site adds no cookies, analytics or trackers.
     </p>
   </div>
 </footer>

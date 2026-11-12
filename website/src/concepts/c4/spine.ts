@@ -172,11 +172,11 @@ if (sankey) {
       { path: [2, 3, 5, 10], weight: 2, color: slate, fade: true },
       { path: [0, 3, 5, 7, 10], weight: 1, color: slate, fade: true },
     ],
-    count: 1500,
-    speed: 0.075,
-    size: [1.3, 2.6],
+    count: 2200,
+    speed: 0.07,
+    size: [1.1, 2.2],
     alpha: 0.9,
-    trail: 0.7,
+    trail: 0.6,
     bars: true,
   });
 }

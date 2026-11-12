@@ -69,25 +69,20 @@
 .c4-tint [data-tint-layer="navy"] {
   background:
     radial-gradient(90% 60% at 72% 100%, rgb(24 92 120 / 0.55), transparent 70%),
-    radial-gradient(60% 50% at 0% 0%, rgb(30 50 110 / 0.5), transparent 70%),
-    #060d1f;
+    radial-gradient(60% 50% at 0% 0%, rgb(30 50 110 / 0.5), transparent 70%), #060d1f;
 }
 .c4-tint [data-tint-layer="teal"] {
   background:
     radial-gradient(80% 60% at 20% 10%, rgb(20 120 118 / 0.55), transparent 70%),
-    radial-gradient(70% 60% at 100% 100%, rgb(10 70 90 / 0.6), transparent 70%),
-    #031c22;
+    radial-gradient(70% 60% at 100% 100%, rgb(10 70 90 / 0.6), transparent 70%), #031c22;
 }
 .c4-tint [data-tint-layer="violet"] {
   background:
     radial-gradient(80% 60% at 80% 0%, rgb(84 60 170 / 0.5), transparent 70%),
-    radial-gradient(70% 60% at 0% 100%, rgb(40 30 110 / 0.55), transparent 70%),
-    #0e0a26;
+    radial-gradient(70% 60% at 0% 100%, rgb(40 30 110 / 0.55), transparent 70%), #0e0a26;
 }
 .c4-tint [data-tint-layer="black"] {
-  background:
-    radial-gradient(70% 40% at 50% 100%, rgb(14 40 70 / 0.45), transparent 70%),
-    #020308;
+  background: radial-gradient(70% 40% at 50% 100%, rgb(14 40 70 / 0.45), transparent 70%), #020308;
 }
 .c4-spine-canvas {
   position: fixed;
@@ -109,7 +104,10 @@
   align-items: center;
   gap: 10px;
   margin: 0 0 22px;
-  font: 500 11.5px/1.2 "JetBrains Mono Variable", ui-monospace, monospace;
+  font:
+    500 11.5px/1.2 "JetBrains Mono Variable",
+    ui-monospace,
+    monospace;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--teal-2);
@@ -155,8 +153,7 @@
 .c4-glass {
   position: relative;
   background:
-    linear-gradient(180deg, rgb(255 255 255 / 0.18), rgb(255 255 255 / 0.04) 55%),
-    rgb(120 170 220 / 0.08);
+    linear-gradient(180deg, rgb(255 255 255 / 0.18), rgb(255 255 255 / 0.04) 55%), rgb(120 170 220 / 0.08);
   border: 1px solid rgb(255 255 255 / 0.16);
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 0.3),
@@ -291,7 +288,9 @@
   padding: 7px 8px 7px 10px;
   border-radius: 14px;
   text-decoration: none;
-  font: 500 10.5px/1 "JetBrains Mono Variable", monospace;
+  font:
+    500 10.5px/1 "JetBrains Mono Variable",
+    monospace;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--faint);
@@ -389,7 +388,12 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(50% 50% at 50% 30%, rgb(45 224 200 / 0.55), rgb(89 200 255 / 0.18) 45%, transparent 72%);
+  background: radial-gradient(
+    50% 50% at 50% 30%,
+    rgb(45 224 200 / 0.55),
+    rgb(89 200 255 / 0.18) 45%,
+    transparent 72%
+  );
   filter: blur(18px);
 }
 .c4-floor i {
@@ -450,7 +454,9 @@
   padding: 4px 40px;
   border-radius: 8px;
   background: rgb(0 0 0 / 0.28);
-  font: 450 11.5px/1 "JetBrains Mono Variable", monospace;
+  font:
+    450 11.5px/1 "JetBrains Mono Variable",
+    monospace;
   color: #9aa6b8;
 }
 
@@ -899,7 +905,12 @@
   bottom: 0;
   width: 2px;
   margin-left: -1px;
-  background: linear-gradient(transparent, rgb(122 245 228 / 0.16) 3%, rgb(122 245 228 / 0.16) 97%, transparent);
+  background: linear-gradient(
+    transparent,
+    rgb(122 245 228 / 0.16) 3%,
+    rgb(122 245 228 / 0.16) 97%,
+    transparent
+  );
 }
 .c4-spine-fill {
   position: absolute;
@@ -935,7 +946,7 @@
 .c4-node {
   position: absolute;
   left: calc(-1 * var(--spine-gap));
-  top: calc(max(100px, calc(50vh - 250px)) + 30px);
+  top: 54px;
   width: 0;
   height: 0;
 }
@@ -1092,7 +1103,9 @@
   border-radius: calc(var(--u) * 4);
   background: #0b4a4f;
   color: #7ef0e3;
-  font: 700 calc(var(--u) * 8.5) / 1 "Inter Variable", sans-serif;
+  font:
+    700 calc(var(--u) * 8.5) / 1 "Inter Variable",
+    sans-serif;
   letter-spacing: 0.03em;
   text-transform: uppercase;
   opacity: 0;
@@ -1166,9 +1179,6 @@
   top: auto;
   max-width: 640px;
 }
-.c4-chapter-wide .c4-node {
-  top: 40px;
-}
 .c4-sankey {
   position: relative;
   margin: 36px 0 0;
@@ -1199,7 +1209,9 @@
   left: calc(var(--x) * 1%);
   top: calc(var(--y) * 1%);
   transform: translate(14px, -50%);
-  font: 500 10.5px/1 "JetBrains Mono Variable", monospace;
+  font:
+    500 10.5px/1 "JetBrains Mono Variable",
+    monospace;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: rgb(242 247 251 / 0.78);
@@ -1275,7 +1287,9 @@
   background: transparent;
 }
 .c4-stack small {
-  font: 500 10.5px/1.2 "JetBrains Mono Variable", monospace;
+  font:
+    500 10.5px/1.2 "JetBrains Mono Variable",
+    monospace;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--teal-2);
@@ -1416,7 +1430,10 @@
   min-height: 270px;
   white-space: normal;
   overflow-x: auto;
-  font: 400 14px/1.85 "JetBrains Mono Variable", ui-monospace, monospace;
+  font:
+    400 14px/1.85 "JetBrains Mono Variable",
+    ui-monospace,
+    monospace;
   color: #dce6f2;
 }
 .c4-l {
@@ -1502,8 +1519,7 @@
   border-radius: 40px;
   background:
     radial-gradient(60% 80% at 0% 0%, rgb(45 224 200 / 0.16), transparent 60%),
-    radial-gradient(60% 80% at 100% 100%, rgb(155 140 255 / 0.14), transparent 60%),
-    #07102a;
+    radial-gradient(60% 80% at 100% 100%, rgb(155 140 255 / 0.14), transparent 60%), #07102a;
   border: 1px solid rgb(255 255 255 / 0.07);
 }
 .c4-foot-top {
@@ -1549,7 +1565,9 @@
 }
 .c4-foot-cols h2 {
   margin: 0 0 4px;
-  font: 500 10.5px/1.2 "JetBrains Mono Variable", monospace;
+  font:
+    500 10.5px/1.2 "JetBrains Mono Variable",
+    monospace;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--teal-2);
@@ -1593,25 +1611,33 @@
   .c4-hero {
     flex-direction: column;
     align-items: stretch;
-    padding-top: 120px;
-    padding-bottom: 80px;
+    padding-top: 110px;
+    padding-bottom: 90px;
     min-height: 0;
+  }
+  .c4-hero-copy {
+    padding-top: 0;
   }
   .c4-hero-stage {
     position: relative;
     right: auto;
     top: auto;
     width: 100%;
-    margin-top: 48px;
+    margin-top: 72px;
     transform: none;
     perspective: 1200px;
   }
   .c4-chip-a {
-    left: -2%;
-    top: -14%;
+    left: auto;
+    right: 2%;
+    top: -20%;
   }
   .c4-chip-b {
-    right: -2%;
+    right: 4%;
+    bottom: -14%;
+  }
+  .c4-hero .c4-chip {
+    font-size: 12px;
   }
   .c4-statement {
     grid-template-columns: 1fr;
@@ -1637,14 +1663,10 @@
   .c4-ch-media {
     margin-top: 32px;
   }
-  .c4-node {
-    position: absolute;
-    top: calc(12vh + 30px);
-  }
   .c4-chip-ch {
     left: 4%;
-    bottom: -14px;
-    font-size: 12.5px;
+    bottom: -4px;
+    font-size: 12px;
   }
   .c4-panel,
   .c4-faq {

@@ -35,10 +35,11 @@ const base = import.meta.env.BASE_URL;
 
     <header class="c4-nav">
       <a class="c4-logo c4-glass" href="#top" aria-label="Job Application Tracker, back to the top">
-        <svg viewBox="0 0 24 24" aria-hidden="true"
-          ><rect x="3" y="3" width="5" height="18" rx="1.5"></rect><rect x="10" y="3" width="5" height="12" rx="1.5"
-          ></rect><rect x="17" y="3" width="4" height="6" rx="1.5"></rect></svg
-        >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="3" y="3" width="5" height="18" rx="1.5"></rect>
+          <rect x="10" y="3" width="5" height="12" rx="1.5"></rect>
+          <rect x="17" y="3" width="4" height="6" rx="1.5"></rect>
+        </svg>
       </a>
       <nav class="c4-nav-group c4-glass" aria-label="Sections">
         <a href="#journey">The journey</a>
@@ -46,18 +47,18 @@ const base = import.meta.env.BASE_URL;
         <a href="#quickstart">Quick start</a>
         <a href="#faq">FAQ</a>
       </nav>
-      <a class="c4-nav-cta c4-glass" href="#quickstart">Get started</a>
+      <a class="c4-nav-cta c4-glass" href="#quickstart">
+        Get started
+      </a>
     </header>
 
     <nav class="c4-tracker c4-glass" aria-label="Stages of a job search" data-c4-tracker>
-      {
-        STAGES.map((s) => (
-          <a href={`#stage-${s.id}`} data-stage-link={s.id}>
-            <i aria-hidden="true" />
-            <span>{s.name}</span>
-          </a>
-        ))
-      }
+      {STAGES.map((s) => (
+        <a href={`#stage-${s.id}`} data-stage-link={s.id}>
+          <i aria-hidden="true" />
+          <span>{s.name}</span>
+        </a>
+      ))}
     </nav>
 
     <main>

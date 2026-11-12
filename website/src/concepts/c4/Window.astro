@@ -25,12 +25,20 @@ const stageStyle = [
   <div class="c4-cw-rig">
     <div class="c4-win">
       <div class="c4-win-bar" aria-hidden="true">
-        <i></i><i></i><i></i>
+        <i></i>
+        <i></i>
+        <i></i>
         <span class="c4-win-url">127.0.0.1:8770</span>
       </div>
       <div class="c4-cw-view" style={`aspect-ratio:${w}/${h}`}>
         <div class="c4-cw-stage" style={stageStyle}>
-          <Image src={src} alt={alt} widths={[900, 1440]} sizes="(max-width: 900px) 100vw, 900px" class="c4-app-img" />
+          <Image
+            src={src}
+            alt={alt}
+            widths={[900, 1440]}
+            sizes="(max-width: 900px) 100vw, 900px"
+            class="c4-app-img"
+          />
           <slot />
         </div>
       </div>

@@ -79,7 +79,9 @@ if (app) {
   const active = q("[data-active]");
   const scroll = q("[data-scroll]");
   const card = q("[data-card]");
-  const pages = new Map([...app.querySelectorAll<HTMLElement>("[data-page]")].map((el) => [el.dataset.page!, el]));
+  const pages = new Map(
+    [...app.querySelectorAll<HTMLElement>("[data-page]")].map((el) => [el.dataset.page!, el]),
+  );
   // The sidebar rows, as screenshot y offsets from Today's row.
   const rows: Record<string, number> = { today: 0, board: 115, insights: 502 };
   let current = "today";

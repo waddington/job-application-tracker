@@ -6,5 +6,5 @@ export const STAGES = [
   { id: "screen", name: "Screen", tint: "teal" },
   { id: "interview", name: "Interview", tint: "teal" },
   { id: "offer", name: "Offer", tint: "violet" },
-  { id: "picture", name: "The whole picture", tint: "violet" },
+  { id: "picture", name: "Insights", tint: "violet" },
 ] as const;
