@@ -1,0 +1,76 @@
+---
+// Concept 4, "Night shift": the page is the job search. A glowing pipeline runs down it through the
+// stages; each stage is a chapter where a browser shows the app at that moment. Self-contained: its own
+// head and styles (all prefixed .c4-), so it neither inherits nor touches the current site's CSS.
+import "@fontsource-variable/inter";
+import "@fontsource-variable/jetbrains-mono";
+import "./c4.css";
+import Switcher from "../Switcher.astro";
+import Hero from "./Hero.astro";
+import Journey from "./Journey.astro";
+import Bottom from "./Bottom.astro";
+import { STAGES } from "./stages";
+
+const base = import.meta.env.BASE_URL;
+---
+
+<!doctype html>
+<html lang="en" class="c4-html">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Concept 4, Night shift · Job Application Tracker</title>
+    <meta name="theme-color" content="#060d1f" />
+    <link rel="icon" href={`${base}favicon.svg`} type="image/svg+xml" />
+  </head>
+  <body class="c4-body">
+    <div class="c4-tint" aria-hidden="true">
+      <i data-tint-layer="navy" class="is-on"></i>
+      <i data-tint-layer="teal"></i>
+      <i data-tint-layer="violet"></i>
+      <i data-tint-layer="black"></i>
+    </div>
+    <canvas class="c4-spine-canvas" data-c4-spine-canvas aria-hidden="true"></canvas>
+
+    <header class="c4-nav">
+      <a class="c4-logo c4-glass" href="#top" aria-label="Job Application Tracker, back to the top">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="3" y="3" width="5" height="18" rx="1.5"></rect>
+          <rect x="10" y="3" width="5" height="12" rx="1.5"></rect>
+          <rect x="17" y="3" width="4" height="6" rx="1.5"></rect>
+        </svg>
+      </a>
+      <nav class="c4-nav-group c4-glass" aria-label="Sections">
+        <a href="#journey">The journey</a>
+        <a href="#privacy">Privacy</a>
+        <a href="#quickstart">Quick start</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+      <a class="c4-nav-cta c4-glass" href="#quickstart">
+        Get started
+      </a>
+    </header>
+
+    <nav class="c4-tracker c4-glass" aria-label="Stages of a job search" data-c4-tracker>
+      {STAGES.map((s) => (
+        <a href={`#stage-${s.id}`} data-stage-link={s.id}>
+          <i aria-hidden="true" />
+          <span>{s.name}</span>
+        </a>
+      ))}
+    </nav>
+
+    <main>
+      <Hero />
+      <Journey />
+      <Bottom />
+    </main>
+
+    <Switcher current={4} />
+
+    <script>
+      import "./page";
+    </script>
+  </body>
+</html>

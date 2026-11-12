@@ -1,0 +1,48 @@
+---
+// A chapter's browser window: a screenshot cropped to the part that matters, tilted in 3D with scroll
+// (page.ts sets --p), over its own small glowing floor. Overlays in the slot are placed in the
+// screenshot's own pixels with the --u unit (1 --u = one screenshot pixel), so they line up at any size.
+import type { ImageMetadata } from "astro";
+import { Image } from "astro:assets";
+
+interface Props {
+  src: ImageMetadata;
+  alt: string;
+  /** The part of the 1440-wide screenshot to show: x, y, width, height in its pixels. */
+  crop: [number, number, number, number];
+}
+const { src, alt, crop } = Astro.props;
+const [x, y, w, h] = crop;
+const stageStyle = [
+  `width:${((src.width / w) * 100).toFixed(3)}%`,
+  `aspect-ratio:${src.width}/${src.height}`,
+  `transform:translate(${((-x / src.width) * 100).toFixed(3)}%,${((-y / src.height) * 100).toFixed(3)}%)`,
+].join(";");
+---
+
+<div class="c4-cw" data-c4-tilt>
+  <div class="c4-cw-floor" aria-hidden="true"></div>
+  <div class="c4-cw-rig">
+    <div class="c4-win">
+      <div class="c4-win-bar" aria-hidden="true">
+        <i></i>
+        <i></i>
+        <i></i>
+        <span class="c4-win-url">127.0.0.1:8770</span>
+      </div>
+      <div class="c4-cw-view" style={`aspect-ratio:${w}/${h}`}>
+        <div class="c4-cw-stage" style={stageStyle}>
+          <Image
+            src={src}
+            alt={alt}
+            widths={[900, 1440]}
+            sizes="(max-width: 900px) 100vw, 900px"
+            class="c4-app-img"
+          />
+          <slot />
+        </div>
+      </div>
+    </div>
+    <slot name="chips" />
+  </div>
+</div>

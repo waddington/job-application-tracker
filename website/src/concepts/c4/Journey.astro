@@ -1,0 +1,336 @@
+---
+// The journey spine: one glowing pipeline down the page, a chapter per stage of a job search. Particles
+// travel down it as you scroll (spine.ts); the stage you're in lights up here and in the fixed tracker.
+import Window from "./Window.astro";
+import roles from "./shots/roles.png";
+import board from "./shots/board.png";
+import person from "./shots/person.png";
+import interviews from "./shots/interviews.png";
+import offers from "./shots/offers.png";
+import { STAGES } from "./stages";
+
+const facts: Record<string, string[]> = {
+  interested: [
+    "Roles from every recruiter, waiting for a decision",
+    "Know before two agencies put you forward for the same job",
+    "Drop the job description on the role's page",
+  ],
+  applied: [
+    "Drag between stages, and undo a move you didn't mean",
+    "Which CV and cover letter each company got",
+    "Save an email and drop it in: it lands on the timeline",
+  ],
+  screen: [
+    "Calls with an agenda, logged against the recruiter",
+    "Every role they pitched: apply or pass on each",
+    "Who you're waiting on, red once it's time to chase",
+  ],
+  interview: [
+    "Rounds in your own words, booked or not yet",
+    "Prep and debrief notes, kept as ordinary text files",
+    "A calendar of every round, call and to-do",
+  ],
+  offer: [
+    "Salary, bonus, equity and pension, or a day rate",
+    "What each is worth a year, side by side",
+    "Reply-by dates on Today, so none slips past",
+  ],
+};
+const n = (id: string) => STAGES.findIndex((s) => s.id === id) + 1;
+---
+
+<section class="c4-statement" data-tint="navy" aria-labelledby="c4-problem">
+  <p class="c4-eyebrow" id="c4-problem">
+    The problem
+  </p>
+  <p class="c4-statement-text">
+    Recruiters pitch five roles in one call. Processes drag on for six rounds. Half the companies ghost you.
+    And your spreadsheet has no idea who to chase today.
+  </p>
+  <dl class="c4-stats">
+    <div>
+      <dt>accounts to create</dt>
+      <dd>0</dd>
+    </div>
+    <div>
+      <dt>trackers or ads</dt>
+      <dd>0</dd>
+    </div>
+    <div>
+      <dt>subscription fees</dt>
+      <dd>0</dd>
+    </div>
+    <div>
+      <dt>of your data on your computer</dt>
+      <dd>100%</dd>
+    </div>
+  </dl>
+</section>
+
+<div class="c4-journey" id="journey" data-c4-journey>
+  <div class="c4-spine" aria-hidden="true">
+    <i class="c4-spine-fill" data-c4-spine-fill></i>
+  </div>
+
+  <header class="c4-journey-intro">
+    <p class="c4-eyebrow">One search, start to finish</p>
+    <h2 class="c4-h2">Every application is a pipeline. Follow one down.</h2>
+  </header>
+
+  <section
+    class="c4-chapter"
+    id="stage-interested"
+    data-tint="navy"
+    data-stage="interested"
+    aria-labelledby="h-int"
+  >
+    <div class="c4-ch-copy">
+      <span class="c4-node" aria-hidden="true">
+        <i></i>
+      </span>
+      <p class="c4-eyebrow c4-eyebrow-stage">Stage {n("interested")}: Interested</p>
+      <h2 class="c4-h2" id="h-int">
+        A recruiter calls with three roles.
+      </h2>
+      <p class="c4-body-text">
+        Each one gets a page: pay, terms, who brought it. Apply, mark it interested, or pass with a reason,
+        without losing track of which agency said what.
+      </p>
+      <ul class="c4-facts">
+        {facts.interested.map((f) => (
+          <li>{f}</li>
+        ))}
+      </ul>
+    </div>
+    <div class="c4-ch-media">
+      <Window
+        src={roles}
+        alt="The Roles page: three roles to decide on, each with Apply, Interested and Pass (made-up demo data)"
+        crop={[230, 56, 1050, 400]}
+      >
+        <span class="c4-badge-swap" style="--x:888;--y:358" aria-hidden="true">
+          Interested
+        </span>
+        <span class="c4-mini-cursor c4-mc-roles" aria-hidden="true">
+          <i></i>
+        </span>
+        <i slot="chips" class="c4-chip c4-chip-ch" aria-hidden="true">
+          <i class="c4-chip-dot"></i>
+          <span>
+            <b>Founding Backend Engineer</b>
+            <small>Northwind Pay · from Alex Morgan</small>
+          </span>
+        </i>
+      </Window>
+    </div>
+  </section>
+
+  <section
+    class="c4-chapter"
+    id="stage-applied"
+    data-tint="navy"
+    data-stage="applied"
+    aria-labelledby="h-app"
+  >
+    <div class="c4-ch-copy">
+      <span class="c4-node" aria-hidden="true">
+        <i></i>
+      </span>
+      <p class="c4-eyebrow c4-eyebrow-stage">Stage {n("applied")}: Applied</p>
+      <h2 class="c4-h2" id="h-app">
+        Every application, one drag away.
+      </h2>
+      <p class="c4-body-text">
+        The board shows each application by stage, the round it's at, and who's gone quiet in red. When a
+        reply comes in, the card says so.
+      </p>
+      <ul class="c4-facts">
+        {facts.applied.map((f) => (
+          <li>{f}</li>
+        ))}
+      </ul>
+    </div>
+    <div class="c4-ch-media">
+      <Window
+        src={board}
+        alt="The board: applications in Interested, Applied, Screen and Interviewing columns (made-up demo data)"
+        crop={[230, 56, 1210, 620]}
+      >
+        <i class="c4-ring" style="--x:573;--y:521" aria-hidden="true"></i>
+        <i slot="chips" class="c4-chip c4-chip-ch" aria-hidden="true">
+          <i class="c4-chip-dot c4-chip-dot-w"></i>
+          <span>
+            <b>Fabrikam replied</b>
+            <small>Staff Platform Engineer · reply to read</small>
+          </span>
+        </i>
+      </Window>
+    </div>
+  </section>
+
+  <section class="c4-chapter" id="stage-screen" data-tint="teal" data-stage="screen" aria-labelledby="h-scr">
+    <div class="c4-ch-copy">
+      <span class="c4-node" aria-hidden="true">
+        <i></i>
+      </span>
+      <p class="c4-eyebrow c4-eyebrow-stage">Stage {n("screen")}: Screen</p>
+      <h2 class="c4-h2" id="h-scr">
+        One recruiter, five roles, no chaos.
+      </h2>
+      <p class="c4-body-text">
+        A recruiter's page holds the calls you've had and the one that's booked, the roles they've mentioned,
+        and every application they're part of.
+      </p>
+      <ul class="c4-facts">
+        {facts.screen.map((f) => (
+          <li>{f}</li>
+        ))}
+      </ul>
+    </div>
+    <div class="c4-ch-media">
+      <Window
+        src={person}
+        alt="A recruiter's page: a booked video call, past calls and the roles they pitched (made-up demo data)"
+        crop={[230, 56, 1210, 640]}
+      >
+        <i class="c4-band" style="--x:250;--y:262;--w:776;--h:120" aria-hidden="true"></i>
+        <i slot="chips" class="c4-chip c4-chip-ch" aria-hidden="true">
+          <i class="c4-chip-dot"></i>
+          <span>
+            <b>Video call booked</b>
+            <small>Alex Morgan · 13 Nov, 14:38</small>
+          </span>
+        </i>
+      </Window>
+    </div>
+  </section>
+
+  <section
+    class="c4-chapter"
+    id="stage-interview"
+    data-tint="teal"
+    data-stage="interview"
+    aria-labelledby="h-iv"
+  >
+    <div class="c4-ch-copy">
+      <span class="c4-node" aria-hidden="true">
+        <i></i>
+      </span>
+      <p class="c4-eyebrow c4-eyebrow-stage">Stage {n("interview")}: Interview</p>
+      <h2 class="c4-h2" id="h-iv">
+        Round 3: system design. You're ready.
+      </h2>
+      <p class="c4-body-text">
+        Interview rounds in your own words, with prep and debrief notes, the CV you sent and the full history,
+        all on the application's page and on one calendar.
+      </p>
+      <ul class="c4-facts">
+        {facts.interview.map((f) => (
+          <li>{f}</li>
+        ))}
+      </ul>
+    </div>
+    <div class="c4-ch-media">
+      <Window
+        src={interviews}
+        alt="The Interviews calendar for November, with Round 3, a system design test, on Saturday the 14th (made-up demo data)"
+        crop={[230, 56, 1210, 760]}
+      >
+        <i class="c4-ring c4-ring-lg" style="--x:806;--y:510" aria-hidden="true"></i>
+        <i slot="chips" class="c4-chip c4-chip-ch" aria-hidden="true">
+          <i class="c4-chip-dot c4-chip-dot-v"></i>
+          <span>
+            <b>Round 3 · System design test</b>
+            <small>Contoso · Sat 14 Nov, 14:38</small>
+          </span>
+        </i>
+      </Window>
+    </div>
+  </section>
+
+  <section class="c4-chapter" id="stage-offer" data-tint="violet" data-stage="offer" aria-labelledby="h-off">
+    <div class="c4-ch-copy">
+      <span class="c4-node" aria-hidden="true">
+        <i></i>
+      </span>
+      <p class="c4-eyebrow c4-eyebrow-stage">Stage {n("offer")}: Offer</p>
+      <h2 class="c4-h2" id="h-off">
+        Two offers. Compare them properly.
+      </h2>
+      <p class="c4-body-text">
+        A salary package and a contractor's day rate, side by side, with what each is worth a year and the
+        date you have to answer by.
+      </p>
+      <ul class="c4-facts">
+        {facts.offer.map((f) => (
+          <li>{f}</li>
+        ))}
+      </ul>
+    </div>
+    <div class="c4-ch-media">
+      <Window
+        src={offers}
+        alt="Two offers compared: £600 a day against £95,000 a year with bonus, pension and equity (made-up demo data)"
+        crop={[230, 56, 1210, 640]}
+      >
+        <i class="c4-band" style="--x:250;--y:268;--w:1170;--h:38" aria-hidden="true"></i>
+        <i slot="chips" class="c4-chip c4-chip-ch" aria-hidden="true">
+          <i class="c4-chip-dot"></i>
+          <span>
+            <b>Worth a year: £132,000</b>
+            <small>against £114,200</small>
+          </span>
+        </i>
+      </Window>
+    </div>
+  </section>
+
+  <section
+    class="c4-chapter c4-chapter-wide"
+    id="stage-picture"
+    data-tint="violet"
+    data-stage="picture"
+    aria-labelledby="h-pic"
+  >
+    <div class="c4-ch-copy">
+      <span class="c4-node" aria-hidden="true">
+        <i></i>
+      </span>
+      <p class="c4-eyebrow c4-eyebrow-stage">Stage {n("picture")}: The whole picture</p>
+      <h2 class="c4-h2" id="h-pic">
+        See where it all leaks.
+      </h2>
+      <p class="c4-body-text">
+        Insights draws every role's path, from who brought it to an offer or to ghosted, with conversion per
+        stage, time in stage and a scorecard for every recruiter.
+      </p>
+    </div>
+    <figure class="c4-sankey">
+      <canvas data-c4-flow="sankey" aria-hidden="true"></canvas>
+      <ul class="c4-sankey-labels" aria-hidden="true">
+        <li style="--x:2;--y:12">Referred</li>
+        <li style="--x:2;--y:36">You found it</li>
+        <li style="--x:2;--y:70">Through a recruiter</li>
+        <li style="--x:21;--y:50">Interested</li>
+        <li style="--x:39;--y:90">Decided not to apply</li>
+        <li style="--x:39;--y:44">Applied</li>
+        <li style="--x:59;--y:12">Waiting to hear back</li>
+        <li style="--x:59;--y:46">Screen</li>
+        <li style="--x:79;--y:36">Interviewing</li>
+        <li style="--x:79;--y:66">Rejected</li>
+        <li style="--x:79;--y:84">Ghosted</li>
+        <li class="is-end" style="--x:97;--y:30">
+          Offer
+        </li>
+      </ul>
+      <figcaption>
+        Each dot is a role on its way through a made-up search: where it came from, how far it got, and where
+        it stopped.
+      </figcaption>
+    </figure>
+  </section>
+</div>
+
+<script>
+  import "./spine";
+</script>
