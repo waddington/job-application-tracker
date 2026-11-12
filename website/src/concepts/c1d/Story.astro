@@ -8,34 +8,44 @@ import recruiters from "../c1/shots/recruiters.png";
 import interviews from "../c1/shots/interviews.png";
 import offers from "../c1/shots/offers.png";
 import role from "../c1/shots/role.png";
+import recruitersLight from "./shots/recruiters-light.png";
+import interviewsLight from "./shots/interviews-light.png";
+import offersLight from "./shots/offers-light.png";
+import roleLight from "./shots/role-light.png";
+
+interface Props {
+  // 1f: the app's light-mode captures.
+  light?: boolean;
+}
+const { light = false } = Astro.props;
 
 const steps: { tab: string; title: string; body: string; img: ImageMetadata; pos?: string; alt: string }[] = [
   {
     tab: "Recruiters",
     title: "One recruiter, five roles, zero chaos.",
     body: "Calls with an agenda, the roles they pitched, apply or pass on each, and how quickly they usually reply.",
-    img: recruiters,
+    img: light ? recruitersLight : recruiters,
     alt: "The Recruiters page: three recruiters with their agencies, roles in progress and how long they usually take to reply",
   },
   {
     tab: "Interviews",
     title: "Every round, on a calendar.",
     body: "Rounds, take-home tasks and calls by date, what's coming up, and what needs a new time.",
-    img: interviews,
+    img: light ? interviewsLight : interviews,
     alt: "The Interviews calendar for November, with rounds held and one coming up on Saturday",
   },
   {
     tab: "Offers",
     title: "Compare offers properly.",
     body: "Salary, bonus, equity and pension, or a contractor's day rate, side by side with what each is worth a year.",
-    img: offers,
+    img: light ? offersLight : offers,
     alt: "Two offers side by side: a day rate and a salary package, each with what it's worth a year",
   },
   {
     tab: "Notes",
     title: "Notes and files, where they belong.",
     body: "Markdown notes, CV versions, PDFs and exported emails, kept with each role in your own data folder.",
-    img: role,
+    img: light ? roleLight : role,
     pos: "40% 50%",
     alt: "A role's page further down: its interview rounds, the CV sent, notes from a call, links and files",
   },
@@ -100,7 +110,7 @@ const steps: { tab: string; title: string; body: string; img: ImageMetadata; pos
             </div>
           ))}
         </div>
-        <p class="count" aria-hidden="true">
+        <p class:list={["count", { light }]} aria-hidden="true">
           <b data-count>1</b> / {steps.length}
           <span>Keep scrolling ↓</span>
         </p>
@@ -476,5 +486,12 @@ const steps: { tab: string; title: string; body: string; img: ImageMetadata; pos
     .thumb {
       transition: none;
     }
+  }
+  /* 1f: the light captures can sit under the count, so it gets a small plum backing. */
+  .count.light {
+    z-index: 3;
+    padding: 7px 12px;
+    border-radius: 999px;
+    background: rgb(42 30 63 / 0.82);
   }
 </style>

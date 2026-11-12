@@ -3,11 +3,17 @@
 // scroll, then swings open like a door to show a second window behind it (the same app, light and in
 // 简体中文). Never still: a slow drift sits on top of the scroll poses.
 import { Image } from "astro:assets";
-import AppDemo from "../c1/AppDemo.astro";
+import AppDemo from "./AppDemo.astro";
 import zh from "../c1/shots/today-zh-light.png";
+
+interface Props {
+  // 1f: the app in light mode, in a light window frame with a soft plum shadow.
+  light?: boolean;
+}
+const { light = false } = Astro.props;
 ---
 
-<section class="hero" data-c1-tint="ink" data-hero aria-labelledby="c1-hero-h">
+<section class:list={["hero", { light }]} data-c1-tint="ink" data-hero aria-labelledby="c1-hero-h">
   <div class="pin">
     <div class="texture" aria-hidden="true">
       <slot name="texture" />
@@ -66,7 +72,7 @@ import zh from "../c1/shots/today-zh-light.png";
             127.0.0.1<span data-c1-url>/</span>
           </span>
         </div>
-        <AppDemo />
+        <AppDemo light={light} />
         <span class="c1-sr">
           The app's Today page, then the board, a role and the insights Sankey, being used on made-up demo
           data.
@@ -442,5 +448,28 @@ import zh from "../c1/shots/today-zh-light.png";
     .pin {
       min-height: 820px;
     }
+  }
+
+  /* 1f: light windows on the pastel page. */
+  .light .c1-win {
+    background: #fff;
+    box-shadow:
+      0 0 0 1px rgb(42 30 63 / 0.08),
+      0 50px 110px -34px rgb(42 30 63 / 0.38),
+      0 24px 50px -30px rgb(150 130 210 / 0.45);
+  }
+  .light .front .bar {
+    background: linear-gradient(#f6f4fb, #ece8f6);
+    border-bottom-color: rgb(42 30 63 / 0.08);
+  }
+  .light .front .bar i {
+    background: rgb(42 30 63 / 0.14);
+  }
+  .light .front .bar i:first-child {
+    background: #b9a8ec;
+  }
+  .light .front .url {
+    background: rgb(42 30 63 / 0.06);
+    color: #5d5272;
   }
 </style>

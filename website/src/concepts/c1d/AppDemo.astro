@@ -1,0 +1,905 @@
+---
+// The app, in use: real screenshots (made-up demo data) laid out on a 1440 x 900 stage at the app's own
+// pixel positions, with the moving parts rebuilt in HTML on top (a ticked to-do, a board card dragged to
+// the next stage, a stage badge changing, the Sankey drawing in). A cursor drives it on a loop while it's
+// on screen. Scaled to fit its box with one transform. c1d's copy of c1/AppDemo.astro: `light` swaps in the app's
+// light-mode captures (1f) and restyles the rebuilt pieces to match the light theme.
+import { Image } from "astro:assets";
+import chromeDark from "../c1/shots/chrome.png";
+import todayDark from "../c1/shots/today.png";
+import boardDark from "../c1/shots/board.png";
+import roleDark from "../c1/shots/role.png";
+import insightsDark from "../c1/shots/insights.png";
+import chromeLight from "./shots/chrome-light.png";
+import todayLight from "./shots/today-light.png";
+import boardLight from "./shots/board-light.png";
+import roleLight from "./shots/role-light.png";
+import insightsLight from "./shots/insights-light.png";
+
+interface Props {
+  light?: boolean;
+}
+const { light = false } = Astro.props;
+const chrome = light ? chromeLight : chromeDark;
+const today = light ? todayLight : todayDark;
+const board = light ? boardLight : boardDark;
+const role = light ? roleLight : roleDark;
+const insights = light ? insightsLight : insightsDark;
+// The stage badges in the app's light theme: Mantine's light variants.
+const lightBadge: Record<string, string> = {
+  Interested: "background:#f1f3f5;color:#495057",
+  Applied: "background:#e7f5ff;color:#1971c2",
+  Screen: "background:#e3fafc;color:#0c8599",
+  Interviewing: "background:#edf2ff;color:#4263eb",
+  Final: "background:#f3f0ff;color:#7048e8",
+};
+
+type Card = {
+  co: string;
+  role: string;
+  when: string;
+  extra?: string;
+  late?: boolean;
+  tag?: string;
+  id?: string;
+};
+const columns: { x: number; label: string; bg: string; h: number; cards: Card[] }[] = [
+  {
+    x: 246,
+    label: "Interested",
+    bg: "#111315",
+    h: 134,
+    cards: [{ co: "Northwind Traders", role: "Lead Engineer", when: "2 days ago" }],
+  },
+  {
+    x: 508,
+    label: "Applied",
+    bg: "#0c3256",
+    h: 430,
+    cards: [
+      { co: "Adventure Works", role: "Backend Engineer (Go)", when: "3 days ago", id: "drag" },
+      { co: "Coho Winery", role: "Full-stack Engineer", when: "9 days ago", extra: "★ Jordan Lee" },
+      { co: "Fabrikam", role: "Staff Platform Engineer", when: "12 days ago", tag: "Reply to read" },
+      { co: "Coho Winery", role: "Senior Full-stack Engineer", when: "2 weeks ago", late: true },
+    ],
+  },
+  { x: 770, label: "Screen", bg: "#063943", h: 134, cards: [] },
+  {
+    x: 1032,
+    label: "Interviewing",
+    bg: "#1b2864",
+    h: 173,
+    cards: [
+      {
+        co: "Contoso",
+        role: "Senior Backend Engineer",
+        when: "9 days ago",
+        extra: "Alex Morgan",
+        tag: "Round 3 · System design test · Sat 14 Nov",
+        id: "open",
+      },
+    ],
+  },
+  { x: 1294, label: "Final", bg: "#301f62", h: 112, cards: [] },
+];
+const img = {
+  widths: [1440],
+  sizes: "1100px",
+  loading: "eager" as const,
+  decoding: "async" as const,
+  alt: "",
+};
+---
+
+<div class:list={["c1-app", { light }]} data-c1-app>
+  <div class="stage" data-stage>
+    <Image src={chrome} {...img} class="chrome" />
+    <span class="hl" data-hl></span>
+
+    <div class="vp">
+      <div class="pg on" data-page="today">
+        <div class="pin" data-scroll>
+          <Image src={today} {...img} />
+          <span class="dim" data-todo-dim></span>
+          <span class="check" data-todo-check>
+            <svg viewBox="0 0 12 12" aria-hidden="true">
+              <path d="M2.5 6.2l2.4 2.4 4.6-5"></path>
+            </svg>
+          </span>
+          <span class="strike" data-todo-strike></span>
+        </div>
+      </div>
+
+      <div class="pg" data-page="board">
+        <div class="pin">
+          <Image src={board} {...img} />
+          <div class="board">
+            {columns.map((c) => (
+              <div class="col" style={`left:${c.x}px;height:${c.h}px`}>
+                <span class="badge" style={light ? lightBadge[c.label] : `background:${c.bg}`}>
+                  {c.label}
+                </span>
+                <span class="count" data-count={c.label}>
+                  {c.cards.length}
+                </span>
+              </div>
+            ))}
+            {columns.flatMap((c) => {
+              let y = 276;
+              return c.cards.map((card) => {
+                const h = card.tag ? (card.id === "open" ? 120 : 103) : 80;
+                const el = (
+                  <div
+                    class:list={["card", { late: card.late }]}
+                    style={`left:${c.x + 12}px;top:${y}px;height:${h}px`}
+                    data-card={card.id}
+                    data-col={c.label}
+                  >
+                    <b>{card.co}</b>
+                    <span class="r">{card.role}</span>
+                    {card.tag && <span class:list={["tag", { round: card.id === "open" }]}>{card.tag}</span>}
+                    <span class="w">
+                      <span class:list={{ red: card.late }}>{card.when}</span>
+                      {card.extra && <span>{card.extra}</span>}
+                    </span>
+                  </div>
+                );
+                y += h + 11;
+                return el;
+              });
+            })}
+          </div>
+        </div>
+      </div>
+
+      <div class="pg" data-page="role">
+        <div class="pin" data-scroll>
+          <Image src={role} {...img} />
+          <span class="sbadge old" data-badge-old>
+            Interviewing
+          </span>
+          <span class="sbadge new" data-badge-new>
+            Final
+          </span>
+          <div class="menu" data-menu>
+            <span>Screen</span>
+            <span class="cur">Interviewing</span>
+            <span data-final>Final</span>
+            <span>Offer</span>
+            <span>Rejected</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="pg" data-page="insights">
+        <div class="pin">
+          <Image src={insights} {...img} />
+          <span class="cover" data-cover></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" data-toast>
+      <i></i>
+      <span data-toast-text></span>
+    </div>
+
+    <div class="cursor" data-cursor>
+      <i class="ripple" data-ripple></i>
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 2.5l15.5 9.2-6.9 1.3 3.9 7.6-3 1.5-3.9-7.6L4.4 19z"></path>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<script>
+  type Pos = [number, number];
+  const SIDEBAR: Record<string, number> = { today: 66, board: 181, role: 181, insights: 568 };
+  const URLS: Record<string, string> = {
+    today: "/",
+    board: "/applications?view=board",
+    role: "/applications/contoso-senior-backend",
+    insights: "/insights",
+  };
+
+  for (const app of document.querySelectorAll<HTMLElement>("[data-c1-app]")) setup(app);
+
+  function setup(app: HTMLElement) {
+    const $ = <T extends HTMLElement = HTMLElement>(s: string) => app.querySelector<T>(s)!;
+    const stage = $("[data-stage]");
+    const url = app.closest(".c1-win")?.querySelector<HTMLElement>("[data-c1-url]");
+
+    // Fit the 1440 x 900 stage to the box.
+    new ResizeObserver(([e]) => {
+      stage.style.setProperty("--k", String(e.contentRect.width / 1440));
+    }).observe(app);
+
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) {
+      app.classList.add("still");
+      return;
+    }
+
+    // Play only while on screen and the tab is visible.
+    let inView = false;
+    let wake: (() => void) | null = null;
+    const playing = () => inView && !document.hidden;
+    const resume = () => {
+      if (playing() && wake) {
+        wake();
+        wake = null;
+      }
+    };
+    new IntersectionObserver(([e]) => {
+      inView = e.isIntersecting;
+      resume();
+    }).observe(app);
+    document.addEventListener("visibilitychange", resume);
+
+    async function wait(ms: number) {
+      let left = ms;
+      while (left > 0) {
+        if (!playing()) await new Promise<void>((r) => (wake = r));
+        const t0 = performance.now();
+        await new Promise((r) => setTimeout(r, Math.min(left, 120)));
+        left -= performance.now() - t0;
+      }
+    }
+
+    const cursor = $("[data-cursor]");
+    const ripple = $("[data-ripple]");
+    let at: Pos = [1100, 520];
+    function place(el: HTMLElement, transform: string, ms: number, ease = "cubic-bezier(.45,.05,.25,1)") {
+      el.style.transition = ms ? `transform ${ms}ms ${ease}, opacity ${ms}ms ease` : "none";
+      el.style.transform = transform;
+    }
+    async function move(to: Pos, ms = 900) {
+      at = to;
+      place(cursor, `translate(${to[0]}px, ${to[1]}px)`, ms);
+      await wait(ms + 60);
+    }
+    async function click() {
+      cursor.classList.add("down");
+      ripple.classList.remove("go");
+      void ripple.offsetWidth;
+      ripple.classList.add("go");
+      await wait(160);
+      cursor.classList.remove("down");
+      await wait(140);
+    }
+
+    let toastTimer = 0;
+    function toast(text: string) {
+      $("[data-toast-text]").textContent = text;
+      const t = $("[data-toast]");
+      t.classList.add("on");
+      clearTimeout(toastTimer);
+      toastTimer = window.setTimeout(() => t.classList.remove("on"), 2200);
+    }
+
+    const pages = new Map<string, HTMLElement>();
+    app.querySelectorAll<HTMLElement>("[data-page]").forEach((p) => pages.set(p.dataset.page!, p));
+    let current = "today";
+    function go(name: string, from: "right" | "fade" = "right") {
+      const prev = pages.get(current)!;
+      const next = pages.get(name)!;
+      prev.classList.remove("on");
+      prev.classList.add("out");
+      setTimeout(() => prev.classList.remove("out"), 700);
+      next.classList.toggle("fade", from === "fade");
+      next.classList.add("on");
+      current = name;
+      place($("[data-hl]"), `translateY(${SIDEBAR[name]}px)`, 520, "cubic-bezier(.3,.7,.2,1)");
+      if (url) url.textContent = URLS[name];
+    }
+    async function scroll(page: string, y: number, ms: number) {
+      place(pages.get(page)!.querySelector<HTMLElement>("[data-scroll]")!, `translateY(${-y}px)`, ms);
+      await wait(ms);
+    }
+
+    const card = $("[data-card='drag']");
+    const below = [...app.querySelectorAll<HTMLElement>("[data-col='Applied']")].filter((c) => c !== card);
+    const count = (label: string, n: number) => ($(`[data-count='${label}']`).textContent = String(n));
+
+    function reset() {
+      for (const el of [
+        card,
+        ...below,
+        $("[data-todo-check]"),
+        $("[data-todo-strike]"),
+        $("[data-todo-dim]"),
+      ]) {
+        place(el, "", 0);
+        el.classList.remove("on", "lift");
+      }
+      count("Applied", 4);
+      count("Screen", 0);
+      $("[data-badge-old]").classList.remove("gone");
+      $("[data-badge-new]").classList.remove("on");
+      $("[data-menu]").classList.remove("on");
+      $("[data-cover]").classList.remove("on");
+      place(pages.get("role")!.querySelector<HTMLElement>("[data-scroll]")!, "", 0);
+    }
+
+    async function loop() {
+      place(cursor, `translate(${at[0]}px, ${at[1]}px)`, 0);
+      for (;;) {
+        // Today: scroll down to the to-dos and tick one.
+        await wait(900);
+        await move([700, 560], 900);
+        await scroll("today", 520, 1500);
+        await move([285, 366], 900);
+        await click();
+        $("[data-todo-check]").classList.add("on");
+        $("[data-todo-strike]").classList.add("on");
+        $("[data-todo-dim]").classList.add("on");
+        toast("To-do done · Undo");
+        await wait(1100);
+        await scroll("today", 0, 1100);
+
+        // To the board.
+        await move([92, 201], 1000);
+        await click();
+        go("board");
+        await wait(1000);
+
+        // Drag Adventure Works from Applied to Screen.
+        await move([640, 312], 900);
+        cursor.classList.add("down");
+        card.classList.add("lift");
+        await wait(250);
+        const dx = 262;
+        place(card, `translate(${dx}px, -4px) rotate(2deg)`, 1100);
+        await move([640 + dx, 308], 1100);
+        place(card, `translate(${dx}px, 0)`, 260);
+        card.classList.remove("lift");
+        cursor.classList.remove("down");
+        below.forEach((c) => place(c, "translateY(-91px)", 520, "cubic-bezier(.3,.7,.2,1)"));
+        count("Applied", 3);
+        count("Screen", 1);
+        toast("Adventure Works moved to Screen");
+        await wait(1400);
+
+        // Open Contoso, move it on to Final, read down the page.
+        await move([1150, 300], 900);
+        await click();
+        go("role");
+        await wait(1100);
+        await move([300, 243], 900);
+        await click();
+        $("[data-menu]").classList.add("on");
+        await wait(500);
+        await move([300, 358], 600);
+        await click();
+        $("[data-menu]").classList.remove("on");
+        $("[data-badge-old]").classList.add("gone");
+        $("[data-badge-new]").classList.add("on");
+        toast("Contoso moved to Final");
+        await wait(1100);
+        await move([1000, 600], 800);
+        await scroll("role", 1150, 2600);
+        await wait(700);
+        await scroll("role", 1900, 1400);
+        await wait(600);
+
+        // Insights: the Sankey draws in.
+        await move([78, 589], 1000);
+        await click();
+        go("insights", "fade");
+        await wait(350);
+        $("[data-cover]").classList.add("on");
+        await move([980, 470], 1500);
+        await wait(2600);
+
+        // Home again, ready to go round.
+        await move([72, 86], 1000);
+        await click();
+        go("today", "fade");
+        await wait(700);
+        reset();
+      }
+    }
+    loop();
+  }
+</script>
+
+<style>
+  .c1-app {
+    position: relative;
+    aspect-ratio: 1440 / 900;
+    overflow: hidden;
+    background: #242424;
+    container-type: inline-size;
+  }
+  .stage {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1440px;
+    height: 900px;
+    transform: scale(var(--k, 0.5));
+    transform-origin: 0 0;
+    font-family: "Inter Variable", system-ui, sans-serif;
+    color: #c9c9c9;
+    -webkit-font-smoothing: antialiased;
+  }
+  .stage :global(img) {
+    display: block;
+    width: 1440px;
+    max-width: none;
+    height: auto;
+  }
+  .hl {
+    position: absolute;
+    left: 10px;
+    top: 0;
+    width: 209px;
+    height: 40px;
+    border-radius: 4px;
+    background: #1b2864;
+    mix-blend-mode: lighten;
+    transform: translateY(66px);
+  }
+  .vp {
+    position: absolute;
+    left: 231px;
+    top: 57px;
+    width: 1209px;
+    height: 843px;
+    overflow: hidden;
+  }
+  .pg {
+    position: absolute;
+    left: -231px;
+    top: -57px;
+    width: 1440px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(60px);
+    transition:
+      opacity 0.6s ease,
+      transform 0.7s cubic-bezier(0.3, 0.7, 0.2, 1),
+      visibility 0s 0.7s;
+  }
+  .pg.fade {
+    transform: none;
+  }
+  .pg.on,
+  .pg.out {
+    visibility: visible;
+    transition:
+      opacity 0.6s ease,
+      transform 0.7s cubic-bezier(0.3, 0.7, 0.2, 1);
+  }
+  .pg.on {
+    opacity: 1;
+    transform: none;
+    z-index: 2;
+  }
+  .pg.out {
+    opacity: 0;
+    transform: translateX(-40px);
+    z-index: 1;
+  }
+  .pin {
+    position: relative;
+    background: #242424;
+  }
+
+  /* Today: the to-do being ticked. */
+  .check {
+    position: absolute;
+    left: 276px;
+    top: 877px;
+    width: 19px;
+    height: 19px;
+    border-radius: 4px;
+    background: #3b5bdb;
+    display: grid;
+    place-items: center;
+    opacity: 0;
+    transform: scale(0.6);
+    transition:
+      opacity 0.2s,
+      transform 0.35s cubic-bezier(0.3, 1.4, 0.4, 1);
+  }
+  .check svg {
+    width: 13px;
+    fill: none;
+    stroke: #fff;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .strike {
+    position: absolute;
+    left: 305px;
+    top: 886px;
+    width: 410px;
+    height: 1.5px;
+    background: #bdbdbd;
+    transform: scaleX(0);
+    transform-origin: 0 50%;
+    transition: transform 0.5s 0.1s cubic-bezier(0.3, 0.7, 0.2, 1);
+  }
+  .dim {
+    position: absolute;
+    left: 300px;
+    top: 862px;
+    width: 420px;
+    height: 46px;
+    background: #2e2e2e;
+    opacity: 0;
+    transition: opacity 0.6s 0.4s;
+  }
+  .check:global(.on) {
+    opacity: 1;
+    transform: none;
+  }
+  .strike:global(.on) {
+    transform: none;
+  }
+  .dim:global(.on) {
+    opacity: 0.5;
+  }
+
+  /* Board: the columns, rebuilt so a card can really move. */
+  .board {
+    position: absolute;
+    inset: 0;
+  }
+  .board::before {
+    content: "";
+    position: absolute;
+    left: 240px;
+    top: 226px;
+    right: 0;
+    bottom: 0;
+    background: #242424;
+  }
+  .col {
+    position: absolute;
+    top: 234px;
+    width: 250px;
+    border-radius: 6px;
+    background: #3b3b3b;
+  }
+  .badge {
+    position: absolute;
+    left: 11px;
+    top: 11px;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: #e8ecf5;
+  }
+  .count {
+    position: absolute;
+    right: 12px;
+    top: 10px;
+    font-size: 13px;
+    color: #9a9a9a;
+  }
+  .card {
+    position: absolute;
+    width: 226px;
+    padding: 10px 11px;
+    border-radius: 6px;
+    background: #2e2e2e;
+    border: 1px solid #424242;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 13px;
+    color: #9a9a9a;
+    z-index: 1;
+    transition:
+      box-shadow 0.25s,
+      scale 0.25s;
+  }
+  .card.late {
+    border-left: 3px solid #e03131;
+  }
+  .card b {
+    font-size: 15px;
+    font-weight: 600;
+    color: #dedede;
+  }
+  .card .w {
+    margin-top: auto;
+    display: flex;
+    justify-content: space-between;
+  }
+  .card .red {
+    color: #ff6b6b;
+    font-weight: 600;
+  }
+  .tag {
+    align-self: flex-start;
+    margin: 4px 0 2px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: #6a1f0a;
+    color: #ffc9b5;
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .tag.round {
+    background: #3a2380;
+    color: #e5dbff;
+    text-transform: none;
+    border-radius: 12px;
+    padding: 4px 9px;
+  }
+  .card:global(.lift) {
+    z-index: 3;
+    scale: 1.04;
+    box-shadow: 0 24px 40px -12px rgb(0 0 0 / 0.75);
+  }
+
+  /* A role: its stage changes. */
+  .sbadge {
+    position: absolute;
+    left: 246px;
+    top: 191px;
+    height: 20px;
+    padding: 0 11px;
+    display: grid;
+    place-items: center;
+    border-radius: 3px;
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #e8ecf5;
+    transition:
+      opacity 0.35s,
+      transform 0.45s cubic-bezier(0.3, 1.3, 0.4, 1);
+  }
+  .sbadge.old {
+    background: #1b2864;
+    width: 108px;
+  }
+  .sbadge.new {
+    background: #4c2a9e;
+    width: 108px;
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  .sbadge:global(.gone) {
+    opacity: 0;
+  }
+  .sbadge.new:global(.on) {
+    opacity: 1;
+    transform: none;
+  }
+  .menu {
+    position: absolute;
+    left: 246px;
+    top: 264px;
+    width: 190px;
+    padding: 5px;
+    border-radius: 6px;
+    background: #2e2e2e;
+    border: 1px solid #424242;
+    box-shadow: 0 16px 40px rgb(0 0 0 / 0.5);
+    display: flex;
+    flex-direction: column;
+    font-size: 14px;
+    color: #dcdcdc;
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+    transform-origin: top left;
+    transition:
+      opacity 0.2s,
+      transform 0.25s;
+  }
+  .menu span {
+    padding: 7px 10px;
+    border-radius: 4px;
+  }
+  .menu .cur {
+    color: #8a8a8a;
+  }
+  .menu [data-final] {
+    background: #3a3a3a;
+  }
+  .menu:global(.on) {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Insights: a curtain the colour of the panel slides off the Sankey, left to right. */
+  .cover {
+    position: absolute;
+    left: 262px;
+    top: 270px;
+    width: 1150px;
+    height: 445px;
+    background: #2e2e2e;
+    transform-origin: 100% 50%;
+  }
+  .cover:global(.on) {
+    transform: scaleX(0);
+    transition: transform 1.9s cubic-bezier(0.5, 0, 0.2, 1);
+  }
+
+  /* The cursor and its press. */
+  .cursor {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 10;
+    width: 30px;
+    height: 30px;
+    pointer-events: none;
+  }
+  .cursor svg {
+    width: 30px;
+    height: 30px;
+    fill: #fff;
+    stroke: #111;
+    stroke-width: 1.4;
+    stroke-linejoin: round;
+    filter: drop-shadow(0 4px 6px rgb(0 0 0 / 0.5));
+    transform-origin: 4px 3px;
+    transition: transform 0.15s;
+  }
+  .cursor:global(.down) svg {
+    transform: scale(0.84);
+  }
+  .ripple {
+    position: absolute;
+    left: -16px;
+    top: -17px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid #e0a072;
+    background: rgb(224 160 114 / 0.25);
+    opacity: 0;
+  }
+  .ripple:global(.go) {
+    animation: c1-ripple 0.6s ease-out;
+  }
+  @keyframes c1-ripple {
+    from {
+      opacity: 1;
+      transform: scale(0.3);
+    }
+    to {
+      opacity: 0;
+      transform: scale(1.8);
+    }
+  }
+
+  .toast {
+    position: absolute;
+    left: 50%;
+    bottom: 40px;
+    z-index: 9;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 26px 16px 18px;
+    border-radius: 999px;
+    font-size: 22px;
+    color: #f4ede4;
+    background: rgb(40 30 24 / 0.82);
+    border: 1px solid rgb(255 255 255 / 0.18);
+    box-shadow: 0 20px 50px -10px rgb(0 0 0 / 0.6);
+    opacity: 0;
+    transform: translate(-50%, 20px);
+    transition:
+      opacity 0.35s,
+      transform 0.5s cubic-bezier(0.3, 0.7, 0.2, 1);
+  }
+  .toast i {
+    width: 12px;
+    height: 12px;
+    background: #e0a072;
+  }
+  .toast:global(.on) {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  .c1-app:global(.still) .cursor,
+  .c1-app:global(.still) .toast {
+    display: none;
+  }
+
+  /* 1f: the app's light theme. */
+  .c1-app.light {
+    background: #fff;
+  }
+  .light .stage {
+    color: #495057;
+  }
+  .light .hl {
+    background: #dbe4ff;
+    mix-blend-mode: multiply;
+  }
+  .light .pin,
+  .light .board::before {
+    background: #fff;
+  }
+  .light .dim {
+    background: #f1f3f5;
+  }
+  .light .strike {
+    background: #868e96;
+  }
+  .light .col {
+    background: #f8f9fa;
+    box-shadow: inset 0 0 0 1px #e9ecef;
+  }
+  .light .count {
+    color: #868e96;
+  }
+  .light .card {
+    background: #fff;
+    border-color: #dee2e6;
+    color: #868e96;
+  }
+  .light .card.late {
+    border-left-color: #fa5252;
+  }
+  .light .card b {
+    color: #000;
+  }
+  .light .card .red {
+    color: #fa5252;
+  }
+  .light .tag {
+    background: #fff4e6;
+    color: #e8590c;
+  }
+  .light .tag.round {
+    background: #f3f0ff;
+    color: #7048e8;
+  }
+  .light .card:global(.lift) {
+    box-shadow: 0 24px 40px -14px rgb(42 30 63 / 0.35);
+  }
+  .light .sbadge {
+    color: #4263eb;
+  }
+  .light .sbadge.old {
+    background: #dbe4ff;
+  }
+  .light .sbadge.new {
+    background: #e5dbff;
+    color: #7048e8;
+  }
+  .light .menu {
+    background: #fff;
+    border-color: #dee2e6;
+    box-shadow: 0 16px 40px rgb(42 30 63 / 0.18);
+    color: #212529;
+  }
+  .light .menu .cur {
+    color: #adb5bd;
+  }
+  .light .menu [data-final] {
+    background: #f1f3f5;
+  }
+  .light .cover {
+    background: #fff;
+  }
+  .light .ripple {
+    border-color: #7a64c8;
+    background: rgb(122 100 200 / 0.2);
+  }
+  .light .toast {
+    color: #fff;
+    background: rgb(42 30 63 / 0.88);
+  }
+  .light .toast i {
+    background: #c9b8f0;
+  }
+</style>
