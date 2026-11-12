@@ -126,3 +126,20 @@ with round 1's 1, 2 and 5 kept in the switcher to compare:
 
 Every Espresso variation also fixes the sticky section: shorter, with a visible progress line, and the next section
 peeking in below so it's clear the page goes on.
+
+## 7. Round 3 (Kai, 2026-11-12)
+
+Kai's notes on round 2: 1a's line board "is very cool, it would be cool if the outlines were more like what the app
+looked like", but not "the moving lines in the hero", and "the colour scheme perhaps feels too dark"; "1b and 1c are
+better, drop 1a"; "from espresso i like the header from 1c and [1b's frosted glass board], perhaps all of 1b except
+header"; 2a's "main graphic is scroll jacked for nearly the whole page"; "2b is quite good"; "from bubbles i like 5a";
+"dont like 6". Kai narrows from these, shown in this order:
+
+| Page | What it is |
+|---|---|
+| 1d | 1c's hero (stage-coloured cards drifting behind the browser) with all of 1b below it (grain, copper light, the frosted glass board), the board's cards drawn like the app's real cards, and a slightly lighter palette. |
+| 1e | 1d in Liquid's colours (Kai: "for the new espresso cross id also like to see it in the liquid colour scheme"). |
+| 2b | Liquid in Espresso's layout, with its caption label and phone search results fixed. |
+| 5a | Bubbles, calmer. |
+
+The switcher shows only these now; the other pages stay in the branch.
