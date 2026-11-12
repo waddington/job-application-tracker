@@ -133,9 +133,6 @@ const spots = [
               </span>
             </div>
           </div>
-          <span class="c2-tag c2-tag--data">Your data folder</span>
-          <span class="c2-tag c2-tag--frame">Your browser</span>
-          <span class="c2-tag c2-tag--app">The app, on 127.0.0.1</span>
           <div class="c2-screen" data-screen>
             <div class="c2-app" data-app>
               <div class="c2-layer c2-main">
@@ -395,7 +392,9 @@ const spots = [
       0 0 0 1px rgb(120 100 220 / 0.12),
       0 50px 120px -30px rgb(50 30 130 / 0.45),
       0 20px 40px -20px rgb(50 30 130 / 0.3);
-    transform: translateZ(calc(var(--x) * -70px));
+    transform: translateZ(calc(var(--x) * -260px));
+    /* Exploded, the frame thins to frosted glass so the data folder shows through. */
+    opacity: calc(1 - var(--x) * 0.6);
   }
   .c2-frame::after {
     /* A sheen sweeping across the glass frame. */
@@ -485,7 +484,7 @@ const spots = [
     background: #fff;
     border-radius: 0 0 0 14px;
     isolation: isolate;
-    transform: translateZ(calc(var(--x) * 120px));
+    transform: translateZ(calc(var(--x) * 180px));
     box-shadow: calc(var(--x) * 30px) 0 calc(var(--x) * 50px) rgb(50 30 130 / calc(var(--x) * 0.25));
   }
   .c2-side img {
@@ -510,13 +509,13 @@ const spots = [
     height: 56px;
     overflow: hidden;
     border-bottom: 1px solid #e9ecef;
-    transform: translateZ(calc(var(--x) * 200px));
+    transform: translateZ(calc(var(--x) * 340px));
     box-shadow: 0 calc(var(--x) * 20px) calc(var(--x) * 40px) rgb(50 30 130 / calc(var(--x) * 0.25));
   }
   .c2-touch {
     inset: 0;
     pointer-events: none;
-    transform: translateZ(calc(var(--x) * 280px + 1px));
+    transform: translateZ(calc(var(--x) * 460px + 1px));
   }
   .c2-data {
     left: 0;
@@ -525,15 +524,15 @@ const spots = [
     height: var(--sh);
     padding: calc(var(--s) * 70px) calc(var(--s) * 80px);
     border-radius: 18px;
-    color: #f4f0ff;
+    color: var(--c2-ink);
     background:
-      radial-gradient(70% 80% at 0% 0%, rgb(140 110 255 / 0.55), transparent 70%),
-      radial-gradient(60% 70% at 100% 100%, rgb(255 150 130 / 0.4), transparent 70%),
-      #241c4a;
+      radial-gradient(70% 80% at 0% 0%, rgb(201 184 255 / 0.9), transparent 70%),
+      radial-gradient(60% 70% at 100% 100%, rgb(255 198 171 / 0.9), transparent 70%),
+      linear-gradient(160deg, #f4f0ff, #e2f1ff);
     box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / 0.3),
+      inset 0 1px 0 #fff,
       0 40px 80px -30px rgb(0 0 0 / 0.6);
-    transform: translateZ(calc(var(--x) * -300px));
+    transform: translateZ(calc(var(--x) * -540px));
     opacity: var(--x);
     font-size: calc(var(--s) * 30px);
   }
@@ -541,7 +540,6 @@ const spots = [
   .c2-still--data .c2-data-path {
     font: 500 1.3em/1 var(--c2-mono);
     margin-bottom: 1.2em;
-    color: #fff;
   }
   .c2-data ul,
   .c2-still--data ul {
@@ -557,7 +555,10 @@ const spots = [
     justify-content: space-between;
     gap: 1em;
     padding-bottom: 0.7em;
-    border-bottom: 1px solid rgb(255 255 255 / 0.12);
+    border-bottom: 1px solid rgb(33 28 59 / 0.12);
+  }
+  .c2-still--data li {
+    border-color: rgb(255 255 255 / 0.12);
   }
   .c2-data code,
   .c2-still--data code {
@@ -575,43 +576,6 @@ const spots = [
     font-size: 1.4em;
     letter-spacing: -0.02em;
   }
-  .c2-tag {
-    position: absolute;
-    left: calc(100% + 26px);
-    padding: 7px 14px;
-    border-radius: 999px;
-    font: 500 12px/1 var(--c2-mono);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    white-space: nowrap;
-    color: #fff;
-    background: rgb(255 255 255 / 0.14);
-    box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / 0.4),
-      0 0 0 1px rgb(255 255 255 / 0.18);
-    opacity: calc(var(--x) * 1.6 - 0.6);
-  }
-  .c2-tag::before {
-    content: "";
-    position: absolute;
-    right: 100%;
-    top: 50%;
-    width: 22px;
-    border-top: 1px dashed rgb(255 255 255 / 0.5);
-  }
-  .c2-tag--data {
-    top: 62%;
-    transform: translateZ(calc(var(--x) * -300px));
-  }
-  .c2-tag--frame {
-    top: 4%;
-    transform: translateZ(calc(var(--x) * -70px));
-  }
-  .c2-tag--app {
-    top: 32%;
-    transform: translateZ(calc(var(--x) * 120px));
-  }
-
   /* Pages inside the window. */
   .c2-pg {
     position: absolute;
@@ -1092,22 +1056,21 @@ const spots = [
       padding: 22px 22px 24px;
       position: sticky;
     }
-    .c2-ch--app .c2-cap {
-      margin-top: 70vh;
+    .c2-ch--app {
+      padding-top: 70vh;
     }
     .c2-cap h2 {
-      font-size: 26px;
+      margin: 12px 0 8px;
+      font-size: 24px;
     }
     .c2-cap p:not(.c2-eyebrow) {
-      font-size: 14.5px;
+      font-size: 14px;
+      line-height: 1.5;
     }
     .c2-cap--left {
       margin-top: 8vh;
       top: 70px;
       bottom: auto;
-    }
-    .c2-tag {
-      display: none;
     }
     .c2-screen {
       overflow: hidden;
@@ -1117,7 +1080,20 @@ const spots = [
     .c2-data {
       display: none;
     }
+    .c2-chips {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: 86px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+    }
     .c2-chips li {
+      position: relative;
+      left: auto;
+      top: auto;
       font-size: 13px;
       padding: 9px 14px;
     }

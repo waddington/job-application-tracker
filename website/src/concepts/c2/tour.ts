@@ -75,11 +75,11 @@ function init() {
     }
     win.style.setProperty("--s", String(s));
     app.style.setProperty("--ci", String(clamp(0.8 / s, 1, 1.9)));
-    const H = mobile ? P(0, vh * 0.2, 0.9, 16, -12, 2) : P(vw * 0.215, vh * 0.05, 0.56, 12, -24, 2.5);
+    const H = mobile ? P(0, vh * 0.36, 0.82, 18, -14, 2) : P(vw * 0.2, vh * 0.05, 0.52, 12, -24, 2.5);
     const F = mobile ? P(0, -vh * 0.13, 1, 0, 0, 0) : P(0, 12, 1, 0, 0, 0);
-    const E = mobile ? P(0, vh * 0.2, 0.86, 10, -24, 0, 1) : P(vw * 0.17, 14, 0.58, 9, -34, 0, 1);
+    const E = mobile ? P(0, vh * 0.2, 0.86, 10, -24, 0, 1) : P(vw * 0.15, -vh * 0.04, 0.44, 54, 0, -32, 1);
     const E0 = mobile ? P(0, vh * 0.2, 0.86, 4, -8, 0, 0) : P(vw * 0.17, 14, 0.58, 4, -10, 0, 0);
-    const O = mobile ? P(0, vh * 0.08, 0.62, 10, 0, 0) : P(0, vh * 0.07, 0.38, 12, 0, 0);
+    const O = mobile ? P(0, -vh * 0.03, 0.55, 10, 0, 0) : P(0, vh * 0.07, 0.38, 12, 0, 0);
     keys = [
       [0, H],
       [0.55, H],
@@ -128,6 +128,7 @@ function init() {
 
   const pageFor = (t: number): PageName =>
     t < 3 ? "today" : t < 4 ? "board" : t < 5 ? "role" : t < 6 ? "interviews" : "insights";
+  const order: PageName[] = ["today", "board", "role", "interviews", "insights"];
   const navY: Record<PageName, number> = { today: 66, board: 181, role: 141, interviews: 222, insights: 568 };
 
   // ---------- The frame loop: pose, inner scrolls, words, rail ----------
@@ -438,7 +439,8 @@ function init() {
       if (!active) await new Promise<void>((r) => (wake = r));
       const want = pageFor(t);
       if (want !== cur) {
-        await switchTo(want, Math.abs(t - tS) > 1.2);
+        // Skipping several chapters at once (a nav link, a fast fling): cut straight to the page.
+        await switchTo(want, Math.abs(order.indexOf(want) - order.indexOf(cur)) > 1);
         continue;
       }
       await loops[cur]();
