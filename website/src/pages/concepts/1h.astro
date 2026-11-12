@@ -1,0 +1,15 @@
+---
+// Espresso round 5, 1h (docs/rfc/website-redesign.md): 1f exactly, with the hero's app demo playing ×1.6 faster
+// (shorter holds on each screen, gently quicker movement). `?speed=` overrides it. A mockup.
+import Page from "../../concepts/c1d/Page.astro";
+import HeroCards from "../../concepts/c1d/HeroCards.astro";
+import Light from "../../concepts/c1d/Light.astro";
+---
+
+<Page current="1h" title="1f with the app demo at ×1.6" theme="bubbles" speed={1.6}>
+  <Light slot="overlay" kind="grain" />
+  <HeroCards slot="hero" />
+  <Light slot="board" kind="board" />
+  <Light slot="panel" kind="panel" />
+  <Light slot="centre" kind="centre" />
+</Page>

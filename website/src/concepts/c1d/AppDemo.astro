@@ -18,8 +18,11 @@ import insightsLight from "./shots/insights-light.png";
 
 interface Props {
   light?: boolean;
+  // How fast the demo plays (1g-1i). Holds on each screen shrink by `speed`; movement (cursor, drags, scrolls)
+  // by its square root, so it stays smooth. `?speed=` in the address overrides it.
+  speed?: number;
 }
-const { light = false } = Astro.props;
+const { light = false, speed = 1 } = Astro.props;
 const chrome = light ? chromeLight : chromeDark;
 const today = light ? todayLight : todayDark;
 const board = light ? boardLight : boardDark;
@@ -91,7 +94,7 @@ const img = {
 };
 ---
 
-<div class:list={["c1-app", { light }]} data-c1-app>
+<div class:list={["c1-app", { light }]} data-c1-app data-speed={speed}>
   <div class="stage" data-stage>
     <Image src={chrome} {...img} class="chrome" />
     <span class="hl" data-hl></span>
@@ -216,6 +219,10 @@ const img = {
     }).observe(app);
 
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const asked = Number(new URLSearchParams(location.search).get("speed"));
+    const S = asked > 0 ? asked : Number(app.dataset.speed) || 1;
+    const M = Math.sqrt(S);
+    const t = (ms: number) => ms / M;
     if (reduce) {
       app.classList.add("still");
       return;
@@ -256,17 +263,19 @@ const img = {
     }
     async function move(to: Pos, ms = 900) {
       at = to;
-      place(cursor, `translate(${to[0]}px, ${to[1]}px)`, ms);
-      await wait(ms + 60);
+      place(cursor, `translate(${to[0]}px, ${to[1]}px)`, t(ms));
+      await wait(t(ms + 60));
     }
+    // A hold on a screen: shortened by the full speed factor.
+    const hold = (ms: number) => wait(ms / S);
     async function click() {
       cursor.classList.add("down");
       ripple.classList.remove("go");
       void ripple.offsetWidth;
       ripple.classList.add("go");
-      await wait(160);
+      await wait(t(160));
       cursor.classList.remove("down");
-      await wait(140);
+      await wait(t(140));
     }
 
     let toastTimer = 0;
@@ -275,7 +284,7 @@ const img = {
       const t = $("[data-toast]");
       t.classList.add("on");
       clearTimeout(toastTimer);
-      toastTimer = window.setTimeout(() => t.classList.remove("on"), 2200);
+      toastTimer = window.setTimeout(() => t.classList.remove("on"), 2200 / S);
     }
 
     const pages = new Map<string, HTMLElement>();
@@ -294,8 +303,8 @@ const img = {
       if (url) url.textContent = URLS[name];
     }
     async function scroll(page: string, y: number, ms: number) {
-      place(pages.get(page)!.querySelector<HTMLElement>("[data-scroll]")!, `translateY(${-y}px)`, ms);
-      await wait(ms);
+      place(pages.get(page)!.querySelector<HTMLElement>("[data-scroll]")!, `translateY(${-y}px)`, t(ms));
+      await wait(t(ms));
     }
 
     const card = $("[data-card='drag']");
@@ -326,7 +335,7 @@ const img = {
       place(cursor, `translate(${at[0]}px, ${at[1]}px)`, 0);
       for (;;) {
         // Today: scroll down to the to-dos and tick one.
-        await wait(900);
+        await hold(900);
         await move([700, 560], 900);
         await scroll("today", 520, 1500);
         await move([285, 366], 900);
@@ -335,68 +344,68 @@ const img = {
         $("[data-todo-strike]").classList.add("on");
         $("[data-todo-dim]").classList.add("on");
         toast("To-do done · Undo");
-        await wait(1100);
+        await hold(1100);
         await scroll("today", 0, 1100);
 
         // To the board.
         await move([92, 201], 1000);
         await click();
         go("board");
-        await wait(1000);
+        await hold(1000);
 
         // Drag Adventure Works from Applied to Screen.
         await move([640, 312], 900);
         cursor.classList.add("down");
         card.classList.add("lift");
-        await wait(250);
+        await hold(250);
         const dx = 262;
-        place(card, `translate(${dx}px, -4px) rotate(2deg)`, 1100);
+        place(card, `translate(${dx}px, -4px) rotate(2deg)`, t(1100));
         await move([640 + dx, 308], 1100);
-        place(card, `translate(${dx}px, 0)`, 260);
+        place(card, `translate(${dx}px, 0)`, t(260));
         card.classList.remove("lift");
         cursor.classList.remove("down");
-        below.forEach((c) => place(c, "translateY(-91px)", 520, "cubic-bezier(.3,.7,.2,1)"));
+        below.forEach((c) => place(c, "translateY(-91px)", t(520), "cubic-bezier(.3,.7,.2,1)"));
         count("Applied", 3);
         count("Screen", 1);
         toast("Adventure Works moved to Screen");
-        await wait(1400);
+        await hold(1400);
 
         // Open Contoso, move it on to Final, read down the page.
         await move([1150, 300], 900);
         await click();
         go("role");
-        await wait(1100);
+        await hold(1100);
         await move([300, 243], 900);
         await click();
         $("[data-menu]").classList.add("on");
-        await wait(500);
+        await hold(500);
         await move([300, 358], 600);
         await click();
         $("[data-menu]").classList.remove("on");
         $("[data-badge-old]").classList.add("gone");
         $("[data-badge-new]").classList.add("on");
         toast("Contoso moved to Final");
-        await wait(1100);
+        await hold(1100);
         await move([1000, 600], 800);
         await scroll("role", 1150, 2600);
-        await wait(700);
+        await hold(700);
         await scroll("role", 1900, 1400);
-        await wait(600);
+        await hold(600);
 
         // Insights: the Sankey draws in.
         await move([78, 589], 1000);
         await click();
         go("insights", "fade");
-        await wait(350);
+        await hold(350);
         $("[data-cover]").classList.add("on");
         await move([980, 470], 1500);
-        await wait(2600);
+        await hold(2600);
 
         // Home again, ready to go round.
         await move([72, 86], 1000);
         await click();
         go("today", "fade");
-        await wait(700);
+        await hold(700);
         reset();
       }
     }
