@@ -1,0 +1,623 @@
+---
+// Design concept 6, "Espresso × Liquid" (docs/rfc/website-redesign.md, round 2): Espresso's warm palette and long
+// scroll, with Liquid's immersive tour inside the app partway down. A mockup, not the site.
+import { Image } from "astro:assets";
+import Layout from "../../concepts/c6/Layout.astro";
+import Hero from "../../concepts/c6/Hero.astro";
+import Tour from "../../concepts/c6/Tour.astro";
+import { GUIDE, MARQUEE, README_ZH, REPO } from "../../data";
+import board from "../../concepts/c2a/shots/d-board.png";
+import today from "../../concepts/c2a/shots/d-today.png";
+
+const chips = MARQUEE.flat();
+type Line = { cmd?: string; out?: string; note?: string };
+const tabs: { id: string; label: string; lines: Line[] }[] = [
+  {
+    id: "install",
+    label: "Install",
+    lines: [
+      { cmd: "git clone https://github.com/waddington/job-application-tracker.git" },
+      { cmd: "cd job-application-tracker" },
+      { cmd: "uv sync" },
+      { cmd: "pnpm --dir frontend install && pnpm --dir frontend build" },
+      { out: "✓ built the web UI into frontend/dist" },
+    ],
+  },
+  {
+    id: "demo",
+    label: "Try the demo",
+    lines: [
+      { note: "# made-up companies and people; needs a new or empty folder" },
+      { cmd: "uv run python scripts/seed_demo.py /tmp/jat-demo" },
+      { cmd: "uv run jat --data-dir /tmp/jat-demo serve" },
+      { out: "→ http://127.0.0.1:8770" },
+    ],
+  },
+  {
+    id: "real",
+    label: "Use it for real",
+    lines: [
+      { cmd: "mkdir -p ~/job-search-data && git -C ~/job-search-data init" },
+      { cmd: "cp .env.example .env" },
+      { note: "# then set JAT_DATA_DIR=~/job-search-data in .env" },
+      { cmd: "uv run jat init" },
+      { cmd: "uv run jat serve" },
+      { out: "→ http://127.0.0.1:8770 (keeps running)" },
+      { cmd: "uv run jat push" },
+      { out: "✓ snapshots sent to your private repo" },
+    ],
+  },
+];
+---
+
+<Layout>
+  <main id="c6-main">
+    <Hero />
+
+    <section class="c6-statement" id="c6-private" data-c6-tint="paper" aria-labelledby="c6-private-h">
+      <div class="c6-wrap c6-two">
+        <p class="c6-eyebrow">Private by design</p>
+        <div>
+          <h2 class="c6-lead" id="c6-private-h">
+            No AI reads your notes. No cloud keeps your CVs. No account, no tracking, no ads. Your whole job search lives
+            in one folder on your own computer: a SQLite database, a readable export, your Markdown notes and your files.
+          </h2>
+          <dl class="c6-stats">
+            <div><dt>0</dt><dd>accounts to create</dd></div>
+            <div><dt>0</dt><dd>trackers or ads</dd></div>
+            <div><dt>0</dt><dd>subscription fees</dd></div>
+            <div><dt>100%</dt><dd>of your data on your computer</dd></div>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+    <section class="c6-cards" data-c6-tint="paper" aria-label="The board and Today">
+      <article class="c6-card c6-card--board" data-c6-card>
+        <div class="c6-card-art">
+          <div class="c6-card-shot" data-c6-shot>
+            <Image src={board} widths={[1210, 2420]} sizes="(max-width: 760px) 90vw, 640px" alt="The board: applications by stage, with an interview round on a card" />
+          </div>
+        </div>
+        <div class="c6-card-txt">
+          <h3>The board</h3>
+          <p>Every application, one drag away. See the round on each card, and who's gone quiet in red.</p>
+        </div>
+      </article>
+      <article class="c6-card c6-card--today" data-c6-card>
+        <div class="c6-card-art">
+          <div class="c6-card-shot" data-c6-shot>
+            <Image src={today} widths={[1210, 2420]} sizes="(max-width: 760px) 90vw, 640px" alt="The Today page: replies to read, offers to answer and what's coming up" />
+          </div>
+        </div>
+        <div class="c6-card-txt">
+          <h3>Today</h3>
+          <p>Know exactly who to chase: your move, what's coming up, and who you're waiting on.</p>
+        </div>
+      </article>
+    </section>
+
+    <section class="c6-centre" data-c6-tint="taupe">
+      <p class="c6-display">One folder on your computer.<br /><span class="c6-soft">Nothing leaves it.</span></p>
+      <p class="c6-centre-next" aria-hidden="true">
+        A day in the app, below
+        <svg viewBox="0 0 12 12" width="12" height="12"
+          ><path d="M6 2v8M2.5 6.5 6 10l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.4"></path></svg
+        >
+      </p>
+    </section>
+
+    <Tour />
+
+    <section class="c6-rest" id="c6-languages" data-c6-tint="cream" aria-labelledby="c6-lang-h">
+      <div class="c6-wrap c6-two">
+        <p class="c6-eyebrow">English and <span lang="zh-CN">简体中文</span></p>
+        <div>
+          <h2 class="c6-lead" id="c6-lang-h">
+            The whole app in English and <span lang="zh-CN">简体中文</span>, from buttons to dates. It follows your
+            browser, and you can switch in the header. The README is <a href={README_ZH}>in <span lang="zh-CN">简体中文</span></a> too.
+          </h2>
+          <ul class="c6-chips" aria-label="Also in the box">
+            {chips.map((c) => <li class="c6-glass">{c}</li>)}
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="c6-get" id="c6-get" data-c6-tint="cream" aria-labelledby="c6-get-h">
+      <div class="c6-get-head">
+        <p class="c6-eyebrow">Quick start · open source, Apache-2.0</p>
+        <h2 class="c6-display" id="c6-get-h">Set up in about ten minutes.</h2>
+        <p class="c6-soft">
+          With uv and Node.js on your Mac or Linux computer, paste a few commands into the Terminal, once. After that
+          it's a web page in your browser. Windows is next on the roadmap.
+        </p>
+        <div class="c6-get-btns">
+          <a class="c6-pill c6-pill--copper" href={`${GUIDE}install.md`}><span>Read the install guide</span></a>
+          <a class="c6-pill c6-glass" href={REPO}><span>View on GitHub</span></a>
+        </div>
+      </div>
+      <div class="c6-term-wrap" data-c6-tabs>
+        <div class="c6-seg c6-glass" role="tablist" aria-label="Quick start steps">
+          <span class="c6-seg-thumb" aria-hidden="true" data-thumb></span>
+          {
+            tabs.map((t, i) => (
+              <button
+                type="button"
+                role="tab"
+                id={`c6-tab-${t.id}`}
+                aria-controls={`c6-panel-${t.id}`}
+                aria-selected={i === 0 ? "true" : "false"}
+                tabindex={i === 0 ? 0 : -1}
+              >
+                {t.label}
+              </button>
+            ))
+          }
+        </div>
+        <div class="c6-term">
+          <div class="c6-term-bar" aria-hidden="true"><i></i><i></i><i></i><span>Terminal</span></div>
+          {
+            tabs.map((t, i) => (
+              <div class="c6-panel" role="tabpanel" id={`c6-panel-${t.id}`} aria-labelledby={`c6-tab-${t.id}`} hidden={i !== 0}>
+                {t.lines.map((l) =>
+                  l.cmd ? (
+                    <p class="c6-cmd">
+                      <span aria-hidden="true">$</span> {l.cmd}
+                    </p>
+                  ) : l.out ? (
+                    <p class="c6-out">{l.out}</p>
+                  ) : (
+                    <p class="c6-note">{l.note}</p>
+                  ),
+                )}
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="c6-foot" data-c6-tint="cream">
+    <div class="c6-fpanel">
+      <div class="c6-fbig">
+        <p class="c6-eyebrow">Job application tracker</p>
+        <p class="c6-fline">Your search,<br />on your machine.</p>
+        <a class="c6-pill c6-pill--copper" href="#c6-get"><span>Get started</span></a>
+      </div>
+      <div class="c6-fcols">
+        <div>
+          <h4>Project</h4>
+          <a href={REPO}>GitHub</a>
+          <a href={`${REPO}/blob/main/CHANGELOG.md`}>Changelog</a>
+          <a href={`${REPO}/issues`}>Issues</a>
+        </div>
+        <div>
+          <h4>Read</h4>
+          <a href={GUIDE}>User guide</a>
+          <a href={`${GUIDE}install.md`}>Install guide</a>
+          <a href={README_ZH}>README in <span lang="zh-CN">简体中文</span></a>
+        </div>
+        <div>
+          <h4>Promise</h4>
+          <span>No AI, no cloud</span>
+          <span>No account, no tracking</span>
+          <span>Apache-2.0 licence</span>
+        </div>
+      </div>
+      <p class="c6-ffine">Free and open source. Screens show made-up demo data. This site adds no cookies, analytics or trackers.</p>
+    </div>
+  </footer>
+</Layout>
+
+<script>
+  // Cards: the screenshot tilts toward the pointer.
+  if (matchMedia("(hover: hover) and (prefers-reduced-motion: no-preference)").matches) {
+    for (const card of document.querySelectorAll<HTMLElement>("[data-c6-card]")) {
+      const shot = card.querySelector<HTMLElement>("[data-c6-shot]")!;
+      card.addEventListener("pointermove", (e) => {
+        const r = card.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width - 0.5;
+        const y = (e.clientY - r.top) / r.height - 0.5;
+        shot.style.transform = `rotateX(${(14 - y * 8).toFixed(2)}deg) rotateY(${(-18 + x * 12).toFixed(2)}deg) translateZ(20px)`;
+      });
+      card.addEventListener("pointerleave", () => (shot.style.transform = ""));
+    }
+  }
+  // The segmented control: click or arrow keys; the glass thumb slides under the chosen tab.
+  for (const root of document.querySelectorAll<HTMLElement>("[data-c6-tabs]")) {
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+    const thumb = root.querySelector<HTMLElement>("[data-thumb]")!;
+    const place = (tab: HTMLButtonElement) => {
+      thumb.style.width = `${tab.offsetWidth}px`;
+      thumb.style.transform = `translateX(${tab.offsetLeft}px)`;
+    };
+    const select = (tab: HTMLButtonElement) => {
+      for (const t of tabs) {
+        const on = t === tab;
+        t.setAttribute("aria-selected", String(on));
+        t.tabIndex = on ? 0 : -1;
+        document.getElementById(t.getAttribute("aria-controls")!)!.hidden = !on;
+      }
+      place(tab);
+    };
+    tabs.forEach((t, i) => {
+      t.addEventListener("click", () => select(t));
+      t.addEventListener("keydown", (e) => {
+        const d = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+        if (!d) return;
+        const next = tabs[(i + d + tabs.length) % tabs.length];
+        next.focus();
+        select(next);
+      });
+    });
+    const sel = () => tabs.find((t) => t.getAttribute("aria-selected") === "true")!;
+    place(sel());
+    addEventListener("resize", () => place(sel()));
+    document.fonts?.ready.then(() => place(sel()));
+  }
+</script>
+
+<style is:global>
+  .c6-wrap {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 0 max(5vw, 20px);
+  }
+  .c6-two {
+    display: grid;
+    grid-template-columns: 1fr 2.2fr;
+    gap: 40px;
+    align-items: start;
+  }
+  .c6-statement,
+  .c6-rest {
+    position: relative;
+    z-index: 1;
+    padding: clamp(110px, 16vh, 180px) 0;
+  }
+  .c6-lead {
+    margin: 0;
+    font-size: clamp(24px, 2.4vw, 34px);
+    font-weight: 300;
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+  }
+  .c6-lead a {
+    text-decoration-color: var(--c6-copper);
+    text-underline-offset: 4px;
+  }
+  .c6-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 24px;
+    margin: 64px 0 0;
+  }
+  .c6-stats div {
+    padding-top: 18px;
+    border-top: 1px solid rgb(36 25 18 / 0.16);
+  }
+  .c6-stats dt {
+    font-size: clamp(36px, 4vw, 56px);
+    font-weight: 300;
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+  .c6-stats dd {
+    margin: 10px 0 0;
+    font-size: 14px;
+    color: var(--c6-fg-soft);
+  }
+
+  .c6-cards {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 0 8px 8px;
+  }
+  .c6-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: min(78vh, 760px);
+    overflow: hidden;
+    border-radius: 34px;
+    color: #f6efe6;
+  }
+  .c6-card--board {
+    background:
+      radial-gradient(80% 70% at 75% 25%, rgb(224 160 114 / 0.65), transparent 70%),
+      linear-gradient(160deg, #6b3d22, #2a1c14 70%);
+  }
+  .c6-card--today {
+    background:
+      radial-gradient(80% 70% at 30% 20%, rgb(255 238 214 / 0.55), transparent 70%),
+      linear-gradient(170deg, #b79a7c, #5c4130 75%);
+  }
+  .c6-card-art {
+    position: absolute;
+    inset: 0;
+    perspective: 1400px;
+    display: grid;
+    place-items: center;
+  }
+  .c6-card-shot {
+    width: 78%;
+    overflow: hidden;
+    border-radius: 14px;
+    border: 1px solid rgb(255 230 200 / 0.25);
+    box-shadow:
+      0 50px 90px -30px rgb(0 0 0 / 0.7),
+      0 0 0 6px rgb(255 236 214 / 0.08);
+    transform: rotateX(14deg) rotateY(-18deg) rotateZ(2deg) translateY(-8%);
+    transition: transform 0.8s var(--c6-ease);
+  }
+  .c6-card--today .c6-card-shot {
+    transform: rotateX(12deg) rotateY(16deg) rotateZ(-2deg) translateY(-8%);
+  }
+  .c6-card-shot img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1210 / 760;
+    object-fit: cover;
+    object-position: top left;
+  }
+  .c6-card-txt {
+    position: relative;
+    padding: 36px 40px;
+    max-width: 30em;
+  }
+  .c6-card-txt h3 {
+    margin: 0 0 8px;
+    font-size: 26px;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+  }
+  .c6-card-txt p {
+    margin: 0;
+    color: rgb(246 239 230 / 0.78);
+  }
+
+  .c6-centre {
+    position: relative;
+    z-index: 1;
+    min-height: 70vh;
+    display: grid;
+    place-content: center;
+    gap: 40px;
+    padding: 120px 20px 40px;
+    text-align: center;
+  }
+  .c6-centre-next {
+    display: inline-flex;
+    justify-self: center;
+    align-items: center;
+    gap: 8px;
+    font: 500 11.5px/1 var(--c6-mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    opacity: 0.7;
+  }
+  .c6-centre-next svg {
+    animation: c6-nudge 1.6s ease-in-out infinite;
+  }
+  @keyframes c6-nudge {
+    50% {
+      transform: translateY(3px);
+    }
+  }
+
+  .c6-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 48px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .c6-chips li {
+    padding: 9px 16px;
+    border-radius: 999px;
+    font-size: 14px;
+  }
+
+  .c6-get {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: clamp(32px, 5vw, 80px);
+    align-items: center;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 60px max(5vw, 20px) 140px;
+  }
+  .c6-get-head .c6-display {
+    margin-bottom: 20px;
+  }
+  .c6-get-btns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 30px;
+  }
+  .c6-term-wrap {
+    perspective: 1400px;
+  }
+  .c6-seg {
+    position: relative;
+    z-index: 3;
+    display: flex;
+    width: max-content;
+    max-width: 100%;
+    margin: 0 auto -24px;
+    padding: 5px;
+    border-radius: 999px;
+  }
+  .c6-seg-thumb {
+    position: absolute;
+    left: 0;
+    top: 5px;
+    bottom: 5px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #fffaf3, rgb(255 250 243 / 0.75));
+    box-shadow: 0 4px 14px rgb(60 30 10 / 0.2);
+    transition:
+      transform 0.45s var(--c6-ease),
+      width 0.45s var(--c6-ease);
+  }
+  .c6-seg button {
+    position: relative;
+    z-index: 1;
+    padding: 11px 18px;
+    border: 0;
+    border-radius: 999px;
+    background: none;
+    font: 500 14px/1 "Inter Variable", sans-serif;
+    color: var(--c6-fg-soft);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .c6-seg button[aria-selected="true"] {
+    color: #241912;
+  }
+  .c6-term {
+    min-height: 320px;
+    padding: 48px 0 24px;
+    border-radius: 28px;
+    color: #f3e9dc;
+    background:
+      radial-gradient(80% 60% at 100% 0%, rgb(196 122 72 / 0.35), transparent 60%),
+      linear-gradient(170deg, #2e1f16, #160e09);
+    box-shadow:
+      inset 0 1px 0 rgb(255 230 200 / 0.15),
+      0 60px 100px -40px rgb(60 30 10 / 0.6);
+    transform: rotateX(8deg) rotateY(-6deg);
+    transform-origin: 50% 0;
+    font: 400 13.5px/1.7 var(--c6-mono);
+    overflow: hidden;
+  }
+  .c6-term-bar {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 0 22px 14px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid rgb(255 255 255 / 0.08);
+  }
+  .c6-term-bar i {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgb(255 255 255 / 0.2);
+  }
+  .c6-term-bar span {
+    margin-left: auto;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.5;
+  }
+  .c6-panel {
+    padding: 0 26px;
+    overflow-x: auto;
+  }
+  .c6-panel p {
+    margin: 0;
+    white-space: pre;
+  }
+  .c6-cmd span {
+    color: var(--c6-copper-hi);
+  }
+  .c6-out {
+    color: #b7e4b0;
+  }
+  .c6-note {
+    color: rgb(243 233 220 / 0.5);
+  }
+
+  .c6-foot {
+    position: relative;
+    z-index: 1;
+    padding: 0 8px 84px;
+  }
+  .c6-fpanel {
+    padding: clamp(40px, 6vw, 80px) clamp(24px, 5vw, 72px) 34px;
+    border-radius: 40px;
+    color: #f0e6da;
+    background:
+      radial-gradient(60% 80% at 100% 0%, rgb(196 122 72 / 0.35), transparent 60%),
+      var(--c6-espresso);
+  }
+  .c6-fbig {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: end;
+    gap: 24px;
+    padding-bottom: 48px;
+    border-bottom: 1px solid rgb(255 255 255 / 0.1);
+  }
+  .c6-fbig .c6-eyebrow {
+    flex-basis: 100%;
+    margin: 0;
+  }
+  .c6-fline {
+    margin: 0;
+    font-size: clamp(38px, 5vw, 72px);
+    font-weight: 300;
+    line-height: 1.03;
+    letter-spacing: -0.035em;
+  }
+  .c6-fcols {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 200px));
+    gap: 24px;
+    padding: 40px 0 48px;
+  }
+  .c6-fcols h4 {
+    margin: 0 0 14px;
+    font: 500 11px/1 var(--c6-mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    opacity: 0.55;
+  }
+  .c6-fcols a,
+  .c6-fcols span {
+    display: block;
+    padding: 4px 0;
+    font-size: 15px;
+    font-weight: 350;
+    text-decoration: none;
+  }
+  .c6-ffine {
+    margin: 0;
+    font-size: 13px;
+    opacity: 0.6;
+  }
+
+  @media (max-width: 860px) {
+    .c6-two,
+    .c6-get,
+    .c6-cards {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .c6-stats {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .c6-card {
+      min-height: 560px;
+    }
+    .c6-term {
+      transform: none;
+    }
+    .c6-fcols {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>
