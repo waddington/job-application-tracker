@@ -1,0 +1,1042 @@
+---
+// Design concept 5, "Bubbles" (docs/rfc/website-redesign.md): a mockup, not the site. A tilted 3D browser
+// with chips orbiting it, then a bento playground of tiny demos rebuilt in HTML, each chapter opened by a
+// chat. Pastel speech-bubble blocks; the page takes each chapter's tint as it arrives.
+import { Image } from "astro:assets";
+import Switcher from "../../concepts/Switcher.astro";
+import Layout from "../../concepts/c5/Layout.astro";
+import Hero from "../../concepts/c5/Hero.astro";
+import DotShape from "../../concepts/c5/DotShape.astro";
+import insights from "../../concepts/c5/shots/insights.png";
+import person from "../../concepts/c5/shots/person.png";
+import { FAQ, GUIDE, README_ZH, REPO, plain } from "../../data";
+
+const year = new Date().getFullYear();
+const faq = [
+  "Is it free?",
+  "Do I need to be technical?",
+  "Is it like Huntr or Teal?",
+  "Does it run on Windows?",
+  "Is it ready?",
+]
+  .map((q) => FAQ.find((f) => f.q === q))
+  .filter((f) => f !== undefined);
+
+// The quick start, as in the current site and the README.
+type Line = { cmd?: string; out?: string; note?: string };
+const tabs: { id: string; label: string; lines: Line[] }[] = [
+  {
+    id: "install",
+    label: "Install",
+    lines: [
+      { cmd: "git clone https://github.com/waddington/job-application-tracker.git" },
+      { cmd: "cd job-application-tracker" },
+      { cmd: "uv sync" },
+      { cmd: "pnpm --dir frontend install && pnpm --dir frontend build" },
+      { out: "✓ built the web UI into frontend/dist" },
+    ],
+  },
+  {
+    id: "demo",
+    label: "Try it with demo data",
+    lines: [
+      { note: "# made-up companies and people; needs a new or empty folder" },
+      { cmd: "uv run python scripts/seed_demo.py /tmp/jat-demo" },
+      { cmd: "uv run jat --data-dir /tmp/jat-demo serve" },
+      { out: "→ http://127.0.0.1:8770" },
+    ],
+  },
+  {
+    id: "real",
+    label: "Use it for real",
+    lines: [
+      { cmd: "mkdir -p ~/job-search-data && git -C ~/job-search-data init" },
+      { cmd: "git -C ~/job-search-data remote add origin <your-private-repo-url>" },
+      { cmd: "cp .env.example .env" },
+      { note: "# then set JAT_DATA_DIR=~/job-search-data in .env" },
+      { cmd: "uv run jat init" },
+      { cmd: "uv run jat serve" },
+      { out: "→ http://127.0.0.1:8770 (keeps running)" },
+      { cmd: "uv run jat push" },
+      { out: "✓ snapshots sent to your private repo" },
+    ],
+  },
+];
+const needs = [
+  { name: "Python 3.12 to 3.14", why: "the app", href: "https://www.python.org/downloads/" },
+  { name: "uv", why: "installs and runs it", href: "https://docs.astral.sh/uv/" },
+  { name: "Node.js 22.12+", why: "to build the UI", href: "https://nodejs.org/" },
+  { name: "pnpm", why: "to build the UI", href: "https://pnpm.io/" },
+  { name: "git", why: "snapshots of your data", href: "https://git-scm.com/" },
+  { name: "A private repo", why: "optional, off-machine backups", href: "https://github.com/new" },
+];
+
+// November 2026 starts on a Sunday; the week starts on Monday.
+const days = Array.from({ length: 30 }, (_, i) => i + 1);
+const rounds: Record<number, { title: string; who: string; when: string; notes: string[]; dot: string }> = {
+  9: {
+    title: "Round 2 · Pairing",
+    who: "Contoso · Senior Backend Engineer",
+    when: "Mon 9 Nov, 10:00 · done",
+    notes: ["Debrief: went well, a bit slow on the tests", "They want a system design round next"],
+    dot: "#2f9e44",
+  },
+  13: {
+    title: "Video call with Alex Morgan",
+    who: "Northwind Talent · roles for the new year",
+    when: "Fri 13 Nov, 14:38",
+    notes: ["Day rates for platform roles", "Anything fully remote?"],
+    dot: "#e8590c",
+  },
+  14: {
+    title: "Round 3 · System design test",
+    who: "Contoso · Senior Backend Engineer",
+    when: "Sat 14 Nov, 14:38",
+    notes: ["Prep: rate limiter, queues, idempotency", "Ask who's on the platform team"],
+    dot: "#7048e8",
+  },
+};
+const stack = ["Python", "FastAPI", "SQLite", "React", "TypeScript", "Mantine", "d3-sankey"];
+---
+
+<Layout>
+  <div class="c5-tints" aria-hidden="true">
+    <i data-t="lilac" class="on"></i>
+    <i data-t="butter"></i>
+    <i data-t="mint"></i>
+    <i data-t="pink"></i>
+    <i data-t="sky"></i>
+    <i data-t="apricot"></i>
+  </div>
+
+  <header class="c5-nav">
+    <a class="c5-logo c5-glass" href="#top" aria-label="Job Application Tracker, top of the page">
+      <svg viewBox="0 0 36 36" aria-hidden="true">
+        <rect width="36" height="36" rx="12" fill="#2a1e3f"></rect>
+        <g fill="none" stroke="#fff" stroke-width="2.4">
+          <circle cx="18" cy="18" r="10.5"></circle>
+          <circle cx="18" cy="18" r="5.5"></circle>
+          <circle cx="18" cy="18" r="1.2" fill="#fff"></circle>
+        </g>
+      </svg>
+      <span>Job Application Tracker</span>
+    </a>
+    <nav class="c5-links c5-glass" aria-label="Sections">
+      <a href="#c5-play">Try it</a>
+      <a href="#c5-people">People</a>
+      <a href="#c5-private">Private</a>
+      <a href="#c5-start">Quick start</a>
+    </nav>
+    <a class="c5-btn c5-glass" href={REPO}>
+      GitHub
+    </a>
+  </header>
+
+  <main id="top">
+    <Hero />
+
+    <!-- Chapter 1: the everyday pieces -->
+    <section class="c5-chapter" id="c5-play" data-tint="butter" aria-labelledby="c5-play-h">
+      <div class="c5-wrap c5-chapter-grid">
+        <div class="c5-chat">
+          <p class="c5-eyebrow" id="c5-play-h">
+            Try it
+          </p>
+          <p class="c5-q">What does it actually do?</p>
+          <p class="c5-a c5-a-big">It's a CRM for your job hunt.</p>
+          <p class="c5-a">
+            Recruiters pitch five roles in one call, processes drag on for six rounds, and half the companies
+            ghost you. These are the pieces you'd use every day. <strong>Go on, poke them.</strong>
+          </p>
+        </div>
+
+        <div class="c5-bento">
+          <article class="c5-tile c5-t-mint">
+            <span class="c5-try">Tick one</span>
+            <h3>To-dos in your own words</h3>
+            <p>They show on Today until you tick them off.</p>
+            <div class="c5-demo">
+              <button class="c5-card c5-todo" type="button" aria-pressed="false">
+                <span class="c5-box">
+                  <svg viewBox="0 0 16 16" fill="none" stroke-width="2.4">
+                    <path d="M3 8.5l3 3 7-7" stroke-linecap="round" stroke-linejoin="round"></path>
+                  </svg>
+                </span>
+                <span class="c5-tt">See what Northwind Pay builds</span>
+                <span class="c5-due">Today</span>
+              </button>
+              <button class="c5-card c5-todo" type="button" aria-pressed="false">
+                <span class="c5-box">
+                  <svg viewBox="0 0 16 16" fill="none" stroke-width="2.4">
+                    <path d="M3 8.5l3 3 7-7" stroke-linecap="round" stroke-linejoin="round"></path>
+                  </svg>
+                </span>
+                <span class="c5-tt">Reply to Alex on LinkedIn</span>
+              </button>
+              <button class="c5-card c5-todo" type="button" aria-pressed="true">
+                <span class="c5-box">
+                  <svg viewBox="0 0 16 16" fill="none" stroke-width="2.4">
+                    <path d="M3 8.5l3 3 7-7" stroke-linecap="round" stroke-linejoin="round"></path>
+                  </svg>
+                </span>
+                <span class="c5-tt">Send the v3 CV to Fabrikam</span>
+              </button>
+            </div>
+          </article>
+
+          <article class="c5-tile c5-t-lilac">
+            <span class="c5-try">Drag a card</span>
+            <h3>Every application, one drag away</h3>
+            <p>Move it between stages and the history keeps up. Tap a card to move it too.</p>
+            <div class="c5-demo c5-cols" data-board>
+              <div class="c5-col" data-col="Applied">
+                <div class="c5-col-h">
+                  <span>Applied</span>
+                  <span data-n>2</span>
+                </div>
+                <button type="button" class="c5-card c5-drag" data-drag>
+                  <b>Adventure Works</b>
+                  <small>Backend Engineer (Go)</small>
+                </button>
+                <button type="button" class="c5-card c5-drag" data-drag>
+                  <b>Fabrikam</b>
+                  <small>Staff Platform Engineer</small>
+                </button>
+              </div>
+              <div class="c5-col" data-col="Interviewing">
+                <div class="c5-col-h">
+                  <span>Interviewing</span>
+                  <span data-n>1</span>
+                </div>
+                <button type="button" class="c5-card c5-drag" data-drag>
+                  <b>Contoso</b>
+                  <small>Senior Backend Engineer</small>
+                  <span class="c5-round">Round 3 · System design</span>
+                </button>
+              </div>
+            </div>
+            <p class="c5-sr" aria-live="polite" data-board-live></p>
+          </article>
+
+          <article class="c5-tile w2 c5-t-butter">
+            <span class="c5-try">Click the badge</span>
+            <h3>Your own stages</h3>
+            <p>Rename, add or remove them in a settings file.</p>
+            <div class="c5-demo">
+              <div class="c5-card">
+                <div>
+                  <b>Litware</b>
+                  <small>Senior Software Engineer</small>
+                </div>
+              </div>
+              <div style="margin-top:14px">
+                <button type="button" class="c5-pillbadge c5-stagebtn" data-stage aria-live="polite">
+                  Interested
+                </button>
+              </div>
+              <div class="c5-steps" aria-hidden="true" data-steps>
+                <i class="on"></i>
+                <i></i>
+                <i></i>
+                <i></i>
+                <i></i>
+              </div>
+            </div>
+          </article>
+
+          <article class="c5-tile w4 c5-t-sky">
+            <span class="c5-try">Chase, snooze or ghost</span>
+            <h3>Know exactly who to chase today</h3>
+            <p>Who you're waiting on, red once it's been too long. One click each, then close the laptop.</p>
+            <div class="c5-demo">
+              <div class="c5-card c5-ghostcard" data-ghost>
+                <div style="flex:1">
+                  <b>Coho Winery</b>
+                  <small>
+                    Full-stack Engineer ·{" "}
+                    <span class="c5-late" data-ghost-status>
+                      waiting 8 days, time to chase
+                    </span>
+                    <span class="c5-boo" aria-hidden="true">
+                      👻
+                    </span>
+                  </small>
+                  <div class="c5-ghost-row">
+                    <button class="c5-mini-btn" type="button" data-act="heard">
+                      Heard back
+                    </button>
+                    <button class="c5-mini-btn" type="button" data-act="snooze">
+                      Snooze a week
+                    </button>
+                    <button class="c5-mini-btn" type="button" data-act="ghost">
+                      Ghosted
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Chapter 2: people, rounds, offers -->
+    <section class="c5-chapter" id="c5-people" data-tint="mint" aria-labelledby="c5-people-h">
+      <div class="c5-wrap c5-chapter-grid">
+        <div class="c5-chat">
+          <p class="c5-eyebrow" id="c5-people-h">
+            Recruiters, rounds and offers
+          </p>
+          <p class="c5-q">A recruiter just pitched me three roles. Now what?</p>
+          <p class="c5-a c5-a-big">Log the call, add each role, apply or pass.</p>
+          <p class="c5-a">
+            Recruiters are first-class: calls with an agenda, the roles they mentioned, and every application
+            they're part of. Interview rounds and offers sit right next to them.
+          </p>
+        </div>
+
+        <div class="c5-bento">
+          <article class="c5-tile c5-t-pink">
+            <span class="c5-try">Star one</span>
+            <h3>The recruiters worth keeping</h3>
+            <div class="c5-demo">
+              <div class="c5-card">
+                <span class="c5-avatar" aria-hidden="true">
+                  JL
+                </span>
+                <div>
+                  <b>Jordan Lee</b>
+                  <small>Northwind Talent</small>
+                </div>
+                <button class="c5-star" type="button" aria-pressed="true" aria-label="Star Jordan Lee">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4L2.8 9.5l6.4-.8z"></path>
+                  </svg>
+                </button>
+              </div>
+              <div class="c5-card">
+                <span class="c5-avatar" aria-hidden="true" style="background:var(--c5-sky)">
+                  AM
+                </span>
+                <div>
+                  <b>Alex Morgan</b>
+                  <small>Northwind Talent</small>
+                </div>
+                <button class="c5-star" type="button" aria-pressed="false" aria-label="Star Alex Morgan">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4L2.8 9.5l6.4-.8z"></path>
+                  </svg>
+                </button>
+              </div>
+              <div class="c5-card">
+                <span class="c5-avatar" aria-hidden="true" style="background:var(--c5-butter)">
+                  SP
+                </span>
+                <div>
+                  <b>Sam Patel</b>
+                  <small>Blue Yonder Recruitment</small>
+                </div>
+                <button class="c5-star" type="button" aria-pressed="false" aria-label="Star Sam Patel">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4L2.8 9.5l6.4-.8z"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <article class="c5-tile c5-t-sky">
+            <span class="c5-try">Switch language</span>
+            <h3>
+              English and <span lang="zh-CN">简体中文</span>
+            </h3>
+            <p>The whole app, buttons to dates. It follows your browser, and you can switch in the header.</p>
+            <div class="c5-demo">
+              <div class="c5-lang c5-glass" role="group" aria-label="App language">
+                <button type="button" aria-pressed="true" data-lang="en">
+                  English
+                </button>
+                <button type="button" aria-pressed="false" data-lang="zh" lang="zh-CN">
+                  简体中文
+                </button>
+              </div>
+              <div class="c5-card c5-langcard" data-langcard>
+                <div>
+                  <b data-en="Today" data-zh="今日">
+                    Today
+                  </b>
+                  <small
+                    data-en="Roles · Applications · Interviews · Recruiters · Insights"
+                    data-zh="职位 · 申请 · 面试 · 招聘顾问 · 洞察"
+                  >
+                    Roles · Applications · Interviews · Recruiters · Insights
+                  </small>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="c5-tile w6 c5-t-white">
+            <span class="c5-try">Pick a day</span>
+            <h3>Interview rounds, in your own words</h3>
+            <p>Prep and debrief notes on each round, and every call and round on one calendar.</p>
+            <div class="c5-demo c5-calwrap">
+              <div class="c5-cal" data-cal>
+                {["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map((d) => (
+                  <span>{d}</span>
+                ))}
+                {Array.from({ length: 6 }, () => (
+                  <i />
+                ))}
+                {days.map((d) =>
+                  rounds[d] ? (
+                    <button
+                      type="button"
+                      class={`c5-day${d === 12 ? " today" : ""}`}
+                      data-day={d}
+                      aria-pressed={d === 14 ? "true" : "false"}
+                      aria-label={`${d} November: ${rounds[d].title}`}
+                      style={`--dot:${rounds[d].dot}`}
+                    >
+                      {d}
+                    </button>
+                  ) : (
+                    <span class={`c5-day${d === 12 ? " today" : ""}`}>{d}</span>
+                  ),
+                )}
+              </div>
+              <div class="c5-roundcard" data-roundcard aria-live="polite">
+                <b>{rounds[14].title}</b>
+                <small>{rounds[14].who}</small>
+                <small>{rounds[14].when}</small>
+                <ul>
+                  {rounds[14].notes.map((n) => (
+                    <li>{n}</li>
+                  ))}
+                </ul>
+              </div>
+              <script type="application/json" data-rounds set:html={JSON.stringify(rounds)} />
+            </div>
+          </article>
+
+          <article class="c5-tile w6 c5-t-apricot">
+            <span class="c5-try">Compare them</span>
+            <h3>Two offers, side by side</h3>
+            <p>
+              Salary, bonus, equity and pension, or a contractor's day rate, and what each is worth a year.
+            </p>
+            <div class="c5-demo">
+              <div class="c5-offers" data-offers>
+                <div class="c5-offer">
+                  <b>
+                    Wide World Importers <span class="c5-top">Highest</span>
+                  </b>
+                  <small>Senior Python Developer · contract</small>
+                  <dl>
+                    <div>
+                      <dt>Pay</dt>
+                      <dd>£600 a day</dd>
+                    </div>
+                    <div>
+                      <dt>IR35</dt>
+                      <dd>Outside</dd>
+                    </div>
+                    <div>
+                      <dt>Length</dt>
+                      <dd>6 months</dd>
+                    </div>
+                  </dl>
+                  <div class="c5-worth">
+                    <i style="--w:1"></i>
+                  </div>
+                  <div class="c5-sum">£132,000 a year</div>
+                </div>
+                <div class="c5-offer">
+                  <b>Litware</b>
+                  <small>Senior Software Engineer · permanent</small>
+                  <dl>
+                    <div>
+                      <dt>Pay</dt>
+                      <dd>£95,000 + £9,500 bonus</dd>
+                    </div>
+                    <div>
+                      <dt>Pension</dt>
+                      <dd>6%</dd>
+                    </div>
+                    <div>
+                      <dt>Equity</dt>
+                      <dd>about £4,000 a year</dd>
+                    </div>
+                  </dl>
+                  <div class="c5-worth">
+                    <i style="--w:0.865"></i>
+                  </div>
+                  <div class="c5-sum">£114,200 a year</div>
+                </div>
+              </div>
+              <div style="margin-top:12px">
+                <button class="c5-mini-btn" type="button" data-compare aria-pressed="false">
+                  Work out a year's worth
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <article class="c5-tile w6 c5-t-lilac">
+            <span class="c5-try">The real thing</span>
+            <h3>A recruiter's page, and the whole search as a Sankey</h3>
+            <p>
+              Every role's path, from who brought it to an offer (or to ghosted), and a scorecard for each
+              recruiter.
+            </p>
+            <div class="c5-cols" style="margin-top:4px">
+              <div class="c5-tileshot" style="margin-right:0">
+                <Image
+                  src={person}
+                  alt="A recruiter's page: calls, the roles they pitched, to-dos and links (made-up demo data)"
+                  widths={[500, 900]}
+                  sizes="(max-width: 760px) 100vw, 450px"
+                />
+              </div>
+              <div class="c5-tileshot">
+                <Image
+                  src={insights}
+                  alt="The Insights Sankey: where roles came from and how each ended (made-up demo data)"
+                  widths={[500, 900]}
+                  sizes="(max-width: 760px) 100vw, 450px"
+                />
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="c5-line" data-tint="pink">
+      <p>No AI. No cloud. No account. No tracking.</p>
+    </section>
+
+    <!-- Chapter 3: privacy -->
+    <section class="c5-chapter" id="c5-private" data-tint="pink" aria-labelledby="c5-private-h">
+      <div class="c5-wrap c5-chapter-grid">
+        <div class="c5-chat">
+          <p class="c5-eyebrow" id="c5-private-h">
+            Private by design
+          </p>
+          <p class="c5-q">Where does my data go?</p>
+          <p class="c5-a c5-a-big">Nowhere. It stays in one folder on your computer.</p>
+          <p class="c5-a">
+            Salaries, recruiters' names and the CV you tailored at 1am shouldn't live on someone else's
+            server. It never sends email, contacts anyone or calls out to the web.
+          </p>
+        </div>
+
+        <div class="c5-bento">
+          <article class="c5-tile w6 c5-t-pink" style="min-height:0">
+            <div class="c5-nos">
+              <div class="c5-no">
+                No AI<small>Nothing reads, scores or uploads your notes.</small>
+              </div>
+              <div class="c5-no">
+                No cloud<small>It runs on localhost, on your machine.</small>
+              </div>
+              <div class="c5-no">
+                No account<small>Nothing to sign up for, ever.</small>
+              </div>
+              <div class="c5-no">
+                No tracking<small>No analytics, no ads, no subscription.</small>
+              </div>
+            </div>
+          </article>
+          <article class="c5-tile w4 c5-t-ink">
+            <span class="c5-try" style="color:rgb(255 255 255 / .6)">
+              Your data folder
+            </span>
+            <h3>Ordinary files you can read without the app</h3>
+            <p>A SQLite database, a readable export, your notes as Markdown and your files as they are.</p>
+            <pre class="c5-tree" style="margin-top:20px">~/job-search-data/
+├── jat.sqlite         <em># the database</em>
+├── export/*.jsonl     <em># readable, one line per record</em>
+├── notes/*.md         <em># your notes, as text files</em>
+└── files/             <em># CVs, briefs, saved emails</em></pre>
+          </article>
+          <article class="c5-tile w2 c5-t-butter">
+            <span class="c5-try">Backups</span>
+            <h3>One zip, from the sidebar</h3>
+            <p>
+              Everything you need to restore. With git, the folder keeps its own history, and{" "}
+              <code>jat push</code> copies it to your private repo.
+            </p>
+            <DotShape shape="folder" cols={14} rows={10} class="c5-folderdots" />
+          </article>
+          <article class="c5-tile w6 c5-t-white" style="min-height:0">
+            <span class="c5-try">A free Huntr and Teal alternative</span>
+            <h3>Better than a spreadsheet, kinder than a subscription</h3>
+            <p>
+              Spreadsheets don't remind you who to chase. Hosted trackers keep your search on their servers,
+              behind an account and often a fee. This one wants nothing, and it's deliberately not a
+              job-search engine: no scraping, no job-board feeds.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Chapter 4: quick start -->
+    <section class="c5-chapter" id="c5-start" data-tint="apricot" aria-labelledby="c5-start-h">
+      <div class="c5-wrap c5-chapter-grid">
+        <div class="c5-chat">
+          <p class="c5-eyebrow" id="c5-start-h">
+            Quick start
+          </p>
+          <p class="c5-q">How do I start?</p>
+          <p class="c5-a c5-a-big">About ten minutes, once.</p>
+          <p class="c5-a">
+            With uv and Node.js installed, paste a few commands into the Terminal. After that it's a web page
+            in your browser. Mac or Linux for now; Windows is next on the roadmap.
+          </p>
+          <span class="c5-typing" aria-hidden="true">
+            <i></i>
+            <i></i>
+            <i></i>
+          </span>
+        </div>
+
+        <div class="c5-bento">
+          <article class="c5-tile w6 c5-t-ink" style="padding:0;min-height:0">
+            <div class="c5-term" data-tabs>
+              <div class="c5-tabs" role="tablist" aria-label="Quick start steps">
+                {tabs.map((t, i) => (
+                  <button
+                    type="button"
+                    role="tab"
+                    id={`c5-tab-${t.id}`}
+                    aria-controls={`c5-panel-${t.id}`}
+                    aria-selected={i === 0 ? "true" : "false"}
+                    tabindex={i === 0 ? 0 : -1}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+              {tabs.map((t, i) => (
+                <div
+                  class="c5-panel"
+                  role="tabpanel"
+                  id={`c5-panel-${t.id}`}
+                  aria-labelledby={`c5-tab-${t.id}`}
+                  hidden={i !== 0}
+                >
+                  <button
+                    type="button"
+                    class="c5-copy"
+                    data-copy={t.lines
+                      .filter((l) => l.cmd)
+                      .map((l) => l.cmd)
+                      .join("\n")}
+                  >
+                    Copy
+                  </button>
+                  {t.lines.map((l) =>
+                    l.cmd ? (
+                      <p class="c">{l.cmd}</p>
+                    ) : l.out ? (
+                      <p class="o">{l.out}</p>
+                    ) : (
+                      <p class="n">{l.note}</p>
+                    ),
+                  )}
+                </div>
+              ))}
+            </div>
+          </article>
+          <article class="c5-tile w4 c5-t-white" style="min-height:0">
+            <span class="c5-try">What you need</span>
+            <ul class="c5-needs c5-demo" style="padding-top:8px">
+              {needs.map((n) => (
+                <li>
+                  <a href={n.href} rel="noopener">
+                    {n.name}
+                    <small>{n.why}</small>
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <p style="margin-top:16px">
+              The <a href={`${GUIDE}install.md`}>install guide</a> lists where to get each one. A one-command
+              install and a double-click app are on the way.
+            </p>
+          </article>
+          <article class="c5-tile w2 c5-t-mint" style="min-height:0">
+            <span class="c5-try">Open source</span>
+            <h3>Apache-2.0, free for good</h3>
+            <p>No plans, no seats, no trial. Issues and pull requests are welcome.</p>
+            <ul class="c5-chips c5-demo" style="padding-left:0">
+              {stack.map((s) => (
+                <li style="padding:6px 12px;font-size:13px">{s}</li>
+              ))}
+            </ul>
+          </article>
+          <article class="c5-tile w6 c5-t-white" style="min-height:0">
+            <span class="c5-try">Still wondering</span>
+            <div class="c5-faq">
+              {faq.map((f) => (
+                <details>
+                  <summary>{f.q}</summary>
+                  <p>{plain(f.a)}</p>
+                </details>
+              ))}
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section
+      class="c5-block c5-close c5-r"
+      data-tint="lilac"
+      style="background:var(--c5-lilac)"
+      aria-labelledby="c5-close-h"
+    >
+      <div class="c5-wrap">
+        <p class="c5-eyebrow">Ready when you are</p>
+        <h2 class="c5-display" id="c5-close-h">
+          Your next offer is in there somewhere.
+        </h2>
+        <p class="c5-lede">
+          Set it up once, and never lose track of a recruiter, an interview or a follow-up again.
+        </p>
+        <div class="c5-ctas">
+          <a class="c5-btn c5-btn-ink" href={`${GUIDE}install.md`}>
+            Get started
+          </a>
+          <a class="c5-btn c5-glass" href={REPO}>
+            View on GitHub
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="c5-foot">
+    <div class="c5-wrap">
+      <div class="c5-foot-grid">
+        <div class="c5-foot-brand">
+          <svg viewBox="0 0 36 36" width="40" height="40" aria-hidden="true">
+            <rect width="36" height="36" rx="12" fill="#ffd3dc"></rect>
+            <g fill="none" stroke="#2a1e3f" stroke-width="2.4">
+              <circle cx="18" cy="18" r="10.5"></circle>
+              <circle cx="18" cy="18" r="5.5"></circle>
+            </g>
+          </svg>
+          <b>Job Application Tracker</b>
+          <p>Free, private and open source. Your job search, on your own computer.</p>
+        </div>
+        <nav aria-label="Product">
+          <h2>Product</h2>
+          <a href="#c5-play">Try it</a>
+          <a href="#c5-private">Private by design</a>
+          <a href="#c5-start">Quick start</a>
+        </nav>
+        <nav aria-label="Docs">
+          <h2>Docs</h2>
+          <a href={`${GUIDE}install.md`}>Install</a>
+          <a href={`${GUIDE}your-data.md`}>Your data</a>
+          <a href={`${GUIDE}using-the-app.md`}>Using the app</a>
+          <a href={README_ZH} lang="zh-CN">
+            简体中文 README
+          </a>
+        </nav>
+        <nav aria-label="Project">
+          <h2>Project</h2>
+          <a href={REPO}>GitHub</a>
+          <a href={`${REPO}/issues`}>Issues</a>
+          <a href={`${REPO}/blob/main/CONTRIBUTING.md`}>Contributing</a>
+          <a href={`${REPO}/blob/main/CHANGELOG.md`}>Changelog</a>
+        </nav>
+      </div>
+      <div class="c5-legal">
+        <span>
+          © {year} Kai Waddington · <a href={`${REPO}/blob/main/LICENSE`}>Apache-2.0</a>
+        </span>
+        <span>Screenshots show made-up demo data. This site adds no cookies, analytics or trackers.</span>
+      </div>
+    </div>
+  </footer>
+
+  <Switcher current={5} />
+</Layout>
+
+<script>
+  document.documentElement.classList.add("c5-js");
+
+  // ---- page tint: whichever tinted section holds the middle of the screen ----
+  const tints = new Map(
+    [...document.querySelectorAll<HTMLElement>(".c5-tints i")].map((i) => [i.dataset.t!, i]),
+  );
+  const navLinks = [...document.querySelectorAll<HTMLAnchorElement>(".c5-links a")];
+  const tintObserver = new IntersectionObserver(
+    (entries) => {
+      for (const e of entries) {
+        if (!e.isIntersecting) continue;
+        const el = e.target as HTMLElement;
+        for (const [k, i] of tints) i.classList.toggle("on", k === el.dataset.tint);
+        for (const a of navLinks) a.classList.toggle("on", a.getAttribute("href") === `#${el.id}`);
+      }
+    },
+    { rootMargin: "-50% 0px -50% 0px" },
+  );
+  document.querySelectorAll("[data-tint]").forEach((s) => tintObserver.observe(s));
+
+  // ---- chats pop in when their chapter arrives ----
+  const chatObserver = new IntersectionObserver(
+    (entries) => {
+      for (const e of entries) if (e.isIntersecting) e.target.classList.add("in");
+    },
+    { rootMargin: "0px 0px -20% 0px" },
+  );
+  document.querySelectorAll(".c5-chat").forEach((c) => chatObserver.observe(c));
+
+  // ---- tick a to-do ----
+  document
+    .querySelectorAll<HTMLButtonElement>(".c5-todo")
+    .forEach((b) =>
+      b.addEventListener("click", () =>
+        b.setAttribute("aria-pressed", String(b.getAttribute("aria-pressed") !== "true")),
+      ),
+    );
+
+  // ---- drag a card between columns (or tap / press Enter to move it across) ----
+  const board = document.querySelector<HTMLElement>("[data-board]");
+  if (board) {
+    const live = document.querySelector<HTMLElement>("[data-board-live]");
+    const cols = [...board.querySelectorAll<HTMLElement>("[data-col]")];
+    const recount = () =>
+      cols.forEach(
+        (c) => (c.querySelector("[data-n]")!.textContent = String(c.querySelectorAll("[data-drag]").length)),
+      );
+    // move with a FLIP so the card glides to its new place
+    const place = (card: HTMLElement, col: HTMLElement) => {
+      const before = card.getBoundingClientRect();
+      col.appendChild(card);
+      const after = card.getBoundingClientRect();
+      card.animate(
+        [
+          { transform: `translate(${before.left - after.left}px, ${before.top - after.top}px)` },
+          { transform: "none" },
+        ],
+        {
+          duration: matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 420,
+          easing: "cubic-bezier(.22,1,.36,1)",
+        },
+      );
+      recount();
+      if (live) live.textContent = `${card.querySelector("b")!.textContent} moved to ${col.dataset.col}`;
+    };
+    for (const card of board.querySelectorAll<HTMLElement>("[data-drag]")) {
+      let sx = 0;
+      let sy = 0;
+      let dragging = false;
+      let moved = false;
+      card.addEventListener("pointerdown", (e) => {
+        sx = e.clientX;
+        sy = e.clientY;
+        dragging = true;
+        moved = false;
+        card.setPointerCapture(e.pointerId);
+      });
+      card.addEventListener("pointermove", (e) => {
+        if (!dragging) return;
+        const dx = e.clientX - sx;
+        const dy = e.clientY - sy;
+        if (!moved && Math.hypot(dx, dy) < 5) return;
+        moved = true;
+        card.classList.add("lift");
+        card.style.transform = `translate(${dx}px, ${dy}px) rotate(${Math.max(-6, Math.min(6, dx / 30))}deg)`;
+        const over = cols.find((c) => {
+          const r = c.getBoundingClientRect();
+          return e.clientX > r.left && e.clientX < r.right && e.clientY > r.top && e.clientY < r.bottom;
+        });
+        cols.forEach((c) => c.classList.toggle("over", c === over && c !== card.parentElement));
+      });
+      card.addEventListener("pointerup", (e) => {
+        if (!dragging) return;
+        dragging = false;
+        cols.forEach((c) => c.classList.remove("over"));
+        if (!moved) return;
+        const target = cols.find((c) => {
+          const r = c.getBoundingClientRect();
+          return e.clientX > r.left && e.clientX < r.right && e.clientY > r.top && e.clientY < r.bottom;
+        });
+        card.classList.remove("lift");
+        card.style.transform = "";
+        if (target && target !== card.parentElement) place(card, target);
+        else
+          card.animate(
+            [{ transform: `translate(${e.clientX - sx}px, ${e.clientY - sy}px)` }, { transform: "none" }],
+            { duration: 300, easing: "cubic-bezier(.22,1,.36,1)" },
+          );
+      });
+      card.addEventListener("click", () => {
+        if (moved) {
+          moved = false;
+          return;
+        }
+        const other = cols.find((c) => c !== card.parentElement)!;
+        place(card, other);
+      });
+    }
+  }
+
+  // ---- flip a stage badge ----
+  const stageBtn = document.querySelector<HTMLButtonElement>("[data-stage]");
+  if (stageBtn) {
+    const stages = [
+      { name: "Interested", bg: "#f1f3f5", fg: "#495057" },
+      { name: "Applied", bg: "#d0ebff", fg: "#1971c2" },
+      { name: "Screen", bg: "#c5f6fa", fg: "#0c8599" },
+      { name: "Interviewing", bg: "#e5dbff", fg: "#5f3dc4" },
+      { name: "Offer", bg: "#c3fae8", fg: "#087f5b" },
+    ];
+    const bars = [...document.querySelectorAll("[data-steps] i")];
+    let n = 0;
+    const paint = () => {
+      const s = stages[n];
+      stageBtn.textContent = s.name;
+      stageBtn.style.background = s.bg;
+      stageBtn.style.color = s.fg;
+      bars.forEach((b, i) => b.classList.toggle("on", i <= n));
+    };
+    paint();
+    stageBtn.addEventListener("click", () => {
+      n = (n + 1) % stages.length;
+      paint();
+      stageBtn.classList.remove("pop");
+      void stageBtn.offsetWidth;
+      stageBtn.classList.add("pop");
+    });
+  }
+
+  // ---- chase, snooze or ghost ----
+  const ghost = document.querySelector<HTMLElement>("[data-ghost]");
+  if (ghost) {
+    const status = ghost.querySelector<HTMLElement>("[data-ghost-status]")!;
+    const text: Record<string, string> = {
+      heard: "heard back today",
+      snooze: "snoozed until Thu 19 Nov",
+      ghost: "ghosted, moved off your list",
+    };
+    ghost.querySelectorAll<HTMLButtonElement>("[data-act]").forEach((b) =>
+      b.addEventListener("click", () => {
+        const act = b.dataset.act!;
+        const again = status.textContent === text[act];
+        ghost.classList.toggle("gone", act === "ghost" && !again);
+        status.textContent = again ? "waiting 8 days, time to chase" : text[act];
+        status.style.color = again ? "" : act === "heard" ? "#2b8a3e" : "var(--c5-ink-2)";
+      }),
+    );
+  }
+
+  // ---- star a recruiter ----
+  document
+    .querySelectorAll<HTMLButtonElement>(".c5-star")
+    .forEach((b) =>
+      b.addEventListener("click", () =>
+        b.setAttribute("aria-pressed", String(b.getAttribute("aria-pressed") !== "true")),
+      ),
+    );
+
+  // ---- open a round on the calendar ----
+  const cal = document.querySelector<HTMLElement>("[data-cal]");
+  const roundCard = document.querySelector<HTMLElement>("[data-roundcard]");
+  const roundsJson = document.querySelector<HTMLElement>("[data-rounds]");
+  if (cal && roundCard && roundsJson) {
+    const rounds = JSON.parse(roundsJson.textContent!) as Record<
+      string,
+      { title: string; who: string; when: string; notes: string[] }
+    >;
+    cal.querySelectorAll<HTMLButtonElement>("[data-day]").forEach((b) =>
+      b.addEventListener("click", () => {
+        const r = rounds[b.dataset.day!];
+        cal.querySelectorAll("[data-day]").forEach((d) => d.setAttribute("aria-pressed", String(d === b)));
+        roundCard.replaceChildren();
+        const t = document.createElement("b");
+        t.textContent = r.title;
+        const who = document.createElement("small");
+        who.textContent = r.who;
+        const when = document.createElement("small");
+        when.textContent = r.when;
+        const ul = document.createElement("ul");
+        for (const n of r.notes) {
+          const li = document.createElement("li");
+          li.textContent = n;
+          ul.append(li);
+        }
+        roundCard.append(t, who, when, ul);
+        roundCard.classList.remove("swap");
+        void roundCard.offsetWidth;
+        roundCard.classList.add("swap");
+      }),
+    );
+  }
+
+  // ---- compare offers ----
+  const compare = document.querySelector<HTMLButtonElement>("[data-compare]");
+  const offers = document.querySelector<HTMLElement>("[data-offers]");
+  if (compare && offers) {
+    compare.addEventListener("click", () => {
+      const on = offers.classList.toggle("shown");
+      compare.setAttribute("aria-pressed", String(on));
+      compare.textContent = on ? "Hide the totals" : "Work out a year's worth";
+    });
+  }
+
+  // ---- language ----
+  const langBtns = document.querySelectorAll<HTMLButtonElement>("[data-lang]");
+  langBtns.forEach((b) =>
+    b.addEventListener("click", () => {
+      const zh = b.dataset.lang === "zh";
+      langBtns.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+      document.querySelectorAll<HTMLElement>("[data-langcard] [data-en]").forEach((el) => {
+        el.textContent = zh ? el.dataset.zh! : el.dataset.en!;
+        if (zh) el.setAttribute("lang", "zh-CN");
+        else el.removeAttribute("lang");
+      });
+    }),
+  );
+
+  // ---- quick start tabs and copy ----
+  const tabsRoot = document.querySelector<HTMLElement>("[data-tabs]");
+  if (tabsRoot) {
+    const tabBtns = [...tabsRoot.querySelectorAll<HTMLButtonElement>("[role=tab]")];
+    const select = (t: HTMLButtonElement) => {
+      for (const b of tabBtns) {
+        const on = b === t;
+        b.setAttribute("aria-selected", String(on));
+        b.tabIndex = on ? 0 : -1;
+        document.getElementById(b.getAttribute("aria-controls")!)!.hidden = !on;
+      }
+    };
+    tabBtns.forEach((b, i) => {
+      b.addEventListener("click", () => select(b));
+      b.addEventListener("keydown", (e) => {
+        const d = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+        if (!d) return;
+        const next = tabBtns[(i + d + tabBtns.length) % tabBtns.length];
+        select(next);
+        next.focus();
+      });
+    });
+    tabsRoot.querySelectorAll<HTMLButtonElement>("[data-copy]").forEach((b) =>
+      b.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(b.dataset.copy!);
+          b.textContent = "Copied";
+        } catch {
+          b.textContent = "Select and copy";
+        }
+        setTimeout(() => (b.textContent = "Copy"), 1600);
+      }),
+    );
+  }
+</script>

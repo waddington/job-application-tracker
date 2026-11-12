@@ -1,0 +1,69 @@
+---
+// Chunky dots that draw one of our shapes (a speech bubble, a kanban board, a folder), worked out at
+// build time. Each row is a <g> so the field can breathe row by row with opacity alone.
+interface Props {
+  shape: "bubble" | "board" | "folder";
+  cols: number;
+  rows: number;
+  class?: string;
+}
+const { shape, cols, rows, class: cls = "" } = Astro.props;
+const gap = 20;
+const r = 6;
+
+// Inside a rounded rectangle, every corner rounded except the bottom-left (the speech-bubble corner).
+function inBubble(c: number, w: number, h: number, rad: number): (x: number, y: number) => boolean {
+  return (x, y) => {
+    if (x < 0 || y < 0 || x >= w || y >= h) return false;
+    const corners: [number, number, boolean][] = [
+      [rad, rad, x < rad && y < rad],
+      [w - 1 - rad, rad, x > w - 1 - rad && y < rad],
+      [w - 1 - rad, h - 1 - rad, x > w - 1 - rad && y > h - 1 - rad],
+    ];
+    for (const [cx, cy, inCorner] of corners) {
+      if (inCorner && Math.hypot(x - cx, y - cy) > rad + 0.3) return false;
+    }
+    return c >= 0;
+  };
+}
+
+function test(x: number, y: number): boolean {
+  if (shape === "bubble") return inBubble(0, cols, rows, Math.min(5, Math.floor(rows / 3)))(x, y);
+  if (shape === "board") {
+    // three columns of different heights, like Applied / Interviewing / Offer
+    const w = Math.floor((cols - 2) / 3);
+    const heights = [rows, Math.round(rows * 0.7), Math.round(rows * 0.45)];
+    for (let i = 0; i < 3; i++) {
+      const x0 = i * (w + 1);
+      if (x >= x0 && x < x0 + w && y < heights[i]) return inBubble(0, w, heights[i], 2)(x - x0, y);
+    }
+    return false;
+  }
+  // folder: a tab on the top left, then the body
+  const tabW = Math.round(cols * 0.4);
+  if (y < 2) return x >= 1 && x < tabW;
+  return inBubble(0, cols, rows - 2, 3)(x, y - 2);
+}
+
+const rowsOut: { y: number; xs: number[] }[] = [];
+for (let y = 0; y < rows; y++) {
+  const xs: number[] = [];
+  for (let x = 0; x < cols; x++) if (test(x, y)) xs.push(x);
+  rowsOut.push({ y, xs });
+}
+---
+
+<svg
+  class={`c5-dots ${cls}`}
+  viewBox={`0 0 ${cols * gap} ${rows * gap}`}
+  aria-hidden="true"
+  focusable="false"
+>
+  {rowsOut.map((row) => (
+    <g style={`--i:${row.y}`} fill="currentColor">
+      {row.xs.map((x) => (
+        <circle cx={x * gap + gap / 2} cy={row.y * gap + gap / 2} r={r} />
+      ))}
+    </g>
+  ))}
+</svg>
