@@ -1,0 +1,8 @@
+---
+// Design concepts only (docs/rfc/website-redesign.md): sends /concepts/ to the first concept.
+const base = import.meta.env.BASE_URL;
+---
+
+<meta http-equiv="refresh" content={`0; url=${base}concepts/1/`} />
+<meta name="robots" content="noindex" />
+<a href={`${base}concepts/1/`}>Concept 1</a>

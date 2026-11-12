@@ -1,0 +1,98 @@
+---
+// Design concepts only (docs/rfc/website-redesign.md): a floating pill to jump between the five concept pages and
+// the current site. Keys 1-5 and 0 do the same.
+interface Props {
+  current: number;
+}
+const { current } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const names = ["Espresso", "Liquid", "Paper", "Night shift", "Bubbles"];
+---
+
+<nav class="concept-switcher" aria-label="Design concepts">
+  <span class="label">Concept</span>
+  {
+    names.map((name, i) => (
+      <a
+        href={`${base}concepts/${i + 1}/`}
+        aria-current={current === i + 1 ? "page" : undefined}
+        title={name}
+        data-key={String(i + 1)}
+      >
+        <b>{i + 1}</b>
+        <span>{name}</span>
+      </a>
+    ))
+  }
+  <a href={base} class="current-site" data-key="0" title="The current site">Current</a>
+</nav>
+
+<script>
+  document.addEventListener("keydown", (e) => {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    const target = e.target as HTMLElement | null;
+    if (target && (target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName))) return;
+    const link = document.querySelector<HTMLAnchorElement>(`.concept-switcher a[data-key="${e.key}"]`);
+    if (link) link.click();
+  });
+</script>
+
+<style>
+  .concept-switcher {
+    position: fixed;
+    left: 50%;
+    bottom: 16px;
+    transform: translateX(-50%);
+    z-index: 2147483000;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px;
+    border-radius: 999px;
+    font: 500 13px/1 system-ui, sans-serif;
+    color: #fff;
+    background: rgb(20 20 24 / 0.72);
+    border: 1px solid rgb(255 255 255 / 0.16);
+    box-shadow: 0 10px 40px rgb(0 0 0 / 0.35);
+    backdrop-filter: blur(16px) saturate(1.4);
+  }
+  .label {
+    padding: 0 8px 0 10px;
+    opacity: 0.6;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  a {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    color: inherit;
+    text-decoration: none;
+    opacity: 0.75;
+    white-space: nowrap;
+  }
+  a:hover {
+    opacity: 1;
+    background: rgb(255 255 255 / 0.08);
+  }
+  a[aria-current="page"] {
+    opacity: 1;
+    background: rgb(255 255 255 / 0.18);
+  }
+  a b {
+    font-weight: 600;
+  }
+  .current-site {
+    margin-left: 4px;
+    border-left: 1px solid rgb(255 255 255 / 0.16);
+    border-radius: 0 999px 999px 0;
+  }
+  @media (max-width: 720px) {
+    a span {
+      display: none;
+    }
+  }
+</style>
