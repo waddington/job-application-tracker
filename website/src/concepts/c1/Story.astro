@@ -1,0 +1,357 @@
+---
+// Sticky storytelling: the copy stays pinned on the left while the media panel on the right steps
+// through four parts of the app as you scroll. The glass tabs show (and jump to) the step.
+import type { ImageMetadata } from "astro";
+import { Image } from "astro:assets";
+import recruiters from "./shots/recruiters.png";
+import interviews from "./shots/interviews.png";
+import offers from "./shots/offers.png";
+import role from "./shots/role.png";
+
+const steps: { tab: string; title: string; body: string; img: ImageMetadata; pos?: string; alt: string }[] = [
+  {
+    tab: "Recruiters",
+    title: "One recruiter, five roles, zero chaos.",
+    body: "Calls with an agenda, the roles they pitched, apply or pass on each, and how quickly they usually reply.",
+    img: recruiters,
+    alt: "The Recruiters page: three recruiters with their agencies, roles in progress and how long they usually take to reply",
+  },
+  {
+    tab: "Interviews",
+    title: "Every round, on a calendar.",
+    body: "Rounds, take-home tasks and calls by date, what's coming up, and what needs a new time.",
+    img: interviews,
+    alt: "The Interviews calendar for November, with rounds held and one coming up on Saturday",
+  },
+  {
+    tab: "Offers",
+    title: "Compare offers properly.",
+    body: "Salary, bonus, equity and pension, or a contractor's day rate, side by side with what each is worth a year.",
+    img: offers,
+    alt: "Two offers side by side: a day rate and a salary package, each with what it's worth a year",
+  },
+  {
+    tab: "Notes",
+    title: "Notes and files, where they belong.",
+    body: "Markdown notes, CV versions, PDFs and exported emails, kept with each role in your own data folder.",
+    img: role,
+    pos: "40% 50%",
+    alt: "A role's page further down: its interview rounds, the CV sent, notes from a call, links and files",
+  },
+];
+---
+
+<section class="story" id="features" data-c1-tint="taupe" data-story aria-labelledby="c1-story-h">
+  <div class="pin">
+    <div class="copy">
+      <p class="c1-eyebrow">Everything in one place</p>
+      <h2 class="c1-h2" id="c1-story-h">
+        The whole search,
+        <br />
+        not just the board.
+      </h2>
+      <ol class="steps">
+        {steps.map((s, i) => (
+          <li class:list={{ on: i === 0 }} data-step={i}>
+            <b>{s.title}</b>
+            <span>{s.body}</span>
+          </li>
+        ))}
+      </ol>
+    </div>
+
+    <div class="media">
+      <div class="tabs c1-glass" role="tablist" aria-label="Parts of the app">
+        <span class="thumb" data-thumb aria-hidden="true"></span>
+        {steps.map((s, i) => (
+          <button
+            type="button"
+            role="tab"
+            aria-selected={i === 0 ? "true" : "false"}
+            aria-controls={`c1-story-${i}`}
+            data-tab={i}
+          >
+            {s.tab}
+          </button>
+        ))}
+      </div>
+      <div class="frame">
+        {steps.map((s, i) => (
+          <div class:list={["shot", { on: i === 0 }]} id={`c1-story-${i}`} role="tabpanel" data-shot={i}>
+            <Image
+              src={s.img}
+              style={s.pos && `object-position:${s.pos}`}
+              widths={[960, 1440]}
+              sizes="(max-width: 760px) 92vw, 760px"
+              alt={s.alt}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const story = document.querySelector<HTMLElement>("[data-story]");
+  if (story) {
+    const tabs = [...story.querySelectorAll<HTMLButtonElement>("[data-tab]")];
+    const shots = [...story.querySelectorAll<HTMLElement>("[data-shot]")];
+    const steps = [...story.querySelectorAll<HTMLElement>("[data-step]")];
+    const thumb = story.querySelector<HTMLElement>("[data-thumb]")!;
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)");
+    let current = -1;
+    function show(i: number) {
+      if (i === current) return;
+      current = i;
+      tabs.forEach((t, k) => t.setAttribute("aria-selected", String(k === i)));
+      shots.forEach((s, k) => s.classList.toggle("on", k === i));
+      steps.forEach((s, k) => s.classList.toggle("on", k === i));
+      const t = tabs[i];
+      thumb.style.transform = `translateX(${t.offsetLeft}px)`;
+      thumb.style.width = `${t.offsetWidth}px`;
+    }
+    function onScroll() {
+      if (reduce.matches) return;
+      const r = story!.getBoundingClientRect();
+      const span = r.height - innerHeight;
+      const p = Math.min(0.999, Math.max(0, -r.top / span));
+      show(Math.floor(p * tabs.length));
+    }
+    tabs.forEach((t, i) =>
+      t.addEventListener("click", () => {
+        if (reduce.matches) return show(i);
+        // Jump to the scroll position that shows this step.
+        const top = story!.getBoundingClientRect().top + scrollY;
+        const span = story!.offsetHeight - innerHeight;
+        scrollTo({ top: top + span * ((i + 0.5) / tabs.length) });
+      }),
+    );
+    addEventListener("scroll", onScroll, { passive: true });
+    addEventListener("resize", () => {
+      const i = current;
+      current = -1;
+      show(Math.max(0, i));
+    });
+    show(0);
+    onScroll();
+  }
+</script>
+
+<style>
+  .story {
+    position: relative;
+    height: 420vh;
+    padding: 0 8px;
+  }
+  .pin {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    height: 100svh;
+    display: grid;
+    grid-template-columns: minmax(300px, 0.8fr) 1.5fr;
+    gap: clamp(32px, 5vw, 80px);
+    align-items: center;
+    padding: 90px max(5vw, 24px) 80px;
+    max-width: 1440px;
+    margin: 0 auto;
+  }
+  .steps {
+    list-style: none;
+    padding: 0;
+    margin: 40px 0 0;
+    display: grid;
+    gap: 6px;
+  }
+  .steps li {
+    padding: 12px 0 12px 18px;
+    border-left: 1px solid rgb(36 25 18 / 0.18);
+    transition:
+      opacity 0.5s,
+      border-color 0.5s;
+    opacity: 0.42;
+  }
+  .steps li.on {
+    opacity: 1;
+    border-left-color: var(--c1-espresso);
+  }
+  .steps b {
+    display: block;
+    font-weight: 400;
+    font-size: 19px;
+    letter-spacing: -0.01em;
+  }
+  .steps span {
+    display: block;
+    font-weight: 300;
+    font-size: 15px;
+    line-height: 1.5;
+    margin-top: 4px;
+    color: var(--c1-fg-soft);
+  }
+  .media {
+    position: relative;
+    height: min(100%, 680px);
+    border-radius: 34px;
+    background:
+      radial-gradient(120% 90% at 80% 0%, #4a3324, transparent 60%),
+      linear-gradient(160deg, #3a281d, var(--c1-espresso-deep));
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+    perspective: 1600px;
+  }
+  .tabs {
+    position: absolute;
+    z-index: 3;
+    top: 22px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    padding: 5px;
+    border-radius: 999px;
+    --c1-glass-a: 0.1;
+    --c1-glass-line: rgb(255 255 255 / 0.22);
+  }
+  .tabs button {
+    position: relative;
+    z-index: 1;
+    appearance: none;
+    border: 0;
+    background: none;
+    color: #f3ece2;
+    font:
+      500 14px/1 "Inter Variable",
+      system-ui,
+      sans-serif;
+    padding: 10px 16px;
+    border-radius: 999px;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.3s;
+  }
+  .tabs button[aria-selected="true"] {
+    opacity: 1;
+  }
+  .thumb {
+    position: absolute;
+    left: 0;
+    top: 5px;
+    bottom: 5px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.32), rgb(255 255 255 / 0.12));
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.4);
+    transition: transform 0.5s var(--c1-ease);
+  }
+  .frame {
+    position: relative;
+    width: 86%;
+    aspect-ratio: 1440 / 900;
+    margin-top: 40px;
+    transform: rotateX(8deg) rotateY(-10deg);
+    transform-style: preserve-3d;
+    animation: c1-sway 10s ease-in-out infinite alternate;
+  }
+  @keyframes c1-sway {
+    to {
+      transform: rotateX(4deg) rotateY(-4deg) translateY(-8px);
+    }
+  }
+  .shot {
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow:
+      0 0 0 1px rgb(255 255 255 / 0.1),
+      0 40px 80px -20px rgb(0 0 0 / 0.7);
+    opacity: 0;
+    transform: translateZ(-60px) translateY(24px);
+    transition:
+      opacity 0.6s var(--c1-ease),
+      transform 0.8s var(--c1-ease);
+  }
+  .shot.on {
+    opacity: 1;
+    transform: none;
+  }
+  .shot :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: left top;
+  }
+
+  @media (max-width: 760px) {
+    .story {
+      height: 400vh;
+    }
+    .pin {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr;
+      gap: 18px;
+      padding: 80px 16px 84px;
+      align-items: stretch;
+    }
+    .copy .c1-h2 {
+      font-size: 28px;
+    }
+    .copy .c1-eyebrow {
+      margin-bottom: 12px;
+    }
+    .steps {
+      margin-top: 14px;
+    }
+    .steps li {
+      display: none;
+      padding: 0 0 0 14px;
+    }
+    .steps li.on {
+      display: block;
+    }
+    .steps b {
+      font-size: 17px;
+    }
+    .media {
+      height: auto;
+      min-height: 300px;
+      border-radius: 24px;
+    }
+    .tabs {
+      top: 14px;
+      max-width: calc(100% - 20px);
+    }
+    .tabs button {
+      padding: 8px 10px;
+      font-size: 12.5px;
+    }
+    .frame {
+      width: 88%;
+      aspect-ratio: 1;
+      margin-top: 56px;
+    }
+    .shot :global(img) {
+      object-position: 40% top;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .story {
+      height: auto;
+    }
+    .pin {
+      position: relative;
+      height: auto;
+      min-height: 100vh;
+    }
+    .frame {
+      animation: none;
+    }
+    .shot,
+    .steps li,
+    .thumb {
+      transition: none;
+    }
+  }
+</style>
