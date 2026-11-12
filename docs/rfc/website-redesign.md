@@ -143,3 +143,8 @@ header"; 2a's "main graphic is scroll jacked for nearly the whole page"; "2b is 
 | 5a | Bubbles, calmer. |
 
 The switcher shows only these now; the other pages stay in the branch.
+
+## 8. Round 4 (Kai, 2026-11-12)
+
+"show me 1e, and 1e in the same colour scheme as 5a". The switcher shows 1e and 1f, the same page in Bubbles 5a's
+calmer pastels.
