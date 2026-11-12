@@ -1,0 +1,480 @@
+---
+// Sticky storytelling, round 2: the steps scroll past as ordinary text (so it's plain you're still going down
+// the page) while the media panel stays put beside them and changes with the step in the middle of the screen.
+// A rail fills as you go, the panel counts "2 / 4", and the pinned stretch is only as long as the four steps.
+import type { ImageMetadata } from "astro";
+import { Image } from "astro:assets";
+import recruiters from "../c1/shots/recruiters.png";
+import interviews from "../c1/shots/interviews.png";
+import offers from "../c1/shots/offers.png";
+import role from "../c1/shots/role.png";
+
+const steps: { tab: string; title: string; body: string; img: ImageMetadata; pos?: string; alt: string }[] = [
+  {
+    tab: "Recruiters",
+    title: "One recruiter, five roles, zero chaos.",
+    body: "Calls with an agenda, the roles they pitched, apply or pass on each, and how quickly they usually reply.",
+    img: recruiters,
+    alt: "The Recruiters page: three recruiters with their agencies, roles in progress and how long they usually take to reply",
+  },
+  {
+    tab: "Interviews",
+    title: "Every round, on a calendar.",
+    body: "Rounds, take-home tasks and calls by date, what's coming up, and what needs a new time.",
+    img: interviews,
+    alt: "The Interviews calendar for November, with rounds held and one coming up on Saturday",
+  },
+  {
+    tab: "Offers",
+    title: "Compare offers properly.",
+    body: "Salary, bonus, equity and pension, or a contractor's day rate, side by side with what each is worth a year.",
+    img: offers,
+    alt: "Two offers side by side: a day rate and a salary package, each with what it's worth a year",
+  },
+  {
+    tab: "Notes",
+    title: "Notes and files, where they belong.",
+    body: "Markdown notes, CV versions, PDFs and exported emails, kept with each role in your own data folder.",
+    img: role,
+    pos: "40% 50%",
+    alt: "A role's page further down: its interview rounds, the CV sent, notes from a call, links and files",
+  },
+];
+---
+
+<section class="story" id="features" data-c1-tint="taupe" data-story aria-labelledby="c1-story-h">
+  <div class="grid">
+    <div class="copy">
+      <div class="head">
+        <p class="c1-eyebrow">Everything in one place</p>
+        <h2 class="c1-h2" id="c1-story-h">
+          The whole search,
+          <br />
+          not just the board.
+        </h2>
+      </div>
+      <div class="stepwrap">
+        <div class="rail" aria-hidden="true">
+          <i data-fill></i>
+        </div>
+        <ol class="steps">
+          {steps.map((s, i) => (
+            <li class:list={{ on: i === 0 }} data-step={i}>
+              <span class="n" aria-hidden="true">
+                0{i + 1}
+              </span>
+              <b>{s.title}</b>
+              <span class="body">{s.body}</span>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </div>
+
+    <div class="media" data-media>
+      <div class="panel">
+        <div class="tabs c1-glass" role="tablist" aria-label="Parts of the app">
+          <span class="thumb" data-thumb aria-hidden="true"></span>
+          {steps.map((s, i) => (
+            <button
+              type="button"
+              role="tab"
+              aria-selected={i === 0 ? "true" : "false"}
+              aria-controls={`c1-story-${i}`}
+              data-tab={i}
+            >
+              {s.tab}
+            </button>
+          ))}
+        </div>
+        <div class="frame">
+          {steps.map((s, i) => (
+            <div class:list={["shot", { on: i === 0 }]} id={`c1-story-${i}`} role="tabpanel" data-shot={i}>
+              <Image
+                src={s.img}
+                style={s.pos && `object-position:${s.pos}`}
+                widths={[960, 1440]}
+                sizes="(max-width: 760px) 92vw, 760px"
+                alt={s.alt}
+              />
+            </div>
+          ))}
+        </div>
+        <p class="count" aria-hidden="true">
+          <b data-count>1</b> / {steps.length}
+          <span>Keep scrolling ↓</span>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const story = document.querySelector<HTMLElement>("[data-story]");
+  if (story) {
+    const tabs = [...story.querySelectorAll<HTMLButtonElement>("[data-tab]")];
+    const shots = [...story.querySelectorAll<HTMLElement>("[data-shot]")];
+    const steps = [...story.querySelectorAll<HTMLElement>("[data-step]")];
+    const thumb = story.querySelector<HTMLElement>("[data-thumb]")!;
+    const fill = story.querySelector<HTMLElement>("[data-fill]")!;
+    const count = story.querySelector<HTMLElement>("[data-count]")!;
+    const media = story.querySelector<HTMLElement>("[data-media]")!;
+    const narrow = matchMedia("(max-width: 760px)");
+    let current = -1;
+    function show(i: number) {
+      if (i === current) return;
+      current = i;
+      tabs.forEach((t, k) => t.setAttribute("aria-selected", String(k === i)));
+      shots.forEach((s, k) => s.classList.toggle("on", k === i));
+      steps.forEach((s, k) => s.classList.toggle("on", k === i));
+      count.textContent = String(i + 1);
+      const t = tabs[i];
+      thumb.style.width = `${t.offsetWidth}px`;
+      thumb.style.transform = `translateX(${t.offsetLeft - 5}px)`;
+    }
+    // The step whose middle is nearest the middle of the screen is the one shown; the rail fills from the
+    // first step's middle to the last one's.
+    function onScroll() {
+      // On a phone the panel sits on top, so "the middle" is the middle of the space under it.
+      const mid = narrow.matches ? (media.getBoundingClientRect().bottom + innerHeight) / 2 : innerHeight / 2;
+      let best = 0;
+      let dist = Infinity;
+      steps.forEach((s, k) => {
+        const r = s.getBoundingClientRect();
+        const d = Math.abs(r.top + r.height / 2 - mid);
+        if (d < dist) {
+          dist = d;
+          best = k;
+        }
+      });
+      show(best);
+      const a = steps[0].getBoundingClientRect();
+      const b = steps[steps.length - 1].getBoundingClientRect();
+      const from = a.top + a.height / 2;
+      const to = b.top + b.height / 2;
+      const p = Math.min(1, Math.max(0, (mid - from) / (to - from)));
+      fill.style.transform = `scaleY(${p})`;
+    }
+    tabs.forEach((t, i) =>
+      t.addEventListener("click", () => {
+        const r = steps[i].getBoundingClientRect();
+        scrollTo({ top: scrollY + r.top + r.height / 2 - innerHeight / 2 });
+      }),
+    );
+    addEventListener("scroll", onScroll, { passive: true });
+    addEventListener("resize", () => {
+      const i = current;
+      current = -1;
+      show(Math.max(0, i));
+      onScroll();
+    });
+    show(0);
+    onScroll();
+  }
+</script>
+
+<style>
+  .story {
+    position: relative;
+    padding: 120px 8px 140px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: minmax(300px, 0.8fr) 1.5fr;
+    gap: clamp(32px, 5vw, 80px);
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 max(5vw, 24px);
+  }
+  .copy {
+    position: relative;
+  }
+  .head {
+    padding-bottom: 8vh;
+  }
+  .steps {
+    list-style: none;
+    padding: 0 0 0 28px;
+    margin: 0;
+  }
+  /* Each step is a screen-tall stretch of ordinary text, so the page visibly moves. */
+  .steps li {
+    min-height: 52vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    opacity: 0.35;
+    transition: opacity 0.5s;
+  }
+  .steps li:last-child {
+    min-height: 40vh;
+  }
+  .steps li.on {
+    opacity: 1;
+  }
+  .n {
+    font:
+      500 12px/1 "JetBrains Mono Variable",
+      ui-monospace,
+      monospace;
+    letter-spacing: 0.14em;
+    color: var(--c1-copper);
+    margin-bottom: 14px;
+  }
+  .steps b {
+    display: block;
+    font-weight: 300;
+    font-size: clamp(24px, 2.2vw, 32px);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+  .steps .body {
+    display: block;
+    font-weight: 300;
+    font-size: 16px;
+    line-height: 1.55;
+    margin-top: 12px;
+    max-width: 26em;
+    color: var(--c1-fg-soft);
+  }
+  .stepwrap {
+    position: relative;
+  }
+  .rail {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: rgb(var(--c1-dark-rgb) / 0.16);
+  }
+  .rail i {
+    position: absolute;
+    inset: 0;
+    background: var(--c1-espresso);
+    transform: scaleY(0);
+    transform-origin: top;
+  }
+  .media {
+    position: relative;
+  }
+  .panel {
+    position: sticky;
+    top: 12vh;
+    height: 76vh;
+    max-height: 700px;
+    border-radius: 34px;
+    background:
+      radial-gradient(120% 90% at 80% 0%, var(--c1-panel-a), transparent 60%),
+      linear-gradient(160deg, var(--c1-panel-b), var(--c1-espresso-deep));
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+    perspective: 1600px;
+  }
+  .tabs {
+    position: absolute;
+    z-index: 3;
+    top: 22px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    padding: 5px;
+    border-radius: 999px;
+    --c1-glass-a: 0.1;
+    --c1-glass-line: rgb(255 255 255 / 0.22);
+  }
+  .tabs button {
+    position: relative;
+    z-index: 1;
+    appearance: none;
+    border: 0;
+    background: none;
+    color: var(--c1-light);
+    font:
+      500 14px/1 "Inter Variable",
+      system-ui,
+      sans-serif;
+    padding: 10px 16px;
+    border-radius: 999px;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.3s;
+  }
+  .tabs button[aria-selected="true"] {
+    opacity: 1;
+  }
+  .thumb {
+    position: absolute;
+    left: 5px;
+    top: 5px;
+    bottom: 5px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.32), rgb(255 255 255 / 0.12));
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.4);
+    transition: transform 0.5s var(--c1-ease);
+  }
+  .frame {
+    position: relative;
+    width: 86%;
+    aspect-ratio: 1440 / 900;
+    transform: rotateX(8deg) rotateY(-10deg);
+    transform-style: preserve-3d;
+    animation: c1a-sway 10s ease-in-out infinite alternate;
+  }
+  @keyframes c1a-sway {
+    to {
+      transform: rotateX(4deg) rotateY(-4deg) translateY(-8px);
+    }
+  }
+  .shot {
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow:
+      0 0 0 1px rgb(255 255 255 / 0.1),
+      0 40px 80px -20px rgb(0 0 0 / 0.7);
+    opacity: 0;
+    transform: translateZ(-60px) translateY(24px);
+    transition:
+      opacity 0.6s var(--c1-ease),
+      transform 0.8s var(--c1-ease);
+  }
+  .shot.on {
+    opacity: 1;
+    transform: none;
+  }
+  .shot :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: left top;
+  }
+  .count {
+    position: absolute;
+    left: 28px;
+    bottom: 22px;
+    margin: 0;
+    display: flex;
+    gap: 6px;
+    align-items: baseline;
+    font:
+      500 12px/1 "JetBrains Mono Variable",
+      ui-monospace,
+      monospace;
+    letter-spacing: 0.1em;
+    color: rgb(var(--c1-light-rgb) / 0.6);
+  }
+  .count b {
+    color: var(--c1-light);
+    font-weight: 500;
+  }
+  .count span {
+    margin-left: 14px;
+    text-transform: uppercase;
+    animation: c1a-nudge 2.4s ease-in-out infinite;
+  }
+  @keyframes c1a-nudge {
+    50% {
+      transform: translateY(3px);
+      opacity: 0.6;
+    }
+  }
+
+  @media (max-width: 760px) {
+    .story {
+      padding: 80px 0 100px;
+    }
+    .grid {
+      grid-template-columns: 1fr;
+      gap: 0;
+      padding: 0 16px;
+    }
+    .copy,
+    .stepwrap {
+      display: contents;
+    }
+    .head {
+      order: 1;
+      padding-bottom: 24px;
+    }
+    .head .c1-h2 {
+      font-size: 28px;
+    }
+    .media {
+      order: 2;
+      position: sticky;
+      top: 64px;
+      z-index: 2;
+    }
+    /* A strip of page colour under the panel, so the steps scroll out of sight behind it. */
+    .media::before {
+      content: "";
+      position: absolute;
+      left: -16px;
+      right: -16px;
+      top: -12px;
+      bottom: -12px;
+      background: var(--c1-taupe);
+      z-index: -1;
+    }
+    .panel {
+      position: relative;
+      top: 0;
+      height: auto;
+      aspect-ratio: 1.05;
+      border-radius: 24px;
+    }
+    .rail {
+      display: none;
+    }
+    .steps {
+      order: 3;
+      padding: 0 4px;
+      position: relative;
+      z-index: 1;
+    }
+    .steps li {
+      min-height: 30vh;
+      padding: 24px 0;
+    }
+    .steps li:last-child {
+      min-height: 26vh;
+    }
+    .tabs {
+      top: 12px;
+      max-width: calc(100% - 20px);
+    }
+    .tabs button {
+      padding: 8px 10px;
+      font-size: 12.5px;
+    }
+    .frame {
+      width: 88%;
+      aspect-ratio: 1;
+      margin-top: 40px;
+    }
+    .shot :global(img) {
+      object-position: 40% top;
+    }
+    .count {
+      left: 18px;
+      bottom: 14px;
+    }
+    .count span {
+      display: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .frame,
+    .count span {
+      animation: none;
+    }
+    .shot,
+    .steps li,
+    .thumb {
+      transition: none;
+    }
+  }
+</style>

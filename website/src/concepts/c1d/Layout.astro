@@ -1,0 +1,391 @@
+---
+// Espresso round 3 (docs/rfc/website-redesign.md): 1d's shell, and 1e's. One page, two palettes: `theme` picks
+// Espresso's warm one or Liquid's (lilac, sky and peach mesh, white glass, ink text, a violet accent). Every colour
+// the c1d components use comes from the variables set here. Everything is prefixed `c1-`.
+import "@fontsource-variable/inter";
+import "@fontsource-variable/jetbrains-mono";
+import Switcher from "../Switcher.astro";
+
+interface Props {
+  current: string;
+  title: string;
+  theme: "espresso" | "liquid";
+}
+const { current, title, theme } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en" class="c1-html" data-tint="ink" data-theme={theme}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <meta name="color-scheme" content="dark light" />
+    <title>{`Concept ${current} · ${title} · Job Application Tracker`}</title>
+    <link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}favicon.svg`} />
+  </head>
+  <body class="c1-body">
+    <!-- The page tint: five fixed layers, one faded in per section (opacity only). -->
+    <div class="c1-tints" aria-hidden="true">
+      <i data-t="ink"></i>
+      <i data-t="paper"></i>
+      <i data-t="taupe"></i>
+      <i data-t="cream"></i>
+      <i data-t="espresso"></i>
+      {theme === "liquid" && (
+        <>
+          <b class="c1-blob a" />
+          <b class="c1-blob b" />
+          <b class="c1-blob c" />
+        </>
+      )}
+      <span class="c1-dither"></span>
+    </div>
+    <slot />
+    <Switcher current={current} />
+    <script>
+      // Which section has the middle of the screen sets the page tint (and so the glass chrome's tint).
+      const root = document.documentElement;
+      const sections = document.querySelectorAll<HTMLElement>("[data-c1-tint]");
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (e.isIntersecting) root.dataset.tint = (e.target as HTMLElement).dataset.c1Tint;
+          }
+        },
+        { rootMargin: "-50% 0px -50% 0px" },
+      );
+      sections.forEach((s) => io.observe(s));
+    </script>
+  </body>
+</html>
+
+<style is:global>
+  .c1-html {
+    --c1-ink: #0d0b09;
+    --c1-paper: #f6f3ee;
+    --c1-taupe: #c3b5a5;
+    --c1-cream: #eee3d1;
+    --c1-espresso: #2a1c14;
+    --c1-espresso-deep: #1d130d;
+    --c1-copper: #c47a48;
+    --c1-copper-hi: #e0a072;
+    --c1-grey: #8c8781;
+    /* Theme variables (Espresso); Liquid overrides them below. */
+    --c1-light: #f3ece2;
+    --c1-light-rgb: 243 236 226;
+    --c1-dark-rgb: 36 25 18;
+    --c1-copper-rgb: 196 122 72;
+    --c1-copper-hi-rgb: 224 160 114;
+    --c1-shadow-rgb: 60 30 10;
+    --c1-panel-a: #4a3324;
+    --c1-panel-b: #3a281d;
+    --c1-board-a: #3b281c;
+    --c1-today-a: #8a7564;
+    --c1-today-b: #4a382b;
+    --c1-latte-a: #ddcbb3;
+    --c1-latte-b: #c9b296;
+    --c1-term: #1e1510;
+    --c1-term-ok: #9fd3a6;
+    --c1-bar-a: #2c2622;
+    --c1-bar-b: #231e1a;
+    --c1-bar-light-a: #ece6de;
+    --c1-bar-light-b: #e1d9cf;
+    --c1-bar-light-ink: #5b4d42;
+    --c1-on-accent: #1b110b;
+    /* Card tones for the hero's drifting cards: interested, applied, screen, interviewing, offer. */
+    --c1-t0: #8c8781;
+    --c1-t1: #a98a72;
+    --c1-t2: #c98a5c;
+    --c1-t3: #e0a072;
+    --c1-t4: #86a27c;
+    --c1-ease: cubic-bezier(0.22, 0.61, 0.24, 1);
+    --c1-fg: #f3ece2;
+    --c1-fg-soft: rgb(243 236 226 / 0.62);
+    --c1-glass-tint: 255 255 255;
+    --c1-glass-a: 0.1;
+    --c1-glass-line: rgb(255 255 255 / 0.22);
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    background: var(--c1-ink);
+  }
+  .c1-html[data-theme="liquid"] {
+    --c1-ink: #1b1634;
+    --c1-paper: #f4f0ff;
+    --c1-taupe: #e3ecff;
+    --c1-cream: #fff0e8;
+    --c1-espresso: #2a2252;
+    --c1-espresso-deep: #1b1634;
+    --c1-copper: #6a54f2;
+    --c1-copper-hi: #9a8bff;
+    --c1-grey: #8b86a8;
+    --c1-fg: #f3f0ff;
+    --c1-fg-soft: rgb(243 240 255 / 0.66);
+    --c1-light: #f3f0ff;
+    --c1-light-rgb: 243 240 255;
+    --c1-dark-rgb: 33 28 59;
+    --c1-copper-rgb: 106 84 242;
+    --c1-copper-hi-rgb: 154 139 255;
+    --c1-shadow-rgb: 48 32 120;
+    --c1-panel-a: #4a3d96;
+    --c1-panel-b: #2e2660;
+    --c1-board-a: #3a2f78;
+    --c1-today-a: #9384ee;
+    --c1-today-b: #463a9e;
+    --c1-latte-a: #ece6ff;
+    --c1-latte-b: #d9e6ff;
+    --c1-term: #1d1838;
+    --c1-term-ok: #9fe0c4;
+    --c1-bar-a: #2b2648;
+    --c1-bar-b: #221d3c;
+    --c1-bar-light-a: #f1eeff;
+    --c1-bar-light-b: #e4defd;
+    --c1-bar-light-ink: #5d5780;
+    --c1-on-accent: #fff;
+    --c1-t0: #b3add6;
+    --c1-t1: #8fbcff;
+    --c1-t2: #a99bff;
+    --c1-t3: #ffb59a;
+    --c1-t4: #86d6bd;
+    background: var(--c1-ink);
+  }
+  .c1-html[data-tint="paper"],
+  .c1-html[data-tint="taupe"],
+  .c1-html[data-tint="cream"] {
+    --c1-fg: rgb(var(--c1-dark-rgb));
+    --c1-fg-soft: rgb(var(--c1-dark-rgb) / 0.62);
+    --c1-glass-a: 0.42;
+    --c1-glass-line: rgb(255 255 255 / 0.6);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .c1-html {
+      scroll-behavior: auto;
+    }
+  }
+  .c1-body {
+    margin: 0;
+    color: var(--c1-fg);
+    font-family: "Inter Variable", system-ui, sans-serif;
+    font-weight: 400;
+    font-size: 17px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: clip;
+    transition: color 0.6s var(--c1-ease);
+  }
+  .c1-body *,
+  .c1-body *::before,
+  .c1-body *::after {
+    box-sizing: border-box;
+  }
+  .c1-body img {
+    display: block;
+    max-width: 100%;
+  }
+  .c1-body a {
+    color: inherit;
+  }
+  .c1-tints {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+  }
+  .c1-tints i {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.9s var(--c1-ease);
+  }
+  .c1-tints [data-t="ink"] {
+    background: var(--c1-ink);
+    opacity: 1;
+  }
+  .c1-tints [data-t="paper"] {
+    background: var(--c1-paper);
+  }
+  .c1-tints [data-t="taupe"] {
+    background: var(--c1-taupe);
+  }
+  .c1-tints [data-t="cream"] {
+    background: var(--c1-cream);
+  }
+  .c1-tints [data-t="espresso"] {
+    background: var(--c1-espresso-deep);
+  }
+  .c1-html[data-theme="liquid"] .c1-tints [data-t="ink"],
+  .c1-html[data-theme="liquid"] .c1-tints [data-t="espresso"] {
+    background:
+      radial-gradient(55% 55% at 15% 20%, rgb(122 92 255 / 0.5), transparent 70%),
+      radial-gradient(55% 55% at 85% 85%, rgb(255 132 120 / 0.3), transparent 70%),
+      linear-gradient(160deg, #1d1838, #2b1f55 55%, #1a1530);
+  }
+  .c1-html[data-theme="liquid"] .c1-tints [data-t="paper"] {
+    background:
+      radial-gradient(60% 60% at 20% 15%, rgb(205 188 255 / 0.85), transparent 70%),
+      radial-gradient(50% 50% at 90% 80%, rgb(255 205 235 / 0.55), transparent 70%), #f4f0ff;
+  }
+  .c1-html[data-theme="liquid"] .c1-tints [data-t="taupe"] {
+    background:
+      radial-gradient(65% 60% at 85% 10%, rgb(160 214 255 / 0.9), transparent 70%),
+      radial-gradient(55% 55% at 10% 90%, rgb(190 240 236 / 0.65), transparent 70%), #eef3ff;
+  }
+  .c1-html[data-theme="liquid"] .c1-tints [data-t="cream"] {
+    background:
+      radial-gradient(60% 60% at 80% 85%, rgb(255 196 168 / 0.9), transparent 70%),
+      radial-gradient(55% 50% at 15% 20%, rgb(255 226 196 / 0.75), transparent 70%), #fff4ee;
+  }
+  /* Liquid's mesh: three soft blobs drifting over the tint. */
+  .c1-blob {
+    position: absolute;
+    width: 70vmax;
+    height: 70vmax;
+    border-radius: 50%;
+    opacity: 0.45;
+    mix-blend-mode: soft-light;
+    will-change: transform;
+    animation: c1-float 36s var(--c1-ease) infinite alternate;
+  }
+  .c1-blob.a {
+    left: -20vmax;
+    top: -24vmax;
+    background: radial-gradient(closest-side, #c3b0ff, transparent);
+  }
+  .c1-blob.b {
+    right: -24vmax;
+    top: 10vmax;
+    background: radial-gradient(closest-side, #9fd3ff, transparent);
+    animation-duration: 43s;
+    animation-delay: -12s;
+  }
+  .c1-blob.c {
+    left: 10vmax;
+    bottom: -36vmax;
+    background: radial-gradient(closest-side, #ffc0a2, transparent);
+    animation-duration: 39s;
+    animation-delay: -20s;
+  }
+  @keyframes c1-float {
+    50% {
+      transform: translate3d(9vmax, 6vmax, 0) scale(1.12);
+    }
+    100% {
+      transform: translate3d(-6vmax, 10vmax, 0) scale(0.94);
+    }
+  }
+  /* A fine noise over the tints, so their soft gradients don't band. */
+  .c1-dither {
+    position: absolute;
+    inset: 0;
+    opacity: 0.05;
+    background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 1'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 160px 160px;
+  }
+  .c1-html[data-tint="paper"] .c1-tints [data-t="paper"],
+  .c1-html[data-tint="taupe"] .c1-tints [data-t="taupe"],
+  .c1-html[data-tint="cream"] .c1-tints [data-t="cream"],
+  .c1-html[data-tint="espresso"] .c1-tints [data-t="espresso"] {
+    opacity: 1;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .c1-tints i,
+    .c1-body {
+      transition: none;
+    }
+    .c1-blob {
+      animation: none;
+    }
+  }
+
+  /* Shared pieces: the eyebrow, display type, glass chrome. */
+  .c1-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 22px;
+    font:
+      500 11.5px/1.2 "JetBrains Mono Variable",
+      ui-monospace,
+      monospace;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    opacity: 0.78;
+  }
+  .c1-eyebrow::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    background: var(--c1-copper);
+    flex: none;
+  }
+  .c1-display {
+    font-weight: 300;
+    font-size: clamp(38px, 5vw, 66px);
+    line-height: 1.04;
+    letter-spacing: -0.035em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .c1-h2 {
+    font-weight: 300;
+    font-size: clamp(32px, 3.6vw, 50px);
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .c1-soft {
+    color: var(--c1-fg-soft);
+  }
+  .c1-glass {
+    position: relative;
+    background:
+      linear-gradient(180deg, rgb(255 255 255 / 0.22), rgb(255 255 255 / 0) 55%),
+      rgb(var(--c1-glass-tint) / var(--c1-glass-a));
+    border: 1px solid var(--c1-glass-line);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.35),
+      0 10px 30px -12px rgb(0 0 0 / 0.35);
+    backdrop-filter: blur(22px) saturate(1.5);
+    -webkit-backdrop-filter: blur(22px) saturate(1.5);
+  }
+  .c1-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 22px;
+    border-radius: 999px;
+    font-size: 15px;
+    font-weight: 500;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: transform 0.4s var(--c1-ease);
+  }
+  .c1-pill:hover {
+    transform: translateY(-2px);
+  }
+  .c1-pill--copper {
+    color: var(--c1-on-accent);
+    background: linear-gradient(180deg, var(--c1-copper-hi), var(--c1-copper));
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.45),
+      0 12px 30px -10px rgb(var(--c1-copper-rgb) / 0.7);
+  }
+  .c1-pill .c1-arr {
+    transition: transform 0.4s var(--c1-ease);
+  }
+  .c1-pill:hover .c1-arr {
+    transform: translateX(3px);
+  }
+  .c1-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .c1-body :focus-visible {
+    outline: 2px solid var(--c1-copper);
+    outline-offset: 3px;
+  }
+</style>

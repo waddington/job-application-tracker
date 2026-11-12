@@ -1,0 +1,15 @@
+---
+// Espresso round 3, 1d (docs/rfc/website-redesign.md): 1c's hero (drifting stage-coloured cards) over 1b's page
+// (grain, light, the frosted glass board), with app-like board cards and a lighter middle. A mockup.
+import Page from "../../concepts/c1d/Page.astro";
+import HeroCards from "../../concepts/c1d/HeroCards.astro";
+import Light from "../../concepts/c1d/Light.astro";
+---
+
+<Page current="1d" title="Espresso" theme="espresso">
+  <Light slot="overlay" kind="grain" />
+  <HeroCards slot="hero" />
+  <Light slot="board" kind="board" />
+  <Light slot="panel" kind="panel" />
+  <Light slot="centre" kind="centre" />
+</Page>

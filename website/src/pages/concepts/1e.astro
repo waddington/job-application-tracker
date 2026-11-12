@@ -1,0 +1,15 @@
+---
+// Espresso round 3, 1e (docs/rfc/website-redesign.md): the same page as 1d in Liquid's colours (a lilac, sky and
+// peach mesh, white glass, ink text, a violet accent). Only the theme differs. A mockup.
+import Page from "../../concepts/c1d/Page.astro";
+import HeroCards from "../../concepts/c1d/HeroCards.astro";
+import Light from "../../concepts/c1d/Light.astro";
+---
+
+<Page current="1e" title="Espresso in Liquid's colours" theme="liquid">
+  <Light slot="overlay" kind="grain" />
+  <HeroCards slot="hero" />
+  <Light slot="board" kind="board" />
+  <Light slot="panel" kind="panel" />
+  <Light slot="centre" kind="centre" />
+</Page>
