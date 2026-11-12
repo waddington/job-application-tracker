@@ -1,0 +1,315 @@
+---
+// The pinned hero (Espresso's structure, Liquid's look): a glass browser with the app in use floats at an angle,
+// turns to face you as you scroll, then swings open like a door to show a second window behind it (the app dark
+// and in 简体中文). A short pin, with a progress line and the next section peeking in below.
+import { Image } from "astro:assets";
+import AppWindow from "../c2a/app/AppWindow.astro";
+import zh from "./shots/d-today-zh.png";
+---
+
+<section class="c2b-hero" id="c2b-top" data-tint-block="lilac" data-c2b-hero aria-labelledby="c2b-hero-h">
+  <div class="c2b-pin">
+    <div class="c2b-hero-copy" data-c2b-copy>
+      <p class="c2b-eyebrow">Private job application tracker</p>
+      <h1 class="c2b-display" id="c2b-hero-h">Your job search,<br />on your machine.</h1>
+      <p class="c2b-hero-sub">
+        Every application, recruiter, interview and offer in one place, and a clear list of who to chase today. No
+        account, no cloud, no AI, nobody watching.
+      </p>
+      <div class="c2b-hero-ctas">
+        <a class="c2b-glass c2b-btn c2b-btn--ink" href="#c2b-quickstart"><span>Get started, it's free</span></a>
+        <a class="c2b-glass c2b-btn" href="#c2b-private"><span>Why it's private</span></a>
+      </div>
+    </div>
+    <div class="c2b-cap c2b-glass" data-c2b-cap="1" aria-hidden="true">
+      <p class="c2b-eyebrow">The app, in use</p>
+      <p>The real thing on made-up data: tick a to-do, drag a card, apply to a role.</p>
+    </div>
+    <div class="c2b-cap c2b-glass" data-c2b-cap="2" aria-hidden="true">
+      <p class="c2b-eyebrow">Light or dark · English or 简体中文</p>
+      <p>The whole app in both languages, from buttons to dates.</p>
+    </div>
+
+    <div class="c2b-scene" aria-hidden="true">
+      <div class="c2b-back" data-c2b-back>
+        <div class="c2b-back-bar"><i></i><i></i><i></i><span>127.0.0.1 · <span lang="zh-CN">今日</span></span></div>
+        <Image src={zh} widths={[1440, 2880]} sizes="(max-width: 760px) 100vw, 1000px" alt="" loading="eager" />
+      </div>
+      <div class="c2b-front" data-c2b-front>
+        <AppWindow scheme="light" />
+      </div>
+    </div>
+    <div class="c2b-pinbar" aria-hidden="true"><i data-c2b-pinbar></i></div>
+    <p class="c2b-sr">The app's Today page, the board, a role and the insights Sankey, being used on made-up demo data.</p>
+  </div>
+</section>
+
+<script>
+  import { app } from "../c2a/app/engine";
+
+  type Pose = { x: number; y: number; z: number; rx: number; ry: number; rz: number; s: number; o: number };
+  const P = (x: number, y: number, z: number, rx: number, ry: number, rz: number, s: number, o = 1): Pose => ({
+    x,
+    y,
+    z,
+    rx,
+    ry,
+    rz,
+    s,
+    o,
+  });
+  const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+  const ease = (k: number) => k * k * (3 - 2 * k);
+  function at(keys: [number, Pose][], p: number): Pose {
+    if (p <= keys[0][0]) return keys[0][1];
+    for (let i = 1; i < keys.length; i++) {
+      const [p1, b] = keys[i];
+      const [p0, a] = keys[i - 1];
+      if (p <= p1) {
+        const k = ease((p - p0) / (p1 - p0));
+        const o = {} as Pose;
+        for (const n of Object.keys(a) as (keyof Pose)[]) o[n] = a[n] + (b[n] - a[n]) * k;
+        return o;
+      }
+    }
+    return keys[keys.length - 1][1];
+  }
+  const css = (q: Pose) =>
+    `translate3d(${q.x}vw, ${q.y}vh, ${q.z}px) rotateX(${q.rx}deg) rotateY(${q.ry}deg) rotateZ(${q.rz}deg) scale(${q.s})`;
+
+  const hero = document.querySelector<HTMLElement>("[data-c2b-hero]");
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (hero) {
+    const front = hero.querySelector<HTMLElement>("[data-c2b-front]")!;
+    const back = hero.querySelector<HTMLElement>("[data-c2b-back]")!;
+    const copy = hero.querySelector<HTMLElement>("[data-c2b-copy]")!;
+    const caps = [...hero.querySelectorAll<HTMLElement>("[data-c2b-cap]")];
+    const bar = hero.querySelector<HTMLElement>("[data-c2b-pinbar]")!;
+    const ctl = app(hero.querySelector<HTMLElement>("[data-aw]")!);
+    let wide = true;
+    const size = () => {
+      wide = innerWidth >= 760;
+      const w = wide ? Math.min(1000, innerWidth * 0.62) : innerWidth - 28;
+      ctl.size(Math.round(w), Math.round(wide ? (w * 900) / 1440 : Math.min(innerHeight * 0.4, 360)));
+      back.style.width = `${Math.round(w)}px`;
+    };
+    size();
+    addEventListener("resize", size);
+    const keys = () =>
+      wide
+        ? {
+            front: [
+              [0, P(20, 8, 0, 12, -28, -2, 0.82)],
+              [0.36, P(0, 3, 0, 2, 0, 0, 1)],
+              [0.55, P(0, 3, 0, 2, 0, 0, 1)],
+              [0.9, P(-32, 3, 140, 2, -78, 0, 1, 0)],
+            ] as [number, Pose][],
+            back: [
+              [0, P(30, 0, -380, 12, -28, -2, 0.78, 0.35)],
+              [0.55, P(10, -4, -420, 4, -10, 0, 0.9, 0.6)],
+              [0.9, P(0, 3, 0, 2, 0, 0, 1)],
+            ] as [number, Pose][],
+          }
+        : {
+            front: [
+              [0, P(0, 20, 0, 16, -16, -2, 0.92)],
+              [0.36, P(0, 6, 0, 4, 0, 0, 1)],
+              [0.55, P(0, 6, 0, 4, 0, 0, 1)],
+              [0.9, P(-44, 6, 120, 4, -80, 0, 1, 0)],
+            ] as [number, Pose][],
+            back: [
+              [0, P(6, 14, -300, 16, -16, -2, 0.85, 0.4)],
+              [0.55, P(4, 2, -360, 6, -8, 0, 0.92, 0.5)],
+              [0.9, P(0, 6, 0, 4, 0, 0, 1)],
+            ] as [number, Pose][],
+          };
+    if (reduce) {
+      front.style.transform = css(keys().front[0][1]);
+      back.style.opacity = "0";
+    } else {
+      ctl.auto(["today", "board", "role", "insights"]);
+      let on = true;
+      const frame = () => {
+        const r = hero.getBoundingClientRect();
+        const p = clamp(-r.top / (r.height - innerHeight));
+        const k = keys();
+        const f = at(k.front, p);
+        const b = at(k.back, p);
+        front.style.transform = css(f);
+        front.style.opacity = String(f.o);
+        back.style.transform = css(b);
+        back.style.opacity = String(b.o);
+        copy.style.opacity = String(1 - clamp(p / 0.25));
+        copy.style.transform = `translateY(${(-40 * clamp(p / 0.25)).toFixed(1)}px)`;
+        caps[0].style.opacity = String(clamp((p - 0.3) / 0.08) * (1 - clamp((p - 0.6) / 0.08)));
+        caps[1].style.opacity = String(clamp((p - 0.8) / 0.08));
+        bar.style.transform = `scaleX(${p.toFixed(4)})`;
+        if (on) requestAnimationFrame(frame);
+      };
+      new IntersectionObserver(([e]) => {
+        const was = on;
+        on = e.isIntersecting && !document.hidden;
+        ctl.active(on);
+        if (on && !was) requestAnimationFrame(frame);
+      }).observe(hero);
+      ctl.active(true);
+      requestAnimationFrame(frame);
+    }
+  }
+</script>
+
+<style is:global>
+  .c2b-hero {
+    position: relative;
+    z-index: 1;
+    height: 230vh;
+  }
+  .c2b-pin {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    height: 100svh;
+    overflow: hidden;
+  }
+  .c2b-hero-copy {
+    position: absolute;
+    left: max(4vw, 20px);
+    top: 50%;
+    z-index: 3;
+    max-width: 520px;
+    margin-top: -190px;
+  }
+  .c2b-hero-copy h1 {
+    margin: 22px 0;
+    font-size: clamp(42px, 4.8vw, 74px);
+  }
+  .c2b-hero-sub {
+    font-size: 18px;
+    font-weight: 350;
+    color: var(--c2b-ink-2);
+  }
+  .c2b-hero-ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 32px;
+  }
+  .c2b-cap {
+    position: absolute;
+    left: max(4vw, 20px);
+    bottom: 13vh;
+    z-index: 3;
+    max-width: 400px;
+    padding: 22px 24px;
+    border-radius: 26px 26px 26px 8px;
+    opacity: 0;
+  }
+  .c2b-cap > * {
+    position: relative;
+    z-index: 2;
+  }
+  .c2b-cap p:not(.c2b-eyebrow) {
+    margin-top: 12px;
+    font-size: 15px;
+    color: var(--c2b-ink-2);
+  }
+  .c2b-scene {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    perspective: 1800px;
+    transform-style: preserve-3d;
+  }
+  .c2b-front,
+  .c2b-back {
+    grid-area: 1 / 1;
+    transform-style: preserve-3d;
+    will-change: transform, opacity;
+  }
+  .c2b-front {
+    transform: translate3d(20vw, 8vh, 0) rotateX(12deg) rotateY(-28deg) rotateZ(-2deg) scale(0.82);
+  }
+  .c2b-back {
+    overflow: hidden;
+    border-radius: 18px;
+    background: #242424;
+    box-shadow:
+      0 0 0 9px rgb(40 30 70 / 0.8),
+      0 60px 120px -40px rgb(30 20 80 / 0.6);
+    transform: translate3d(30vw, 0, -380px) rotateX(12deg) rotateY(-28deg) scale(0.78);
+    opacity: 0.35;
+  }
+  .c2b-back-bar {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    height: 40px;
+    padding: 0 16px;
+    font: 450 12px/1 var(--c2b-mono);
+    color: #c9c9c9;
+    background: #1b1b1b;
+  }
+  .c2b-back-bar i {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #555;
+  }
+  .c2b-back-bar span {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .c2b-back img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .c2b-pinbar {
+    position: absolute;
+    left: 50%;
+    bottom: 84px;
+    z-index: 3;
+    width: 160px;
+    height: 3px;
+    margin-left: -80px;
+    border-radius: 2px;
+    background: rgb(33 28 59 / 0.12);
+    overflow: hidden;
+  }
+  .c2b-pinbar i {
+    display: block;
+    height: 100%;
+    background: var(--c2b-violet);
+    transform: scaleX(0);
+    transform-origin: 0 50%;
+  }
+  @media (max-width: 760px) {
+    .c2b-hero-copy {
+      top: 86px;
+      margin-top: 0;
+      right: 20px;
+    }
+    .c2b-hero-sub {
+      font-size: 16px;
+    }
+    .c2b-cap {
+      right: 20px;
+      bottom: 90px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .c2b-hero {
+      height: auto;
+      min-height: 100vh;
+    }
+    .c2b-pin {
+      position: relative;
+    }
+    .c2b-cap,
+    .c2b-pinbar,
+    .c2b-back {
+      display: none;
+    }
+  }
+</style>

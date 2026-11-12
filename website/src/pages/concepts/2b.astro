@@ -1,0 +1,337 @@
+---
+// Design concept 2b, "Liquid in Espresso's layout" (docs/rfc/website-redesign.md, round 2): Liquid's palette, mesh
+// and glass on Espresso's long scroll. A mockup, not the site.
+import { Image } from "astro:assets";
+import Layout from "../../concepts/c2b/Layout.astro";
+import Hero from "../../concepts/c2b/Hero.astro";
+import Story from "../../concepts/c2b/Story.astro";
+import After from "../../concepts/c2b/After.astro";
+import { MARQUEE, README_ZH } from "../../data";
+import board from "../../concepts/c2a/shots/l-board.png";
+import today from "../../concepts/c2a/shots/l-today.png";
+import insights from "../../concepts/c2a/shots/l-insights.png";
+
+const chips = MARQUEE.flat();
+---
+
+<Layout title="Concept 2b · Liquid in Espresso's layout" current="2b">
+  <main id="c2b-main">
+    <Hero />
+
+    <section class="c2b-statement" id="c2b-private" data-tint-block="sky" aria-labelledby="c2b-private-h">
+      <div class="c2b-wrap c2b-two">
+        <p class="c2b-eyebrow">Private by design</p>
+        <div>
+          <h2 class="c2b-lead" id="c2b-private-h">
+            No AI reads your notes. No cloud keeps your CVs. No account, no tracking, no ads. Your whole job search lives
+            in one folder on your own computer: a SQLite database, a readable export, your Markdown notes and your files.
+          </h2>
+          <dl class="c2b-stats">
+            <div><dt>0</dt><dd>accounts to create</dd></div>
+            <div><dt>0</dt><dd>trackers or ads</dd></div>
+            <div><dt>0</dt><dd>subscription fees</dd></div>
+            <div><dt>100%</dt><dd>of your data on your computer</dd></div>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+    <section class="c2b-cards" data-tint-block="peach" aria-label="The board and Today">
+      <article class="c2b-card c2b-card--board" data-c2b-card>
+        <div class="c2b-card-art">
+          <div class="c2b-card-shot" data-c2b-shot>
+            <Image src={board} widths={[1210, 2420]} sizes="(max-width: 760px) 90vw, 640px" alt="The board: applications by stage, with an interview round on a card" />
+          </div>
+        </div>
+        <div class="c2b-card-txt">
+          <h3>The board</h3>
+          <p>Every application, one drag away. See the round on each card, and who's gone quiet in red.</p>
+        </div>
+      </article>
+      <article class="c2b-card c2b-card--today" data-c2b-card>
+        <div class="c2b-card-art">
+          <div class="c2b-card-shot" data-c2b-shot>
+            <Image src={today} widths={[1210, 2420]} sizes="(max-width: 760px) 90vw, 640px" alt="The Today page: replies to read, offers to answer and what's coming up" />
+          </div>
+        </div>
+        <div class="c2b-card-txt">
+          <h3>Today</h3>
+          <p>Know exactly who to chase: your move, what's coming up, and who you're waiting on.</p>
+        </div>
+      </article>
+    </section>
+
+    <section class="c2b-panelwrap" data-tint-block="lilac" aria-labelledby="c2b-insights-h">
+      <div class="c2b-bigpanel">
+        <div class="c2b-ptxt">
+          <p class="c2b-eyebrow">Insights</p>
+          <h2 class="c2b-display" id="c2b-insights-h">See where it all leaks.</h2>
+          <p>Every role's path, from who brought it to an offer, or to ghosted, and what's still waiting.</p>
+        </div>
+        <div class="c2b-pimg" data-c2b-par>
+          <Image src={insights} widths={[1210, 2420]} sizes="(max-width: 760px) 100vw, 66vw" alt="A Sankey diagram of a whole job search, from where roles came from to where they are now (made-up demo data)" />
+        </div>
+      </div>
+    </section>
+
+    <section class="c2b-centre" data-tint-block="lilac">
+      <p class="c2b-display">One folder on your computer.<br /><span>Nothing leaves it.</span></p>
+    </section>
+
+    <Story />
+
+    <section class="c2b-rest" id="c2b-languages" data-tint-block="peach" aria-labelledby="c2b-lang-h">
+      <div class="c2b-wrap c2b-two">
+        <p class="c2b-eyebrow">English and <span lang="zh-CN">简体中文</span></p>
+        <div>
+          <h2 class="c2b-lead" id="c2b-lang-h">
+            The whole app in English and <span lang="zh-CN">简体中文</span>, from buttons to dates. It follows your
+            browser, and you can switch in the header. The README is <a href={README_ZH}>in <span lang="zh-CN">简体中文</span></a> too.
+          </h2>
+          <ul class="c2b-chiplist" aria-label="Also in the box">
+            {chips.map((c) => <li class="c2b-glass"><span>{c}</span></li>)}
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+  <After />
+</Layout>
+
+<script>
+  if (matchMedia("(hover: hover) and (prefers-reduced-motion: no-preference)").matches) {
+    for (const card of document.querySelectorAll<HTMLElement>("[data-c2b-card]")) {
+      const shot = card.querySelector<HTMLElement>("[data-c2b-shot]")!;
+      card.addEventListener("pointermove", (e) => {
+        const r = card.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width - 0.5;
+        const y = (e.clientY - r.top) / r.height - 0.5;
+        shot.style.transform = `rotateX(${(12 - y * 8).toFixed(2)}deg) rotateY(${(-16 + x * 12).toFixed(2)}deg) translateZ(24px)`;
+      });
+      card.addEventListener("pointerleave", () => (shot.style.transform = ""));
+    }
+  }
+  // The insights picture drifts up a little slower than the page (depth).
+  if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const par = document.querySelector<HTMLElement>("[data-c2b-par]");
+    if (par) {
+      const tick = () => {
+        const r = par.parentElement!.getBoundingClientRect();
+        if (r.bottom > 0 && r.top < innerHeight) {
+          const k = (r.top + r.height / 2 - innerHeight / 2) / innerHeight;
+          par.style.transform = `translateY(${(k * 60).toFixed(1)}px)`;
+        }
+      };
+      addEventListener("scroll", () => requestAnimationFrame(tick), { passive: true });
+      tick();
+    }
+  }
+</script>
+
+<style is:global>
+  .c2b-wrap {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 0 max(5vw, 20px);
+  }
+  .c2b-two {
+    display: grid;
+    grid-template-columns: 1fr 2.2fr;
+    gap: 40px;
+    align-items: start;
+  }
+  .c2b-statement,
+  .c2b-rest {
+    position: relative;
+    z-index: 1;
+    padding: clamp(110px, 16vh, 180px) 0;
+  }
+  .c2b-lead {
+    font-size: clamp(24px, 2.4vw, 34px);
+    font-weight: 300;
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+  }
+  .c2b-lead a {
+    text-decoration-color: var(--c2b-violet);
+    text-underline-offset: 4px;
+  }
+  .c2b-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 24px;
+    margin: 64px 0 0;
+  }
+  .c2b-stats div {
+    padding-top: 18px;
+    border-top: 1px solid rgb(33 28 59 / 0.14);
+  }
+  .c2b-stats dt {
+    font-size: clamp(36px, 4vw, 56px);
+    font-weight: 300;
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+  .c2b-stats dd {
+    margin: 10px 0 0;
+    font-size: 14px;
+    color: var(--c2b-ink-2);
+  }
+  .c2b-cards {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 0 8px 8px;
+  }
+  .c2b-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: min(78vh, 760px);
+    overflow: hidden;
+    border-radius: 36px;
+  }
+  .c2b-card--board {
+    background:
+      radial-gradient(80% 70% at 75% 25%, rgb(255 255 255 / 0.7), transparent 70%),
+      linear-gradient(160deg, #c9b8ff, #a9d8ff 80%);
+  }
+  .c2b-card--today {
+    background:
+      radial-gradient(80% 70% at 30% 20%, rgb(255 255 255 / 0.7), transparent 70%),
+      linear-gradient(170deg, #ffd3bd, #f7b6e6 85%);
+  }
+  .c2b-card-art {
+    position: absolute;
+    inset: 0;
+    perspective: 1400px;
+    display: grid;
+    place-items: center;
+  }
+  .c2b-card-shot {
+    width: 80%;
+    overflow: hidden;
+    border-radius: 14px;
+    box-shadow:
+      0 50px 90px -30px rgb(40 24 110 / 0.5),
+      0 0 0 7px rgb(255 255 255 / 0.55);
+    transform: rotateX(12deg) rotateY(-16deg) rotateZ(2deg) translateY(-8%);
+    transition: transform 0.8s var(--c2b-ease);
+  }
+  .c2b-card--today .c2b-card-shot {
+    transform: rotateX(12deg) rotateY(16deg) rotateZ(-2deg) translateY(-8%);
+  }
+  .c2b-card-shot img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1210 / 760;
+    object-fit: cover;
+    object-position: top left;
+  }
+  .c2b-card-txt {
+    position: relative;
+    padding: 36px 40px;
+    max-width: 30em;
+  }
+  .c2b-card-txt h3 {
+    margin: 0 0 8px;
+    font-size: 26px;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+  }
+  .c2b-card-txt p {
+    color: var(--c2b-ink-2);
+  }
+  .c2b-panelwrap {
+    position: relative;
+    z-index: 1;
+    padding: 0 8px 8px;
+  }
+  .c2b-bigpanel {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    min-height: min(84vh, 820px);
+    overflow: hidden;
+    border-radius: 36px;
+    color: #f4f0ff;
+    background:
+      radial-gradient(60% 80% at 100% 0%, rgb(255 150 130 / 0.35), transparent 60%),
+      radial-gradient(70% 90% at 0% 100%, rgb(120 90 255 / 0.5), transparent 60%),
+      #241c4a;
+  }
+  .c2b-ptxt {
+    padding: clamp(36px, 5vw, 64px);
+  }
+  .c2b-ptxt .c2b-eyebrow {
+    color: rgb(244 240 255 / 0.7);
+  }
+  .c2b-ptxt h2 {
+    margin: 18px 0 16px;
+    font-size: clamp(34px, 3.6vw, 54px);
+  }
+  .c2b-ptxt p:not(.c2b-eyebrow) {
+    color: rgb(244 240 255 / 0.72);
+  }
+  .c2b-pimg {
+    align-self: center;
+    margin-right: -6%;
+    overflow: hidden;
+    border-radius: 18px 0 0 18px;
+    box-shadow: 0 40px 90px -30px rgb(0 0 0 / 0.6);
+    will-change: transform;
+  }
+  .c2b-pimg img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .c2b-centre {
+    position: relative;
+    z-index: 1;
+    padding: clamp(120px, 20vh, 220px) 20px;
+    text-align: center;
+  }
+  .c2b-centre .c2b-display {
+    font-size: clamp(36px, 4.6vw, 66px);
+  }
+  .c2b-centre span {
+    color: var(--c2b-ink-3);
+  }
+  .c2b-chiplist {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 48px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .c2b-chiplist li {
+    padding: 9px 16px;
+    font-size: 14px;
+  }
+  .c2b-chiplist li span {
+    position: relative;
+    z-index: 2;
+  }
+  @media (max-width: 860px) {
+    .c2b-two,
+    .c2b-cards,
+    .c2b-bigpanel {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .c2b-stats {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .c2b-card {
+      min-height: 540px;
+    }
+    .c2b-pimg {
+      margin: 0 0 0 16px;
+    }
+  }
+</style>
