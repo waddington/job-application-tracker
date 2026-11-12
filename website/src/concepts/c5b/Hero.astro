@@ -1,0 +1,574 @@
+---
+// The hero: a tilted browser built in CSS 3D, showing the app being used (screenshots of made-up demo
+// data, with a few pieces rebuilt in HTML so they can really move), and UI chips orbiting it.
+import { Image } from "astro:assets";
+import chrome from "./shots/chrome.png";
+import todayFull from "./shots/today-full.png";
+import board from "./shots/board.png";
+import role from "./shots/role.png";
+import insights from "./shots/insights.png";
+
+const shotProps = { widths: [800, 1440], sizes: "(max-width: 600px) 400px, 800px" };
+const chips = [
+  { a: "20deg", y: "-250px", kind: "stage" },
+  { a: "110deg", y: "150px", kind: "todo" },
+  { a: "200deg", y: "-40px", kind: "round" },
+  { a: "290deg", y: "240px", kind: "star" },
+];
+---
+
+<section class="c5-block c5-hero" data-tint="lilac" aria-labelledby="c5-hero-h">
+  <div class="c5-blobs" aria-hidden="true">
+    <i></i>
+    <i></i>
+    <i></i>
+  </div>
+  <div class="c5-wrap c5-hero-grid">
+    <div class="c5-hero-copy">
+      <p class="c5-eyebrow">Free, open source, in daily use</p>
+      <h1 class="c5-display" id="c5-hero-h">
+        Track the hunt.
+        <br />
+        Keep it yours.
+      </h1>
+      <p class="c5-lede">
+        A job application tracker that runs on your own computer. Every application, recruiter, interview
+        round, follow-up and offer, and exactly who to chase today. No account, no subscription, nobody
+        watching.
+      </p>
+      <div class="c5-ctas">
+        <a class="c5-btn c5-btn-ink" href="#c5-start">
+          Get started, it's free
+        </a>
+        <a class="c5-btn c5-glass" href="#c5-play">
+          Try the pieces
+        </a>
+      </div>
+      <ul class="c5-promises" aria-label="Promises">
+        <li>No sign-up</li>
+        <li>No AI</li>
+        <li>No cloud</li>
+        <li>No tracking</li>
+        <li>Apache-2.0</li>
+      </ul>
+    </div>
+
+    <div class="c5-stage" data-c5-stage>
+      <div class="c5-rig" data-c5-rig>
+        <div class="c5-drift">
+          <div class="c5-peek c5-peek-a" aria-hidden="true">
+            <span class="c5-peek-label">To-dos</span>
+            <span class="c5-peek-row">
+              <i class="c5-peek-box on"></i>Send the v3 CV
+            </span>
+            <span class="c5-peek-row">
+              <i class="c5-peek-box"></i>Reply to Alex
+            </span>
+          </div>
+          <div class="c5-peek c5-peek-b" aria-hidden="true">
+            <span class="c5-peek-label">Stage</span>
+            <span class="c5-peek-badge">Interviewing</span>
+            <span class="c5-peek-bars">
+              <i class="on"></i>
+              <i class="on"></i>
+              <i class="on"></i>
+              <i></i>
+              <i></i>
+            </span>
+          </div>
+          <div class="c5-peek c5-peek-c" aria-hidden="true">
+            <span class="c5-peek-av">JL</span>
+            <span>
+              <b>Jordan Lee</b>
+              <small>Northwind Talent</small>
+            </span>
+            <span class="c5-peek-star">★</span>
+          </div>
+          <div class="c5-win">
+            <div class="c5-bar" aria-hidden="true">
+              <i></i>
+              <i></i>
+              <i></i>
+              <span>127.0.0.1:8770</span>
+            </div>
+            <div
+              class="c5-screen"
+              data-c5-screen
+              role="img"
+              aria-label="The app in use with made-up demo data: a to-do ticked on Today, a card dragged across the board, a role marked applied, and the Insights Sankey."
+            >
+              <div class="c5-app" data-c5-app aria-hidden="true">
+                <Image src={chrome} alt="" class="c5-chrome" {...shotProps} loading="eager" />
+                <div class="c5-hov" data-hov></div>
+                <div class="c5-hl" data-hl></div>
+                <div class="c5-view">
+                  <div class="c5-pg on" data-pg="today">
+                    <div class="c5-scroll" data-today-scroll>
+                      <Image src={todayFull} alt="" class="c5-shot" {...shotProps} loading="eager" />
+                      <div class="c5-ov c5-ov-box"></div>
+                      <div class="c5-ov c5-ov-tick" data-tick>
+                        <svg viewBox="0 0 20 20" fill="none" stroke="#fff" stroke-width="2.4">
+                          <path
+                            d="M5 10.5l3.2 3.2L15 7"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          ></path>
+                        </svg>
+                      </div>
+                      <div class="c5-ov c5-ov-strike" data-strike></div>
+                      <div class="c5-ov c5-ov-fade" data-rowfade></div>
+                    </div>
+                  </div>
+                  <div class="c5-pg" data-pg="board">
+                    <Image src={board} alt="" class="c5-shot" {...shotProps} />
+                    <div class="c5-ov c5-ov-mask" data-mask></div>
+                    <div class="c5-ov c5-ov-col" data-colgrow></div>
+                    <div class="c5-ov c5-ov-count" style="left:500px;top:188px" data-count-a>
+                      3
+                    </div>
+                    <div class="c5-ov c5-ov-count" style="left:763px;top:188px" data-count-b>
+                      1
+                    </div>
+                    <div class="c5-ov c5-ov-card" data-card>
+                      <b>Adventure Works</b>
+                      <small>Backend Engineer (Go)</small>
+                      <small>3 days ago</small>
+                    </div>
+                  </div>
+                  <div class="c5-pg" data-pg="role">
+                    <Image src={role} alt="" class="c5-shot" {...shotProps} />
+                    <div class="c5-ov c5-ov-badge a" data-badge-a>
+                      TO DECIDE
+                    </div>
+                    <div class="c5-ov c5-ov-badge b" data-badge-b>
+                      APPLIED
+                    </div>
+                  </div>
+                  <div class="c5-pg" data-pg="insights">
+                    <Image src={insights} alt="" class="c5-shot" {...shotProps} />
+                    <div class="c5-ov c5-ov-wipe" data-wipe></div>
+                  </div>
+                </div>
+                <div class="c5-ripple" data-ripple></div>
+                <div class="c5-cursor" data-cursor>
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      d="M4 2.5l15.5 9.2-6.9 1.5 3.9 7.2-2.8 1.5-3.9-7.2L4.6 19z"
+                      fill="#111"
+                      stroke="#fff"
+                      stroke-width="1.4"
+                      stroke-linejoin="round"
+                    ></path>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="c5-orbit-tilt" aria-hidden="true">
+            <div class="c5-orbit">
+              {chips.map((c) => (
+                <div class="c5-chip" style={`--a:${c.a};--y:${c.y}`}>
+                  <div class="c5-chip-face">
+                    {c.kind === "stage" && (
+                      <div class="c5-chip-in">
+                        <span class="c5-ico" style="background:var(--c5-mint)">
+                          ↗
+                        </span>
+                        <div>
+                          <small>Contoso</small>
+                          <span class="c5-pillbadge" style="background:#e5dbff;color:#5f3dc4">
+                            Interviewing
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                    {c.kind === "todo" && (
+                      <div class="c5-chip-in">
+                        <span class="c5-ico" style="background:var(--c5-ink);color:#fff">
+                          ✓
+                        </span>
+                        <div>
+                          <b>Ask who's on the platform team</b>
+                          <small>To-do · by 14 Nov</small>
+                        </div>
+                      </div>
+                    )}
+                    {c.kind === "round" && (
+                      <div class="c5-chip-in">
+                        <span class="c5-ico" style="background:var(--c5-butter)">
+                          3
+                        </span>
+                        <div>
+                          <b>Round 3 · System design</b>
+                          <small>Fri 14 Nov, 14:30</small>
+                        </div>
+                      </div>
+                    )}
+                    {c.kind === "star" && (
+                      <div class="c5-chip-in">
+                        <span class="c5-ico" style="background:var(--c5-pink)">
+                          ★
+                        </span>
+                        <div>
+                          <b>Jordan Lee</b>
+                          <small>Northwind Talent · replies in a day</small>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const stage = document.querySelector<HTMLElement>("[data-c5-stage]");
+  const rig = document.querySelector<HTMLElement>("[data-c5-rig]");
+  const screen = document.querySelector<HTMLElement>("[data-c5-screen]");
+  const app = document.querySelector<HTMLElement>("[data-c5-app]");
+
+  // Scale the 1440 x 900 app to whatever width the window has.
+  if (screen && app) {
+    const fit = () => app.style.setProperty("--k", String(screen.clientWidth / 1440));
+    fit();
+    new ResizeObserver(fit).observe(screen);
+  }
+
+  // ---- scroll-linked turn: every value eases towards its target, and a soft spring adds a little wobble
+  //      from scroll speed. Nothing jumps; it settles and stops when the page is still. ----
+  if (stage && rig && !reduce) {
+    let lastY = scrollY;
+    const cur = { ry: -30, rx: 14, rz: -6, s: 0.9, ty: 30 };
+    let wob = 0;
+    let vel = 0;
+    let running = false;
+    const tick = () => {
+      const rect = stage.getBoundingClientRect();
+      const p = Math.min(1.3, Math.max(0, -rect.top / Math.max(1, rect.height)));
+      const dy = scrollY - lastY;
+      lastY = scrollY;
+      // the wobble: a gently damped spring, kicked by how fast you scroll
+      vel += Math.max(-1.6, Math.min(1.6, dy * 0.025));
+      vel += -wob * 0.045;
+      vel *= 0.9;
+      wob += vel;
+      const target = { ry: -22 + p * 30, rx: 9 + p * 8, rz: -3 + p * 5, s: 1 - p * 0.06, ty: p * 70 };
+      let moving = Math.abs(vel) > 0.002 || Math.abs(wob) > 0.002;
+      for (const k of Object.keys(cur) as (keyof typeof cur)[]) {
+        const d = target[k] - cur[k];
+        cur[k] += d * 0.075;
+        if (Math.abs(d) > 0.002) moving = true;
+      }
+      rig.style.setProperty("--ry", `${cur.ry + wob * 0.5}deg`);
+      rig.style.setProperty("--rx", `${cur.rx - wob * 0.3}deg`);
+      rig.style.setProperty("--rz", `${cur.rz + wob * 0.7}deg`);
+      rig.style.setProperty("--s", String(cur.s + Math.abs(wob) * 0.002));
+      rig.style.setProperty("--ty", `${cur.ty}px`);
+      if (!moving) {
+        running = false;
+        return;
+      }
+      requestAnimationFrame(tick);
+    };
+    const kick = () => {
+      if (!running) {
+        running = true;
+        requestAnimationFrame(tick);
+      }
+    };
+    addEventListener("scroll", kick, { passive: true });
+    kick();
+  }
+
+  // ---- the app being used: a looping, pausable sequence of Web Animations ----
+  if (app && screen) {
+    const $ = (sel: string) => app.querySelector<HTMLElement>(sel)!;
+    const cursor = $("[data-cursor]");
+    const ripple = $("[data-ripple]");
+    const hl = $("[data-hl]");
+    const hov = $("[data-hov]");
+    const pages = Object.fromEntries(
+      [...app.querySelectorAll<HTMLElement>("[data-pg]")].map((el) => [el.dataset.pg!, el]),
+    );
+    const live = new Set<Animation>();
+    let paused = false;
+    let cx = 980;
+    let cy = 560;
+    const smooth = "cubic-bezier(.65,0,.35,1)";
+    const out = "cubic-bezier(.22,1,.36,1)";
+    const springy = "cubic-bezier(.34,1.45,.64,1)";
+
+    const run = async (el: Element, kf: Keyframe[], opts: KeyframeAnimationOptions) => {
+      const a = el.animate(kf, { fill: "forwards", easing: smooth, ...opts });
+      live.add(a);
+      if (paused) a.pause();
+      try {
+        await a.finished;
+        a.commitStyles();
+      } finally {
+        live.delete(a);
+        a.cancel();
+      }
+    };
+    const sleep = (ms: number) => run(ripple, [{}, {}], { duration: ms, fill: "none" });
+    // the cursor travels on a slight arc, as a hand does, easing in and out
+    const move = (x: number, y: number, ms = 850) => {
+      const dx = x - cx;
+      const dy = y - cy;
+      const len = Math.hypot(dx, dy) || 1;
+      const bend = Math.min(60, len * 0.12);
+      const mx = cx + dx / 2 + (-dy / len) * bend;
+      const my = cy + dy / 2 + (dx / len) * bend;
+      const kf = [
+        { transform: `translate(${cx}px, ${cy}px)` },
+        { transform: `translate(${mx}px, ${my}px)`, offset: 0.5 },
+        { transform: `translate(${x}px, ${y}px)` },
+      ];
+      cx = x;
+      cy = y;
+      return run(cursor, kf, { duration: ms, easing: smooth });
+    };
+    const click = async () => {
+      const at = `translate(${cx + 4}px, ${cy + 4}px)`;
+      run(
+        ripple,
+        [
+          { opacity: 0.9, transform: `${at} scale(.2)` },
+          { opacity: 0, transform: `${at} scale(1.5)` },
+        ],
+        { duration: 650, easing: out },
+      );
+      await run(
+        cursor,
+        [
+          { transform: `translate(${cx}px, ${cy}px) scale(1)` },
+          { transform: `translate(${cx}px, ${cy}px) scale(.84)`, offset: 0.35 },
+          { transform: `translate(${cx}px, ${cy}px) scale(1)` },
+        ],
+        { duration: 320, easing: "ease-out" },
+      );
+    };
+    const hover = (top: number) =>
+      run(
+        hov,
+        [
+          { opacity: 0, transform: `translateY(${top - 66}px)` },
+          { opacity: 1, transform: `translateY(${top - 66}px)` },
+        ],
+        { duration: 220, easing: "ease-out" },
+      );
+    const navTo = async (name: string, hlTop: number, from: string) => {
+      const prev = getComputedStyle(hl).transform;
+      run(hov, [{ opacity: 1 }, { opacity: 0 }], { duration: 300 });
+      await run(
+        hl,
+        [
+          { transform: prev === "none" ? "translateY(0)" : prev },
+          { transform: `translateY(${hlTop - 66}px)` },
+        ],
+        { duration: 420, easing: springy },
+      );
+      const next = pages[name];
+      const old = pages[from];
+      next.style.zIndex = "2";
+      old.style.zIndex = "1";
+      await Promise.all([
+        run(
+          next,
+          [
+            { opacity: 0, transform: "translateX(48px) scale(.985)" },
+            { opacity: 1, transform: "none" },
+          ],
+          { duration: 700, easing: out },
+        ),
+        run(
+          old,
+          [
+            { opacity: 1, transform: "none" },
+            { opacity: 0, transform: "translateX(-24px)" },
+          ],
+          { duration: 500, easing: smooth },
+        ),
+      ]);
+    };
+    const reset = () => {
+      for (const el of app.querySelectorAll<HTMLElement>("[style]")) {
+        if (el === app || el.matches(".c5-ov-count")) continue;
+        el.style.removeProperty("transform");
+        el.style.removeProperty("opacity");
+        el.style.removeProperty("z-index");
+        el.style.removeProperty("box-shadow");
+      }
+      for (const el of app.querySelectorAll<HTMLElement>(".c5-ov-count")) el.style.opacity = "0";
+      for (const [name, el] of Object.entries(pages)) el.style.opacity = name === "today" ? "1" : "0";
+    };
+
+    const lifted = "translate(0,-8px) rotate(2deg) scale(1.04)";
+    const shadowOn = "0 28px 44px -14px rgba(20,10,40,.35)";
+    const shadowOff = "0 0 0 rgba(20,10,40,0)";
+
+    const loop = async () => {
+      for (;;) {
+        reset();
+        cursor.style.transform = `translate(${cx}px, ${cy}px)`;
+        await sleep(600);
+        // Today: scroll down to the to-dos and tick one
+        await Promise.all([
+          run(
+            $("[data-today-scroll]"),
+            [{ transform: "translateY(0)" }, { transform: "translateY(-480px)" }],
+            {
+              duration: 2200,
+              easing: smooth,
+            },
+          ),
+          move(640, 470, 1500),
+        ]);
+        await move(286, 398, 900);
+        await click();
+        await Promise.all([
+          run(
+            $("[data-tick]"),
+            [
+              { opacity: 0, transform: "scale(.3)" },
+              { opacity: 1, transform: "scale(1)" },
+            ],
+            { duration: 420, easing: springy },
+          ),
+          run($("[data-strike]"), [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }], {
+            duration: 520,
+            delay: 140,
+            easing: out,
+          }),
+        ]);
+        await run($("[data-rowfade]"), [{ opacity: 0 }, { opacity: 0.55 }], { duration: 700, delay: 250 });
+        // to the board
+        await move(110, 201, 1000);
+        await hover(181);
+        await click();
+        await navTo("board", 181, "today");
+        // drag Adventure Works from Applied to Screen
+        const card = $("[data-card]");
+        await move(640, 320, 950);
+        await run(
+          card,
+          [
+            { transform: "none", boxShadow: shadowOff },
+            { transform: lifted, boxShadow: shadowOn },
+          ],
+          { duration: 360, easing: springy },
+        );
+        $("[data-mask]").style.opacity = "1";
+        await Promise.all([
+          move(902, 314, 1100),
+          run(
+            card,
+            [
+              { transform: lifted, boxShadow: shadowOn },
+              {
+                transform: "translate(131px,-14px) rotate(4deg) scale(1.05)",
+                boxShadow: shadowOn,
+                offset: 0.5,
+              },
+              { transform: "translate(262px,-8px) rotate(1.5deg) scale(1.04)", boxShadow: shadowOn },
+            ],
+            { duration: 1100, easing: smooth },
+          ),
+          run($("[data-colgrow]"), [{ transform: "scaleY(0)" }, { transform: "scaleY(1)" }], {
+            duration: 500,
+            delay: 650,
+            easing: out,
+          }),
+        ]);
+        await run(
+          card,
+          [
+            { transform: "translate(262px,-8px) rotate(1.5deg) scale(1.04)", boxShadow: shadowOn },
+            { transform: "translate(262px,0) rotate(0) scale(1)", boxShadow: shadowOff },
+          ],
+          { duration: 480, easing: springy },
+        );
+        $("[data-count-a]").style.opacity = "1";
+        $("[data-count-b]").style.opacity = "1";
+        await sleep(800);
+        // a role: mark it applied
+        await move(90, 161, 1000);
+        await hover(141);
+        await click();
+        await navTo("role", 141, "board");
+        await move(1090, 122, 1100);
+        await click();
+        await Promise.all([
+          run(
+            $("[data-badge-a]"),
+            [
+              { opacity: 1, transform: "perspective(200px) rotateX(0)" },
+              { opacity: 0, transform: "perspective(200px) rotateX(90deg)" },
+            ],
+            { duration: 220, easing: "ease-in" },
+          ),
+          run(
+            $("[data-badge-b]"),
+            [
+              { opacity: 0, transform: "perspective(200px) rotateX(-90deg)" },
+              { opacity: 1, transform: "perspective(200px) rotateX(0)" },
+            ],
+            { duration: 420, delay: 200, easing: springy },
+          ),
+        ]);
+        await sleep(900);
+        // insights: the Sankey draws itself
+        await move(90, 588, 1100);
+        await hover(568);
+        await click();
+        await navTo("insights", 568, "role");
+        await Promise.all([
+          run($("[data-wipe]"), [{ transform: "scaleX(1)" }, { transform: "scaleX(0)" }], {
+            duration: 1900,
+            easing: "cubic-bezier(.55,0,.25,1)",
+          }),
+          move(1010, 470, 1900),
+        ]);
+        await sleep(2000);
+        // back to Today
+        await move(80, 86, 1000);
+        await hover(66);
+        await click();
+        await navTo("today", 66, "insights");
+        await sleep(400);
+      }
+    };
+
+    const setPaused = (p: boolean) => {
+      paused = p;
+      for (const a of live) {
+        if (p) a.pause();
+        else a.play();
+      }
+    };
+
+    if (reduce) {
+      // a still frame: Today, with the to-do ticked
+      $("[data-tick]").style.cssText = "opacity:1;transform:none";
+      $("[data-strike]").style.transform = "scaleX(1)";
+      cursor.style.transform = "translate(300px, 880px)";
+    } else {
+      let started = false;
+      new IntersectionObserver(([e]) => {
+        if (e.isIntersecting && !started) {
+          started = true;
+          loop().catch(() => {});
+        }
+        setPaused(!e.isIntersecting || document.hidden);
+      }).observe(screen);
+      document.addEventListener("visibilitychange", () => setPaused(document.hidden));
+    }
+  }
+</script>
