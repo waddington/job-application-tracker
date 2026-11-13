@@ -5,7 +5,7 @@
 .design-switch {
   position: fixed;
   z-index: 10000;
-  left: 12px;
+  right: 12px;
   bottom: 12px;
   display: flex;
   align-items: center;
@@ -526,15 +526,16 @@ html[data-design="4"] .mantine-Card-root {
   border-color: transparent;
 }
 /* Big air in the top-level cards; cards inside cards (the board's) stay compact. */
-html[data-design="4"] .mantine-Card-root:not(.mantine-Card-root .mantine-Card-root) {
+html[data-design="4"]
+  .mantine-Card-root:not(:is(.mantine-Card-root, .mantine-Paper-root) .mantine-Card-root) {
   --card-padding: 26px !important;
 }
-html[data-design="4"] .mantine-Card-root .mantine-Card-root {
+html[data-design="4"] :is(.mantine-Card-root, .mantine-Paper-root) .mantine-Card-root {
   --card-padding: 14px !important;
   border-radius: 20px;
 }
 /* A card that holds cards (a board column) is a soft well of the page's tint, so its cards stand out. */
-html[data-design="4"] .mantine-Card-root:has(.mantine-Card-root) {
+html[data-design="4"] :is(.mantine-Card-root, .mantine-Paper-root):has(.mantine-Card-root) {
   background-color: color-mix(in srgb, var(--c-surface) 45%, transparent);
   box-shadow: none;
 }

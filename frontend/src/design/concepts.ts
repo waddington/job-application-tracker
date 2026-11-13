@@ -3,7 +3,7 @@
  * main.tsx loads this module only when import.meta.env.DEV is true, so a production build has none of it.
  *
  * ?design=N picks a concept (0 is today's look) and remembers it in localStorage; a small floating switch
- * at the bottom left changes it (hide it with ?switch=0, for screenshots). Each concept is a Mantine theme
+ * at the bottom right changes it (hide it with ?switch=0, for screenshots). Each concept is a Mantine theme
  * override plus CSS keyed on <html data-design="N">; the page's area (the first part of its path) goes on
  * <html data-area="…"> so a concept can tint each area its own way.
  */
