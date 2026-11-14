@@ -185,7 +185,7 @@ class SnapshotService:
 
     def _off_on_windows(self) -> bool:
         """Snapshots are off only because this is Windows (a git repo, JAT_WINDOWS_SNAPSHOTS unset)."""
-        return is_windows() and is_git_repo(self.data_dir)
+        return not snapshots_allowed() and is_windows() and is_git_repo(self.data_dir)
 
     @contextlib.contextmanager
     def fresh_export(self) -> Iterator[None]:

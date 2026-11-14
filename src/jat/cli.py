@@ -9,7 +9,7 @@ from pathlib import Path
 from .config import ConfigError, Settings, resolve_data_dir
 from .datadir import DataDirError, check_outside_code_repo, init_data_dir, is_git_repo
 from .db import MigrationError, current_revision, db_path, head_revision, make_engine, migrate
-from .platform import is_windows, snapshots_allowed
+from .platform import snapshots_allowed
 from .snapshot import ExportError, RestoreError, export_data_dir, restore_data_dir
 from .snapshot.export import META_FILE
 from .snapshot.git import SnapshotError
@@ -109,8 +109,6 @@ def cmd_serve(args) -> int:
     os.environ["JAT_DEV"] = "1" if args.dev else "0"
     os.environ["JAT_HOST"] = host  # the app only answers to this host (and loopback names)
     print(f"Job Application Tracker: http://{host}:{port}  (data: {path})")
-    if is_windows() and settings.windows_snapshots:
-        print("note: Windows snapshots are experimental, so use a test data folder")
     if args.dev:
         print("dev mode: API reloads on change; run `pnpm --dir frontend dev` for the UI on :5173")
     uvicorn.run(

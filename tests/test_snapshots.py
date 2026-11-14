@@ -12,9 +12,7 @@ from jat.db import db_path, make_engine, migrate
 from jat.platform import lock_path, snapshots_allowed
 from jat.snapshot.git import SnapshotError, SnapshotService, debounce_from_config
 
-# Snapshots are off on Windows until step 2 (`windows-snapshots`, docs/rfc/windows.md), so the tests of the
-# snapshot feature itself run on Linux and macOS only; the Windows behaviour has its own tests below.
-unix_only = pytest.mark.skipif(sys.platform == "win32", reason="snapshots are off on Windows until windows-snapshots")
+# Snapshots are on by default everywhere with windows-snapshots (docs/rfc/windows.md step 2).
 
 
 def git(repo, *args):
@@ -41,7 +39,6 @@ def commits(repo):
     return git(repo, "log", "--format=%s").splitlines()
 
 
-@unix_only
 def test_snapshot_commits_only_tracked_paths(data_repo):
     service = SnapshotService(data_repo, make_engine(db_path(data_repo)), debounce_seconds=0)
     sha = service.snapshot_now()
@@ -53,7 +50,6 @@ def test_snapshot_commits_only_tracked_paths(data_repo):
     assert service.status().last_commit == sha
 
 
-@unix_only
 def test_writes_trigger_debounced_snapshot(data_repo):
     app = create_app(data_repo, dist=data_repo / "none", snapshot_debounce=0.3)
     client = TestClient(base_url="http://127.0.0.1", app=app)
@@ -69,7 +65,6 @@ def test_writes_trigger_debounced_snapshot(data_repo):
     assert not app.state.snapshots.status().dirty
 
 
-@unix_only
 def test_shutdown_flushes_pending_snapshot(data_repo):
     app = create_app(data_repo, dist=data_repo / "none", snapshot_debounce=3600)
     with TestClient(base_url="http://127.0.0.1", app=app) as client:
@@ -78,7 +73,6 @@ def test_shutdown_flushes_pending_snapshot(data_repo):
     assert len(commits(data_repo)) == before + 1
 
 
-@unix_only
 def test_backup_api_and_push(data_repo, remote):
     app = create_app(data_repo, dist=data_repo / "none", snapshot_debounce=3600)
     client = TestClient(base_url="http://127.0.0.1", app=app)
@@ -90,7 +84,6 @@ def test_backup_api_and_push(data_repo, remote):
     assert "snapshot:" in git(remote, "log", "--format=%s", "main")
 
 
-@unix_only
 def test_push_without_remote_is_a_clear_error(data_repo):
     service = SnapshotService(data_repo, make_engine(db_path(data_repo)), debounce_seconds=0)
     with pytest.raises(SnapshotError, match="no remote"):
@@ -108,7 +101,6 @@ def test_disabled_when_not_a_git_repo(tmp_path):
     assert client.post("/api/v1/backup/snapshot").status_code == 409
 
 
-@unix_only
 def test_cli_snapshot_and_push(data_repo, remote, capsys):
     assert main(["--data-dir", str(data_repo), "snapshot"]) == 0
     assert main(["--data-dir", str(data_repo), "push"]) == 0
@@ -119,7 +111,6 @@ def service_for(repo):
     return SnapshotService(repo, make_engine(db_path(repo)), debounce_seconds=0)
 
 
-@unix_only
 def test_folder_git_doesnt_know_about_doesnt_break_snapshots(data_repo):
     # files/ exists but holds only an untracked ignored file and no .gitkeep in git
     git(data_repo, "rm", "-q", "--cached", "files/.gitkeep")
@@ -129,7 +120,6 @@ def test_folder_git_doesnt_know_about_doesnt_break_snapshots(data_repo):
     assert service_for(data_repo).snapshot_now()
 
 
-@unix_only
 def test_users_other_staged_changes_stay_staged(data_repo):
     (data_repo / "README.md").write_text("changed\n")
     git(data_repo, "add", "README.md")
@@ -138,7 +128,6 @@ def test_users_other_staged_changes_stay_staged(data_repo):
     assert "README.md" not in git(data_repo, "show", "--name-only", "--format=", "HEAD")
 
 
-@unix_only
 def test_refuses_detached_head(data_repo):
     service_for(data_repo).snapshot_now()
     git(data_repo, "checkout", "-q", "--detach")
@@ -146,7 +135,6 @@ def test_refuses_detached_head(data_repo):
         service_for(data_repo).snapshot_now()
 
 
-@unix_only
 def test_close_stops_scheduling(data_repo):
     service = SnapshotService(data_repo, make_engine(db_path(data_repo)), debounce_seconds=0.05)
     service.close()
@@ -186,34 +174,30 @@ def windows(monkeypatch):
     """Fake Windows: what the code reads at call time, and no fcntl (as there)."""
     monkeypatch.setattr("jat.platform.IS_WINDOWS", True)
     monkeypatch.setattr("jat.platform.fcntl", None)
-    monkeypatch.setenv("JAT_WINDOWS_SNAPSHOTS", "0")  # wins over a developer's .env
+    if sys.platform != "win32":
+
+        class FakeMsvcrt:
+            LK_NBLCK, LK_UNLCK = 1, 2
+
+            @staticmethod
+            def locking(fd, mode, nbytes):
+                pass
+
+        monkeypatch.setattr("jat.platform.msvcrt", FakeMsvcrt)
 
 
-def test_snapshots_allowed_everywhere_but_windows(monkeypatch):
+def test_snapshots_allowed_everywhere(monkeypatch):
     monkeypatch.setattr("jat.platform.IS_WINDOWS", False)
-    assert snapshots_allowed(False) and snapshots_allowed(True)
+    assert snapshots_allowed() and snapshots_allowed(False) and snapshots_allowed(True)
     monkeypatch.setattr("jat.platform.IS_WINDOWS", True)
-    assert not snapshots_allowed(False)
-    assert snapshots_allowed(True)
+    assert snapshots_allowed() and snapshots_allowed(False) and snapshots_allowed(True)
 
 
-def test_windows_snapshots_are_off_in_a_git_repo(data_repo, windows):
-    before = commits(data_repo)
+def test_windows_snapshots_run_by_default(data_repo, windows):
     service = SnapshotService(data_repo, make_engine(db_path(data_repo)), debounce_seconds=0)
-    assert service.enabled is False
-    with pytest.raises(SnapshotError, match="off on Windows") as snap:
-        service.snapshot_now()
-    with pytest.raises(SnapshotError, match="off on Windows") as push:
-        service.push()
-    assert snap.value.code == push.value.code == "backup_snapshots_off_windows"
-    assert commits(data_repo) == before
-
-
-def test_windows_snapshots_run_with_the_switch_and_no_lock(data_repo, windows):
-    service = SnapshotService(data_repo, make_engine(db_path(data_repo)), debounce_seconds=0, windows_snapshots=True)
     assert service.enabled is True
     assert service.snapshot_now()
-    assert not lock_path(data_repo).exists()  # no fcntl: the lock was a no-op, never opened
+    assert lock_path(data_repo).exists()
 
 
 def test_errors_inside_the_lock_pass_through(data_repo):
@@ -233,28 +217,74 @@ def test_failing_to_take_the_lock_is_backup_lock_failed(data_repo, monkeypatch):
             raise OSError("stuck")
 
     monkeypatch.setattr("jat.platform.fcntl", StuckLock)
-    service = SnapshotService(data_repo, make_engine(db_path(data_repo)), debounce_seconds=0, windows_snapshots=True)
+    service = SnapshotService(data_repo, make_engine(db_path(data_repo)), debounce_seconds=0)
     with pytest.raises(SnapshotError, match="couldn't lock") as exc:
         service.snapshot_now()
     assert exc.value.code == "backup_lock_failed"
 
 
-def test_windows_init_commits_the_layout_only_with_the_switch(tmp_path, git_env, windows):
-    off, on = tmp_path / "off", tmp_path / "on"
-    for repo in (off, on):
-        subprocess.run(["git", "init", "-q", "-b", "main", str(repo)], check=True)
-    assert init_data_dir(off).committed is False
-    assert init_data_dir(on, windows_snapshots=True).committed is True
+def test_windows_init_commits_the_layout(tmp_path, git_env, windows):
+    repo = tmp_path / "repo"
+    subprocess.run(["git", "init", "-q", "-b", "main", str(repo)], check=True)
+    assert init_data_dir(repo).committed is True
 
 
-def test_windows_cli_says_snapshots_are_off(data_repo, windows, capsys):
-    assert main(["--data-dir", str(data_repo), "init"]) == 0
-    assert "git: snapshots are off on Windows" in capsys.readouterr().out
-    assert main(["--data-dir", str(data_repo), "snapshot"]) == 2
-    assert "off on Windows" in capsys.readouterr().err
+def test_windows_cli_runs_snapshot(tmp_path, git_env, windows, capsys):
+    repo = tmp_path / "repo"
+    subprocess.run(["git", "init", "-q", "-b", "main", str(repo)], check=True)
+    assert main(["--data-dir", str(repo), "init"]) == 0
+    assert "git: committed the layout" in capsys.readouterr().out
+    assert main(["--data-dir", str(repo), "snapshot"]) == 0
 
 
-def test_health_on_windows_says_snapshots_are_off(data_repo, windows):
+def test_health_on_windows_says_snapshots_are_on(data_repo, windows):
     client = TestClient(base_url="http://127.0.0.1", app=create_app(data_repo, snapshot_debounce=0))
     body = client.get("/api/v1/health").json()
-    assert (body["git_repo"], body["snapshots_enabled"], body["windows"]) == (True, False, True)
+    assert (body["git_repo"], body["snapshots_enabled"], body["windows"]) == (True, True, True)
+
+
+def test_windows_lock_does_not_empty_lock_file(data_repo, windows):
+    lock = lock_path(data_repo)
+    lock.write_bytes(b"existing-content")
+    service = SnapshotService(data_repo, make_engine(db_path(data_repo)), debounce_seconds=0)
+    service.snapshot_now()
+    assert lock.read_bytes() == b"existing-content"
+
+
+def test_windows_lock_failure_is_backup_lock_failed(data_repo, monkeypatch):
+    class FailingMsvcrt:
+        LK_NBLCK, LK_UNLCK = 1, 2
+
+        @staticmethod
+        def locking(fd, mode, nbytes):
+            raise OSError(22, "Invalid argument")
+
+    monkeypatch.setattr("jat.platform.fcntl", None)
+    monkeypatch.setattr("jat.platform.msvcrt", FailingMsvcrt)
+    service = SnapshotService(data_repo, make_engine(db_path(data_repo)), debounce_seconds=0)
+    with pytest.raises(SnapshotError, match="couldn't lock") as exc:
+        service.snapshot_now()
+    assert exc.value.code == "backup_lock_failed"
+
+
+def test_windows_lock_retries_until_release(data_repo, monkeypatch):
+    calls = []
+
+    class RetryingMsvcrt:
+        LK_NBLCK, LK_UNLCK = 1, 2
+
+        @staticmethod
+        def locking(fd, mode, nbytes):
+            if mode == RetryingMsvcrt.LK_NBLCK:
+                calls.append("lock")
+                if len(calls) < 3:
+                    raise OSError(13, "Permission denied")
+            elif mode == RetryingMsvcrt.LK_UNLCK:
+                calls.append("unlock")
+
+    monkeypatch.setattr("jat.platform.fcntl", None)
+    monkeypatch.setattr("jat.platform.msvcrt", RetryingMsvcrt)
+    service = SnapshotService(data_repo, make_engine(db_path(data_repo)), debounce_seconds=0)
+    service.snapshot_now()
+    assert calls.count("lock") == 3
+    assert "unlock" in calls
