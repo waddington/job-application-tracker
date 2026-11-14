@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 import threading
 
-from fastapi import APIRouter, Request, Response
+from fastapi import APIRouter, HTTPException, Request, Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -155,6 +155,11 @@ def create_note(body: S.NoteIn, request: Request, session: SessionDep):
         note = store.create(body.title, body.body, links)
     except NoteError as exc:
         raise CodedError(422, str(exc), exc.code, exc.params) from exc
+    except OSError as exc:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Couldn't save note: file is open in another program (editor, antivirus or OneDrive). {exc}",
+        ) from exc
     _index(request, store, note)
     session.commit()  # end this read so the timeline write below sees the index write (SQLite snapshot)
     _log(session, note, links)
@@ -186,6 +191,11 @@ def update_note(note_id: str, body: S.NotePatch, request: Request, session: Sess
         store.save(note)
     except NoteError as exc:
         raise CodedError(422, str(exc), exc.code, exc.params) from exc
+    except OSError as exc:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Couldn't save note: file is open in another program (editor, antivirus or OneDrive). {exc}",
+        ) from exc
     _index(request, store, note)
     session.commit()  # end this read so the timeline write below sees the index write (SQLite snapshot)
     _log(session, note, [link for link in note.links if link not in before])
@@ -195,6 +205,12 @@ def update_note(note_id: str, body: S.NotePatch, request: Request, session: Sess
 @router.delete("/{note_id}", status_code=204)
 def delete_note(note_id: str, request: Request, session: SessionDep):
     store, note = _load(request, session, note_id)
-    store.delete(note.path)
+    try:
+        store.delete(note.path)
+    except OSError as exc:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Couldn't delete note: file is open in another program (editor, antivirus or OneDrive). {exc}",
+        ) from exc
     _index(request, store, None, remove=note.id)
     return Response(status_code=204)

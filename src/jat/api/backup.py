@@ -12,6 +12,7 @@ from pydantic import BaseModel
 from starlette.background import BackgroundTask
 
 from ..snapshot.archive import write_archive
+from ..snapshot.export import ExportError
 from ..snapshot.git import SnapshotError, SnapshotService
 from .errors import CodedError
 
@@ -97,6 +98,12 @@ def download_archive(request: Request):
     dest = staging / f"archive-{uuid.uuid4().hex}.zip"
     try:
         info = write_archive(service, dest)
+    except (ExportError, OSError) as exc:
+        dest.unlink(missing_ok=True)
+        raise HTTPException(
+            status_code=409,
+            detail=f"Couldn't export data: file is open in another program (editor, antivirus or OneDrive). {exc}",
+        ) from exc
     except Exception:
         dest.unlink(missing_ok=True)
         raise

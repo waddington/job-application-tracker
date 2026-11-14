@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, BinaryIO
 
 from ..db.types import new_id, utcnow
+from ..platform import replace_with_retry, unlink_with_retry
 
 if TYPE_CHECKING:
     from ..api.errors import ErrorCode, ErrorParams
@@ -95,11 +96,11 @@ class FileStore:
                         raise TooLarge(f"files can be up to {limit} MB", "file_too_large", {"count": limit})
                     digest.update(chunk)
                     out.write(chunk)
-            os.replace(tmp, dest)
+            replace_with_retry(Path(tmp), dest)
         except BaseException:
             Path(tmp).unlink(missing_ok=True)
             raise
         return Stored(id=file_id, path=rel, size=size, sha256=digest.hexdigest())
 
     def delete(self, rel_path: str) -> None:
-        self.resolve(rel_path).unlink(missing_ok=True)
+        unlink_with_retry(self.resolve(rel_path), missing_ok=True)
