@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from fastapi import APIRouter, FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.responses import FileResponse, HTMLResponse, Response
@@ -21,8 +21,7 @@ from .api.errors import CodedError, coded_error_handler
 from .api.routers import router as api_v1
 from .config import Settings, resolve_data_dir
 from .datadir import CODE_ROOT, check_outside_code_repo, ensure_gitattributes, is_git_repo
-from .db import current_revision, db_path, head_revision, make_engine, session_factory
-from .platform import is_windows
+from .db import db_path, make_engine, session_factory
 from .security import LocalOnly
 from .snapshot.git import SnapshotService
 from .storage.files import MAX_BYTES
@@ -46,28 +45,6 @@ or run <code>pnpm --dir frontend dev</code> for development.</p></body></html>""
 class AppState:
     data_dir: Path
     git_repo: bool
-
-
-def _api_router() -> APIRouter:
-    api = APIRouter(prefix="/api/v1")
-
-    @api.get("/health", tags=["meta"])
-    def health(request: Request) -> dict:
-        state: AppState = request.app.state.jat
-        engine = request.app.state.engine
-        snapshots: SnapshotService = request.app.state.snapshots
-        return {
-            "status": "ok",
-            "version": __version__,
-            "schema": current_revision(engine),
-            "schema_head": head_revision(),
-            "data_dir": str(state.data_dir),
-            "git_repo": state.git_repo,
-            "snapshots_enabled": snapshots.enabled,
-            "windows": is_windows(),
-        }
-
-    return api
 
 
 def _api_docs(app: FastAPI) -> None:
@@ -214,7 +191,6 @@ def create_app(
         extra_origins=DEV_ORIGINS if dev else (),
         max_upload_bytes=MAX_BYTES,
     )
-    app.include_router(_api_router())
     app.include_router(api_v1)
     _api_docs(app)
     _mount_frontend(app, dist)

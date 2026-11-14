@@ -1172,3 +1172,7 @@ router.include_router(roles_router)
 from .todos import router as todos_router  # noqa: E402
 
 router.include_router(todos_router)
+
+from .health import router as health_router  # noqa: E402
+
+router.include_router(health_router)

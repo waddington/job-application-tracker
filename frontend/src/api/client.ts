@@ -20,6 +20,7 @@ export type Agency = Schemas["AgencyOut"];
 export type Contact = Schemas["ContactOut"];
 export type Role = Schemas["RoleOut"];
 export type ApiEvent = Schemas["EventOut"];
+export type Health = Schemas["HealthOut"];
 export type ErrorCode = NonNullable<Schemas["ErrorOut"]["code"]>;
 
 /** Turn an openapi-fetch error body into a readable message. */

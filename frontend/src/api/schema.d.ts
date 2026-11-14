@@ -726,6 +726,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Health */
+        get: operations["health_api_v1_health_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/insights/activity": {
         parameters: {
             query?: never;
@@ -2972,6 +2989,28 @@ export interface components {
              */
             key: "event.followedUp";
             params: components["schemas"]["NoParams"];
+        };
+        /** HealthOut */
+        HealthOut: {
+            /** Data Dir */
+            data_dir: string;
+            /** Git Repo */
+            git_repo: boolean;
+            /** Schema */
+            schema?: string | null;
+            /** Schema Head */
+            schema_head: string;
+            /** Snapshots Enabled */
+            snapshots_enabled: boolean;
+            /**
+             * Status
+             * @default ok
+             */
+            status: string;
+            /** Version */
+            version: string;
+            /** Windows */
+            windows: boolean;
         };
         /** HeardBackMsg */
         HeardBackMsg: {
@@ -7012,6 +7051,35 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["VersionOut"];
+                };
+            };
+            /** @description An error, with a code when people can see it */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    health_api_v1_health_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HealthOut"];
                 };
             };
             /** @description An error, with a code when people can see it */
