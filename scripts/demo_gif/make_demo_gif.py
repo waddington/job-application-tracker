@@ -32,7 +32,7 @@ WIDTH = 1000  # the GIF's width; scenes are 1280x720
 
 
 def scene_count() -> int:
-    html = (HERE / "scene.html").read_text()
+    html = (HERE / "scene.html").read_text(encoding="utf-8")
     body = html[html.index("const SCENES = [") : html.index("];", html.index("const SCENES = ["))]
     return len(re.findall(r"^\s*\{ (?:intro|title)", body, re.M))
 
@@ -67,6 +67,7 @@ def render(url: str, png: Path, profile: str) -> None:
         ],
         capture_output=True,
         text=True,
+        encoding="utf-8",
     )
     if result.returncode != 0 or not png.exists():
         sys.exit(f"Chrome couldn't render {url}:\n{result.stderr}")
@@ -101,7 +102,7 @@ def main() -> int:
             args += ["-delay", str(delay), str(png)]
         args += ["-resize", f"{WIDTH}x", "-colors", "192", "-layers", "Optimize", str(out)]
         subprocess.run(args, check=True)
-    count = subprocess.run([*identify, str(out)], capture_output=True, text=True).stdout.count("\n")
+    count = subprocess.run([*identify, str(out)], capture_output=True, text=True, encoding="utf-8").stdout.count("\n")
     print(f"{out}: {count} frames, {out.stat().st_size // 1024} KB")
     return 0
 

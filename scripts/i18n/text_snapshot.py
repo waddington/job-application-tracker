@@ -401,9 +401,9 @@ with sync_playwright() as p:
     for measure in ["Heard back", "Offer"]:
         step(
             f"insights+documents-{measure.lower().replace(' ', '-')}",
-            lambda measure=measure: page.get_by_label("Measure")
-            .locator("label", has_text=measure)
-            .first.click(timeout=3000),
+            lambda measure=measure: (
+                page.get_by_label("Measure").locator("label", has_text=measure).first.click(timeout=3000)
+            ),
         )
     step("insights+documents-letters", lambda: page.get_by_text("Cover letters", exact=True).click(timeout=3000))
 
@@ -432,7 +432,7 @@ with sync_playwright() as p:
     step("documents+not-cv", lambda: page.get_by_role("button", name="Not a CV").first.click(timeout=3000))
     browser.close()
 
-with open(OUT, "w") as f:
+with open(OUT, "w", encoding="utf-8") as f:
     json.dump(snap, f, indent=1, ensure_ascii=False)
 print(f"{len(snap)} views -> {OUT}")
 # A step that couldn't open compares nothing: say so, so "0 differ" isn't taken on trust.
