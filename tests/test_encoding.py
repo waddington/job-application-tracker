@@ -49,19 +49,29 @@ def text_io_without_encoding(source: str) -> list[int]:
             bad = not has_encoding and len(call.args) < 2  # write_text(data, encoding, ...)
         elif name in ("open", "fdopen"):
             # open(file, mode) and io.open/os.fdopen(fd, mode) take the mode second; Path.open(mode) first.
-            method = isinstance(func, ast.Attribute) and not (
-                isinstance(func.value, ast.Name) and func.value.id in ("io", "os")
+            # codecs.open(filename, mode, encoding) takes encoding third (index 2).
+            is_codecs = (
+                isinstance(func, ast.Attribute) and isinstance(func.value, ast.Name) and func.value.id == "codecs"
             )
-            mode_at, encoding_at = (0, 2) if method else (1, 3)
+            method = isinstance(func, ast.Attribute) and not (
+                isinstance(func.value, ast.Name) and func.value.id in ("io", "os", "codecs")
+            )
+            mode_at = 0 if method else 1
+            encoding_at = 2 if (method or is_codecs) else 3
             positional = call.args[mode_at] if len(call.args) > mode_at else None
             mode = _const(_keyword(call, "mode") or positional)
             binary = isinstance(mode, str) and "b" in mode
             bad = not binary and not has_encoding and len(call.args) <= encoding_at
         elif name in TEMPFILES:
-            mode = _const(_keyword(call, "mode") or (call.args[0] if call.args else None))
+            mode_at = 1 if name == "SpooledTemporaryFile" else 0
+            positional = call.args[mode_at] if len(call.args) > mode_at else None
+            mode = _const(_keyword(call, "mode") or positional)
             bad = isinstance(mode, str) and "b" not in mode and not has_encoding
         elif name in SUBPROCESS_TEXT:
-            decodes = any(_const(_keyword(call, k)) is True for k in ("text", "universal_newlines"))
+            decodes = (
+                any(_const(_keyword(call, k)) is True for k in ("text", "universal_newlines"))
+                or _keyword(call, "errors") is not None
+            )
             bad = decodes and not has_encoding
         else:
             bad = False
@@ -95,8 +105,12 @@ def test_source_code_text_io_names_encoding():
         "io.open(path)",
         "os.fdopen(fd, 'w')",
         "tempfile.NamedTemporaryFile(mode='w')",
+        "tempfile.SpooledTemporaryFile(1024, 'w')",
         "subprocess.run(['git', 'log'], text=True)",
+        "subprocess.run(['git'], errors='replace')",
         "subprocess.check_output(['git'], universal_newlines=True)",
+        "codecs.open('test.txt', 'r')",
+        "codecs.open('test.txt')",
     ],
 )
 def test_the_check_catches_text_io_without_an_encoding(line):
@@ -115,8 +129,14 @@ def test_the_check_catches_text_io_without_an_encoding(line):
         "Path('a').open('rb')",
         "os.fdopen(fd, 'wb')",
         "tempfile.NamedTemporaryFile()",
+        "tempfile.SpooledTemporaryFile(1024)",
+        "tempfile.SpooledTemporaryFile(1024, 'wb')",
         "subprocess.run(['git'], capture_output=True)",
         "subprocess.run(['git'], text=True, encoding='utf-8')",
+        "subprocess.run(['git'], errors='replace', encoding='utf-8')",
+        "codecs.open('test.txt', 'r', 'utf-8')",
+        "codecs.open('test.txt', encoding='utf-8')",
+        "codecs.open('test.txt', 'rb')",
     ],
 )
 def test_the_check_leaves_bytes_and_named_encodings_alone(line):
