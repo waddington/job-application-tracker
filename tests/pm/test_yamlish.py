@@ -81,7 +81,7 @@ list_same_indent:
             parse("a: 1\na: 2\n")
 
     def test_repo_roadmap_parses(self):
-        data = parse((ROOT / "docs" / "ROADMAP.yaml").read_text())
+        data = parse((ROOT / "docs" / "ROADMAP.yaml").read_text(encoding="utf-8"))
         self.assertEqual(data["project"], "job-application-tracker")
         self.assertTrue(data["phases"])
 

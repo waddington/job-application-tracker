@@ -184,7 +184,7 @@ def swimlanes(found: list[Lane], now: datetime) -> str:
         left = _at(lane.start, start, end)
         width = max(_at(lane.end, start, end) - left, 0.5)
         kind = {"MERGED": "done", "OPEN": "building"}.get(pr.state, "planned")
-        hover = f"#{pr.number} {pr.title}: {lane.start:%-d %b %H:%M} to {lane.end:%-d %b %H:%M}"
+        hover = f"#{pr.number} {pr.title}: {lane.start.day} {lane.start:%b %H:%M} to {lane.end.day} {lane.end:%b %H:%M}"
         rows.append(
             f'<div class="tl-row"><span class="tl-name" title="{escape(pr.title)}">'
             f"#{pr.number} {escape(pr.title)}</span>"

@@ -71,7 +71,7 @@ def fact(label: str, value: str) -> str:
 
 def when(raw: str) -> str:
     moment = parse_time(raw)
-    return f"{moment:%-d %b %Y, %H:%M}" if moment else "—"
+    return f"{moment.day} {moment:%b %Y, %H:%M}" if moment else "—"
 
 
 def links(ids: list[str], roadmap: Roadmap) -> str:
