@@ -26,7 +26,12 @@ def test_archive_download_restores_to_the_same_data(app, client, tmp_path):
     (data_dir / "files" / "2026" / "cv.pdf").write_bytes(b"%PDF-1.4 fake")
     secret = tmp_path / "outside.txt"
     secret.write_text("not part of the data directory")
-    (data_dir / "files" / "link.txt").symlink_to(secret)
+    has_symlink = False
+    try:
+        (data_dir / "files" / "link.txt").symlink_to(secret)
+        has_symlink = True
+    except OSError:
+        pass  # Windows without Developer Mode: skip symlink
     (data_dir / ".tmp").mkdir(exist_ok=True)
     (data_dir / ".tmp" / "upload.part").write_bytes(b"half an upload")
 
@@ -40,7 +45,9 @@ def test_archive_download_restores_to_the_same_data(app, client, tmp_path):
     assert f"{root}/notes/call.md" in names and f"{root}/files/2026/cv.pdf" in names
     assert f"{root}/export/companies.jsonl" in names and f"{root}/export/_meta.json" in names
     # No database, no temp files, no git, nothing reached through a symlink.
-    assert not [n for n in names if "sqlite" in n or "/.tmp/" in n or "/.git/" in n or n.endswith("link.txt")]
+    assert not [
+        n for n in names if "sqlite" in n or "/.tmp/" in n or "/.git/" in n or (has_symlink and n.endswith("link.txt"))
+    ]
     # The staging copy is cleaned up once sent.
     assert not list((data_dir / ".tmp").glob("archive-*.zip"))
 
