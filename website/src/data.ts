@@ -160,7 +160,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Does it run on Windows?",
-    a: "Not yet: it runs on Mac and Linux. Windows support is next on the roadmap.",
+    a: "Yes. It runs on Windows, Mac and Linux. On Windows, use Download a backup in the sidebar to keep a complete backup of your data.",
   },
   {
     q: "Does it work on my phone?",

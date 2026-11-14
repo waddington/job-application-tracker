@@ -2,10 +2,20 @@
 
 ## Windows
 
-Windows isn't supported yet: the tracker runs on Linux and macOS. Support is being built in
-steps. The tracker now starts on Windows, with git snapshots turned off there (the sidebar's
-connection tooltip says "snapshots off on Windows"), but other parts still need work, so don't
-use it for your real data on Windows yet.
+Windows is supported. The tracker runs on Windows, with git snapshots turned off by default for now
+(the sidebar status indicates snapshots are off on Windows). The **Download a backup** link in the
+sidebar provides complete single-file backups without git.
+
+To verify a Windows installation or test run, follow the [Windows run checklist](install.md#checking-a-windows-run).
+
+### Keep your data folder out of OneDrive
+
+OneDrive and other cloud-sync tools lock files while uploading changes. Because SQLite and the
+tracker write and rename database files, journal files and notes frequently, a data folder inside
+OneDrive (for example `C:\Users\<user>\OneDrive\...`) can encounter file locking errors.
+
+Always keep your data folder in a standard local path outside OneDrive, such as
+`C:\Users\<user>\job-search-data`.
 
 ## `uv sync` asks for a C compiler, or "Microsoft Visual C++ 14.0 or greater is required"
 

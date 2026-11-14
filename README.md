@@ -17,7 +17,7 @@ optional automatic git backups.
 ![Account: none](https://img.shields.io/badge/account-none-brightgreen)
 ![Telemetry: none](https://img.shields.io/badge/telemetry-none-brightgreen)
 ![AI: none](https://img.shields.io/badge/AI-none-brightgreen)
-![Linux and macOS](https://img.shields.io/badge/runs%20on-Linux%20%7C%20macOS-555)
+![Linux, macOS and Windows](https://img.shields.io/badge/runs%20on-Linux%20%7C%20macOS%20%7C%20Windows-555)
 
 🔒 Runs on localhost · 🗂️ SQLite + plain-text JSONL and Markdown · 🔁 Automatic git snapshots · 📦 Apache-2.0
 
@@ -205,7 +205,7 @@ the [releases](https://github.com/waddington/job-application-tracker/releases) a
 | 💾 | **Backups built in**: automatic git snapshots of your private data folder, readable JSON Lines export, a one-click zip of everything (or `jat archive`), one-command restore |
 
 The full plan is in the [product requirements](docs/prd/tracker.md) and the
-[roadmap](docs/ROADMAP.yaml): next up are Windows support, a one-command install and Docker.
+[roadmap](docs/ROADMAP.yaml): next up are a one-command install and Docker.
 
 ## 🌐 Languages
 
@@ -241,7 +241,7 @@ a language, see [adding a language](docs/guide/adding-a-language.md).
 > your data lives and how the app finds it, backups and restoring, using it on a second
 > computer, customising stages, every command, and troubleshooting.
 
-It runs on **Linux or macOS** (Windows isn't supported yet). You need Python 3.12 to 3.14 with
+It runs on **Windows, Linux or macOS**. You need Python 3.12 to 3.14 with
 [uv](https://docs.astral.sh/uv/), and Node.js 22.12+ with [pnpm](https://pnpm.io/) to build
 the web UI. With those installed, setup takes about ten minutes.
 
@@ -254,14 +254,25 @@ pnpm --dir frontend install && pnpm --dir frontend build
 
 **Try it with demo data** (made-up companies and people):
 
+On Linux and macOS:
+
 ```bash
 uv run python scripts/seed_demo.py /tmp/jat-demo    # needs a new or empty folder
 uv run jat --data-dir /tmp/jat-demo serve          # → http://127.0.0.1:8770
 ```
 
+On Windows (PowerShell):
+
+```powershell
+uv run python scripts/seed_demo.py "$env:TEMP\jat-demo"
+uv run jat --data-dir "$env:TEMP\jat-demo" serve
+```
+
 **Use it for real.** Your data lives in its own folder, outside the code. Make it a private
 git repo and the app commits a readable snapshot after each burst of changes, so you have
 full history and backups for free.
+
+On Linux and macOS:
 
 ```bash
 mkdir -p ~/job-search-data && git -C ~/job-search-data init
@@ -270,6 +281,18 @@ cp .env.example .env        # then set JAT_DATA_DIR=~/job-search-data (or pass -
 uv run jat init
 uv run jat serve            # → http://127.0.0.1:8770 (keeps running)
 ```
+
+On Windows (PowerShell):
+
+```powershell
+git init "$HOME\job-search-data"
+git -C "$HOME\job-search-data" remote add origin <your-private-repo-url>   # optional, for jat push
+Copy-Item .env.example .env # then set JAT_DATA_DIR in .env
+uv run jat init
+uv run jat serve            # → http://127.0.0.1:8770 (keeps running)
+```
+
+On Windows, keep the data folder outside OneDrive (e.g. `C:\Users\<you>\job-search-data`) to prevent file locking issues during synchronization.
 
 Later, from another terminal, `uv run jat push` sends the snapshots to your private remote
 (never forced). Run `jat` from the repo root, where it reads `.env`. There's no settings
@@ -288,8 +311,9 @@ separate from the code. Nothing is uploaded anywhere.
 
 **Does it use AI?** No. Nothing in it calls an AI service or sends your data anywhere.
 
-**Does it run on Windows?** Not yet: it runs on Linux and macOS. Windows support, a
-one-command install and Docker are on the [roadmap](docs/ROADMAP.yaml).
+**Does it run on Windows?** Yes: it runs on Windows, Linux and macOS. On Windows, use
+Download a backup in the sidebar (or `jat archive`) to back up your data; git snapshots are
+currently for Linux and macOS.
 
 **Does it scrape LinkedIn or job boards?** No. By design, it tracks the applications you
 make and doesn't search for jobs.
