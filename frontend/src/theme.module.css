@@ -9,6 +9,16 @@
   font-weight: 700;
 }
 
+/* A page's title: the website's big, light display type (its size in theme.ts, smaller on a phone). */
+.pageTitle {
+  font-weight: 300;
+  letter-spacing: -0.035em;
+  overflow-wrap: anywhere;
+}
+:lang(zh) .pageTitle {
+  letter-spacing: 0;
+}
+
 /* Soft cards: no outline in light mode (the shadow lifts them), a faint one in dark. */
 .card {
   border-color: transparent;

@@ -43,6 +43,7 @@ import {
   type DocumentVersion,
 } from "../api/documentHooks";
 import { humanSize } from "../components/Attachments";
+import { Page, READING_WIDTH } from "../components/Page";
 import { stageName } from "../utils/stageName";
 import { formatDate } from "../utils/time";
 
@@ -272,9 +273,13 @@ function DocumentCard({ doc }: { doc: DocumentItem }) {
             </Tooltip>
           </Group>
         </Group>
-        {doc.versions.map((v) => (
-          <VersionRow key={v.id} version={v} />
-        ))}
+        {doc.versions.length > 0 && (
+          <Stack gap="sm" maw={READING_WIDTH}>
+            {doc.versions.map((v) => (
+              <VersionRow key={v.id} version={v} />
+            ))}
+          </Stack>
+        )}
         {!doc.versions.length && (
           <Text size="sm" c="dimmed">
             {t("card.noVersions")}
@@ -301,7 +306,7 @@ export function DocumentsPage() {
   const { data: documents, isLoading } = useDocuments();
   const [creating, setCreating] = useState(false);
   return (
-    <Stack maw={900}>
+    <Page>
       <Group justify="space-between">
         <Group gap="sm">
           <IconFileText size={26} stroke={1.6} />
@@ -324,6 +329,6 @@ export function DocumentsPage() {
         </Card>
       )}
       {creating && <NewDocumentModal onClose={() => setCreating(false)} />}
-    </Stack>
+    </Page>
   );
 }

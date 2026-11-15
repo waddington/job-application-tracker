@@ -19,6 +19,7 @@ import { Trans, useTranslation } from "react-i18next";
 
 import { useAdoptCvFile, useCvFiles, useDocuments, type CvFile } from "../api/documentHooks";
 import { humanSize } from "./Attachments";
+import { READING_WIDTH } from "./Page";
 
 const NOT_A_CV = "jat.notACv";
 
@@ -264,10 +265,10 @@ export function CvFilesCard() {
         <IconFileCv size={18} />
         <Title order={4}>{t("cvFiles.title")}</Title>
       </Group>
-      <Text size="sm" c="dimmed" mb="md">
+      <Text size="sm" c="dimmed" mb="md" maw={READING_WIDTH}>
         {t("cvFiles.intro")}
       </Text>
-      <Stack gap="sm">
+      <Stack gap="sm" maw={READING_WIDTH}>
         {shown.map((f) => (
           <CvFileRow key={f.sha256} file={f} onDismiss={() => dismiss(f.sha256)} />
         ))}

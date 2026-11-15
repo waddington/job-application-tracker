@@ -340,9 +340,12 @@ test.describe("Timeline: lanes", () => {
     await rowsBy(page, "Person");
     const dot = page.getByRole("list", { name: "Hollow Person" }).getByRole("button");
     await expect(dot).toHaveAttribute("aria-label", /Call: Call with Hollow Person: Hollow call/);
+    // Hollow: filled with the colour of the card the lanes sit on (the page behind it is tinted).
     const fill = await dot.evaluate((el) => getComputedStyle(el).backgroundColor);
-    const page_ = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
-    expect(fill).toBe(page_);
+    const card = await dot.evaluate(
+      (el) => getComputedStyle(el.closest(".mantine-Card-root")!).backgroundColor,
+    );
+    expect(fill).toBe(card);
   });
 
   test("with only what isn't linked, it says so", async ({ page, request }) => {

@@ -1,0 +1,46 @@
+/*
+ * The frame (docs/rfc/app-redesign.md §2, Frame): one background on every page, behind the header and the side
+ * menu too. Its tint drifts through five colours over ten minutes (drift.ts sets --jat-drift-light and
+ * --jat-drift-dark from the clock); before it starts, and under reduced motion, it's still: lilac, or plum night.
+ * The body's background fills the window (the canvas takes it).
+ */
+:global(body),
+.header,
+.navbar {
+  background: var(--jat-drift-light, #f4f1fb);
+}
+:global(:root[data-mantine-color-scheme="dark"] body),
+:where([data-mantine-color-scheme="dark"]) .header,
+:where([data-mantine-color-scheme="dark"]) .navbar {
+  background: var(--jat-drift-dark, #17121f);
+}
+
+.header,
+.navbar {
+  border-color: transparent;
+}
+
+/* The app's name in the header: a little weight, a little tighter. */
+.brand {
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+/* The menu: pills, the page you're on lifted onto a card's surface. */
+.navLink {
+  border-radius: 999px;
+  margin-bottom: 2px;
+}
+.navLink[data-active] {
+  background-color: var(--jat-surface);
+  color: var(--mantine-color-text);
+  font-weight: 600;
+  box-shadow: 0 8px 22px -12px rgb(var(--jat-shadow) / 0.35);
+}
+.navLink[data-active]:hover {
+  background-color: var(--jat-surface);
+}
+/* Groups sit apart by space alone, no rule between them. */
+.group {
+  margin-top: 9px;
+}

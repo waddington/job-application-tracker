@@ -1,12 +1,13 @@
-import { Badge, Card, Group, Stack, Text, Title } from "@mantine/core";
+import { Badge, Card, Group, Text, Title } from "@mantine/core";
 import { Trans, useTranslation } from "react-i18next";
 
+import { Page } from "../components/Page";
 import type { NavItem } from "../nav";
 
 export function Placeholder({ item }: { item: NavItem }) {
   const { t } = useTranslation();
   return (
-    <Stack maw={720}>
+    <Page>
       <Group gap="sm">
         <item.icon size={26} stroke={1.6} />
         <Title order={2}>{item.label}</Title>
@@ -24,6 +25,6 @@ export function Placeholder({ item }: { item: NavItem }) {
           </Text>
         </Group>
       </Card>
-    </Stack>
+    </Page>
   );
 }

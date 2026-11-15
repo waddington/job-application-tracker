@@ -7,6 +7,7 @@ import { useFlow, useStats, type FlowFilters } from "../api/insightHooks";
 import { ConversationsSection } from "../components/Conversations";
 import { DocumentPerformanceSection } from "../components/DocumentPerformance";
 import { RouteTable, StageTable, WeeklyActivity } from "../components/InsightStats";
+import { Page } from "../components/Page";
 import { RejectionsSection } from "../components/RejectionFeedbackList";
 import { RejectionRoundsCard } from "../components/RejectionRounds";
 import { ReschedulingCard } from "../components/Rescheduling";
@@ -46,7 +47,7 @@ export function InsightsPage() {
   const { data: stats, isError: statsError } = useStats(range.since);
 
   return (
-    <Stack maw={1200}>
+    <Page>
       <Group justify="space-between" wrap="wrap">
         <Group gap="sm">
           <IconChartSankey size={26} stroke={1.6} />
@@ -141,6 +142,6 @@ export function InsightsPage() {
         </Tabs.Panel>
       </Tabs>
       <WeeklyActivity />
-    </Stack>
+    </Page>
   );
 }

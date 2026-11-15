@@ -7,6 +7,7 @@ import {
   mergeMantineTheme,
   Select,
   Table,
+  Title,
 } from "@mantine/core";
 import { DateInput, DatesProvider, DateTimePicker } from "@mantine/dates";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
@@ -16,6 +17,7 @@ import { fileURLToPath } from "node:url";
 import type { ReactNode } from "react";
 import { expect, test } from "vitest";
 import dayjs from "dayjs";
+import { DRIFT_TINTS } from "./drift";
 import { cssVariablesResolver, PASTELS, theme, themeFor, typedDate } from "./theme";
 import classes from "./theme.module.css";
 import { dayjsLocale } from "./utils/format";
@@ -141,6 +143,50 @@ test("coloured text reads at 4.5:1 on white and on its own pastel", () => {
     expect(contrast(text, "#ffffff"), colour).toBeGreaterThanOrEqual(4.5);
     expect(contrast(text, token(`p-${colour}`)), colour).toBeGreaterThanOrEqual(4.5);
   }
+});
+
+// The text on the page's drift tints is checked across the whole cycle (docs/rfc/app-redesign.md §8).
+const tints = (scheme: "light" | "dark") => DRIFT_TINTS[scheme];
+/** A colour at some opacity over a background, as a hex. */
+const over = (hex: string, alpha: number, bg: string) =>
+  "#" +
+  [1, 3, 5]
+    .map((i) => {
+      const [a, b] = [parseInt(hex.slice(i, i + 2), 16), parseInt(bg.slice(i, i + 2), 16)];
+      return Math.round(a * alpha + b * (1 - alpha))
+        .toString(16)
+        .padStart(2, "0");
+    })
+    .join("");
+
+test("text, dimmed text and coloured text read at 4.5:1 on every tint of the drift", () => {
+  const { light } = cssVariablesResolver(full);
+  for (const tint of tints("light")) {
+    expect(contrast(token("ink"), tint), tint).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(over(token("ink"), 0.7, tint), tint), tint).toBeGreaterThanOrEqual(4.5);
+    for (const colour of ["orange", "red", "yellow", "green", "teal", "blue"]) {
+      expect(
+        contrast(light[`--mantine-color-${colour}-text`]!, tint),
+        `${colour} on ${tint}`,
+      ).toBeGreaterThanOrEqual(4.5);
+    }
+  }
+  for (const tint of tints("dark")) {
+    expect(contrast("#ece8f6", tint), tint).toBeGreaterThanOrEqual(4.5);
+    // Dark mode's dimmed text is Mantine's dark-2 (theme.ts, plumDark).
+    expect(contrast(full.colors.dark[2], tint), tint).toBeGreaterThanOrEqual(4.5);
+  }
+});
+
+test("a page's title (an h2) is the display title; other headings aren't", () => {
+  render(
+    <MantineProvider theme={theme}>
+      <Title order={2}>Today</Title>
+      <Title order={3}>Your move</Title>
+    </MantineProvider>,
+  );
+  expect(screen.getByRole("heading", { name: "Today" })).toHaveClass(String(classes.pageTitle));
+  expect(screen.getByRole("heading", { name: "Your move" })).not.toHaveClass(String(classes.pageTitle));
 });
 
 test("Mantine's light and outline colours are the pastels and their inks", () => {

@@ -21,6 +21,7 @@ import type { TFunction } from "i18next";
 import { Fragment, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { Page } from "../components/Page";
 import { movedRoundText, moveLine } from "../components/eventText";
 import { PersonName } from "../components/GhostMark";
 import { timelineDetail, timelineTitle } from "../components/timelineTitle";
@@ -525,7 +526,7 @@ export function TimelinePage() {
   const items = data?.items ?? [];
 
   return (
-    <Stack>
+    <Page>
       <Group justify="space-between" align="flex-end">
         <div>
           <Title order={2}>{t("title")}</Title>
@@ -630,6 +631,6 @@ export function TimelinePage() {
       ) : (
         <LanesView items={items} now={data!.now} since={since} />
       )}
-    </Stack>
+    </Page>
   );
 }

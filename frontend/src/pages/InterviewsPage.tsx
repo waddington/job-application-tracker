@@ -1,15 +1,4 @@
-import {
-  Anchor,
-  Badge,
-  Card,
-  Group,
-  Loader,
-  SegmentedControl,
-  Stack,
-  Table,
-  Text,
-  Title,
-} from "@mantine/core";
+import { Anchor, Badge, Card, Group, Loader, SegmentedControl, Table, Text, Title } from "@mantine/core";
 import { useLocalStorage } from "@mantine/hooks";
 import { IconCalendarEvent } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
@@ -19,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import { useInterviews, type Interview } from "../api/interviewHooks";
 import { InterviewCalendar } from "../components/InterviewCalendar";
 import { roundStatus } from "../components/Interviews";
+import { Page } from "../components/Page";
 import { RescheduledBadge, wasText } from "../components/Reschedule";
 import { RecruiterLine } from "../components/RecruiterLine";
 import { RoundActions } from "../components/RoundActions";
@@ -140,7 +130,7 @@ export function InterviewsPage() {
   const unbooked = toBook(all);
 
   return (
-    <Stack maw={1100}>
+    <Page>
       <Group justify="space-between">
         <Group gap="sm">
           <IconCalendarEvent size={26} stroke={1.6} />
@@ -194,6 +184,6 @@ export function InterviewsPage() {
           </Card>
         </>
       )}
-    </Stack>
+    </Page>
   );
 }

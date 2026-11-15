@@ -24,6 +24,7 @@ import { Trans, useTranslation } from "react-i18next";
 
 import { InterviewOutcome } from "../components/OutcomeNotes";
 import { CallRescheduleButton, CallRescheduleDialog } from "../components/CallReschedule";
+import { Page } from "../components/Page";
 import {
   NeedsNewTimeBadge,
   RescheduleButton,
@@ -688,7 +689,7 @@ export function TodayPage() {
   ].filter(Boolean);
 
   return (
-    <Stack maw={1600}>
+    <Page>
       <Group justify="space-between" align="flex-end">
         <div>
           <Title order={2}>{t("title")}</Title>
@@ -1042,6 +1043,6 @@ export function TodayPage() {
       {rescheduling && (
         <RescheduleDialog target={rescheduling} data={data} onClose={() => setRescheduling(null)} />
       )}
-    </Stack>
+    </Page>
   );
 }

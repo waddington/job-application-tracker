@@ -23,6 +23,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { PersonMarks } from "../components/GhostMark";
+import { Page } from "../components/Page";
 import { RecruiterLine } from "../components/RecruiterLine";
 import type { ApplicationRow } from "../api/client";
 import {
@@ -123,7 +124,7 @@ export function ApplicationsPage() {
   const filtered = !!(debouncedQ || stage.length || route || agencyId || staleOnly || archived);
 
   return (
-    <Stack>
+    <Page>
       <Group justify="space-between">
         <Group gap="sm">
           <IconBriefcase size={26} stroke={1.6} />
@@ -331,6 +332,6 @@ export function ApplicationsPage() {
         }}
       />
       <ApplicationDrawer id={openId} onClose={() => setOpenId(null)} />
-    </Stack>
+    </Page>
   );
 }

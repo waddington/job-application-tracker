@@ -17,6 +17,7 @@ import { Link, useParams, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { Page } from "../components/Page";
 import { RecruiterLine } from "../components/RecruiterLine";
 import { ReplyHabit } from "../components/ReplyHabit";
 import { stageLookup, useWorkflow } from "../api/hooks";
@@ -66,7 +67,7 @@ export function PersonPage() {
   ) : null;
 
   return (
-    <Stack maw={1200}>
+    <Page>
       <Anchor component={Link} to="/recruiters" size="sm">
         <Group gap={4}>
           <IconArrowLeft size={14} /> {t("person.allPeople")}
@@ -223,6 +224,6 @@ export function PersonPage() {
         </Grid.Col>
       </Grid>
       <ContactFormModal opened={editing} onClose={() => setEditing(false)} contact={contact} />
-    </Stack>
+    </Page>
   );
 }
