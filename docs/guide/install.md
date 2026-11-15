@@ -49,19 +49,30 @@ It's well worth turning on [automatic history, and backups if you want them](you
 at some point. Everything else is in the [guide](README.md), including
 [updating](commands.md#updating-to-a-newer-version) and [getting unstuck](troubleshooting.md).
 
-## Checking a Windows run
+## Checking a Windows test run
 
-Before relying on the tracker on Windows, run through this short checklist to ensure everything works as intended:
+Windows isn't supported yet (see [Troubleshooting](troubleshooting.md#windows)). If you're helping
+test it, this is the run to try, on a throwaway test data folder rather than your real one. Pick a
+new folder outside the code, such as `C:\jat-test`, and use it in place of `<folder>` below.
 
-1. **Install and build:** `uv sync`, `pnpm --dir frontend install`, and `pnpm --dir frontend build` complete without errors.
-2. **Initialise:** `uv run jat init` sets up the data folder (`.gitattributes`, `.gitignore`, `config.toml`, and the initial database).
-3. **Start the tracker:** `uv run jat serve` starts the app on http://127.0.0.1:8770.
-4. **Pages load:** Open http://127.0.0.1:8770 in your browser; verify that Today, Applications, Board and Insights load cleanly.
-5. **Add an application:** Click **New application** and add a test application.
-6. **Add a note:** Add a note to the application and save it.
-7. **Attach a file:** Upload an attachment (CV, cover letter or document) to the application.
-8. **Download a backup:** In the sidebar, click **Download a backup** to verify the data directory zips cleanly.
-9. **Insights weekly activity:** Open **Insights** and verify the weekly activity chart displays in your browser's time zone.
-10. **Run tests:** Run `uv run pytest -q` in a terminal to confirm the automated tests pass.
+1. **Install and build:** `uv sync`, `pnpm --dir frontend install` and `pnpm --dir frontend build`
+   finish without errors.
+2. **Set up the test folder:** `uv run jat --data-dir <folder> init` creates it.
+3. **Start the tracker:** `uv run jat --data-dir <folder> serve`, then open http://127.0.0.1:8770.
+4. **The pages load:** Today, Applications (both the list and the board), Interviews and Insights
+   open without errors.
+5. **Add an application:** press **New application** at the top and save a made-up one.
+6. **Add a note:** on the application's page, press **Add note** in the Notes card and save it.
+7. **Add a file:** on the same page, **Upload** a file in the Files card.
+8. **Download a backup:** at the bottom of the sidebar, press **Download a backup**, and check the
+   zip opens and holds your note and file.
+9. **Weekly activity:** on **Insights**, **Weekly activity** shows this week's application.
+10. **The tests:** run `uv run pytest -q` from the code folder. On Windows the maintainer-tooling
+    tests (the PM dashboard and the dev scripts) are skipped, and so are the symlink tests unless
+    Developer Mode is on (or you run as an administrator). Some tests still fail on Windows:
+    compare any failures with the known list in the task `windows-tests-green` on the
+    [roadmap](../ROADMAP.yaml).
+
+Stop the tracker with Ctrl+C and delete the test folder when you're done.
 
 Good luck with the search.
