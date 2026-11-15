@@ -2,21 +2,14 @@ import { Group, Text, Tooltip } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
-interface Health {
-  status: string;
-  version: string;
-  schema: string | null;
-  schema_head: string;
-  git_repo: boolean;
-  // Missing from a server older than 1.23.0 (one still running after an update).
-  snapshots_enabled?: boolean;
-  windows?: boolean;
-}
+import { api, type Health } from "../api/client";
+
+export type { Health };
 
 async function fetchHealth(): Promise<Health> {
-  const res = await fetch("/api/v1/health");
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json() as Promise<Health>;
+  const { data, error, response } = await api.GET("/api/v1/health");
+  if (error || !data) throw new Error(`HTTP ${response.status}`);
+  return data;
 }
 
 /** The running server's health, checked every 30 seconds; shared by the dot and the version. */

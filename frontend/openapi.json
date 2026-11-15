@@ -5005,6 +5005,60 @@
         "title": "FollowedUpMsg",
         "type": "object"
       },
+      "HealthOut": {
+        "properties": {
+          "data_dir": {
+            "title": "Data Dir",
+            "type": "string"
+          },
+          "git_repo": {
+            "title": "Git Repo",
+            "type": "boolean"
+          },
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Schema"
+          },
+          "schema_head": {
+            "title": "Schema Head",
+            "type": "string"
+          },
+          "snapshots_enabled": {
+            "title": "Snapshots Enabled",
+            "type": "boolean"
+          },
+          "status": {
+            "default": "ok",
+            "title": "Status",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "string"
+          },
+          "windows": {
+            "title": "Windows",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "version",
+          "schema_head",
+          "data_dir",
+          "git_repo",
+          "snapshots_enabled",
+          "windows"
+        ],
+        "title": "HealthOut",
+        "type": "object"
+      },
       "HeardBackMsg": {
         "properties": {
           "key": {
@@ -15684,6 +15738,37 @@
         "summary": "Add Version",
         "tags": [
           "documents"
+        ]
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "operationId": "health_api_v1_health_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "An error, with a code when people can see it"
+          }
+        },
+        "summary": "Health",
+        "tags": [
+          "meta"
         ]
       }
     },
