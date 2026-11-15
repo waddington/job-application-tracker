@@ -15,6 +15,7 @@ Safety rules:
 from __future__ import annotations
 
 import json
+import logging
 import os
 from datetime import UTC, datetime
 from pathlib import Path
@@ -24,8 +25,9 @@ from sqlalchemy import JSON, Boolean, Engine, MetaData, Table, text
 from ..datadir import DB_NAME
 from ..db import current_revision, db_path, head_revision, is_known_revision, make_engine, migrate
 from ..db.models import DERIVED_TABLES, exported_tables
-from ..platform import FileLocked, replace_with_retry
+from ..platform import FileLocked, remove_temp, replace_with_retry
 
+log = logging.getLogger(__name__)
 FORMAT_VERSION = 1
 META_FILE = "_meta.json"
 SKIP_TABLES = DERIVED_TABLES | {"alembic_version"}
@@ -59,7 +61,7 @@ def _write_atomic(path: Path, content: str) -> None:
     try:
         replace_with_retry(tmp, path)
     except BaseException:
-        tmp.unlink(missing_ok=True)
+        remove_temp(tmp)
         raise
 
 
@@ -206,36 +208,49 @@ def restore_data_dir(data_dir: Path, force: bool = False) -> dict[str, int]:
 
 
 def _swap_in(tmp: Path, path: Path) -> None:
-    """Move the old database files aside and the restored one into place. If any step fails, put
-    the old files back first, so either everything changed or nothing did."""
-    moved: list[tuple[Path, Path]] = []  # (where it was, where it is now)
+    """Move the old database files aside and the restored one into place. If any step fails, or
+    the restore is interrupted (Ctrl-C during a retry's wait), put the old files back first, so
+    either everything changed or nothing did."""
+    backup = _backup_name(path) if path.exists() else None
     try:
-        if path.exists():
-            backup = _backup_name(path)
+        if backup is not None:
             for suffix in ("", "-wal", "-shm"):
                 old = Path(str(path) + suffix)
                 if old.exists():
-                    aside = Path(str(backup) + suffix)  # a free name: _backup_name checked
-                    replace_with_retry(old, aside)
-                    moved.append((old, aside))
+                    replace_with_retry(old, Path(str(backup) + suffix))  # a free name: _backup_name checked
         replace_with_retry(tmp, path)
-    except OSError as exc:
+    except BaseException as exc:
         why = f"{DB_NAME} is open in another program" if isinstance(exc, FileLocked) else str(exc)
-        stuck = []
-        for was, now in reversed(moved):
-            try:
-                replace_with_retry(now, was)
-            except OSError:
-                stuck.append(now)
+        stuck = _put_back(path, backup)
         if stuck:
             # Keep the restored copy as well: with the old files half moved, nothing is deleted.
             raise RestoreError(
-                f"Couldn't swap in the restored database ({why}), nor put the old one back. Nothing was "
-                f"deleted: your old database files are at {', '.join(str(p) for p in reversed(stuck))}, and "
+                f"Couldn't swap in the restored database ({why or type(exc).__name__}), nor put the old one "
+                f"back. Nothing was deleted: your old database files are at {', '.join(map(str, stuck))}, and "
                 f"the restored one is at {tmp}. Stop `jat serve`, then rename the old files back to {path.name}."
             ) from exc
-        _remove_db_files(tmp)
+        try:
+            _remove_db_files(tmp)
+        except OSError:  # the old database is back; a leftover copy mustn't hide that
+            log.warning("couldn't delete the unused restored database %s", tmp, exc_info=True)
+        if not isinstance(exc, OSError):
+            raise  # Ctrl-C and the like, with everything put back
         raise RestoreError(
             f"Couldn't swap in the restored database ({why}); nothing was changed. "
             "Stop `jat serve` if it's running, then run `jat restore --force` again."
         ) from exc
+
+
+def _put_back(path: Path, backup: Path | None) -> list[Path]:
+    """Move each old database file set aside back to its own name; return those still aside.
+    Checked by name, not by a list of moves, so a file moved just before an interrupt counts."""
+    stuck = []
+    for suffix in ("", "-wal", "-shm") if backup is not None else ():
+        was, now = Path(str(path) + suffix), Path(str(backup) + suffix)
+        if now.exists() and not was.exists():
+            try:
+                replace_with_retry(now, was)
+            except OSError:
+                log.error("couldn't move %s back to %s", now, was, exc_info=True)
+                stuck.append(now)
+    return stuck
