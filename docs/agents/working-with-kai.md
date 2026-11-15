@@ -70,6 +70,10 @@ where things run. Quotes are Kai's words.
   demo URL on seeded data with the case on screen, then build the test and ship on "ship it". For a layout PR Kai
   asked for a before-and-after table of screenshots in the PR description ("| Item | Before | After |"), and to merge it
   himself ("this one dont automerge"): images on a throwaway `pr-shots/<task>` branch, demo data only.
+- **The app redesign's PRs (P12) don't need Kai's screenshot approval** (2026-11-15: "i dont need to approve the
+  screenshots, your reviews are fine"): the review cycle and the checks are enough, then merge and release as usual. No
+  `pr-shots/` branch or before-and-after table; keep a demo server up for the reviewer. Images that get *applied* (README
+  screenshots, GIFs, the social card, icons) still go to Kai first.
 - **Designs: several concepts on a dev server, with a switch** (2026-11-11: "the dev server should have a toggle for 3-5
   different designs/concepts"). A dev-only switch (`import.meta.env.DEV`, plus `?design=N`) on a Vite dev server over a
   seeded demo API, screenshots of each, a draft PR marked do-not-merge; Kai narrows it in rounds ("give me a few sub
