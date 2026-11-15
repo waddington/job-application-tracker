@@ -58,7 +58,8 @@ def test_note_validation(client, seeded):
 def test_notes_edited_outside_the_app_show_up(client, seeded, app):
     notes = app.state.jat.data_dir / "notes"
     (notes / "from-my-editor.md").write_text(
-        f"---\ntitle: Written in vim\nlinks: [{{type: company, id: {seeded['company']['id']}}}]\n---\nHello\n"
+        f"---\ntitle: Written in vim\nlinks: [{{type: company, id: {seeded['company']['id']}}}]\n---\nHello\n",
+        encoding="utf-8",
     )
     listed = client.get("/api/v1/notes", params={"entity": f"company:{seeded['company']['id']}"}).json()
     assert [n["title"] for n in listed] == ["Written in vim"]
@@ -80,7 +81,7 @@ def test_symlinked_notes_are_skipped(client, app, tmp_path):
     notes = app.state.jat.data_dir / "notes"
     post(client, "/api/v1/notes", {"title": "Fine"})
     secret = tmp_path / "secret.md"
-    secret.write_text("---\ntitle: Outside\n---\nshh\n")
+    secret.write_text("---\ntitle: Outside\n---\nshh\n", encoding="utf-8")
     (notes / "sneaky.md").symlink_to(secret)
     r = client.get("/api/v1/notes")
     assert r.status_code == 200
