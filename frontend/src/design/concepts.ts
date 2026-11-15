@@ -16,6 +16,8 @@ import {
   Button,
   Card,
   createTheme,
+  Drawer,
+  mergeThemeOverrides,
   virtualColor,
   type MantineColorsTuple,
   type MantineThemeOverride,
@@ -23,13 +25,26 @@ import {
 
 import { router } from "../router";
 
-export const CONCEPTS = [
-  { n: 0, name: "Today's look" },
-  { n: 1, name: "Faithful" },
-  { n: 2, name: "Glass shell" },
-  { n: 3, name: "Calm workspace" },
-  { n: 4, name: "Soft cards" },
-] as const;
+// Round 1 had four concepts; 4 (Soft cards) was the pick, so 1-3 are gone (see PR #354's history for them).
+// Round 2 varies 4. Each flag becomes a data attribute on <html> that concepts.css keys on:
+//   soft: 4's look; oneBg: one background on every page; wide: full width up to a cap; drift: the slow fade;
+//   bones: Today in three columns, a full-width board, an application docked beside the list; topbar: the nav
+//   as a bar under the header.
+type Flag = "soft" | "oneBg" | "wide" | "drift" | "bones" | "topbar";
+export const CONCEPTS: { n: number; name: string; flags: Flag[] }[] = [
+  { n: 0, name: "Today's look", flags: [] },
+  { n: 4, name: "Soft cards (round 1's pick)", flags: ["soft"] },
+  { n: 5, name: "Still: 4, one background, full width", flags: ["soft", "oneBg", "wide"] },
+  { n: 6, name: "Drift: 5 with a slow colour fade", flags: ["soft", "oneBg", "wide", "drift"] },
+  { n: 7, name: "Wide bones: 5 with new page layouts", flags: ["soft", "oneBg", "wide", "bones"] },
+  {
+    n: 8,
+    name: "Top bar: 7's layouts, nav on top, drifting",
+    flags: ["soft", "oneBg", "wide", "drift", "bones", "topbar"],
+  },
+];
+
+const DRIFT_CYCLE_MS = 600_000; // keep in step with the drift animation's 600s in concepts.css
 
 const KEY = "jat.design";
 
@@ -96,54 +111,43 @@ const base: MantineThemeOverride = {
   },
 };
 
-const OVERRIDES: Record<number, MantineThemeOverride> = {
-  1: createTheme({
-    ...base,
-    defaultRadius: "lg",
-    radius: { xs: "6px", sm: "10px", md: "14px", lg: "22px", xl: "34px" },
-    shadows: {
-      sm: "0 8px 24px -14px rgb(42 30 63 / 0.22)",
-      md: "0 14px 40px -18px rgb(42 30 63 / 0.3)",
-    },
-    components: {
-      ...base.components,
-      Card: Card.extend({ defaultProps: { radius: "lg", shadow: "sm" } }),
-    },
-  }),
-  2: createTheme({
-    ...base,
-    defaultRadius: "lg",
-    radius: { xs: "6px", sm: "10px", md: "16px", lg: "24px", xl: "32px" },
-    shadows: { sm: "0 12px 34px -18px rgb(42 30 63 / 0.28)" },
-    components: {
-      ...base.components,
-      Card: Card.extend({ defaultProps: { radius: "lg", shadow: "sm" } }),
-    },
-  }),
-  3: createTheme({
-    ...base,
-    defaultRadius: "md",
-    radius: { xs: "4px", sm: "6px", md: "10px", lg: "14px", xl: "20px" },
-    spacing: { xs: "8px", sm: "10px", md: "14px", lg: "18px", xl: "24px" },
-    fontSizes: { xs: "11.5px", sm: "13px", md: "14.5px", lg: "16px", xl: "18px" },
-    headings: { fontFamily: SANS, fontWeight: "500" },
-    components: {
-      ...base.components,
-      Button: Button.extend({ defaultProps: { radius: "md" } }),
-      Card: Card.extend({ defaultProps: { radius: "md" } }),
-    },
-  }),
-  4: createTheme({
-    ...base,
-    defaultRadius: "xl",
-    radius: { xs: "8px", sm: "12px", md: "18px", lg: "26px", xl: "34px" },
-    shadows: { sm: "0 18px 50px -24px rgb(42 30 63 / 0.28)" },
-    components: {
-      ...base.components,
-      Card: Card.extend({ defaultProps: { radius: "xl", shadow: "sm" } }),
-    },
-  }),
-};
+// 4's theme, which every round-2 variation shares.
+const soft = createTheme({
+  ...base,
+  defaultRadius: "xl",
+  radius: { xs: "8px", sm: "12px", md: "18px", lg: "26px", xl: "34px" },
+  shadows: { sm: "0 18px 50px -24px rgb(42 30 63 / 0.28)" },
+  components: {
+    ...base.components,
+    Card: Card.extend({ defaultProps: { radius: "xl", shadow: "sm" } }),
+  },
+});
+
+// With the new bones, an application's drawer is a panel docked beside the list: no overlay, and the page
+// behind it still scrolls, takes clicks (another row swaps what it shows) and keeps the keyboard.
+const docked = createTheme({
+  components: {
+    Drawer: Drawer.extend({
+      defaultProps: { withOverlay: false, lockScroll: false, trapFocus: false, closeOnClickOutside: false },
+    }),
+  },
+});
+
+function themeOf(flags: Flag[]): MantineThemeOverride {
+  return flags.includes("bones") ? mergeThemeOverrides(soft, docked) : soft;
+}
+
+// The drift's phase is the time into its cycle by the clock, so it carries on across reloads; it's set again
+// when the colour scheme changes, since that swaps the animation and starts it afresh.
+function syncDrift() {
+  const html = document.documentElement;
+  const set = () => html.style.setProperty("--drift-delay", `-${Date.now() % DRIFT_CYCLE_MS}ms`);
+  set();
+  new MutationObserver(set).observe(html, {
+    attributes: true,
+    attributeFilter: ["data-mantine-color-scheme"],
+  });
+}
 
 function chosen(): number {
   const valid = (n: number) => CONCEPTS.some((c) => c.n === n);
@@ -197,8 +201,12 @@ function trackArea() {
 export function startDesign(): MantineThemeOverride | undefined {
   const n = chosen();
   mountSwitch(n);
-  if (n === 0) return undefined;
-  document.documentElement.dataset.design = String(n);
+  const flags = CONCEPTS.find((c) => c.n === n)?.flags ?? [];
+  if (!flags.length) return undefined;
+  const html = document.documentElement;
+  html.dataset.design = String(n);
+  for (const f of flags) html.setAttribute(`data-${f.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`, "");
+  if (flags.includes("drift")) syncDrift();
   trackArea();
-  return OVERRIDES[n];
+  return themeOf(flags);
 }
