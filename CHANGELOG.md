@@ -7,7 +7,8 @@ Numbers in brackets are pull requests.
 
 ## 1.24.21 (2026-11-15)
 
-- **Guide:** a Windows test-run checklist for people helping test Windows, on a throwaway data folder (Windows still isn't supported). **Developers:** tests that make symlinks skip, with a reason, where symlinks can't be made (#375).
+- **Guide:** a Windows test-run checklist for people helping test Windows, on a throwaway data folder (Windows still isn't supported) (#375, carrying #358).
+- **Developers:** tests that make symlinks skip, with a reason, where symlinks can't be made, as on Windows without Developer Mode (#375, carrying #358).
 
 ## 1.24.20 (2026-11-15)
 
