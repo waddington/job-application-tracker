@@ -66,11 +66,11 @@ where things run. Quotes are Kai's words.
 - **No agent-team skill here** unless Kai names it ("use /agent-team to do a code review" for contributors' PRs, with
   `/code-review:code-review` alongside, saying which found each finding); otherwise plain `general-purpose` subagents.
   **Never give a one-off agent a `name`**: named agents become teammates that don't report back by themselves.
-- **UI changes: Kai sees them first** when asked ("show me the mock server before merging so i can review the ui"): a
+- **UI changes: Kai sees them first** when asked (not the redesign's PRs, see below) ("show me the mock server before merging so i can review the ui"): a
   demo URL on seeded data with the case on screen, then build the test and ship on "ship it". For a layout PR Kai
   asked for a before-and-after table of screenshots in the PR description ("| Item | Before | After |"), and to merge it
   himself ("this one dont automerge"): images on a throwaway `pr-shots/<task>` branch, demo data only.
-- **The app redesign's PRs (P12) don't need Kai's screenshot approval** (2026-11-15: "i dont need to approve the
+- **The app redesign's PRs (roadmap phase P12) don't need Kai's screenshot approval** (2026-11-15: "i dont need to approve the
   screenshots, your reviews are fine"): the review cycle and the checks are enough, then merge and release as usual. No
   `pr-shots/` branch or before-and-after table; keep a demo server up for the reviewer. Images that get *applied* (README
   screenshots, GIFs, the social card, icons) still go to Kai first.

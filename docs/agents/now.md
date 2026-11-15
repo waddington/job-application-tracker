@@ -71,7 +71,7 @@ rules), this refresh.
 
 ## Next
 
-- **The redesign build, paused; resume on Kai's word only.** The scope Kai set, one PR at a time, then stop:
+- **The redesign build, one task at a time on Kai's word.** The scope Kai set, one PR at a time, then stop:
   1. `app-redesign-shell` → done (#384);
   2. `loading-state-failed-loads`;
   3. `loading-state-silent-cards`;
@@ -83,7 +83,7 @@ rules), this refresh.
   cycle and the checks, and Kai gets a line on what shipped. New images go to Kai before they're applied.
 - `e2e-seed-once` (next).
 - #359 when its author updates it.
-- **Bugs:** 58 open (9 medium, 49 low); `fix-double-save-locked` still needs a decision.
+- **Bugs:** 59 open (10 medium, 49 low); `fix-double-save-locked` still needs a decision.
 
 **How work runs** (keep doing it this way unless Kai says otherwise): one builder agent per change in its own worktree,
 Opus reviewers for data safety or structure, Sonnet or Haiku for small and docs PRs, every fix commit re-reviewed; the
