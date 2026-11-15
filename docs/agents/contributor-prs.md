@@ -41,6 +41,9 @@ commit they push.
   their tests against main's code), then show the PR fixes it, then run the whole suite and compare with the failures
   `windows-tests-green` lists. Shut the VM down when done. If the VM isn't available, simulate Windows on Linux
   (gotchas.md *Other*), and say so: it doesn't prove it runs on real Windows.
+- **Never overlap them:** the Windows VM run and the Linux browser tests never run at the same time (Kai, 2026-11-15:
+  "dont overlap them"; the load made a board browser test fail). A tests-only PR whose behaviour doesn't depend on the
+  OS (such as the AST encoding check) can skip the VM, and its PR body says so.
 
 ## 4. Sort every finding three ways
 
@@ -78,6 +81,8 @@ Kai's voice (his Slack voice notes, outside this repo: ask Kai where): what it d
 things we changed and why (useful to them), and thanks. Added just before merging so it's true when they're notified, never in the body the PR is opened with (an
 @-mention notifies at once, and editing it out doesn't unsend it: #308);
 it doesn't promise anything Kai hasn't decided (no "I'll look at #N next").
+Keep it brief, two or three sentences, and Kai doesn't need to see it first (Kai, 2026-11-15: "thank you notes are
+fine, i dont need to see them, keep them brief").
 
 ## Asking the author
 
