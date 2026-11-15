@@ -49,11 +49,18 @@ export function startDrift(root: HTMLElement = document.documentElement): () => 
       else root.style.setProperty(name, driftTint(DRIFT_TINTS[scheme], Date.now()));
     }
   };
+  // A hidden tab's timers slow to once a minute (or stop while the machine sleeps): catch up the moment
+  // it's shown again, rather than showing an old tint until the next step.
+  const shown = () => {
+    if (document.visibilityState === "visible") set();
+  };
   set();
   const timer = window.setInterval(set, DRIFT_STEP_MS);
   still.addEventListener("change", set);
+  document.addEventListener("visibilitychange", shown);
   return () => {
     window.clearInterval(timer);
     still.removeEventListener("change", set);
+    document.removeEventListener("visibilitychange", shown);
   };
 }
