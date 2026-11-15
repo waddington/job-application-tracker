@@ -6,7 +6,7 @@ import contextlib
 import logging
 import mimetypes
 
-from fastapi import APIRouter, File, Form, Request, Response, UploadFile
+from fastapi import APIRouter, File, Form, HTTPException, Request, Response, UploadFile
 from fastapi.responses import FileResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -116,6 +116,11 @@ def upload_attachment(
         raise CodedError(413, str(exc), exc.code, exc.params) from exc
     except FileError as exc:
         raise CodedError(422, str(exc), exc.code, exc.params) from exc
+    except OSError as exc:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Couldn't save file: file is open in another program (editor, antivirus or OneDrive). {exc}",
+        ) from exc
     meta: dict = {}
     if eml.is_eml(name, file.content_type):
         content_type = "message/rfc822"  # never shown inline
@@ -225,6 +230,6 @@ def delete_attachment(attachment_id: str, request: Request, session: SessionDep)
     path = att.path
     session.delete(att)
     session.commit()  # the record goes first: a failed commit must not leave it pointing at nothing
-    with contextlib.suppress(FileError):  # a path the store refuses to touch: leave it be
+    with contextlib.suppress(FileError, OSError):  # a path the store refuses to touch: leave it be
         _store(request).delete(path)
     return Response(status_code=204)

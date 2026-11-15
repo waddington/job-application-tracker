@@ -7,7 +7,9 @@ The rest of the code asks `is_windows()` and `snapshots_allowed()` and takes the
 from __future__ import annotations
 
 import contextlib
+import os
 import sys
+import time
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -66,3 +68,42 @@ def process_lock(data_dir: Path) -> Iterator[None]:
             yield
         finally:
             fcntl.flock(fh, fcntl.LOCK_UN)
+
+
+def replace_with_retry(
+    src: Path | str,
+    dst: Path | str,
+    *,
+    attempts: int = 5,
+    delay: float = 0.05,
+) -> None:
+    """Atomically replace dst with src, retrying briefly if dst is locked by another program
+    (an editor, antivirus or OneDrive on Windows).
+    """
+    for i in range(attempts):
+        try:
+            os.replace(src, dst)
+            return
+        except OSError:
+            if i == attempts - 1:
+                raise
+            time.sleep(delay)
+
+
+def unlink_with_retry(
+    path: Path | str,
+    *,
+    attempts: int = 5,
+    delay: float = 0.05,
+    missing_ok: bool = True,
+) -> None:
+    """Unlink path, retrying briefly if path is locked by another program."""
+    p = Path(path)
+    for i in range(attempts):
+        try:
+            p.unlink(missing_ok=missing_ok)
+            return
+        except OSError:
+            if i == attempts - 1:
+                raise
+            time.sleep(delay)

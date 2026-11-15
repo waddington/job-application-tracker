@@ -12,7 +12,7 @@ import mimetypes
 import re
 import unicodedata
 
-from fastapi import APIRouter, File, Form, Request, Response, UploadFile
+from fastapi import APIRouter, File, Form, HTTPException, Request, Response, UploadFile
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -257,6 +257,11 @@ def add_version(
             raise CodedError(413, str(exc), exc.code, exc.params) from exc
         except FileError as exc:
             raise CodedError(422, str(exc), exc.code, exc.params) from exc
+        except OSError as exc:
+            raise HTTPException(
+                status_code=409,
+                detail=f"Couldn't save file: file is open in another program (editor, antivirus or OneDrive). {exc}",
+            ) from exc
     try:
         att = None
         if stored is not None:

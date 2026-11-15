@@ -24,6 +24,7 @@ from sqlalchemy import JSON, Boolean, Engine, MetaData, Table, text
 from ..datadir import DB_NAME
 from ..db import current_revision, db_path, head_revision, is_known_revision, make_engine, migrate
 from ..db.models import DERIVED_TABLES, exported_tables
+from ..platform import replace_with_retry
 
 FORMAT_VERSION = 1
 META_FILE = "_meta.json"
@@ -55,7 +56,13 @@ def _write_atomic(path: Path, content: str) -> None:
         fh.write(content)
         fh.flush()
         os.fsync(fh.fileno())
-    os.replace(tmp, path)
+    try:
+        replace_with_retry(tmp, path)
+    except OSError as exc:
+        tmp.unlink(missing_ok=True)
+        raise ExportError(
+            f"Couldn't write {path.name}: file is open in another program (editor, antivirus or OneDrive)."
+        ) from exc
 
 
 def _lines(path: Path) -> list[str]:
@@ -201,6 +208,16 @@ def restore_data_dir(data_dir: Path, force: bool = False) -> dict[str, int]:
         for suffix in ("", "-wal", "-shm"):
             old = Path(str(path) + suffix)
             if old.exists():
-                old.rename(Path(str(backup) + suffix))
-    os.replace(tmp, path)
+                try:
+                    old.rename(Path(str(backup) + suffix))
+                except OSError as exc:
+                    _remove_db_files(tmp)
+                    raise RestoreError(
+                        "Couldn't move existing database aside: stop `jat serve` first if it is running."
+                    ) from exc
+    try:
+        replace_with_retry(tmp, path)
+    except OSError as exc:
+        _remove_db_files(tmp)
+        raise RestoreError("Couldn't replace database: stop `jat serve` first if it is running.") from exc
     return counts
