@@ -86,7 +86,12 @@ where things run. Quotes are Kai's words.
   "multiple instances would bog the computer"): one VM, one branch in it at once, never a second VM or clone in
   parallel; builders running alongside don't use it.
 - **Contributors' PRs** (issue #230's author sends the Windows work): the whole process, with Kai's instructions, is in
-  [contributor-prs.md](contributor-prs.md). Never comment on their PR or issue; Kai posts.
+  [contributor-prs.md](contributor-prs.md). Never comment on their PR or issue; Kai posts. One exception: Kai may
+  approve posting a specific drafted comment ("you can post that comment", 2026-11-15, for #359). That covers that
+  comment only; drafting in chat stays the rule.
+- **Dependabot PRs aren't carried** (2026-11-15: "for dependabot PRs you dont need to carry them you can do it directly
+  on the PR because its not from a person, its from our own repo bot"). Commit directly on Dependabot's branch (merge
+  main in, bump, fix), then merge its PR.
 
 ## How Kai works
 

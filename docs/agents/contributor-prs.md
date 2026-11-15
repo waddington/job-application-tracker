@@ -8,6 +8,8 @@ instructions are quoted; this file may quote Kai, PR bodies and comments may not
 
 - Never comment on their PR or issue, or post about it anywhere outside this chat: "dont comment on the PR, report back to
   me here". If something needs saying to the author, draft it here and Kai posts it himself (*Asking the author*).
+  The one exception: when Kai approves posting a specific drafted comment ("you can post that comment", 2026-11-15,
+  #359), post that comment only.
 - Don't trust their testing: "i cant trust the external contributor, i would do testing myself".
 
 ## 1. Security review before anything of theirs runs
