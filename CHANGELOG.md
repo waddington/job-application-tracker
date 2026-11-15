@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.24.28 (2026-11-15)
+
+- The app's new look, part two: one background on every page that fades very slowly through five calm tints (still under reduced motion), pages that use the full width of the window up to a limit, and a restyled side menu and page titles. Notes and documents keep a readable line length (#384).
+
 ## 1.24.27 (2026-11-15)
 
 - The app's new look, part one: plum as the main colour (lavender in dark mode), soft pastel stage colours, the Inter font with small mono labels on menu groups and table headers, soft rounded cards and pill buttons, and dark mode tinted plum. Nothing moves; layout changes come in later releases (#382).
