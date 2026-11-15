@@ -49,6 +49,8 @@ It's well worth turning on [automatic history, and backups if you want them](you
 at some point. Everything else is in the [guide](README.md), including
 [updating](commands.md#updating-to-a-newer-version) and [getting unstuck](troubleshooting.md).
 
+Good luck with the search.
+
 ## Checking a Windows test run
 
 Windows isn't supported yet (see [Troubleshooting](troubleshooting.md#windows)). If you're helping
@@ -74,5 +76,3 @@ new folder outside the code, such as `C:\jat-test`, and use it in place of `<fol
     [roadmap](../ROADMAP.yaml).
 
 Stop the tracker with Ctrl+C and delete the test folder when you're done.
-
-Good luck with the search.
