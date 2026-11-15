@@ -59,6 +59,7 @@ ErrorCode = Literal[
     "document_sent",
     "document_version_id_not_found",
     "file_is_symlink",
+    "file_locked",
     "file_outside_files",
     "file_too_large",
     "note_changed",

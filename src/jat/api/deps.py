@@ -157,3 +157,13 @@ def time_zone(tz: str) -> ZoneInfo:
     except (ZoneInfoNotFoundError, ValueError, OSError) as exc:
         detail = f"unknown time zone {tz!r}"
         raise CodedError(422, detail, "time_zone_unknown", {"tz": tz, "quoted_tz": repr(tz)}) from exc
+
+
+def file_locked() -> CodedError:
+    """A file stayed open in another program through every retry (`platform.FileLocked`, Windows only).
+    The body never names the file or carries the OS error: those go to the server log."""
+    return CodedError(
+        409,
+        "A file is open in another program (an editor, antivirus or OneDrive). Close it there and try again.",
+        "file_locked",
+    )

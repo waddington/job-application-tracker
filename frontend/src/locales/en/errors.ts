@@ -59,6 +59,10 @@ const codes = {
     "A version of this document was sent with {{count}} application(s); remove it from them first.",
   document_version_id_not_found: "document_version_id: {{id}} not found",
   file_is_symlink: "{{path}} is a symlink",
+  // Windows: a note, file or export file another program kept open through every retry (locked-file-retry). Never
+  // names the file: the error can come from saving a note, uploading a file or downloading a backup.
+  file_locked:
+    "A file is open in another program (an editor, antivirus or OneDrive). Close it there and try again.",
   file_outside_files: "{{path}} isn't under files/",
   file_too_large_one: "files can be up to {{count}} MB",
   file_too_large_other: "files can be up to {{count}} MB",

@@ -158,6 +158,10 @@ const TEXT: Record<ErrorCode, [Record<string, string | number>, string]> = {
   ],
   document_version_id_not_found: [{ id: "abc" }, "document_version_id: abc not found"],
   file_is_symlink: [{ path: "2026/10/x.pdf" }, "2026/10/x.pdf is a symlink"],
+  file_locked: [
+    {},
+    "A file is open in another program (an editor, antivirus or OneDrive). Close it there and try again.",
+  ],
   file_outside_files: [{ path: "../x.pdf" }, "../x.pdf isn't under files/"],
   file_too_large: [{ count: 50 }, "files can be up to 50 MB"],
   note_changed: [{}, "This note changed since you opened it (maybe in another editor). Reload it first."],

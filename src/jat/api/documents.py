@@ -7,12 +7,11 @@ shows where it was used.
 
 from __future__ import annotations
 
-import contextlib
 import mimetypes
 import re
 import unicodedata
 
-from fastapi import APIRouter, File, Form, HTTPException, Request, Response, UploadFile
+from fastapi import APIRouter, File, Form, Request, Response, UploadFile
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -30,11 +29,13 @@ from ..db.models import (
 from ..db.types import utcnow
 from ..domain import applications as svc
 from ..domain.workflow import Workflow
+from ..platform import FileLocked
 from ..storage.files import FileError, FileStore, TooLarge
 from . import schemas as S
 from .attachments import _out as attachment_out
+from .attachments import delete_after_commit, discard
 from .crud import values
-from .deps import SessionDep, WorkflowDep, get_or_404
+from .deps import SessionDep, WorkflowDep, file_locked, get_or_404
 from .errors import CodedError, ErrorCode
 
 router = APIRouter(tags=["documents"])
@@ -226,8 +227,7 @@ def delete_document(document_id: str, request: Request, session: SessionDep):
     session.delete(doc)
     session.commit()
     for path in paths:
-        with contextlib.suppress(FileError):
-            store.delete(path)
+        delete_after_commit(store, path)
     return Response(status_code=204)
 
 
@@ -257,11 +257,8 @@ def add_version(
             raise CodedError(413, str(exc), exc.code, exc.params) from exc
         except FileError as exc:
             raise CodedError(422, str(exc), exc.code, exc.params) from exc
-        except OSError as exc:
-            raise HTTPException(
-                status_code=409,
-                detail=f"Couldn't save file: file is open in another program (editor, antivirus or OneDrive). {exc}",
-            ) from exc
+        except FileLocked as exc:
+            raise file_locked() from exc
     try:
         att = None
         if stored is not None:
@@ -286,7 +283,7 @@ def add_version(
     except BaseException:
         session.rollback()
         if stored is not None:
-            store.delete(stored.path)
+            discard(store, stored.path)
         raise
     return _versions(session, [doc.id])[doc.id][0]
 
@@ -311,8 +308,7 @@ def delete_version(version_id: str, request: Request, session: SessionDep):
     session.delete(version)
     session.commit()
     for path in paths:
-        with contextlib.suppress(FileError):
-            store.delete(path)
+        delete_after_commit(store, path)
     return Response(status_code=204)
 
 
@@ -540,6 +536,8 @@ def adopt_cv_file(body: S.CvFileAdopt, request: Request, session: SessionDep):
             try:
                 with store.resolve(src.path).open("rb") as f:
                     stored = store.save(f, src.original_name)
+            except FileLocked as exc:
+                raise file_locked() from exc
             except (FileError, OSError) as exc:
                 name = src.original_name
                 raise CodedError(
@@ -591,6 +589,6 @@ def adopt_cv_file(body: S.CvFileAdopt, request: Request, session: SessionDep):
     except BaseException:
         session.rollback()
         if stored is not None:
-            store.delete(stored.path)
+            discard(store, stored.path)
         raise
     return S.CvFileAdopted(document_id=doc.id, version_id=version.id, recorded=recorded)

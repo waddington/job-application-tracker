@@ -11,9 +11,10 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from starlette.background import BackgroundTask
 
+from ..platform import FileLocked
 from ..snapshot.archive import write_archive
-from ..snapshot.export import ExportError
 from ..snapshot.git import SnapshotError, SnapshotService
+from .deps import file_locked
 from .errors import CodedError
 
 router = APIRouter(prefix="/backup", tags=["backup"])
@@ -98,12 +99,9 @@ def download_archive(request: Request):
     dest = staging / f"archive-{uuid.uuid4().hex}.zip"
     try:
         info = write_archive(service, dest)
-    except (ExportError, OSError) as exc:
+    except FileLocked as exc:
         dest.unlink(missing_ok=True)
-        raise HTTPException(
-            status_code=409,
-            detail=f"Couldn't export data: file is open in another program (editor, antivirus or OneDrive). {exc}",
-        ) from exc
+        raise file_locked() from exc
     except Exception:
         dest.unlink(missing_ok=True)
         raise
