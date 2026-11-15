@@ -43,7 +43,7 @@ import {
   type DocumentVersion,
 } from "../api/documentHooks";
 import { humanSize } from "../components/Attachments";
-import { Page } from "../components/Page";
+import { Page, READING_WIDTH } from "../components/Page";
 import { stageName } from "../utils/stageName";
 import { formatDate } from "../utils/time";
 
@@ -273,9 +273,13 @@ function DocumentCard({ doc }: { doc: DocumentItem }) {
             </Tooltip>
           </Group>
         </Group>
-        {doc.versions.map((v) => (
-          <VersionRow key={v.id} version={v} />
-        ))}
+        {doc.versions.length > 0 && (
+          <Stack gap="sm" maw={READING_WIDTH}>
+            {doc.versions.map((v) => (
+              <VersionRow key={v.id} version={v} />
+            ))}
+          </Stack>
+        )}
         {!doc.versions.length && (
           <Text size="sm" c="dimmed">
             {t("card.noVersions")}
