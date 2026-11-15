@@ -7,7 +7,7 @@ Numbers in brackets are pull requests.
 
 ## 1.24.19 (2026-11-15)
 
-- **Developers:** the encoding check also catches `codecs.open` without an encoding, `SpooledTemporaryFile` in a text mode, and subprocess calls with `errors=` but no `encoding=` (#370).
+- **Developers:** the encoding check also catches `codecs.open` without an encoding, `SpooledTemporaryFile` in a text mode, and subprocess calls with `errors=` but no `encoding=` (#370, carrying #363).
 
 ## 1.24.18 (2026-11-15)
 
