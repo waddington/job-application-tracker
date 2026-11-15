@@ -130,12 +130,16 @@ const soft = createTheme({
   },
 });
 
-// With dock, an application's drawer is a panel docked beside the list: no overlay, and the page
-// behind it still scrolls, takes clicks (another row swaps what it shows) and keeps the keyboard.
+// With dock, every side drawer (the app has one, the application panel) is a panel docked beside the page: no
+// overlay, and the page behind it still scrolls, takes clicks (another row swaps what it shows) and keeps the
+// keyboard. On a phone (below 768 px when the page loads) drawers stay full-screen overlays.
+const onPhone = window.matchMedia("(max-width: 47.99em)").matches;
 const docked = createTheme({
   components: {
     Drawer: Drawer.extend({
-      defaultProps: { withOverlay: false, lockScroll: false, trapFocus: false, closeOnClickOutside: false },
+      defaultProps: onPhone
+        ? { size: "100%" }
+        : { withOverlay: false, lockScroll: false, trapFocus: false, closeOnClickOutside: false },
     }),
   },
 });

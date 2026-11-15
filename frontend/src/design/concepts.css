@@ -366,7 +366,7 @@ html[data-soft] :is(.mantine-Card-root, .mantine-Paper-root) .mantine-Card-root 
   border-radius: 20px;
 }
 /* A card that holds cards (a board column) is a soft well of the page's tint, so its cards stand out. */
-html[data-soft] :is(.mantine-Card-root, .mantine-Paper-root):has(.mantine-Card-root) {
+html[data-soft] .mantine-AppShell-main :is(.mantine-Card-root, .mantine-Paper-root):has(.mantine-Card-root) {
   background-color: color-mix(in srgb, var(--c-surface) 45%, transparent);
   box-shadow: none;
 }
@@ -415,11 +415,12 @@ html[data-one-bg][data-mantine-color-scheme="dark"] {
   --c-page: #17121f;
 }
 
-/* Full width, up to a cap: every page fills the space beside the nav, up to 1680 px of content, centred beyond
-   that (so a 4K screen gets a centred column, not 3,000 px lines). Pages' own narrower limits are lifted. */
+/* Full width, up to a cap: every page fills the space beside the nav, starting right after it, up to 2,400 px of
+   content (so a 2,560 px screen is used whole, and a 4K one doesn't get 3,000 px lines). Pages' own narrower
+   limits are lifted. */
 html[data-wide] .mantine-AppShell-main > * {
-  max-width: 1680px !important;
-  margin-inline: auto;
+  max-width: 2400px !important;
+  margin-inline: 0 auto;
 }
 
 /* The slow drift: the page's tint moves through five calm colours over ten minutes. The phase comes from the
@@ -507,7 +508,21 @@ html[data-drift] .mantine-AppShell-navbar {
   }
 }
 
-/* The board fills the width: columns share it rather than sitting at 250 px. */
+/* The board fills the width: it escapes the page cap and takes the whole window beside the menu (a 16 px gutter),
+   and its columns share that width, down to 180 px each, rather than sitting at 250 px. Other pages keep the cap. */
+html[data-wide-board][data-area="applications"][data-depth="1"]:has(
+    .mantine-ScrollArea-root .mantine-Group-root > .mantine-Paper-root
+  )
+  .mantine-AppShell-main {
+  padding-right: 16px;
+}
+html[data-wide-board][data-area="applications"][data-depth="1"]:has(
+    .mantine-ScrollArea-root .mantine-Group-root > .mantine-Paper-root
+  )
+  .mantine-AppShell-main
+  > * {
+  max-width: none !important;
+}
 html[data-wide-board][data-area="applications"] .mantine-ScrollArea-viewport > div {
   display: block !important;
 }
@@ -517,7 +532,7 @@ html[data-wide-board][data-area="applications"]
   > .mantine-Paper-root {
   flex: 1 1 0;
   width: auto !important;
-  min-width: 230px !important;
+  min-width: 180px !important;
 }
 
 /* An application opens in a panel docked beside the list (the drawer, without its overlay, scroll lock or focus
@@ -536,11 +551,13 @@ html[data-wide-board][data-area="applications"]
     margin: 12px;
     height: calc(100dvh - 56px - 24px);
     max-width: 520px;
+    background: var(--c-surface) !important; /* opaque, whatever card rules say */
     box-shadow: 0 18px 50px -24px rgb(var(--c-shadow) / 0.35);
   }
-  html[data-dock][data-area="applications"]:has(.mantine-Drawer-content) .mantine-AppShell-main,
-  html[data-dock][data-area="today"]:has(.mantine-Drawer-content) .mantine-AppShell-main {
-    padding-right: 560px;
+  /* Any page with a side panel open (Applications in list or board view, Today, a company, an agency) makes room:
+     the content, the board included, shrinks beside the panel instead of running under it. */
+  html[data-dock]:has(.mantine-Drawer-content) .mantine-AppShell-main {
+    padding-right: 560px !important;
   }
 }
 
