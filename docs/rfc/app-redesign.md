@@ -110,7 +110,7 @@ That's the default chosen for this plan (the concept hid the footer on phones); 
 last column comes from searching the guide for layout words (sidebar, menu, beside, under, column, panel, quick view,
 on a phone, wide screen); each task searches again when it runs, since the guide changes in between.
 
-Rows 6-12 depend on 4 or 5 only, not on each other, so they can run in parallel worktrees if Kai allows parallel
+Rows 6-8 and 10-12 depend on 4 or 5 only (9 follows 8), not on each other, so they can run in parallel worktrees if Kai allows parallel
 builders; they merge one at a time.
 
 ## 5. Images
@@ -173,7 +173,7 @@ Read from `frontend/e2e/` (viewport 1,400 × 1,000 by default):
   `.mantine-SegmentedControl-root`): they hold while the build keeps Mantine's components, restyled rather than replaced.
 - **Layout-dependent checks**: `toBeInViewport` in the shell tests, the Today groups by `#your-move`, and
   `reschedule.spec.ts`'s scroll area. Three columns and wider pages change what's in view.
-- The unit test `theme.test.tsx` checks the theme; it changes with part 1.
+- The unit test `theme.test.tsx` checks the theme; it changes with row 1 (`app-redesign-theme`).
 
 ## 8. Accessibility
 
@@ -185,7 +185,7 @@ Read from `frontend/e2e/` (viewport 1,400 × 1,000 by default):
   reduce`; so is the panel's slide and the page making room (instant).
 - **Contrast.** Text on every drift tint and on each pastel is checked at 4.5:1 (3:1 for large text and UI parts) in
   light and dark, across the whole cycle (the tints are close, the check covers the lightest and darkest). The
-  concepts already darkened coloured text; part 13 audits every page. Focus rings stay visible on the plum buttons and
+  concepts already darkened coloured text; row 14 (`app-redesign-dark`) audits every page. Focus rings stay visible on the plum buttons and
   on tinted wells.
 - The bottom bar: real buttons with `aria-current` for the page you're on, the More sheet a labelled dialog that
   closes with Escape and returns focus to More.
