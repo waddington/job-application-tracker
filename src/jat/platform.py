@@ -2,15 +2,18 @@
 
 The rest of the code asks `is_windows()` and `snapshots_allowed()` and takes the lock through
 `process_lock()`; nothing else imports `fcntl`. Step 2 swaps in a Windows lock here.
+Files are replaced and deleted through `replace_with_retry()` and `unlink_with_retry()`, which ride
+out a file another program has open on Windows (`locked-file-retry`).
 """
 
 from __future__ import annotations
 
 import contextlib
+import logging
 import os
 import sys
 import time
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator, Sequence
 from pathlib import Path
 
 try:
@@ -20,6 +23,7 @@ except ImportError:  # Windows: no lock until step 2 adds one (msvcrt)
 
 IS_WINDOWS: bool = sys.platform == "win32"
 LOCK_NAME = "jat-snapshot.lock"
+log = logging.getLogger(__name__)
 
 
 def is_windows() -> bool:
@@ -70,40 +74,50 @@ def process_lock(data_dir: Path) -> Iterator[None]:
             fcntl.flock(fh, fcntl.LOCK_UN)
 
 
-def replace_with_retry(
-    src: Path | str,
-    dst: Path | str,
-    *,
-    attempts: int = 5,
-    delay: float = 0.05,
-) -> None:
-    """Atomically replace dst with src, retrying briefly if dst is locked by another program
-    (an editor, antivirus or OneDrive on Windows).
-    """
-    for i in range(attempts):
+# Windows refuses to replace or delete a file another program has open (an editor, antivirus,
+# OneDrive). These are the errors that means; anything else is a real failure.
+_LOCK_WINERRORS = frozenset({5, 32, 33})  # access denied, sharing violation, lock violation
+# The waits between attempts: 6 attempts over about 1.5 seconds.
+LOCK_RETRY_DELAYS: tuple[float, ...] = (0.05, 0.1, 0.2, 0.4, 0.8)
+
+
+class FileLocked(OSError):
+    """Another program kept a file open through every retry. Only raised on Windows."""
+
+    def __init__(self, path: Path, cause: OSError):
+        super().__init__(f"{path} is open in another program; close it there and try again")
+        self.path = path
+        self.cause = cause
+
+
+def is_lock_error(exc: BaseException) -> bool:
+    """Whether `exc` is Windows saying another program has the file open."""
+    return is_windows() and isinstance(exc, OSError) and getattr(exc, "winerror", None) in _LOCK_WINERRORS
+
+
+def _retry_on_lock(op: Callable[[], None], path: Path, what: str, delays: Sequence[float] | None) -> None:
+    waits = LOCK_RETRY_DELAYS if delays is None else delays
+    for attempt in range(1, len(waits) + 2):
         try:
-            os.replace(src, dst)
+            op()
             return
-        except OSError:
-            if i == attempts - 1:
+        except OSError as exc:
+            if not is_lock_error(exc):
                 raise
-            time.sleep(delay)
+            if attempt > len(waits):
+                log.error("couldn't %s %s: still open in another program after %d attempts", what, path, attempt)
+                raise FileLocked(path, exc) from exc
+            log.warning("couldn't %s %s (attempt %d): open in another program; retrying", what, path, attempt)
+            time.sleep(waits[attempt - 1])
 
 
-def unlink_with_retry(
-    path: Path | str,
-    *,
-    attempts: int = 5,
-    delay: float = 0.05,
-    missing_ok: bool = True,
-) -> None:
-    """Unlink path, retrying briefly if path is locked by another program."""
+def replace_with_retry(src: Path | str, dst: Path | str, *, delays: Sequence[float] | None = None) -> None:
+    """os.replace(src, dst), retried briefly while Windows says another program has a file open,
+    then FileLocked. Any other error raises at once. `delays` defaults to LOCK_RETRY_DELAYS."""
+    _retry_on_lock(lambda: os.replace(src, dst), Path(dst), "replace", delays)
+
+
+def unlink_with_retry(path: Path | str, *, missing_ok: bool = True, delays: Sequence[float] | None = None) -> None:
+    """Path.unlink, retried and raising like replace_with_retry."""
     p = Path(path)
-    for i in range(attempts):
-        try:
-            p.unlink(missing_ok=missing_ok)
-            return
-        except OSError:
-            if i == attempts - 1:
-                raise
-            time.sleep(delay)
+    _retry_on_lock(lambda: p.unlink(missing_ok=missing_ok), p, "delete", delays)
