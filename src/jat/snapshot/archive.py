@@ -9,12 +9,16 @@ directory can end up in the archive.
 
 from __future__ import annotations
 
+import logging
 import zipfile
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 
+from ..platform import FileLocked, is_lock_error
 from .git import TRACKED, SnapshotService
+
+log = logging.getLogger(__name__)
 
 RESTORE = """# Restoring this backup
 
@@ -73,6 +77,11 @@ def write_archive(service: SnapshotService, dest: Path, *, day: date | None = No
                 zf.write(path, f"{root}/{path.relative_to(data_dir).as_posix()}")
             except FileNotFoundError:
                 continue
+            except OSError as exc:  # a note or file another program holds exclusively (Windows)
+                if not is_lock_error(exc):
+                    raise
+                log.error("couldn't read %s for the backup: open in another program", path)
+                raise FileLocked(path, exc) from exc
             files += 1
             total += size
         zf.writestr(f"{root}/RESTORE.md", RESTORE.format(root=root))
