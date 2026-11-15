@@ -12,6 +12,7 @@ need_root
 clean_env
 # --website and --no-e2e skip checks, so first make sure nothing they skip could be affected (fail closed):
 # tools/dev/scope.sh checks every changed file against CLAUDE.md's list for the mode.
+# It runs again after the re-run under the lock below: on purpose, so no inherited HEAVY_TESTS_LOCKED can skip it.
 if [ -n "$1" ]; then
   bash "$DEV/scope.sh" "$1" || exit 2
 fi

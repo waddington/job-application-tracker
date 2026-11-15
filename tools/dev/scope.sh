@@ -32,9 +32,10 @@ new=$(ver < src/jat/__init__.py)
 semver='^[0-9]+\.[0-9]+\.[0-9]+$'
 [[ "$old" =~ $semver && "$new" =~ $semver ]] || { echo "$mode: can't read the version" >&2; exit 2; }
 if [ "$mode" = "--no-e2e" ]; then
-  # A changed language.ts is itself refused, so main's list is the one that counts. Codes are checked to be plain
-  # language tags before they go into the pattern; if the list can't be read, no draft folder is allowed.
-  drafts=$(git show "$base:frontend/src/i18n/language.ts" 2>/dev/null | python3 -c '
+  # The list on origin/main, not the merge base, so a draft main has since shipped no longer counts; a changed
+  # language.ts is itself refused. Codes are checked to be plain language tags before they go into the pattern; if
+  # the list can't be read, no draft folder is allowed.
+  drafts=$(git show "origin/main:frontend/src/i18n/language.ts" 2>/dev/null | python3 -c '
 import re, sys
 m = re.search(r"export const DRAFT_LANGUAGES\b[^=]*=\s*\{(.*?)\}", sys.stdin.read(), re.S)
 codes = re.findall(r"(?:^|,)\s*[\"\x27]?([A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*)[\"\x27]?\s*:", m.group(1)) if m else []
