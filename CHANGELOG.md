@@ -7,7 +7,7 @@ Numbers in brackets are pull requests.
 
 ## 1.24.18 (2026-11-15)
 
-- Scripts read and write text as UTF-8, so the translation and demo tools work on Windows (#368).
+- Scripts read and write text as UTF-8, so the translation and demo tools work on Windows (#368, carrying #362).
 
 ## 1.24.17 (2026-11-13)
 
