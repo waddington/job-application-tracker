@@ -1,10 +1,10 @@
 # Sourced by the tools/dev shell scripts: PATH with Node and uv, and where things are.
-# NODE_BIN overrides the Node folder (Node >= 22.12 is needed; see CLAUDE.md, Code).
+# NODE_BIN overrides the Node folder (Node >= 22.12 for the app, >= 22.23.4 for the website; see CLAUDE.md, Code).
 DEV="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if [ -n "$NODE_BIN" ]; then
   PATH="$NODE_BIN:$PATH"
-elif [ -d "$HOME/.nvm/versions/node/v22.23.3/bin" ]; then
-  PATH="$HOME/.nvm/versions/node/v22.23.3/bin:$PATH"
+elif [ -d "$HOME/.nvm/versions/node/v22.23.5/bin" ]; then
+  PATH="$HOME/.nvm/versions/node/v22.23.5/bin:$PATH"
 fi
 export PATH="$PATH:$HOME/.local/bin"
 # The main checkout is the first entry of `git worktree list`.

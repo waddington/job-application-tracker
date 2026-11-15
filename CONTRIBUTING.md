@@ -273,6 +273,8 @@ uv run --with playwright python tools/dev/shot.py http://127.0.0.1:8894 /tmp/sho
 hero's scrolling demo). Copy each capture over the file of the same page in `website/src/assets/`, keeping
 its name; the 简体中文 Today in `hero/` is the same with the browser set to Chinese.
 
+The website needs Node.js 22.23.4 or newer (its Astro exits on older versions); the app itself runs on 22.12+.
+
 ```bash
 pnpm --dir website install
 pnpm --dir website dev       # http://localhost:4321/job-application-tracker/, hot reloading

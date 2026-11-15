@@ -112,7 +112,7 @@ where things run. Quotes are Kai's words.
   `python3 -m tools.pm --port 8768 --root <main checkout>`.
 - **Demo servers:** seed with `uv run python scripts/seed_demo.py <new dir>`, serve with
   `uv run jat --data-dir <dir> serve --port 88xx` (one port per server and reviewer). The zh-CN demo API is on 8891.
-- **Node for pnpm:** `/home/kai/.nvm/versions/node/v22.23.3/bin` first on PATH, with `/home/kai/.local/bin` (uv) kept.
+- **Node for pnpm:** `/home/kai/.nvm/versions/node/v22.23.5/bin` (the website needs >= 22.23.4) first on PATH, with `/home/kai/.local/bin` (uv) kept.
   `tools/dev/env.sh` does both.
 - **Kai's local reports:** `ignorable-docs/` at the root of the main checkout, git-ignored (#366). When Kai asks for
   a report there, write it there and never commit or push it (Kai, 2026-11-15: "do not push the ignorable docs").
