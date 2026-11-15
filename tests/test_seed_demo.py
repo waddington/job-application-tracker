@@ -124,7 +124,7 @@ def test_the_chinese_demo_names_are_chinese_and_addresses_made_up(demos):
         for v in row
         if isinstance(v, str)
     ]
-    texts += [p.read_text() for p in (zh / "notes").rglob("*.md")]
+    texts += [p.read_text(encoding="utf-8") for p in (zh / "notes").rglob("*.md")]
     hosts = {h for t in texts for h in re.findall(r"https?://([^/\s\"')]+)", t)}
     hosts |= {h for t in texts for h in re.findall(r"[\w.]+@([\w.-]+)", t)}
     assert hosts and {h for h in hosts if h != "example.com" and not h.endswith(".example.com")} == set()

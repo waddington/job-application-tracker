@@ -61,7 +61,8 @@ def problems(roadmap: Roadmap, snapshot: Snapshot) -> str:
     ages = ((snapshot.git_ok, snapshot.git_at, "commits"), (snapshot.github_ok, snapshot.github_at, "PRs"))
     for ok, at, what in ages:
         if not ok and at:
-            items.append(f"Showing {what} from {datetime.fromtimestamp(at):%-d %b, %H:%M}, when they last answered")
+            dt = datetime.fromtimestamp(at)
+            items.append(f"Showing {what} from {dt.day} {dt:%b, %H:%M}, when they last answered")
     live = snapshot.live
     if not live.prs_known and any(b.phases for b in live.branch_roadmaps.values()):
         items.append("Tasks only on a branch's roadmap are held back, and out of the totals, until GitHub answers")
