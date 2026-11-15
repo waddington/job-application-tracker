@@ -1648,3 +1648,16 @@ class OfferOut(BaseModel):
     recruiter_name: str | None = None
     created_at: datetime
     updated_at: datetime
+
+
+class HealthOut(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    status: str = "ok"
+    version: str
+    schema_: str | None = Field(default=None, alias="schema")
+    schema_head: str
+    data_dir: str
+    git_repo: bool
+    snapshots_enabled: bool
+    windows: bool

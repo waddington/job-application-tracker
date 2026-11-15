@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.24.22 (2026-11-15)
+
+- **Developers:** `/api/v1/health` has a typed response model, so the OpenAPI schema describes it, and the sidebar's connection status reads it through the typed API client (#374, carrying #361).
+
 ## 1.24.21 (2026-11-15)
 
 - **Developers:** the tests of the maintainer-only tooling (the PM dashboard, the tools/dev scripts and the i18n translate helpers) skip on Windows, so `uv run pytest` there checks the app; Windows support leaves those tools out (#373).

@@ -6,6 +6,7 @@ from fastapi.testclient import TestClient
 from jat.app import create_app
 from jat.datadir import init_data_dir
 from jat.db import db_path, head_revision, migrate
+from jat.openapi import build_schema
 
 
 @pytest.fixture
@@ -35,6 +36,11 @@ def test_health(data_dir, dist):
     assert body["git_repo"] is False
     assert body["snapshots_enabled"] is False
     assert body["windows"] is (sys.platform == "win32")
+
+
+def test_health_schema_publishes_the_alias():
+    props = build_schema()["components"]["schemas"]["HealthOut"]["properties"]
+    assert "schema" in props and "schema_" not in props
 
 
 def test_spa_routes_and_assets(data_dir, dist):
