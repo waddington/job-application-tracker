@@ -18,6 +18,11 @@ links to what changed in that release on GitHub, in a new tab. If the running tr
 page are different versions, a sentence under it says so and what to do (see
 [Troubleshooting](troubleshooting.md#the-sidebar-says-the-server-and-this-page-are-different-versions)).
 
+Pages fill the window beside the sidebar, up to 2,400 pixels wide, so a wide screen is used whole. Behind
+every page, the background fades very slowly through five soft tints (lilac, butter, mint, sky and apricot,
+or darker twins in dark mode), once round every ten minutes; it carries on where it was when you change page
+or reload. If your system is set to reduce motion, it stays lilac.
+
 ## The basics: companies, roles and applications
 
 - A **company** is somewhere you might work.
@@ -908,4 +913,5 @@ on GitHub, in a new tab. It's an ordinary link: the app itself never fetches any
 
 ## Dark mode
 
-The moon/sun button at the top right.
+The moon/sun button at the top right. In dark mode the background's tints are dark ones too (a plum night
+when it isn't drifting).

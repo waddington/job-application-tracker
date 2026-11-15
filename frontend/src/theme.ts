@@ -227,6 +227,12 @@ export function themeFor(lang: string) {
       // A page's title (every page's is an h2): a big, light display title.
       Title: Title.extend({
         classNames: (_theme, props) => (props.order === 2 ? { root: classes.pageTitle } : {}),
+        vars: (_theme, props) => ({
+          root:
+            props.order === 2
+              ? { "--title-fz": "clamp(32px, 2.2vw + 22px, 52px)", "--title-lh": "1.04" }
+              : {},
+        }),
       }),
       // Table headers are the website's eyebrow: mono capitals after a small square.
       Table: Table.extend({ classNames: { th: classes.th } }),

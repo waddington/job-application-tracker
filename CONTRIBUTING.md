@@ -66,6 +66,10 @@ this." with Retry when it fails, and the empty text only for a list that loaded 
 query data to `[]` (`data ?? []`) before deciding it's empty: a list still loading, or one that
 failed, would say there's nothing there. Whole-page loads keep their `Loader`.
 
+**Every page's outer wrapper is `Page`** (`frontend/src/components/Page.tsx`): full width beside the
+menu, up to 2,400 px, from the left. Don't give a page its own narrower `maw`. Its title is a
+`<Title order={2}>`, which the theme makes the big display title.
+
 **Project dashboard.** `python3 -m tools.pm` (→ http://127.0.0.1:8767) shows the roadmap,
 progress and live PR status of the build itself. It needs nothing but Python; the
 [`gh` CLI](https://cli.github.com/) adds PR status.
