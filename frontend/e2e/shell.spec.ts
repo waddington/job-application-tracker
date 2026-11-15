@@ -361,6 +361,71 @@ test.describe("wide screens", () => {
   });
 });
 
+test.describe("the page's width", () => {
+  // The page wrapper is the first thing in <main>; the menu is 230 px, with 28 px of space after it.
+  const box = async (page: Page) => (await page.locator("main > *").first().boundingBox())!;
+
+  test("fills the window beside the menu", async ({ page }) => {
+    await opened(page);
+    const { x, width } = await box(page);
+    expect(x).toBeCloseTo(230 + 28, 0);
+    expect(width).toBeCloseTo(1400 - 230 - 2 * 28, 0);
+  });
+
+  test.describe("on a very wide screen", () => {
+    test.use({ viewport: { width: 3000, height: 1000 } });
+    for (const [name, path, heading] of [MENU[0], MENU[8], MENU[9]]) {
+      test(`${name} stops at 2,400 px, from the left`, async ({ page }) => {
+        await page.goto(path);
+        await expect(page.getByRole("heading", { name: heading }).first()).toBeVisible();
+        const { x, width } = await box(page);
+        expect(x).toBeCloseTo(230 + 28, 0);
+        expect(width).toBe(2400);
+      });
+    }
+  });
+});
+
+test.describe("the background", () => {
+  // A moment a fifth of the way into the drift's ten-minute cycle: butter, then mint two minutes later.
+  const cycle = 600_000;
+  const butter = "rgb(252, 248, 234)";
+  const mint = "rgb(239, 248, 242)";
+  const background = (page: Page, selector: string) =>
+    page
+      .locator(selector)
+      .first()
+      .evaluate((el) => getComputedStyle(el).backgroundColor);
+
+  test("drifts with the clock, the same behind the header and the menu, and a reload carries on", async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.clock.install({ time: 2_000 * cycle + cycle / 5 });
+    await opened(page);
+    expect(await background(page, "body")).toBe(butter);
+    expect(await background(page, "header")).toBe(butter);
+    expect(await background(page, "nav")).toBe(butter);
+    await item(page, "Notes").click();
+    await expect(page.getByRole("heading", { name: "Notes", level: 2 })).toBeVisible();
+    expect(await background(page, "body")).toBe(butter);
+    await page.clock.runFor(cycle / 5);
+    await expect.poll(() => background(page, "body")).toBe(mint);
+    await page.reload();
+    await expect(page.getByRole("heading", { name: "Notes", level: 2 })).toBeVisible();
+    expect(await background(page, "body")).toBe(mint);
+  });
+
+  test("stays lilac, or plum night, when motion is reduced", async ({ page }) => {
+    await page.clock.install({ time: 2_000 * cycle + cycle / 5 });
+    await opened(page);
+    expect(await background(page, "body")).toBe("rgb(244, 241, 251)");
+    await page.getByRole("button", { name: "Switch to dark mode" }).click();
+    await expect.poll(() => background(page, "body")).toBe("rgb(23, 18, 31)");
+    expect(await background(page, "header")).toBe("rgb(23, 18, 31)");
+  });
+});
+
 test.describe("more of the frame", () => {
   test("an address that only starts like a section marks nothing", async ({ page }) => {
     for (const path of ["/notes-old", "/peoplex", "/agencies-old"]) {
