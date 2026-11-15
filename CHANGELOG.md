@@ -5,10 +5,18 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
-## 1.24.21 (2026-11-15)
+## 1.24.23 (2026-11-15)
 
 - **Guide:** a Windows test-run checklist for people helping test Windows, on a throwaway data folder (Windows still isn't supported) (#375, carrying #358).
 - **Developers:** tests that need symlinks are skipped, with a reason, where symlinks can't be made, as on Windows without Developer Mode (#375, carrying #358).
+
+## 1.24.22 (2026-11-15)
+
+- **Developers:** `/api/v1/health` has a typed response model, so the OpenAPI schema describes it, and the sidebar's connection status reads it through the typed API client (#374, carrying #361).
+
+## 1.24.21 (2026-11-15)
+
+- **Developers:** the tests of the maintainer-only tooling (the PM dashboard, the tools/dev scripts and the i18n translate helpers) skip on Windows, so `uv run pytest` there checks the app; Windows support leaves those tools out (#373).
 
 ## 1.24.20 (2026-11-15)
 

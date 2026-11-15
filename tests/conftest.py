@@ -1,5 +1,6 @@
 import os
 import subprocess
+import sys
 import tempfile
 import zoneinfo
 from pathlib import Path
@@ -116,3 +117,20 @@ def tzdata_only():
     finally:
         zoneinfo.reset_tzpath()
         zoneinfo.ZoneInfo.clear_cache()
+
+
+# Tests of maintainer-only tooling, which is never used to run the app: the PM dashboard (tools/pm), the maintainer
+# scripts (tools/dev) and the i18n translate helpers (scripts/i18n/translate). Windows support leaves these tools out
+# (docs/rfc/windows.md §6), so their tests skip there and `uv run pytest` on Windows checks the app.
+_TESTS = Path(__file__).resolve().parent
+_MAINTAINER_TOOLING_TESTS = (_TESTS / "pm", _TESTS / "dev", _TESTS / "test_i18n_translate.py")
+
+
+def pytest_collection_modifyitems(config, items):
+    if sys.platform != "win32":
+        return
+    skip = pytest.mark.skip(reason="maintainer tooling; not part of Windows support (docs/rfc/windows.md §6)")
+    for item in items:
+        path = item.path.resolve()
+        if any(path == tooling or tooling in path.parents for tooling in _MAINTAINER_TOOLING_TESTS):
+            item.add_marker(skip)
