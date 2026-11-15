@@ -10,7 +10,6 @@
 
 :where([data-mantine-color-scheme="dark"]) .root {
   --cal-empty: var(--mantine-color-dark-4);
-  --cal-ring: var(--mantine-color-indigo-4);
 }
 
 /* The figures for the period. */

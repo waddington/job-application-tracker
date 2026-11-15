@@ -1,3 +1,9 @@
+// The app's fonts, bundled with the build and never fetched from the web (docs/rfc/app-redesign.md §9),
+// and the design tokens the theme's colours read (theme.ts).
+import "@fontsource-variable/inter";
+import "@fontsource-variable/jetbrains-mono";
+import "./tokens.css";
+
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 

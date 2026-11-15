@@ -1,0 +1,91 @@
+/*
+ * The design tokens (docs/rfc/app-redesign.md §2, Look): the website's plum and pastels, light and dark.
+ * theme.ts points Mantine's own variables at these (its cssVariablesResolver), so components only ever
+ * read Mantine's variables; these are the values behind them.
+ */
+:root {
+  /* Ink: the website's plum, and its softer steps. */
+  --jat-ink: #2a1e3f;
+  --jat-ink-soft: rgb(42 30 63 / 0.7);
+  --jat-ink-faint: rgb(42 30 63 / 0.12);
+  --jat-placeholder: rgb(42 30 63 / 0.56);
+  --jat-anchor: #5d4a94;
+  --jat-shadow: 42 30 63;
+
+  /* The plum button: the website's gradient, a step lighter on hover. */
+  --jat-plum-gradient: linear-gradient(180deg, #4a3a68, #2a1e3f);
+  --jat-plum-gradient-hover: linear-gradient(180deg, #5a4880, #3a2c54);
+
+  /* Stage and status pastels, under Mantine's colour names (which stages use), each with an ink that
+     reads on it at 4.5:1 or more. */
+  --jat-p-gray: #ebe8f1;
+  --jat-i-gray: #3b3349;
+  --jat-p-dark: #e4e0ec;
+  --jat-i-dark: #2a1e3f;
+  --jat-p-blue: #dde8f7;
+  --jat-i-blue: #1f3a5f;
+  --jat-p-cyan: #d5edf0;
+  --jat-i-cyan: #164349;
+  --jat-p-indigo: #e4defa;
+  --jat-i-indigo: #2f2466;
+  --jat-p-violet: #ece2f8;
+  --jat-i-violet: #45236b;
+  --jat-p-grape: #f2def3;
+  --jat-i-grape: #55215c;
+  --jat-p-teal: #d9efe3;
+  --jat-i-teal: #1b4a33;
+  --jat-p-green: #dcf0d6;
+  --jat-i-green: #24481a;
+  --jat-p-lime: #e9f2cf;
+  --jat-i-lime: #3a4712;
+  --jat-p-yellow: #f8efcd;
+  --jat-i-yellow: #4d3d08;
+  --jat-p-orange: #f7e5d3;
+  --jat-i-orange: #5a3313;
+  --jat-p-red: #f6e0e5;
+  --jat-i-red: #6a1f30;
+  --jat-p-pink: #f8dfea;
+  --jat-i-pink: #5f1f3c;
+  --jat-p-plum: #ebe6f8;
+  --jat-p-plum-hover: #e0d9f3;
+  --jat-i-plum: #2a1e3f;
+
+  /* Deeper pastels for bars (the pipeline on Today), with ink numbers on them in both modes. */
+  --jat-bar-gray: #d9d4e3;
+  --jat-bar-dark: #cfc9da;
+  --jat-bar-blue: #b9cff0;
+  --jat-bar-cyan: #a9dde3;
+  --jat-bar-indigo: #cbbff4;
+  --jat-bar-violet: #dac8f4;
+  --jat-bar-grape: #e6c4ea;
+  --jat-bar-teal: #b1dfc6;
+  --jat-bar-green: #bfe3b4;
+  --jat-bar-lime: #d6e8a6;
+  --jat-bar-yellow: #f1dd95;
+  --jat-bar-orange: #f1cba6;
+  --jat-bar-red: #efbcc8;
+  --jat-bar-pink: #f2c3d7;
+  --jat-bar-ink: #2a1e3f;
+
+  /* The website's eyebrow label. */
+  --jat-eyebrow-size: 10.5px;
+  --jat-eyebrow-tracking: 0.14em;
+}
+
+/* Dark: plum night. Mantine's dark greys carry the surfaces (theme.ts); these are the rest. */
+:root[data-mantine-color-scheme="dark"] {
+  --jat-ink: #ece8f6;
+  --jat-ink-soft: rgb(236 232 246 / 0.7);
+  --jat-ink-faint: rgb(236 232 246 / 0.1);
+  --jat-placeholder: rgb(236 232 246 / 0.5);
+  --jat-anchor: #c9b8f0;
+  --jat-shadow: 0 0 0;
+
+  /* The lavender button, with dark text on it. */
+  --jat-plum-gradient: linear-gradient(180deg, #d9cdf6, #c9b8f0);
+  --jat-plum-gradient-hover: linear-gradient(180deg, #e4dbf9, #d4c5f3);
+
+  --jat-p-plum: rgb(201 184 240 / 0.14);
+  --jat-p-plum-hover: rgb(201 184 240 / 0.22);
+  --jat-i-plum: #d9cdf6;
+}
