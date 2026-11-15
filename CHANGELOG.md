@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.24.25 (2026-11-15)
+
+- **Developers:** the notes and demo-data tests read the files the app writes as UTF-8, so they pass on Windows too, making the whole test suite pass there; the PM dashboard prints dates without `%-d`, which Windows rejects (#378).
+
 ## 1.24.24 (2026-11-15)
 
 - **Fix:** on Windows, when another program (an editor, antivirus or OneDrive) has a note, an uploaded file or an export file open, saving or deleting a note, uploading a file or a CV version, or downloading a backup tries again for about a second and a half, then says the file is open in another program instead of failing with a server error, and nothing is half-saved. Deleting a file, a CV version or a document still goes through: a file that's open is left in `files/` and named in the server's log. `jat restore --force` puts your old database back if it can't swap in the restored one (even on Ctrl-C) and says to stop `jat serve`, instead of printing a traceback (#376, carrying #357).
