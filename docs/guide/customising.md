@@ -47,7 +47,8 @@ file and reload the page.
 Define the full list under `[workflow]`. Each stage has an `id` (used in the data; don't
 change it once applications use it), a display `name`, a `kind`, an optional
 `stale_after_days`, the usual `next` stages, and an optional `color` (a Mantine colour name:
-gray, red, pink, grape, violet, indigo, blue, cyan, teal, green, lime, yellow, orange, dark).
+gray, red, pink, grape, violet, indigo, blue, cyan, teal, green, lime, yellow, orange, dark),
+shown as a soft pastel version of that colour.
 
 ```toml
 [workflow]

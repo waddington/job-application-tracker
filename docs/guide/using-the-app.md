@@ -887,9 +887,9 @@ role descriptions and call agendas and notes, it's plain text without their Mark
 
 ## Picking dates
 
-Every calendar rings today in indigo, so you can see where you are. Weeks start on Monday. In
-English, dates read day, month, year ("31 Oct 2026", "30 Oct 2026, 19:25"), however your
-browser writes dates elsewhere; in Chinese they read the Chinese way ("2026年10月31日"). You can also
+Every calendar rings today in the app's plum (lavender in dark mode), so you can see where you
+are. Weeks start on Monday. In English, dates read day, month, year ("31 Oct 2026", "30 Oct 2026,
+19:25"), however your browser writes dates elsewhere; in Chinese they read the Chinese way ("2026年10月31日"). You can also
 type a date into a date box, written the same way the box shows it.
 
 ## Language
