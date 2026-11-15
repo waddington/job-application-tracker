@@ -462,3 +462,6 @@ vite.config.ts.timestamp-*
 
 # Playwright (browser tests)
 frontend/test-results/
+
+# Local notes that stay out of git
+ignorable-docs/
