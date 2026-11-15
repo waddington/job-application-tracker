@@ -24,7 +24,7 @@ from sqlalchemy import JSON, Boolean, Engine, MetaData, Table, text
 from ..datadir import DB_NAME
 from ..db import current_revision, db_path, head_revision, is_known_revision, make_engine, migrate
 from ..db.models import DERIVED_TABLES, exported_tables
-from ..platform import replace_with_retry
+from ..platform import FileLocked, replace_with_retry
 
 FORMAT_VERSION = 1
 META_FILE = "_meta.json"
@@ -58,11 +58,9 @@ def _write_atomic(path: Path, content: str) -> None:
         os.fsync(fh.fileno())
     try:
         replace_with_retry(tmp, path)
-    except OSError as exc:
+    except BaseException:
         tmp.unlink(missing_ok=True)
-        raise ExportError(
-            f"Couldn't write {path.name}: file is open in another program (editor, antivirus or OneDrive)."
-        ) from exc
+        raise
 
 
 def _lines(path: Path) -> list[str]:
@@ -203,21 +201,41 @@ def restore_data_dir(data_dir: Path, force: bool = False) -> dict[str, int]:
         _remove_db_files(tmp)
         raise RestoreError(f"Restore failed; nothing was changed: {exc}") from exc
 
-    if path.exists():
-        backup = _backup_name(path)
-        for suffix in ("", "-wal", "-shm"):
-            old = Path(str(path) + suffix)
-            if old.exists():
-                try:
-                    old.rename(Path(str(backup) + suffix))
-                except OSError as exc:
-                    _remove_db_files(tmp)
-                    raise RestoreError(
-                        "Couldn't move existing database aside: stop `jat serve` first if it is running."
-                    ) from exc
+    _swap_in(tmp, path)
+    return counts
+
+
+def _swap_in(tmp: Path, path: Path) -> None:
+    """Move the old database files aside and the restored one into place. If any step fails, put
+    the old files back first, so either everything changed or nothing did."""
+    moved: list[tuple[Path, Path]] = []  # (where it was, where it is now)
     try:
+        if path.exists():
+            backup = _backup_name(path)
+            for suffix in ("", "-wal", "-shm"):
+                old = Path(str(path) + suffix)
+                if old.exists():
+                    aside = Path(str(backup) + suffix)  # a free name: _backup_name checked
+                    replace_with_retry(old, aside)
+                    moved.append((old, aside))
         replace_with_retry(tmp, path)
     except OSError as exc:
+        why = f"{DB_NAME} is open in another program" if isinstance(exc, FileLocked) else str(exc)
+        stuck = []
+        for was, now in reversed(moved):
+            try:
+                replace_with_retry(now, was)
+            except OSError:
+                stuck.append(now)
+        if stuck:
+            # Keep the restored copy as well: with the old files half moved, nothing is deleted.
+            raise RestoreError(
+                f"Couldn't swap in the restored database ({why}), nor put the old one back. Nothing was "
+                f"deleted: your old database files are at {', '.join(str(p) for p in reversed(stuck))}, and "
+                f"the restored one is at {tmp}. Stop `jat serve`, then rename the old files back to {path.name}."
+            ) from exc
         _remove_db_files(tmp)
-        raise RestoreError("Couldn't replace database: stop `jat serve` first if it is running.") from exc
-    return counts
+        raise RestoreError(
+            f"Couldn't swap in the restored database ({why}); nothing was changed. "
+            "Stop `jat serve` if it's running, then run `jat restore --force` again."
+        ) from exc

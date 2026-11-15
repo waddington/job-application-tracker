@@ -9,7 +9,7 @@ from pathlib import Path
 from .config import ConfigError, Settings, resolve_data_dir
 from .datadir import DataDirError, check_outside_code_repo, init_data_dir, is_git_repo
 from .db import MigrationError, current_revision, db_path, head_revision, make_engine, migrate
-from .platform import is_windows, snapshots_allowed
+from .platform import FileLocked, is_windows, snapshots_allowed
 from .snapshot import ExportError, RestoreError, export_data_dir, restore_data_dir
 from .snapshot.export import META_FILE
 from .snapshot.git import SnapshotError
@@ -190,7 +190,7 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
         return args.func(args)
-    except (ConfigError, DataDirError, RestoreError, ExportError, MigrationError, SnapshotError) as exc:
+    except (ConfigError, DataDirError, RestoreError, ExportError, MigrationError, SnapshotError, FileLocked) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
 
