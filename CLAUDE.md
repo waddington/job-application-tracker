@@ -80,7 +80,7 @@ roadmap is `docs/ROADMAP.yaml`, shown by the PM dashboard (see "Project manageme
   itself, and switching a draft on. The PR says it skipped and why.
 - **A website-only PR skips the app's checks** (Kai, 2026-11-12: "if we're changing only website files and
   theres no way it can affect the actual app then we can skip app tests"). When every changed file is under
-  `website/` or `docs/`, is `CHANGELOG.md`, `CLAUDE.md` or the website's workflow (`.github/workflows/website.yml`,
+  `website/` or `docs/`, is `CHANGELOG.md`, `CLAUDE.md`, `.gitignore` or the website's workflow (`.github/workflows/website.yml`,
   which only builds and publishes it), or is maintainer tooling (`tools/dev`, `tools/pm` and
   their tests), plus the version bump's own change (the old version swapped for the new), run
   `tools/dev/checks.sh --website`: the website's format check, `astro check` and build, and the PM and tooling
