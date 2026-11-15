@@ -71,3 +71,55 @@ test("stays still under reduced motion (the stylesheet's still tint shows)", () 
     window.matchMedia = matchMedia;
   }
 });
+
+test("catches up as soon as a hidden tab is shown again, not at the next step", () => {
+  vi.useFakeTimers();
+  vi.setSystemTime(fifth);
+  const visibility = vi.spyOn(document, "visibilityState", "get").mockReturnValue("hidden");
+  const root = document.documentElement;
+  const stop = startDrift(root);
+  expect(root.style.getPropertyValue("--jat-drift-light")).toBe("#fcf8ea");
+  // Two minutes pass with the tab hidden and its timers held back.
+  vi.setSystemTime(2 * fifth);
+  document.dispatchEvent(new Event("visibilitychange"));
+  expect(root.style.getPropertyValue("--jat-drift-light")).toBe("#fcf8ea");
+  visibility.mockReturnValue("visible");
+  document.dispatchEvent(new Event("visibilitychange"));
+  expect(root.style.getPropertyValue("--jat-drift-light")).toBe("#eff8f2");
+  stop();
+  vi.setSystemTime(3 * fifth);
+  document.dispatchEvent(new Event("visibilitychange"));
+  expect(root.style.getPropertyValue("--jat-drift-light")).toBe("#eff8f2");
+  visibility.mockRestore();
+});
+
+test("turning reduced motion on stills it at once, and off starts it again", () => {
+  const matchMedia = window.matchMedia;
+  let onChange = () => {};
+  const query = {
+    ...matchMedia("(prefers-reduced-motion: reduce)"),
+    matches: false,
+    addEventListener: (_type: string, listener: () => void) => {
+      onChange = listener;
+    },
+  };
+  window.matchMedia = (() => query) as unknown as typeof window.matchMedia;
+  try {
+    vi.useFakeTimers();
+    vi.setSystemTime(fifth);
+    const root = document.documentElement;
+    const stop = startDrift(root);
+    expect(root.style.getPropertyValue("--jat-drift-light")).toBe("#fcf8ea");
+    query.matches = true;
+    onChange();
+    expect(root.style.getPropertyValue("--jat-drift-light")).toBe("");
+    expect(root.style.getPropertyValue("--jat-drift-dark")).toBe("");
+    query.matches = false;
+    onChange();
+    expect(root.style.getPropertyValue("--jat-drift-light")).toBe("#fcf8ea");
+    expect(root.style.getPropertyValue("--jat-drift-dark")).toBe("#1b1712");
+    stop();
+  } finally {
+    window.matchMedia = matchMedia;
+  }
+});

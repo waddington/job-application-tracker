@@ -173,7 +173,8 @@ test("text, dimmed text and coloured text read at 4.5:1 on every tint of the dri
   }
   for (const tint of tints("dark")) {
     expect(contrast("#ece8f6", tint), tint).toBeGreaterThanOrEqual(4.5);
-    expect(contrast(over("#ece8f6", 0.7, tint), tint), tint).toBeGreaterThanOrEqual(4.5);
+    // Dark mode's dimmed text is Mantine's dark-2 (theme.ts, plumDark).
+    expect(contrast(full.colors.dark[2], tint), tint).toBeGreaterThanOrEqual(4.5);
   }
 });
 
