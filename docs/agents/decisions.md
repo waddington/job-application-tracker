@@ -105,6 +105,25 @@ Product decisions Kai has made or accepted. Don't re-litigate them; change one o
   and the footer's "no cookies, analytics or trackers" changes with it.
 - Search words: "job application tracker" in the title and h1, "job search tracker" in the description (#352).
 
+## App redesign (P12)
+
+- **Concept 11 is picked and being built** (Kai, 2026-11-15: "i like 11", then "go for 11. plan it out, create the
+  roadmap items"). The plan is `docs/rfc/app-redesign.md`, reviewed with Kai before building starts; the tasks are
+  P12. The reference implementation is draft #354, branch `worktree-app-redesign-concepts` (never merged): `?design=11`
+  on its dev server, code in `frontend/src/design/`.
+- What 11 is: round 1's 4 (calm soft cards); one background on every page that fades very slowly between calm tints,
+  a ten-minute cycle tied to the clock (it carries across page changes and reloads), static under reduced motion;
+  pages full width up to 2,400 px, starting right after the menu; Today in three columns; side panels that slide in and
+  dock, pushing the page aside, never overlaying (the application panel on Applications list and board, Today, Company
+  and Agency); a board that fills the window, columns at least about 180 px; record pages (application, company,
+  person, agency) in two columns plus a narrow side column; Notes as a card grid; Documents as side-by-side cards;
+  Interviews with the calendar beside "still to book"; on phones (below 768 px) a bottom bar of Today, Applications,
+  Interviews, Notes and More (a sheet with the other seven pages), panels full-screen there.
+- The side menu on desktop ("on desktop i prefer side menu"), not a top bar. Concepts 1-3 are out ("overwhelming and
+  not calm"). Fonts: Inter and JetBrains Mono, as in the concepts.
+- The look changes, not what pages hold or do. Every image (README in both languages, demo GIFs, social card, the
+  website's captures) is retaken after the build, and Kai sees each before it's applied.
+
 ## Loading states
 
 - Skeletons, not spinners, for cards and whole pages (Kai, 2026-11-12: "yes skeletons instead of page spinners");
