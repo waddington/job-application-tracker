@@ -29,7 +29,7 @@ def _can_symlink() -> bool:
 CAN_SYMLINK = _can_symlink()
 symlinks_only = pytest.mark.skipif(
     not CAN_SYMLINK,
-    reason="symlinks require Developer Mode or admin privileges on Windows",
+    reason="can't make symlinks here (Windows needs Developer Mode or admin rights)",
 )
 
 

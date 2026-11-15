@@ -1,5 +1,3 @@
-import contextlib
-
 from .conftest import symlinks_only
 from .factories import post
 
@@ -68,28 +66,25 @@ def test_notes_edited_outside_the_app_show_up(client, seeded, app):
     assert full["body"] == "Hello\n"
 
 
-def test_bad_files_are_skipped_not_fatal(client, app, tmp_path):
+def test_bad_files_are_skipped_not_fatal(client, app):
     notes = app.state.jat.data_dir / "notes"
     post(client, "/api/v1/notes", {"title": "Fine"})
     (notes / "latin1.md").write_bytes("caf\xe9".encode("latin-1"))  # not UTF-8
-    secret = tmp_path / "secret.md"
-    secret.write_text("---\ntitle: Outside\n---\nshh\n")
-    with contextlib.suppress(OSError):  # Windows without Developer Mode: skip symlink
-        (notes / "sneaky.md").symlink_to(secret)
     r = client.get("/api/v1/notes")
     assert r.status_code == 200
     assert [n["title"] for n in r.json()] == ["Fine"]
 
 
 @symlinks_only
-def test_symlinks_in_notes_are_never_read_or_indexed(client, app, tmp_path):
+def test_symlinked_notes_are_skipped(client, app, tmp_path):
     notes = app.state.jat.data_dir / "notes"
+    post(client, "/api/v1/notes", {"title": "Fine"})
     secret = tmp_path / "secret.md"
     secret.write_text("---\ntitle: Outside\n---\nshh\n")
     (notes / "sneaky.md").symlink_to(secret)
     r = client.get("/api/v1/notes")
     assert r.status_code == 200
-    assert not any(n["title"] == "Outside" for n in r.json())
+    assert [n["title"] for n in r.json()] == ["Fine"]
 
 
 def test_saving_still_works_when_a_linked_thing_is_gone(client, seeded):

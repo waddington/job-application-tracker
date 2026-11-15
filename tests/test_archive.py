@@ -11,6 +11,7 @@ from jat.cli import main
 from jat.db import db_path
 from jat.snapshot import archive
 
+from .conftest import symlinks_only
 from .factories import post
 
 
@@ -24,14 +25,6 @@ def test_archive_download_restores_to_the_same_data(app, client, tmp_path):
     (data_dir / "notes" / "call.md").write_text("---\ntitle: Call\n---\nHello\n")
     (data_dir / "files" / "2026").mkdir(parents=True, exist_ok=True)
     (data_dir / "files" / "2026" / "cv.pdf").write_bytes(b"%PDF-1.4 fake")
-    secret = tmp_path / "outside.txt"
-    secret.write_text("not part of the data directory")
-    has_symlink = False
-    try:
-        (data_dir / "files" / "link.txt").symlink_to(secret)
-        has_symlink = True
-    except OSError:
-        pass  # Windows without Developer Mode: skip symlink
     (data_dir / ".tmp").mkdir(exist_ok=True)
     (data_dir / ".tmp" / "upload.part").write_bytes(b"half an upload")
 
@@ -44,10 +37,8 @@ def test_archive_download_restores_to_the_same_data(app, client, tmp_path):
     assert f"{root}/RESTORE.md" in names
     assert f"{root}/notes/call.md" in names and f"{root}/files/2026/cv.pdf" in names
     assert f"{root}/export/companies.jsonl" in names and f"{root}/export/_meta.json" in names
-    # No database, no temp files, no git, nothing reached through a symlink.
-    assert not [
-        n for n in names if "sqlite" in n or "/.tmp/" in n or "/.git/" in n or (has_symlink and n.endswith("link.txt"))
-    ]
+    # No database, no temp files, no git (symlinks: test_archive_download_skips_symlinks).
+    assert not [n for n in names if "sqlite" in n or "/.tmp/" in n or "/.git/" in n]
     # The staging copy is cleaned up once sent.
     assert not list((data_dir / ".tmp").glob("archive-*.zip"))
 
@@ -59,6 +50,18 @@ def test_archive_download_restores_to_the_same_data(app, client, tmp_path):
     assert db_path(restored).exists()
     again = TestClient(base_url="http://127.0.0.1", app=create_app(restored, dist=tmp_path / "no-dist"))
     assert [c["name"] for c in again.get("/api/v1/companies").json()] == ["Contoso"]
+
+
+@symlinks_only
+def test_archive_download_skips_symlinks(app, client, tmp_path):
+    data_dir = app.state.snapshots.data_dir
+    secret = tmp_path / "outside.txt"
+    secret.write_text("not part of the data directory")
+    (data_dir / "files" / "link.txt").symlink_to(secret)
+    r = client.get("/api/v1/backup/archive")
+    assert r.status_code == 200
+    # Nothing reached through a symlink.
+    assert not [n for n in _names(r.content) if n.endswith("link.txt")]
 
 
 def test_cli_archive(app, client, tmp_path, capsys):
