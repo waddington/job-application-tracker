@@ -9,6 +9,7 @@ from __future__ import annotations
 import errno
 import logging
 import os
+import zipfile
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -363,4 +364,85 @@ def test_jat_restore_force_says_what_happened(restorable, lock, capsys):
     assert "nothing was changed" in err
     assert "Stop `jat serve`" in err
     assert "Traceback" not in err
+    assert db_files(restorable) == before
+
+
+# --- clean-ups and interruptions never hide what happened --------------------------------------
+
+
+@pytest.mark.parametrize("what", ["note", "upload", "archive"])
+def test_a_locked_temp_file_does_not_hide_the_lock(app, client, lock, tmp_path, caplog, what):
+    """Antivirus can hold the temp file too: its clean-up then fails, and the answer is still the 409."""
+    data_dir = app.state.jat.data_dir
+    if what == "note":
+        lock.match = lambda s, d: d.suffix == ".md"  # the save and the temp file's clean-up
+
+        def call():
+            return client.post("/api/v1/notes", json={"title": "Call", "body": "x", "links": []})
+    elif what == "upload":
+        lock.match = lambda s, d: d.is_relative_to(data_dir / "files") or (s == d and d.name.startswith("upload-"))
+
+        def call():
+            return client.post("/api/v1/attachments", files={"file": ("cv.pdf", b"%PDF", "application/pdf")})
+    else:
+        lock.match = lambda s, d: d.name.startswith("companies.jsonl")  # the file and companies.jsonl.tmp
+
+        def call():
+            return client.get("/api/v1/backup/archive")
+
+    with caplog.at_level(logging.WARNING, logger="jat.platform"):
+        assert_locked(call(), tmp_path)
+    assert any("temporary file" in r.getMessage() for r in caplog.records)
+
+
+def test_downloading_a_backup_when_a_note_is_held_open(app, client, lock, tmp_path, monkeypatch):
+    """Reading a note for the zip fails with a sharing violation: the same 409, and no zip left."""
+    post(client, "/api/v1/notes", {"title": "Call notes", "body": "x", "links": []})
+    real_write = zipfile.ZipFile.write
+
+    def write(self, filename, *args, **kwargs):
+        if Path(filename).suffix == ".md":
+            raise lock_error()
+        return real_write(self, filename, *args, **kwargs)
+
+    monkeypatch.setattr(zipfile.ZipFile, "write", write)
+    assert_locked(client.get("/api/v1/backup/archive"), tmp_path)
+    assert not list((app.state.jat.data_dir / ".tmp").glob("archive-*.zip"))
+
+
+def test_a_restore_whose_leftover_copy_cannot_be_deleted_still_says_nothing_changed(restorable, lock, capsys):
+    before = db_files(restorable)
+    # The final replace fails, and so does deleting the unused restored copy afterwards.
+    swapping = SimpleNamespace(failed=False)
+
+    def match(s, d):
+        if s != d and s.name.endswith(".restoring"):
+            swapping.failed = True
+            return True
+        return swapping.failed and s.name.startswith("tracker.sqlite3.restoring")  # the clean-up after
+
+    lock.match = match
+    assert main(["--data-dir", str(restorable), "restore", "--force"]) == 2
+    assert "nothing was changed" in capsys.readouterr().err
+    after = db_files(restorable)
+    assert {k: v for k, v in after.items() if ".restoring" not in k} == before
+
+
+@pytest.mark.parametrize(
+    "fails",
+    [
+        pytest.param(lambda s, d: s.name.endswith("-wal") and ".bak-" in d.name, id="moving -wal aside"),
+        pytest.param(lambda s, d: s != d and s.name.endswith(".restoring"), id="the final replace"),
+    ],
+)
+def test_ctrl_c_during_a_restore_retry_puts_everything_back(restorable, lock, monkeypatch, fails):
+    before = db_files(restorable)
+
+    def interrupt(_seconds):
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr(platform, "time", SimpleNamespace(sleep=interrupt))
+    lock.match = fails
+    with pytest.raises(KeyboardInterrupt):
+        restore_data_dir(restorable, force=True)
     assert db_files(restorable) == before
