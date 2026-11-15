@@ -3,7 +3,6 @@ import {
   Anchor,
   AppShell,
   Burger,
-  Divider,
   Group,
   NavLink,
   Stack,
@@ -21,6 +20,7 @@ import { useTranslation } from "react-i18next";
 
 import { isActive, NAV, NAV_GROUP_KEYS, NAV_GROUPS } from "../nav";
 import theme from "../theme.module.css";
+import classes from "./Layout.module.css";
 import { ApiStatus } from "./ApiStatus";
 import { AppVersion } from "./AppVersion";
 import { HeaderSearch } from "./HeaderSearch";
@@ -50,7 +50,8 @@ export function Layout() {
     <AppShell
       header={{ height: 56 }}
       navbar={{ width: 230, breakpoint: "sm", collapsed: { mobile: !opened } }}
-      padding="md"
+      padding={{ base: "md", sm: 28 }}
+      classNames={{ header: classes.header, navbar: classes.navbar }}
     >
       <AppShell.Header>
         <Group h="100%" px="md" justify="space-between">
@@ -65,7 +66,7 @@ export function Layout() {
             <Anchor component={Link} to="/" underline="never" c="inherit" aria-label={t("app.homeLabel")}>
               <Group gap="xs" wrap="nowrap">
                 <IconTarget size={22} />
-                <Title order={1} size="h4" visibleFrom="xs">
+                <Title order={1} size="h4" visibleFrom="xs" className={classes.brand}>
                   {t("app.name")}
                 </Title>
               </Group>
@@ -87,8 +88,12 @@ export function Layout() {
           // A heading that only repeats its one item's name ("Today") says nothing.
           const heading = !(items.length === 1 && t(items[0]!.labelKey) === t(NAV_GROUP_KEYS[group]));
           return (
-            <div key={group} role="group" aria-label={t(NAV_GROUP_KEYS[group])}>
-              {n > 0 && <Divider my={4} />}
+            <div
+              key={group}
+              role="group"
+              aria-label={t(NAV_GROUP_KEYS[group])}
+              className={n > 0 ? classes.group : undefined}
+            >
               {heading && (
                 <Text className={theme.eyebrow} px="sm" pt={6} pb={2}>
                   {t(NAV_GROUP_KEYS[group])}
@@ -101,6 +106,7 @@ export function Layout() {
                   to={item.path}
                   label={t(item.labelKey)}
                   leftSection={<item.icon size={18} stroke={1.6} />}
+                  className={classes.navLink}
                   active={isActive(item, pathname)}
                   onClick={close}
                 />

@@ -1,4 +1,4 @@
-import { Button, Group, Loader, SegmentedControl, Stack, TextInput, Title } from "@mantine/core";
+import { Button, Group, Loader, SegmentedControl, TextInput, Title } from "@mantine/core";
 import { useDebouncedValue } from "@mantine/hooks";
 import { IconNotes, IconPlus, IconSearch } from "@tabler/icons-react";
 import { useState } from "react";
@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { useNotes } from "../api/noteHooks";
 import { NoteEditorModal } from "../components/NoteEditorModal";
 import { NotesList } from "../components/Notes";
+import { Page } from "../components/Page";
 
 /** Every note: general ones and those attached to applications, companies and people. */
 export function NotesPage() {
@@ -21,7 +22,7 @@ export function NotesPage() {
   });
 
   return (
-    <Stack maw={900}>
+    <Page>
       <Group justify="space-between">
         <Group gap="sm">
           <IconNotes size={26} stroke={1.6} />
@@ -56,6 +57,6 @@ export function NotesPage() {
         <NotesList notes={notes} empty={debouncedQ.trim() ? t("page.noMatches") : t("page.none")} />
       )}
       {adding && <NoteEditorModal opened onClose={() => setAdding(false)} note={null} />}
-    </Stack>
+    </Page>
   );
 }

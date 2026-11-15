@@ -11,6 +11,7 @@ import {
   Switch,
   Table,
   TagsInput,
+  Title,
   virtualColor,
   type CSSVariablesResolver,
   type MantineColorsTuple,
@@ -223,6 +224,10 @@ export function themeFor(lang: string) {
         }),
       }),
       Badge: Badge.extend({ defaultProps: { radius: "xl" } }),
+      // A page's title (every page's is an h2): a big, light display title.
+      Title: Title.extend({
+        classNames: (_theme, props) => (props.order === 2 ? { root: classes.pageTitle } : {}),
+      }),
       // Table headers are the website's eyebrow: mono capitals after a small square.
       Table: Table.extend({ classNames: { th: classes.th } }),
       // Bars (the pipeline on Today) in deeper pastels, with ink numbers.

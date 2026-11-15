@@ -33,6 +33,7 @@ import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { Page } from "../components/Page";
 import { ReplyHabit } from "../components/ReplyHabit";
 import type { Contact } from "../api/client";
 import { FavouriteMark, FavouriteToggle, GhostMark } from "../components/GhostMark";
@@ -336,7 +337,7 @@ export function RecruitersPage() {
   );
 
   return (
-    <Stack>
+    <Page>
       <Group justify="space-between">
         <Group gap="sm">
           <IconUsers size={26} stroke={1.6} />
@@ -456,6 +457,6 @@ export function RecruitersPage() {
         contact={editing}
         onClose={() => setEditing(undefined)}
       />
-    </Stack>
+    </Page>
   );
 }

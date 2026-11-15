@@ -43,6 +43,7 @@ import {
   type DocumentVersion,
 } from "../api/documentHooks";
 import { humanSize } from "../components/Attachments";
+import { Page } from "../components/Page";
 import { stageName } from "../utils/stageName";
 import { formatDate } from "../utils/time";
 
@@ -301,7 +302,7 @@ export function DocumentsPage() {
   const { data: documents, isLoading } = useDocuments();
   const [creating, setCreating] = useState(false);
   return (
-    <Stack maw={900}>
+    <Page>
       <Group justify="space-between">
         <Group gap="sm">
           <IconFileText size={26} stroke={1.6} />
@@ -324,6 +325,6 @@ export function DocumentsPage() {
         </Card>
       )}
       {creating && <NewDocumentModal onClose={() => setCreating(false)} />}
-    </Stack>
+    </Page>
   );
 }

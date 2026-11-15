@@ -19,6 +19,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { PersonMarks, PersonName } from "../components/GhostMark";
+import { Page } from "../components/Page";
 import { RecruiterLine } from "../components/RecruiterLine";
 import type { Schemas } from "../api/client";
 import { useCompanySummary, useUpdateCompany } from "../api/detailHooks";
@@ -92,7 +93,7 @@ export function CompanyPage() {
   const { company, applications, contacts } = data;
 
   return (
-    <Stack maw={1200}>
+    <Page>
       <Anchor component={Link} to="/companies" size="sm">
         <Group gap={4}>
           <IconArrowLeft size={14} /> {t("company.all")}
@@ -269,6 +270,6 @@ export function CompanyPage() {
         </Grid.Col>
       </Grid>
       <ApplicationDrawer id={openId} onClose={() => setOpenId(null)} />
-    </Stack>
+    </Page>
   );
 }

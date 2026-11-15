@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useRoleSummaries, type RoleStatus } from "../api/roleHooks";
+import { Page } from "../components/Page";
 import { RoleFormModal, RoleLine } from "../components/Roles";
 
 type View = RoleStatus | "all";
@@ -34,7 +35,7 @@ export function RolesPage() {
   const { data: roles, isLoading } = useRoleSummaries(view === "all" ? {} : { status: view });
 
   return (
-    <Stack maw={1000}>
+    <Page>
       <Group justify="space-between" align="flex-end">
         <div>
           <Group gap="sm">
@@ -74,6 +75,6 @@ export function RolesPage() {
         </Card>
       )}
       {adding && <RoleFormModal opened onClose={() => setAdding(false)} />}
-    </Stack>
+    </Page>
   );
 }

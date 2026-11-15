@@ -1,0 +1,96 @@
+/*
+ * The frame (docs/rfc/app-redesign.md §2, Frame): one background on every page, behind the header and the side
+ * menu too, fading very slowly through five calm tints over ten minutes.
+ *
+ * The phase comes from the clock: main.tsx sets --jat-drift-delay to minus the time into the cycle, so changing
+ * pages or reloading never restarts it. Light and dark tints move together in one animation, each scheme showing
+ * its own, so switching the scheme doesn't restart it either. The tints aren't inherited: only the three surfaces
+ * that paint the page (the body, the header and the menu) animate them, so a change restyles three elements, not
+ * the whole page. Each step is a twentieth of the way between two tints (6 s apart, under one shade of colour), so
+ * the page repaints every few seconds, not every frame (§9, Performance). Still under reduced motion (§8).
+ */
+@property --jat-drift-light {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: #f4f1fb;
+}
+@property --jat-drift-dark {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: #17121f;
+}
+
+/* Lilac, butter, mint, sky, apricot; and their plum-night twins. */
+@keyframes drift {
+  0%,
+  100% {
+    --jat-drift-light: #f4f1fb;
+    --jat-drift-dark: #17121f;
+  }
+  20% {
+    --jat-drift-light: #fcf8ea;
+    --jat-drift-dark: #1b1712;
+  }
+  40% {
+    --jat-drift-light: #eff8f2;
+    --jat-drift-dark: #111a16;
+  }
+  60% {
+    --jat-drift-light: #eef3fb;
+    --jat-drift-dark: #111722;
+  }
+  80% {
+    --jat-drift-light: #fcf3ea;
+    --jat-drift-dark: #1c1510;
+  }
+}
+
+/* The body's background fills the window (the canvas takes it), behind every page. */
+:global(body),
+.header,
+.navbar {
+  background: var(--jat-drift-light);
+  animation: drift 600s steps(20) var(--jat-drift-delay, 0s) infinite;
+}
+:global(:root[data-mantine-color-scheme="dark"] body),
+:where([data-mantine-color-scheme="dark"]) .header,
+:where([data-mantine-color-scheme="dark"]) .navbar {
+  background: var(--jat-drift-dark);
+}
+@media (prefers-reduced-motion: reduce) {
+  :global(body),
+  .header,
+  .navbar {
+    animation: none;
+  }
+}
+
+.header,
+.navbar {
+  border-color: transparent;
+}
+
+/* The app's name in the header: a little weight, a little tighter. */
+.brand {
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+/* The menu: pills, the page you're on lifted onto a card's surface. */
+.navLink {
+  border-radius: 999px;
+  margin-bottom: 2px;
+}
+.navLink[data-active] {
+  background-color: var(--jat-surface);
+  color: var(--mantine-color-text);
+  font-weight: 600;
+  box-shadow: 0 8px 22px -12px rgb(var(--jat-shadow) / 0.35);
+}
+.navLink[data-active]:hover {
+  background-color: var(--jat-surface);
+}
+/* Groups sit apart by space alone, no rule between them. */
+.group {
+  margin-top: 9px;
+}

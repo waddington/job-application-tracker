@@ -35,6 +35,7 @@ import {
 import { AtAGlance } from "../components/AtAGlance";
 import { AttachmentsCard } from "../components/Attachments";
 import { LinksCard } from "../components/Links";
+import { Page } from "../components/Page";
 import { TodosCard } from "../components/Todos";
 import { NotesCard } from "../components/Notes";
 import { relationLabel, relationOptions, type Relation } from "../api/peopleHooks";
@@ -270,7 +271,7 @@ export function ApplicationPage() {
   const router = useRouter();
 
   return (
-    <Stack maw={1200}>
+    <Page>
       <Group justify="space-between">
         <Anchor component={Link} to="/applications" size="sm">
           <Group gap={4}>
@@ -332,6 +333,6 @@ export function ApplicationPage() {
           </Grid.Col>
         </Grid>
       )}
-    </Stack>
+    </Page>
   );
 }

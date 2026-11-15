@@ -25,6 +25,7 @@ import { DeleteButton } from "../components/DeleteButton";
 import { LinksCard } from "../components/Links";
 import { Markdown } from "../components/Markdown";
 import { NotesCard } from "../components/Notes";
+import { Page } from "../components/Page";
 import { pay, RoleActions, RoleFormModal } from "../components/Roles";
 import { StageBadge } from "../components/StageBadge";
 import { TodosCard } from "../components/Todos";
@@ -90,7 +91,7 @@ export function RolePage() {
     .map((key) => t(key));
 
   return (
-    <Stack maw={1200}>
+    <Page>
       <Anchor component={Link} to="/roles" size="sm">
         <Group gap={4}>
           <IconArrowLeft size={14} /> {t("page.back")}
@@ -268,6 +269,6 @@ export function RolePage() {
           </Stack>
         </Grid.Col>
       </Grid>
-    </Stack>
+    </Page>
   );
 }

@@ -12,6 +12,8 @@
   --jat-anchor: #5d4a94;
   --jat-shadow: 42 30 63;
   --jat-ring: 42 30 63;
+  /* A card's surface, for things lifted off the page (the menu's current page). */
+  --jat-surface: #fff;
 
   /* The plum button: the website's gradient, a step lighter on hover. */
   --jat-plum-gradient: linear-gradient(180deg, #4a3a68, #2a1e3f);
@@ -82,6 +84,7 @@
   --jat-anchor: #c9b8f0;
   --jat-shadow: 0 0 0;
   --jat-ring: 236 232 246;
+  --jat-surface: var(--mantine-color-dark-6);
 
   /* The lavender button, with dark text on it. */
   --jat-plum-gradient: linear-gradient(180deg, #d9cdf6, #c9b8f0);

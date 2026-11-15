@@ -23,6 +23,7 @@ import { useAgencySummary } from "../api/detailHooks";
 import { stageLookup, useWorkflow } from "../api/hooks";
 import { useUpdateAgency } from "../api/peopleHooks";
 import { ApplicationDrawer } from "../components/ApplicationDrawer";
+import { Page } from "../components/Page";
 import { TimelineButton } from "../components/TimelineButton";
 import { AttachmentsCard } from "../components/Attachments";
 import { LinksCard } from "../components/Links";
@@ -52,7 +53,7 @@ export function AgencyPage() {
   const { agency, recruiters, applications } = data;
 
   return (
-    <Stack maw={1200}>
+    <Page>
       <Anchor component={Link} to="/recruiters" size="sm">
         <Group gap={4}>
           <IconArrowLeft size={14} /> {t("agency.all")}
@@ -193,6 +194,6 @@ export function AgencyPage() {
         defaultAgencyId={agency.id}
         onClose={() => setEditing(undefined)}
       />
-    </Stack>
+    </Page>
   );
 }

@@ -20,6 +20,7 @@ import { Trans, useTranslation } from "react-i18next";
 
 import { useCreateCompany } from "../api/detailHooks";
 import { useApplications, useCompanies } from "../api/hooks";
+import { Page } from "../components/Page";
 import text from "../text.module.css";
 
 const companyPath = (id: string) => `/companies/${id}`;
@@ -93,7 +94,7 @@ export function CompaniesPage() {
   const shown = (companies ?? []).filter((c) => c.name.toLowerCase().includes(q.trim().toLowerCase()));
 
   return (
-    <Stack>
+    <Page>
       <Group justify="space-between">
         <Group gap="sm">
           <IconBuilding size={26} stroke={1.6} />
@@ -184,6 +185,6 @@ export function CompaniesPage() {
           components={{ apps: <Anchor component={Link} to="/applications" /> }}
         />
       </Text>
-    </Stack>
+    </Page>
   );
 }

@@ -20,6 +20,7 @@ import {
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Trans, useTranslation } from "react-i18next";
 
+import { Page } from "../components/Page";
 import { eventText } from "../components/eventText";
 import { PersonMarks } from "../components/GhostMark";
 import { useSearchResults, type SearchHit } from "../api/searchHooks";
@@ -154,7 +155,7 @@ export function SearchPage() {
   const words = q.split(/\s+/).filter(Boolean);
 
   return (
-    <Stack maw={900}>
+    <Page>
       <Group gap="sm">
         <IconSearch size={26} stroke={1.6} />
         <Title order={2}>{q ? t("search.resultsFor", { q }) : t("search.title")}</Title>
@@ -182,6 +183,6 @@ export function SearchPage() {
           </Stack>
         </Card>
       )}
-    </Stack>
+    </Page>
   );
 }

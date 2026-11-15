@@ -4,7 +4,6 @@ import {
   Card,
   Group,
   Loader,
-  Stack,
   Switch,
   Table,
   Text,
@@ -19,6 +18,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { headline, money, OFFER_STATUS, useOffers, type Offer } from "../api/offerHooks";
+import { Page } from "../components/Page";
 import { RecruiterLine } from "../components/RecruiterLine";
 import { i18n } from "../i18n";
 import { formatDate } from "../utils/time";
@@ -104,7 +104,7 @@ export function OffersPage() {
   const best = offers.find((o) => (o.currency ?? "") === main && o.annual_value != null);
 
   return (
-    <Stack maw={1200}>
+    <Page>
       <Group justify="space-between" wrap="wrap">
         <Group gap="sm">
           <IconCash size={26} stroke={1.6} />
@@ -184,6 +184,6 @@ export function OffersPage() {
           </Table.ScrollContainer>
         </Card>
       )}
-    </Stack>
+    </Page>
   );
 }
