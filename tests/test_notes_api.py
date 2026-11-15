@@ -1,3 +1,4 @@
+from .conftest import symlinks_only
 from .factories import post
 
 
@@ -65,10 +66,19 @@ def test_notes_edited_outside_the_app_show_up(client, seeded, app):
     assert full["body"] == "Hello\n"
 
 
-def test_bad_files_are_skipped_not_fatal(client, app, tmp_path):
+def test_bad_files_are_skipped_not_fatal(client, app):
     notes = app.state.jat.data_dir / "notes"
     post(client, "/api/v1/notes", {"title": "Fine"})
     (notes / "latin1.md").write_bytes("caf\xe9".encode("latin-1"))  # not UTF-8
+    r = client.get("/api/v1/notes")
+    assert r.status_code == 200
+    assert [n["title"] for n in r.json()] == ["Fine"]
+
+
+@symlinks_only
+def test_symlinked_notes_are_skipped(client, app, tmp_path):
+    notes = app.state.jat.data_dir / "notes"
+    post(client, "/api/v1/notes", {"title": "Fine"})
     secret = tmp_path / "secret.md"
     secret.write_text("---\ntitle: Outside\n---\nshh\n")
     (notes / "sneaky.md").symlink_to(secret)

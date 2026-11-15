@@ -7,6 +7,9 @@ steps. The tracker now starts on Windows, with git snapshots turned off there (t
 connection tooltip says "snapshots off on Windows"), but other parts still need work, so don't
 use it for your real data on Windows yet.
 
+If you are helping test Windows, the
+[Windows test-run checklist](install.md#checking-a-windows-test-run) lists what to try.
+
 ## `uv sync` asks for a C compiler, or "Microsoft Visual C++ 14.0 or greater is required"
 
 uv is building a package from source because it picked a Python too new to have ready-built
