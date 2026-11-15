@@ -1,4 +1,13 @@
-import { Button, DEFAULT_THEME, MantineProvider, mergeMantineTheme, Table } from "@mantine/core";
+import {
+  Button,
+  Checkbox,
+  DEFAULT_THEME,
+  defaultCssVariablesResolver,
+  MantineProvider,
+  mergeMantineTheme,
+  Select,
+  Table,
+} from "@mantine/core";
 import { DateInput, DatesProvider, DateTimePicker } from "@mantine/dates";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { readFileSync } from "node:fs";
@@ -83,7 +92,13 @@ test("plum is the primary colour, lavender in dark mode, over plum-tinted dark g
   expect(full.colors.plumGlow?.[8]).toBe("#c9b8f0"); // dark primary shade
   expect(full.colors.dark?.[7]).toBe("#1d1729"); // the page
   expect(full.colors.dark?.[6]).toBe("#2d2541"); // cards
-  expect(full.autoContrast).toBe(true); // dark text on lavender
+  // Dark text on the lavender, white on the plum.
+  expect(defaultCssVariablesResolver(full).dark["--mantine-color-plum-contrast"]).toBe(
+    "var(--mantine-color-black)",
+  );
+  expect(defaultCssVariablesResolver(full).light["--mantine-color-plum-contrast"]).toBe(
+    "var(--mantine-color-white)",
+  );
 });
 
 test("Inter and JetBrains Mono come first, with the Chinese fonts kept as fallbacks", () => {
@@ -165,4 +180,58 @@ test("table headers carry the eyebrow class", () => {
     </MantineProvider>,
   );
   expect(screen.getByRole("columnheader", { name: "Stage" })).toHaveClass(String(classes.th));
+});
+
+test("a header row that names records keeps plain headers", () => {
+  render(
+    <MantineProvider theme={theme}>
+      <Table>
+        <Table.Thead data-records>
+          <Table.Tr>
+            <Table.Th>Example Co</Table.Th>
+          </Table.Tr>
+        </Table.Thead>
+      </Table>
+    </MantineProvider>,
+  );
+  // The eyebrow's rules are scoped to thead:not([data-records]), so this row opts out of them.
+  expect(screen.getByRole("columnheader", { name: "Example Co" }).closest("thead")).toHaveAttribute(
+    "data-records",
+  );
+  expect(readFileSync(join(dirname(fileURLToPath(import.meta.url)), "theme.module.css"), "utf8")).not.toMatch(
+    /(^|[\s,])thead \.th/m,
+  );
+});
+
+test("dark mode's lavender button reads with dark text (4.5:1)", () => {
+  expect(contrast("#c9b8f0", "#000000")).toBeGreaterThanOrEqual(4.5);
+  expect(contrast("#d9cdf6", "#000000")).toBeGreaterThanOrEqual(4.5);
+  expect(tokens).toContain("--jat-plum-gradient: linear-gradient(180deg, #d9cdf6, #c9b8f0);");
+});
+
+test("a primary checkbox's tick takes the primary's contrast colour, not white", () => {
+  render(
+    <MantineProvider theme={theme}>
+      <Checkbox label="Plain" defaultChecked />
+      <Checkbox label="Teal" color="teal" defaultChecked />
+    </MantineProvider>,
+  );
+  const root = (name: string) => screen.getByLabelText(name).closest("[style]") as HTMLElement;
+  expect(root("Plain").style.getPropertyValue("--checkbox-icon-color")).toBe(
+    "var(--mantine-primary-color-contrast)",
+  );
+  expect(root("Teal").style.getPropertyValue("--checkbox-icon-color")).not.toBe(
+    "var(--mantine-primary-color-contrast)",
+  );
+});
+
+test("a dropdown's options carry the class that writes in the primary's contrast colour", () => {
+  render(
+    <MantineProvider theme={theme}>
+      <Select label="Pick" data={["One", "Two"]} dropdownOpened />
+    </MantineProvider>,
+  );
+  for (const option of screen.getAllByRole("option", { hidden: true })) {
+    expect(option).toHaveClass(String(classes.option));
+  }
 });

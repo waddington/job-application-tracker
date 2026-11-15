@@ -1,15 +1,21 @@
 import {
+  Autocomplete,
   Badge,
   Button,
   Card,
+  Checkbox,
   createTheme,
+  MultiSelect,
   Progress,
+  Select,
+  Switch,
   Table,
+  TagsInput,
   virtualColor,
   type CSSVariablesResolver,
   type MantineColorsTuple,
 } from "@mantine/core";
-import { DateInput, DateTimePicker } from "@mantine/dates";
+import { DateInput, DateTimePicker, TimePicker } from "@mantine/dates";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import { FALLBACK } from "./i18n/language";
@@ -132,6 +138,7 @@ export const cssVariablesResolver: CSSVariablesResolver = () => {
     "--mantine-color-green-text": "#22692f",
     "--mantine-color-teal-text": "#0b6b4f",
     "--mantine-color-blue-text": "#1a5aa3",
+    "--mantine-color-default-color": "var(--jat-ink)",
   };
   const dark: Record<string, string> = {
     "--mantine-color-anchor": "var(--jat-anchor)",
@@ -159,6 +166,15 @@ export const cssVariablesResolver: CSSVariablesResolver = () => {
   }
   return { variables: {}, light, dark };
 };
+
+/** The option picked with the arrow keys in a dropdown sits on the primary colour. */
+const onPrimary = { classNames: { option: classes.option } };
+
+/**
+ * A colour's deeper pastel, as bars use it (tokens.css), for the key beside a bar; a colour without one
+ * keeps Mantine's filled shade.
+ */
+export const barColor = (color: string) => `var(--jat-bar-${color}, var(--mantine-color-${color}-filled))`;
 
 /** Whether a button is the plum (primary) filled one, which carries the website's gradient. */
 const isPlumFilled = (primary: string, props: { variant?: string; color?: string }) =>
@@ -216,6 +232,30 @@ export function themeFor(lang: string) {
           section: classes.progressSection,
           label: classes.progressLabel,
         },
+      }),
+      // Mantine writes white on the primary colour in a few places; on dark mode's lavender that's
+      // unreadable, so these take the primary's contrast colour (white on plum, dark on lavender).
+      Checkbox: Checkbox.extend({
+        vars: (_theme, props) => ({
+          root: {
+            "--checkbox-icon-color":
+              props.color || props.iconColor || props.variant === "outline"
+                ? undefined
+                : "var(--mantine-primary-color-contrast)",
+          },
+        }),
+      }),
+      Switch: Switch.extend({
+        classNames: (_theme, props) =>
+          props.color ? {} : { input: classes.switchInput, thumb: classes.switchThumb },
+      }),
+      Select: Select.extend(onPrimary),
+      MultiSelect: MultiSelect.extend(onPrimary),
+      Autocomplete: Autocomplete.extend(onPrimary),
+      TagsInput: TagsInput.extend(onPrimary),
+      // The time fields (in DateTimePicker too): the focused field and the chosen hour or minute.
+      TimePicker: TimePicker.extend({
+        classNames: { field: classes.timeField, control: classes.timeControl },
       }),
       DateInput: DateInput.extend({
         ...today,

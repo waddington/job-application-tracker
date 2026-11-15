@@ -100,3 +100,28 @@ thead:not([data-records]) .th button {
 .progressLabel {
   color: var(--jat-bar-ink);
 }
+/* A bar's key: a dot in the bar's pastel, with a thin ring so a pale one still shows on white. */
+.keyDot {
+  display: inline-block;
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--key-dot);
+  box-shadow: 0 0 0 1px rgb(var(--jat-ring) / 0.45);
+  vertical-align: 0.05em;
+  align-self: center;
+}
+
+/* Text on the primary colour takes its contrast colour (white on plum, dark on lavender), where Mantine
+   writes white: the arrow-key option in a dropdown, the time picker's focused field and chosen value,
+   and a switch's thumb when it's on. */
+.option[data-combobox-selected],
+.timeField:focus,
+.timeField:focus::placeholder,
+.timeControl[data-active] {
+  color: var(--mantine-primary-color-contrast);
+}
+.switchInput:checked + * .switchThumb {
+  background-color: var(--mantine-primary-color-contrast);
+}
