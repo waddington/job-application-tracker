@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import contextlib
 import logging
 import mimetypes
 
@@ -13,10 +12,11 @@ from sqlalchemy.orm import Session
 
 from ..db.models import Application, Attachment, DocumentVersion
 from ..domain import applications as svc
+from ..platform import FileLocked
 from ..storage import eml
 from ..storage.files import FileError, FileStore, TooLarge
 from . import schemas as S
-from .deps import ENTITY_MODELS, ENTITY_NOT_FOUND, SessionDep, get_or_404
+from .deps import ENTITY_MODELS, ENTITY_NOT_FOUND, SessionDep, file_locked, get_or_404
 from .errors import CodedError
 
 router = APIRouter(prefix="/attachments", tags=["attachments"])
@@ -25,6 +25,27 @@ log = logging.getLogger(__name__)
 # Only these open in the browser. Anything else (HTML, SVG, scripts…) is downloaded, so a file
 # can never run as a page on the app's own origin.
 INLINE_TYPES = {"application/pdf", "image/png", "image/jpeg", "image/gif", "image/webp", "text/plain"}
+
+
+def discard(store: FileStore, path: str) -> None:
+    """Delete a file saved for a request that then failed. Never raises, so the request's own error
+    is the one that propagates; a file left behind is logged."""
+    try:
+        store.delete(path)
+    except Exception:
+        log.warning("couldn't delete %s after a failed save; it's left in files/", path, exc_info=True)
+
+
+def delete_after_commit(store: FileStore, path: str) -> None:
+    """Delete a file whose record is already gone. Never raises: the delete has happened as far as
+    anyone can see. A file the store refuses to touch is left be; one that can't be deleted (open
+    in another program, say) is logged and left in files/, with nothing pointing at it."""
+    try:
+        store.delete(path)
+    except FileError:
+        pass
+    except OSError:
+        log.warning("couldn't delete %s; its record is gone, so the file is left orphaned", path, exc_info=True)
 
 
 def _store(request: Request) -> FileStore:
@@ -116,6 +137,8 @@ def upload_attachment(
         raise CodedError(413, str(exc), exc.code, exc.params) from exc
     except FileError as exc:
         raise CodedError(422, str(exc), exc.code, exc.params) from exc
+    except FileLocked as exc:
+        raise file_locked() from exc
     meta: dict = {}
     if eml.is_eml(name, file.content_type):
         content_type = "message/rfc822"  # never shown inline
@@ -163,7 +186,7 @@ def upload_attachment(
         session.commit()  # now, so a failed save can take its file with it
     except BaseException:
         session.rollback()
-        store.delete(stored.path)
+        discard(store, stored.path)
         raise
     return _out(att)
 
@@ -225,6 +248,5 @@ def delete_attachment(attachment_id: str, request: Request, session: SessionDep)
     path = att.path
     session.delete(att)
     session.commit()  # the record goes first: a failed commit must not leave it pointing at nothing
-    with contextlib.suppress(FileError):  # a path the store refuses to touch: leave it be
-        _store(request).delete(path)
+    delete_after_commit(_store(request), path)
     return Response(status_code=204)

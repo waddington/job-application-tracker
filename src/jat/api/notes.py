@@ -11,9 +11,10 @@ from sqlalchemy.orm import Session
 
 from ..db.models import Application, NoteIndex
 from ..domain import applications as svc
+from ..platform import FileLocked
 from ..storage.notes import Note, NoteError, NoteStore
 from . import schemas as S
-from .deps import ENTITY_MODELS, SessionDep
+from .deps import ENTITY_MODELS, SessionDep, file_locked
 from .errors import CodedError, ErrorCode
 
 router = APIRouter(prefix="/notes", tags=["notes"])
@@ -155,6 +156,8 @@ def create_note(body: S.NoteIn, request: Request, session: SessionDep):
         note = store.create(body.title, body.body, links)
     except NoteError as exc:
         raise CodedError(422, str(exc), exc.code, exc.params) from exc
+    except FileLocked as exc:
+        raise file_locked() from exc
     _index(request, store, note)
     session.commit()  # end this read so the timeline write below sees the index write (SQLite snapshot)
     _log(session, note, links)
@@ -186,6 +189,8 @@ def update_note(note_id: str, body: S.NotePatch, request: Request, session: Sess
         store.save(note)
     except NoteError as exc:
         raise CodedError(422, str(exc), exc.code, exc.params) from exc
+    except FileLocked as exc:
+        raise file_locked() from exc
     _index(request, store, note)
     session.commit()  # end this read so the timeline write below sees the index write (SQLite snapshot)
     _log(session, note, [link for link in note.links if link not in before])
@@ -195,6 +200,9 @@ def update_note(note_id: str, body: S.NotePatch, request: Request, session: Sess
 @router.delete("/{note_id}", status_code=204)
 def delete_note(note_id: str, request: Request, session: SessionDep):
     store, note = _load(request, session, note_id)
-    store.delete(note.path)
+    try:
+        store.delete(note.path)
+    except FileLocked as exc:
+        raise file_locked() from exc
     _index(request, store, None, remove=note.id)
     return Response(status_code=204)

@@ -1,8 +1,8 @@
 # RFC: running the tracker on Windows
 
 **Status:** in progress (2026-11-05). Built: `windows-time-zones`, `windows-starts`, `static-file-types`,
-`utf8-everywhere`, `data-gitattributes`, `windows-testing`. The tracker starts on Windows, but is
-supported on Linux and macOS only until `windows-support`.
+`utf8-everywhere`, `data-gitattributes`, `windows-testing`, `locked-file-retry`. The tracker starts on
+Windows, but is supported on Linux and macOS only until `windows-support`.
 **Roadmap:** `windows-starts`, `utf8-everywhere`, `windows-time-zones`, `static-file-types`,
 `data-gitattributes`, `locked-file-retry` and `windows-testing`, then `windows-support`; later,
 `windows-snapshots`. `windows-starts` is planned first, but the small fixes don't depend on it
@@ -107,7 +107,10 @@ Each is its own small pull request:
   it, and it's added to existing data folders.
 - **`locked-file-retry`:** when another program has a note, an uploaded file or an export
   file open, retry briefly, then show a clear error instead of a server error. `jat restore
-  --force` says to stop `jat serve` first instead of printing a traceback.
+  --force` says to stop `jat serve` first instead of printing a traceback. Built (#376, carrying
+  #357): only Windows' own "file in use" errors are retried, six times over about 1.5 seconds;
+  the API answers `file_locked` (409) with nothing changed, and a restore that fails part-way
+  puts the old database files back.
 - **`windows-testing`:** the Windows check (run in the Windows VM, see Decisions) written down as a
   short checklist in the guide:
   install, `jat init`, `jat serve`, the pages load, add an application, a note and a file,

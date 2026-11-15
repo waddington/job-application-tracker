@@ -59,6 +59,7 @@
     "document_sent_other": "这个文档的某个版本随 {{count}} 份申请发送过；先把它从这些申请中移除。",
     "document_version_id_not_found": "document_version_id：找不到 {{id}}",
     "file_is_symlink": "{{path}} 是符号链接",
+    "file_locked": "有个文件正被其他程序（编辑器、杀毒软件或 OneDrive）占用。在那个程序里关闭它，然后重试。",
     "file_outside_files": "{{path}} 不在 files/ 目录下",
     "file_too_large_other": "文件最大 {{count}} MB",
     "note_changed": "这条笔记在你打开后已被修改（可能是在其他编辑器里）。先重新加载。",

@@ -36,6 +36,7 @@ from sqlalchemy.orm import Session
 
 from ..db.models import NoteIndex
 from ..db.types import new_id, utcnow
+from ..platform import remove_temp, replace_with_retry, unlink_with_retry
 
 if TYPE_CHECKING:
     from ..api.errors import ErrorCode, ErrorParams
@@ -175,9 +176,9 @@ class NoteStore:
         try:
             with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as fh:
                 fh.write(content)
-            os.replace(tmp, path)
+            replace_with_retry(Path(tmp), path)
         except BaseException:
-            Path(tmp).unlink(missing_ok=True)
+            remove_temp(tmp)
             raise
 
     def read(self, rel_path: str) -> Note:
@@ -205,7 +206,7 @@ class NoteStore:
         return note
 
     def delete(self, rel_path: str) -> None:
-        self._abs(rel_path).unlink(missing_ok=True)
+        unlink_with_retry(self._abs(rel_path), missing_ok=True)
 
     # --- index --------------------------------------------------------------------------
 

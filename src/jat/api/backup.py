@@ -11,8 +11,10 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from starlette.background import BackgroundTask
 
+from ..platform import FileLocked
 from ..snapshot.archive import write_archive
 from ..snapshot.git import SnapshotError, SnapshotService
+from .deps import file_locked
 from .errors import CodedError
 
 router = APIRouter(prefix="/backup", tags=["backup"])
@@ -97,6 +99,9 @@ def download_archive(request: Request):
     dest = staging / f"archive-{uuid.uuid4().hex}.zip"
     try:
         info = write_archive(service, dest)
+    except FileLocked as exc:
+        dest.unlink(missing_ok=True)
+        raise file_locked() from exc
     except Exception:
         dest.unlink(missing_ok=True)
         raise

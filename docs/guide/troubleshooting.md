@@ -63,6 +63,18 @@ key or credential helper). Run `git -C <folder> push` yourself to see git's mess
 `jat restore` won't overwrite a database. Stop `jat serve`, then `uv run jat restore --force`:
 the old database is kept as `tracker.sqlite3.bak-<time>`.
 
+## "Couldn't swap in the restored database …; nothing was changed."
+
+`jat restore --force` built the restored database but couldn't put it in place, usually because
+the old one is still open: `jat serve` is running, or another program (antivirus, OneDrive, a
+database viewer) has it. Your old database is back where it was. Stop `jat serve`, close anything
+else that has the data folder's `tracker.sqlite3` open, and run `uv run jat restore --force` again.
+
+If the message says it couldn't put the old one back either, nothing has been deleted: it names
+where your old database files are now (`tracker.sqlite3.bak-<time>`, maybe with `-wal` and `-shm`)
+and where the restored copy is (`tracker.sqlite3.restoring`). Stop `jat serve`, then rename the
+old files back to `tracker.sqlite3` (and `-wal`, `-shm`) and run the restore again.
+
 ## After pulling on my other computer, the app shows old data
 
 The database isn't in git; `export/` is. Stop `jat serve`, run `uv run jat restore --force`,
@@ -92,6 +104,21 @@ applications' *Documents sent* first.
 ## An upload is refused as too large
 
 Files are limited to 50 MB each.
+
+## "A file is open in another program … Close it there and try again."
+
+Windows won't let the tracker replace or delete a file another program has open, and some
+programs stop it reading one too. If a note, an uploaded file or a file in `export/` is open in
+Word, an editor, OneDrive (while it syncs) or an antivirus scan, saving or deleting a note,
+uploading a file or downloading a backup tries again for about a second and a half (reading a
+note or file into a backup doesn't wait), then shows this message. Nothing was saved or deleted,
+so nothing is half-done. Close the file in the other program (or wait for OneDrive or the scan
+to finish), then try again. The server's log names the file.
+
+When you delete a file or a CV version and its file is the one that's open, the delete still
+goes through, and the file is left in `files/` with nothing pointing at it; the server's log
+names it. Until you delete it, it's still copied into backups and snapshots, so once the other
+program has closed it, delete that file from `files/` by hand.
 
 ## "The frontend isn't built yet"
 
