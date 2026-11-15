@@ -116,9 +116,10 @@ Product decisions Kai has made or accepted. Don't re-litigate them; change one o
   pages full width up to 2,400 px, starting right after the menu; Today in three columns; side panels that slide in and
   dock, pushing the page aside, never overlaying (the application panel on Applications list and board, Today, Company
   and Agency); a board that fills the window, columns at least about 180 px; record pages (application, company,
-  person, agency) in two columns plus a narrow side column; Notes as a card grid; Documents as side-by-side cards;
+  person, agency, role) in two columns plus a narrow side column; Notes as a card grid; Documents as side-by-side cards;
   Interviews with the calendar beside "still to book"; on phones (below 768 px) a bottom bar of Today, Applications,
-  Interviews, Notes and More (a sheet with the other seven pages), panels full-screen there.
+  Interviews, Notes and More (a sheet with the other seven pages, and the sidebar's footer at its bottom: the plan's
+  default, Kai can change it), panels full-screen there.
 - The side menu on desktop ("on desktop i prefer side menu"), not a top bar. Concepts 1-3 are out ("overwhelming and
   not calm"). Fonts: Inter and JetBrains Mono, as in the concepts.
 - The look changes, not what pages hold or do. Every image (README in both languages, demo GIFs, social card, the
