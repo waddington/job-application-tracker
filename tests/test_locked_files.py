@@ -1,161 +1,366 @@
-import io
+"""A file another program has open on Windows (locked-file-retry, docs/rfc/windows.md).
+
+Windows is faked (`jat.platform.IS_WINDOWS`), lock errors carry winerror 32 as Windows' would, and
+`jat.platform.time` is swapped for a recorder, so no test really sleeps.
+"""
+
+from __future__ import annotations
+
+import errno
+import logging
 import os
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
-from fastapi.testclient import TestClient
+from sqlalchemy import select
 
+from jat import platform
 from jat.cli import main
-from jat.db import head_revision
-from jat.platform import replace_with_retry, unlink_with_retry
-from jat.snapshot.export import ExportError, RestoreError, _write_atomic, restore_data_dir
+from jat.datadir import init_data_dir
+from jat.db import db_path, make_engine, migrate, session_factory
+from jat.db.models import Attachment, DocumentVersion, NoteIndex
+from jat.platform import LOCK_RETRY_DELAYS, FileLocked, replace_with_retry, unlink_with_retry
+from jat.snapshot import RestoreError, export_data_dir, restore_data_dir
+
+from .factories import populate, post
+
+LOCKED_TEXT = "A file is open in another program (an editor, antivirus or OneDrive). Close it there and try again."
 
 
-def test_replace_with_retry_succeeds(tmp_path: Path):
-    src = tmp_path / "src.txt"
-    dst = tmp_path / "dst.txt"
-    src.write_text("hello", encoding="utf-8")
+def lock_error(winerror: int = 32) -> PermissionError:
+    exc = PermissionError(errno.EACCES, "The process cannot access the file because it is being used")
+    exc.winerror = winerror  # set by Windows only; POSIX's OSError has no such argument
+    return exc
+
+
+@pytest.fixture
+def sleeps(monkeypatch) -> list[float]:
+    """Fake Windows, and record the waits instead of sleeping."""
+    waited: list[float] = []
+    monkeypatch.setattr(platform, "IS_WINDOWS", True)
+    monkeypatch.setattr(platform, "time", SimpleNamespace(sleep=waited.append))
+    return waited
+
+
+@pytest.fixture
+def lock(monkeypatch, sleeps):
+    """os.replace and Path.unlink fail as locked for the paths `state.match(src, dst)` picks
+    (for unlink, both are the path). `state.calls` counts the failures."""
+    state = SimpleNamespace(match=lambda src, dst: False, calls=0, error=lock_error)
+    real_replace, real_unlink = os.replace, Path.unlink
+
+    def replace(src, dst):
+        if state.match(Path(src), Path(dst)):
+            state.calls += 1
+            raise state.error()
+        return real_replace(src, dst)
+
+    def unlink(self, missing_ok=False):
+        if state.match(self, self):
+            state.calls += 1
+            raise state.error()
+        return real_unlink(self, missing_ok=missing_ok)
+
+    monkeypatch.setattr(os, "replace", replace)
+    monkeypatch.setattr(Path, "unlink", unlink)
+    return state
+
+
+# --- the helpers ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("winerror", [5, 32, 33])
+def test_a_lock_is_retried_until_it_clears(tmp_path, lock, sleeps, winerror):
+    src, dst = tmp_path / "src", tmp_path / "dst"
+    src.write_text("new", encoding="utf-8")
+    lock.error = lambda: lock_error(winerror)
+    lock.match = lambda s, d: lock.calls < 3
     replace_with_retry(src, dst)
-    assert not src.exists()
-    assert dst.read_text(encoding="utf-8") == "hello"
+    assert dst.read_text(encoding="utf-8") == "new"
+    assert lock.calls == 3
+    assert sleeps == [0.05, 0.1, 0.2]
 
 
-def test_replace_with_retry_retries_and_succeeds_after_transient_error(tmp_path: Path, monkeypatch):
-    src = tmp_path / "src.txt"
-    dst = tmp_path / "dst.txt"
-    src.write_text("hello", encoding="utf-8")
-
-    real_replace = os.replace
-    calls = 0
-
-    def fake_replace(s, d):
-        nonlocal calls
-        calls += 1
-        if calls < 3:
-            raise PermissionError(13, "Access is denied (locked by antivirus)")
-        return real_replace(s, d)
-
-    monkeypatch.setattr(os, "replace", fake_replace)
-    replace_with_retry(src, dst, attempts=5, delay=0.001)
-    assert calls == 3
-    assert dst.read_text(encoding="utf-8") == "hello"
+def test_a_lock_that_stays_raises_file_locked_after_six_attempts(tmp_path, lock, sleeps, caplog):
+    src, dst = tmp_path / "src", tmp_path / "dst"
+    src.write_text("new", encoding="utf-8")
+    dst.write_text("old", encoding="utf-8")
+    lock.match = lambda s, d: True
+    with caplog.at_level(logging.WARNING, logger="jat.platform"), pytest.raises(FileLocked) as raised:
+        replace_with_retry(src, dst)
+    assert raised.value.path == dst
+    assert lock.calls == 6
+    assert sleeps == list(LOCK_RETRY_DELAYS) == [0.05, 0.1, 0.2, 0.4, 0.8]
+    assert dst.read_text(encoding="utf-8") == "old"
+    levels = [r.levelname for r in caplog.records]
+    assert levels == ["WARNING"] * 5 + ["ERROR"]
+    assert all(str(dst) in r.getMessage() for r in caplog.records)
+    assert "attempt 1" in caplog.records[0].getMessage()
 
 
-def test_replace_with_retry_exhausts_retries_and_raises(tmp_path: Path, monkeypatch):
-    src = tmp_path / "src.txt"
-    dst = tmp_path / "dst.txt"
-    src.write_text("hello", encoding="utf-8")
-
-    calls = 0
-
-    def fake_replace(s, d):
-        nonlocal calls
-        calls += 1
-        raise PermissionError(13, "Access is denied (locked by OneDrive)")
-
-    monkeypatch.setattr(os, "replace", fake_replace)
-    with pytest.raises(PermissionError, match="locked by OneDrive"):
-        replace_with_retry(src, dst, attempts=3, delay=0.001)
-    assert calls == 3
-
-
-def test_unlink_with_retry(tmp_path: Path, monkeypatch):
-    target = tmp_path / "target.txt"
-    target.write_text("content", encoding="utf-8")
-
-    calls = 0
-    orig_unlink = Path.unlink
-
-    def fake_unlink(self, missing_ok=False):
-        nonlocal calls
-        calls += 1
-        if calls < 2:
-            raise PermissionError(13, "File open in editor")
-        return orig_unlink(self, missing_ok=missing_ok)
-
-    monkeypatch.setattr(Path, "unlink", fake_unlink)
-    unlink_with_retry(target, attempts=4, delay=0.001)
-    assert not target.exists()
-    assert calls == 2
+@pytest.mark.parametrize(
+    "error",
+    [
+        lambda: OSError(errno.ENOSPC, "No space left on device"),
+        lambda: PermissionError(errno.EACCES, "Permission denied"),  # Linux: no winerror
+        lambda: lock_error(winerror=3),  # Windows: path not found
+    ],
+)
+def test_other_errors_raise_at_once_without_retrying(tmp_path, lock, sleeps, error):
+    src = tmp_path / "src"
+    src.write_text("new", encoding="utf-8")
+    lock.error = error
+    lock.match = lambda s, d: True
+    with pytest.raises(OSError) as raised:
+        replace_with_retry(src, tmp_path / "dst")
+    assert not isinstance(raised.value, FileLocked)
+    assert lock.calls == 1
+    assert sleeps == []
 
 
-def test_note_save_when_file_locked_returns_409_not_500(client: TestClient, monkeypatch):
-    def fake_replace(*args, **kwargs):
-        raise PermissionError(13, "File open in external editor")
+def test_off_windows_a_lock_error_is_not_retried(tmp_path, lock, sleeps, monkeypatch):
+    monkeypatch.setattr(platform, "IS_WINDOWS", False)
+    target = tmp_path / "f"
+    target.write_text("x", encoding="utf-8")
+    lock.match = lambda s, d: True
+    with pytest.raises(PermissionError) as raised:
+        unlink_with_retry(target)
+    assert not isinstance(raised.value, FileLocked)
+    assert lock.calls == 1
+    assert sleeps == []
 
-    monkeypatch.setattr("jat.storage.notes.replace_with_retry", fake_replace)
 
-    # Creating a note
-    res = client.post("/api/v1/notes", json={"title": "Test Note", "body": "Body", "links": []})
-    assert res.status_code == 409
-    assert "file is open in another program" in res.json()["detail"]
+def test_unlink_takes_its_own_delays(tmp_path, lock, sleeps):
+    target = tmp_path / "f"
+    target.write_text("x", encoding="utf-8")
+    lock.match = lambda s, d: True
+    with pytest.raises(FileLocked):
+        unlink_with_retry(target, delays=(0, 0))
+    assert lock.calls == 3
+    assert sleeps == [0, 0]
+    assert target.exists()
 
 
-def test_attachment_upload_when_file_locked_returns_409_not_500(client: TestClient, monkeypatch):
-    def fake_replace(*args, **kwargs):
-        raise PermissionError(13, "File open in antivirus scan")
+# --- the API: a 409 with a code, and nothing changed ----------------------------------------
 
-    monkeypatch.setattr("jat.storage.files.replace_with_retry", fake_replace)
 
-    res = client.post(
-        "/api/v1/attachments",
-        files={"file": ("resume.pdf", io.BytesIO(b"PDF content"), "application/pdf")},
+def assert_locked(r, tmp_path):
+    assert r.status_code == 409, r.text
+    assert r.json() == {"detail": LOCKED_TEXT, "code": "file_locked", "params": {}}
+    assert str(tmp_path) not in r.text
+
+
+def index_rows(app) -> list[dict]:
+    with app.state.sessions() as s:
+        rows = s.scalars(select(NoteIndex).order_by(NoteIndex.id)).all()
+        return [{c.name: getattr(row, c.name) for c in NoteIndex.__table__.columns} for row in rows]
+
+
+def leftovers(data_dir: Path) -> list[Path]:
+    """Temporary files a failed save might leave."""
+    names = (".tmp-", "upload-", "archive-")
+    return [p for p in data_dir.rglob("*") if p.is_file() and (p.name.startswith(names) or p.suffix == ".tmp")]
+
+
+def test_creating_a_note_when_locked(app, client, lock, tmp_path):
+    lock.match = lambda s, d: s != d and d.suffix == ".md"  # the save, not its temp file's clean-up
+    r = client.post("/api/v1/notes", json={"title": "Call notes", "body": "Hello", "links": []})
+    assert_locked(r, tmp_path)
+    data_dir = app.state.jat.data_dir
+    assert not list((data_dir / "notes").rglob("*.md"))
+    assert index_rows(app) == []
+    assert leftovers(data_dir) == []
+
+
+def test_saving_a_note_when_locked(app, client, lock, tmp_path):
+    note = post(client, "/api/v1/notes", {"title": "Call notes", "body": "Before", "links": []})
+    file = app.state.jat.data_dir / "notes" / note["path"]
+    before, rows = file.read_bytes(), index_rows(app)
+    lock.match = lambda s, d: d == file
+    assert_locked(client.patch(f"/api/v1/notes/{note['id']}", json={"title": "New", "body": "After"}), tmp_path)
+    assert file.read_bytes() == before
+    assert index_rows(app) == rows
+    assert leftovers(app.state.jat.data_dir) == []
+    assert client.get(f"/api/v1/notes/{note['id']}").json()["body"].strip() == "Before"
+
+
+def test_deleting_a_note_when_locked(app, client, lock, tmp_path):
+    note = post(client, "/api/v1/notes", {"title": "Call notes", "body": "Keep me", "links": []})
+    file = app.state.jat.data_dir / "notes" / note["path"]
+    before, rows = file.read_bytes(), index_rows(app)
+    lock.match = lambda s, d: d == file
+    assert_locked(client.delete(f"/api/v1/notes/{note['id']}"), tmp_path)
+    assert file.read_bytes() == before
+    assert index_rows(app) == rows
+    assert client.get(f"/api/v1/notes/{note['id']}").status_code == 200
+
+
+def stored_files(data_dir: Path) -> list[Path]:
+    return [p for p in (data_dir / "files").rglob("*") if p.is_file() and p.name != ".gitkeep"]
+
+
+def test_uploading_a_file_when_locked(app, client, lock, tmp_path):
+    files_dir = app.state.jat.data_dir / "files"
+    lock.match = lambda s, d: d.is_relative_to(files_dir)
+    r = client.post("/api/v1/attachments", files={"file": ("cv.pdf", b"%PDF-1.4 made up", "application/pdf")})
+    assert_locked(r, tmp_path)
+    with app.state.sessions() as s:
+        assert s.scalars(select(Attachment)).all() == []
+    assert stored_files(app.state.jat.data_dir) == []
+    assert leftovers(app.state.jat.data_dir) == []
+
+
+def test_adding_a_document_version_when_locked(app, client, lock, tmp_path):
+    doc = post(client, "/api/v1/documents", {"kind": "cv", "name": "Backend CV"})
+    files_dir = app.state.jat.data_dir / "files"
+    lock.match = lambda s, d: d.is_relative_to(files_dir)
+    r = client.post(
+        f"/api/v1/documents/{doc['id']}/versions",
+        data={"label": "v1"},
+        files={"file": ("cv.pdf", b"%PDF-1.4 made up", "application/pdf")},
     )
-    assert res.status_code == 409
-    assert "file is open in another program" in res.json()["detail"]
+    assert_locked(r, tmp_path)
+    with app.state.sessions() as s:
+        assert s.scalars(select(DocumentVersion)).all() == []
+        assert s.scalars(select(Attachment)).all() == []
+    assert stored_files(app.state.jat.data_dir) == []
+    assert leftovers(app.state.jat.data_dir) == []
 
 
-def test_export_atomic_write_when_file_locked_raises_export_error(tmp_path: Path, monkeypatch):
-    def fake_replace(*args, **kwargs):
-        raise PermissionError(13, "Locked by indexer")
-
-    monkeypatch.setattr("jat.snapshot.export.replace_with_retry", fake_replace)
-
-    with pytest.raises(ExportError, match="file is open in another program"):
-        _write_atomic(tmp_path / "applications.jsonl", "{}")
-
-
-def test_restore_force_when_db_locked_says_stop_jat_serve_first(tmp_path: Path, monkeypatch):
-    data_dir = tmp_path / "data"
-    data_dir.mkdir()
-    (data_dir / "export").mkdir()
-    rev = head_revision()
-    (data_dir / "export" / "_meta.json").write_text(
-        f'{{"format": 1, "schema_revision": "{rev}", "tables": {{}}}}',
-        encoding="utf-8",
-    )
-    db = data_dir / "tracker.sqlite3"
-    db.write_text("sqlite", encoding="utf-8")
-
-    # Mock replace_with_retry in export to fail with PermissionError mimicking locked DB
-    def fake_replace(*args, **kwargs):
-        raise PermissionError(32, "The process cannot access the file because it is being used by another process")
-
-    monkeypatch.setattr("jat.snapshot.export.replace_with_retry", fake_replace)
-
-    with pytest.raises(RestoreError, match="stop `jat serve` first"):
-        restore_data_dir(data_dir, force=True)
+def test_downloading_a_backup_when_an_export_file_is_locked(app, client, lock, tmp_path):
+    data_dir = app.state.jat.data_dir
+    assert client.get("/api/v1/backup/archive").status_code == 200  # writes export/ once
+    export = {p.name: p.read_bytes() for p in (data_dir / "export").iterdir()}
+    post(client, "/api/v1/companies", {"name": "Example Ltd"})  # so the next export differs
+    lock.match = lambda s, d: d.name == "companies.jsonl"
+    assert_locked(client.get("/api/v1/backup/archive"), tmp_path)
+    assert {p.name: p.read_bytes() for p in (data_dir / "export").iterdir()} == export
+    assert not list((data_dir / ".tmp").glob("archive-*.zip"))
+    assert leftovers(data_dir) == []
 
 
-def test_cli_restore_force_when_db_locked_prints_clear_error_and_no_traceback(tmp_path: Path, monkeypatch, capsys):
-    data_dir = tmp_path / "data"
-    data_dir.mkdir()
-    (data_dir / "export").mkdir()
-    rev = head_revision()
-    (data_dir / "export" / "_meta.json").write_text(
-        f'{{"format": 1, "schema_revision": "{rev}", "tables": {{}}}}',
-        encoding="utf-8",
-    )
-    db = data_dir / "tracker.sqlite3"
-    db.write_text("sqlite", encoding="utf-8")
+# --- deletes after the record is gone: logged, not a 500 --------------------------------------
 
-    def fake_replace(*args, **kwargs):
-        raise PermissionError(32, "Sharing violation")
 
-    monkeypatch.setattr("jat.snapshot.export.replace_with_retry", fake_replace)
+def test_deleting_an_attachment_whose_file_is_locked_logs_the_orphan(app, client, lock, caplog):
+    att = client.post("/api/v1/attachments", files={"file": ("cv.pdf", b"%PDF-1.4", "application/pdf")}).json()
+    file = app.state.jat.data_dir / "files" / att["path"]
+    lock.match = lambda s, d: d == file
+    with caplog.at_level(logging.WARNING, logger="jat.api.attachments"):
+        assert client.delete(f"/api/v1/attachments/{att['id']}").status_code == 204
+    assert client.get(f"/api/v1/attachments/{att['id']}").status_code == 404
+    assert file.exists()
+    assert any("orphaned" in r.getMessage() and att["path"] in r.getMessage() for r in caplog.records)
 
-    exit_code = main(["--data-dir", str(data_dir), "restore", "--force"])
-    assert exit_code == 2
+
+@pytest.mark.parametrize("what", ["version", "document"])
+def test_deleting_a_document_whose_file_is_locked_logs_the_orphan(app, client, lock, caplog, what):
+    doc = post(client, "/api/v1/documents", {"kind": "cv", "name": "Backend CV"})
+    version = client.post(
+        f"/api/v1/documents/{doc['id']}/versions",
+        data={"label": "v1"},
+        files={"file": ("cv.pdf", b"%PDF-1.4", "application/pdf")},
+    ).json()
+    [file] = stored_files(app.state.jat.data_dir)
+    lock.match = lambda s, d: d == file
+    url = f"/api/v1/documents/versions/{version['id']}" if what == "version" else f"/api/v1/documents/{doc['id']}"
+    with caplog.at_level(logging.WARNING, logger="jat.api.attachments"):
+        assert client.delete(url).status_code == 204
+    assert file.exists()
+    assert any("orphaned" in r.getMessage() for r in caplog.records)
+
+
+def test_a_failed_cleanup_does_not_hide_the_original_error(app, client, lock, monkeypatch, caplog):
+    """The upload fails after its file is saved; deleting that file then fails too. The upload's own
+    error is the one that comes out, and the leftover file is logged."""
+    files_dir = app.state.jat.data_dir / "files"
+
+    def broken(**_):
+        raise RuntimeError("the original error")
+
+    monkeypatch.setattr("jat.api.attachments.Attachment", broken)
+    lock.match = lambda s, d: s == d and d.is_relative_to(files_dir)  # deletes only
+    with caplog.at_level(logging.WARNING, logger="jat.api.attachments"), pytest.raises(RuntimeError, match="original"):
+        client.post("/api/v1/attachments", files={"file": ("cv.pdf", b"%PDF-1.4", "application/pdf")})
+    assert any("failed save" in r.getMessage() for r in caplog.records)
+
+
+# --- restore: everything swapped, or nothing ---------------------------------------------------
+
+
+@pytest.fixture
+def restorable(tmp_path):
+    """A data folder with an export and a database (with made-up -wal and -shm beside it)."""
+    path = tmp_path / "data"
+    init_data_dir(path, commit=False)
+    migrate(db_path(path))
+    engine = make_engine(db_path(path))
+    with session_factory(engine).begin() as s:
+        populate(s)
+    engine.dispose()
+    export_data_dir(path)
+    db = db_path(path)
+    Path(f"{db}-wal").write_bytes(b"old wal")
+    Path(f"{db}-shm").write_bytes(b"old shm")
+    return path
+
+
+def db_files(data_dir: Path) -> dict[str, bytes]:
+    return {p.name: p.read_bytes() for p in data_dir.iterdir() if p.name.startswith("tracker.sqlite3")}
+
+
+@pytest.mark.parametrize(
+    "fails",
+    [
+        pytest.param(lambda s, d: s.name.endswith("-wal") and ".bak-" in d.name, id="moving -wal aside"),
+        pytest.param(lambda s, d: s != d and s.name.endswith(".restoring"), id="the final replace"),
+    ],
+)
+def test_a_restore_that_fails_part_way_puts_everything_back(restorable, lock, fails):
+    before = db_files(restorable)
+    assert set(before) == {"tracker.sqlite3", "tracker.sqlite3-wal", "tracker.sqlite3-shm"}
+    lock.match = fails
+    with pytest.raises(RestoreError, match="nothing was changed") as raised:
+        restore_data_dir(restorable, force=True)
+    assert "open in another program" in str(raised.value)
+    assert db_files(restorable) == before  # no .bak-*, no .restoring left either
+
+
+def test_a_restore_that_cannot_put_things_back_says_where_they_are(restorable, lock):
+    before = db_files(restorable)
+    db = db_path(restorable)
+    # The final replace fails, and so does moving the main file back from its .bak- name.
+    lock.match = lambda s, d: s != d and s.name.endswith(".restoring") or (".bak-" in s.name and d == db)
+    with pytest.raises(RestoreError, match="nor put the old one back") as raised:
+        restore_data_dir(restorable, force=True)
+    [backup] = [p for p in restorable.iterdir() if ".bak-" in p.name]
+    message = str(raised.value)
+    assert str(backup) in message
+    assert str(restorable / "tracker.sqlite3.restoring") in message
+    assert backup.read_bytes() == before["tracker.sqlite3"]
+    assert (restorable / "tracker.sqlite3.restoring").exists()  # kept: nothing is deleted
+    assert Path(f"{db}-wal").read_bytes() == b"old wal"  # these two went back
+    assert Path(f"{db}-shm").read_bytes() == b"old shm"
+
+
+def test_a_restore_that_fails_for_another_reason_also_puts_everything_back(restorable, lock):
+    before = db_files(restorable)
+    lock.error = lambda: OSError(errno.ENOSPC, "No space left on device")
+    lock.match = lambda s, d: s != d and s.name.endswith(".restoring")
+    with pytest.raises(RestoreError, match="No space left on device.*nothing was changed"):
+        restore_data_dir(restorable, force=True)
+    assert lock.calls == 1  # not retried
+    assert db_files(restorable) == before
+
+
+def test_jat_restore_force_says_what_happened(restorable, lock, capsys):
+    before = db_files(restorable)
+    lock.match = lambda s, d: s != d and s.name.endswith(".restoring")
+    assert main(["--data-dir", str(restorable), "restore", "--force"]) == 2
     err = capsys.readouterr().err
-    assert "error: Couldn't replace database: stop `jat serve` first" in err
+    assert err.startswith("error: Couldn't swap in the restored database")
+    assert "nothing was changed" in err
+    assert "Stop `jat serve`" in err
     assert "Traceback" not in err
+    assert db_files(restorable) == before
