@@ -212,6 +212,7 @@ def _swap_in(tmp: Path, path: Path) -> None:
     the restore is interrupted (Ctrl-C during a retry's wait), put the old files back first, so
     either everything changed or nothing did."""
     backup = _backup_name(path) if path.exists() else None
+    swapped = False
     try:
         if backup is not None:
             for suffix in ("", "-wal", "-shm"):
@@ -219,7 +220,12 @@ def _swap_in(tmp: Path, path: Path) -> None:
                 if old.exists():
                     replace_with_retry(old, Path(str(backup) + suffix))  # a free name: _backup_name checked
         replace_with_retry(tmp, path)
+        swapped = True
     except BaseException as exc:
+        if swapped or not tmp.exists():
+            # The restored database is in place (interrupted just after): the restore happened, and
+            # moving the old -wal/-shm back beside it could make SQLite replay the old log into it.
+            raise
         why = f"{DB_NAME} is open in another program" if isinstance(exc, FileLocked) else str(exc)
         stuck = _put_back(path, backup)
         if stuck:
@@ -247,7 +253,10 @@ def _put_back(path: Path, backup: Path | None) -> list[Path]:
     stuck = []
     for suffix in ("", "-wal", "-shm") if backup is not None else ():
         was, now = Path(str(path) + suffix), Path(str(backup) + suffix)
-        if now.exists() and not was.exists():
+        if now.exists() and was.exists():  # something new took the name (`jat serve` started, say)
+            log.error("couldn't move %s back: %s exists now", now, was)
+            stuck.append(now)
+        elif now.exists():
             try:
                 replace_with_retry(now, was)
             except OSError:

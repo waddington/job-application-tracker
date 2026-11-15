@@ -23,6 +23,7 @@ from jat.db import db_path, make_engine, migrate, session_factory
 from jat.db.models import Attachment, DocumentVersion, NoteIndex
 from jat.platform import LOCK_RETRY_DELAYS, FileLocked, replace_with_retry, unlink_with_retry
 from jat.snapshot import RestoreError, export_data_dir, restore_data_dir
+from jat.snapshot import export as export_module
 
 from .factories import populate, post
 
@@ -343,6 +344,54 @@ def test_a_restore_that_cannot_put_things_back_says_where_they_are(restorable, l
     assert (restorable / "tracker.sqlite3.restoring").exists()  # kept: nothing is deleted
     assert Path(f"{db}-wal").read_bytes() == b"old wal"  # these two went back
     assert Path(f"{db}-shm").read_bytes() == b"old shm"
+
+
+def test_a_restore_whose_old_name_was_taken_meanwhile_says_where_the_old_files_are(restorable, lock):
+    """`jat serve` starts during the retries and makes a new tracker.sqlite3: the old one can't go
+    back over it, so the message must say where it is, not that nothing changed."""
+    before = db_files(restorable)
+    db = db_path(restorable)
+
+    def match(s, d):
+        if s != d and s.name.endswith(".restoring"):
+            if not db.exists():
+                db.write_bytes(b"a new, empty database")
+            return True
+        return False
+
+    lock.match = match
+    with pytest.raises(RestoreError, match="nor put the old one back") as raised:
+        restore_data_dir(restorable, force=True)
+    [backup] = [p for p in restorable.iterdir() if ".bak-" in p.name and not p.name.endswith(("-wal", "-shm"))]
+    assert str(backup) in str(raised.value)
+    assert "nothing was changed" not in str(raised.value)
+    assert backup.read_bytes() == before["tracker.sqlite3"]
+
+
+def test_ctrl_c_just_after_the_swap_leaves_the_restored_database_alone(restorable, monkeypatch):
+    """Interrupted once the restored database is in place: the old -wal and -shm stay aside, so
+    SQLite can't replay the old log into the restored database."""
+    before = db_files(restorable)
+    real = export_module.replace_with_retry
+
+    def replace_then_interrupt(src, dst, **kwargs):
+        real(src, dst, **kwargs)
+        if Path(src).name.endswith(".restoring"):
+            raise KeyboardInterrupt
+
+    monkeypatch.setattr(export_module, "replace_with_retry", replace_then_interrupt)
+    with pytest.raises(KeyboardInterrupt):
+        restore_data_dir(restorable, force=True)
+    db = db_path(restorable)
+    assert db.read_bytes() != before["tracker.sqlite3"]  # the restored one
+    assert not Path(f"{db}-wal").exists()
+    assert not Path(f"{db}-shm").exists()
+    aside = {
+        p.name.rsplit("-", 1)[-1] if p.name.endswith(("-wal", "-shm")) else "db": p.read_bytes()
+        for p in restorable.iterdir()
+        if ".bak-" in p.name
+    }
+    assert aside == {"db": before["tracker.sqlite3"], "wal": b"old wal", "shm": b"old shm"}
 
 
 def test_a_restore_that_fails_for_another_reason_also_puts_everything_back(restorable, lock):
