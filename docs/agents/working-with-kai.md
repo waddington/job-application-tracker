@@ -114,6 +114,8 @@ where things run. Quotes are Kai's words.
   `uv run jat --data-dir <dir> serve --port 88xx` (one port per server and reviewer). The zh-CN demo API is on 8891.
 - **Node for pnpm:** `/home/kai/.nvm/versions/node/v22.23.3/bin` first on PATH, with `/home/kai/.local/bin` (uv) kept.
   `tools/dev/env.sh` does both.
+- **Kai's local reports:** `ignorable-docs/` at the root of the main checkout, git-ignored (#366). When Kai asks for
+  a report there, write it there and never commit or push it (Kai, 2026-11-15: "do not push the ignorable docs").
 - **Scratch files:** the session's job folder, `/home/kai/.claude/jobs/cf5328f4/tmp` for the current session (also
   `$CLAUDE_JOB_DIR/tmp`; a new session gets a new folder); PR bodies there. Agents in their own worktree
   can't write there: they use their worktree's `var/` or a `/tmp/jat-<task>-…` folder.
