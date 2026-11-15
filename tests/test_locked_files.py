@@ -476,7 +476,8 @@ def test_off_windows_a_permission_error_reading_for_a_backup_is_not_a_lock(app, 
             raise PermissionError(errno.EACCES, "Permission denied")
         return real_write(self, filename, *args, **kwargs)
 
-    monkeypatch.setattr(zipfile.ZipFile, "write", write)  # IS_WINDOWS stays as it is: False here
+    monkeypatch.setattr(zipfile.ZipFile, "write", write)
+    monkeypatch.setattr(platform, "IS_WINDOWS", False)
     with pytest.raises(PermissionError):
         client.get("/api/v1/backup/archive")
     assert not list((app.state.jat.data_dir / ".tmp").glob("archive-*.zip"))
