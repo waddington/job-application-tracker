@@ -26,14 +26,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-.statDot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--dot);
-  align-self: center;
-}
-
 .iconStat {
   display: inline-flex;
   align-items: center;

@@ -19,7 +19,7 @@ import { IconConfetti } from "@tabler/icons-react";
 import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import dayjs from "dayjs";
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
 import { InterviewOutcome } from "../components/OutcomeNotes";
@@ -66,6 +66,8 @@ import { QueryState } from "../components/QueryState";
 import { StageBadge } from "../components/StageBadge";
 import { i18n } from "../i18n";
 import text from "../text.module.css";
+import { barColor } from "../theme";
+import look from "../theme.module.css";
 import { formatDay } from "../utils/format";
 import { roundLabel } from "../utils/rounds";
 import { stageName } from "../utils/stageName";
@@ -531,8 +533,8 @@ function RescheduleDialog({
   return <CallRescheduleDialog key={id} meeting={call} waiting={target.waiting} onClose={onClose} />;
 }
 
-/** A stage's colour, one shade darker, for its dot in the pipeline's legend. */
-const shade = (color: string) => `${color}.6`;
+/** A stage's dot in the pipeline's key, in its bar's pastel. */
+const dotStyle = (color: string) => ({ "--key-dot": barColor(color) }) as CSSProperties;
 
 /**
  * The home page: what's yours to do now, what's coming up and who you're waiting on, under a
@@ -766,10 +768,8 @@ export function TodayPage() {
                   <Group gap="md" mt={6}>
                     {pipeline.map(({ stage, count }) => (
                       <Text key={stage.id} size="xs" c="dimmed">
-                        <Text span c={shade(stage.color)} fw={700}>
-                          ●
-                        </Text>{" "}
-                        {stageName(stage)} {count}
+                        <span className={look.keyDot} style={dotStyle(stage.color)} /> {stageName(stage)}{" "}
+                        {count}
                       </Text>
                     ))}
                   </Group>
