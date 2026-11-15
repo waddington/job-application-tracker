@@ -464,4 +464,4 @@ vite.config.ts.timestamp-*
 frontend/test-results/
 
 # Local notes that stay out of git
-ignorable-docs/
+/ignorable-docs/
