@@ -91,27 +91,26 @@ That's the default chosen for this plan (the concept hid the footer on phones); 
 | 2 | `app-redesign-shell` | Side menu styling, header, page titles, one background and the drift, the 2,400 px cap, left-aligned | `components/Layout.tsx` (AppShell), a page wrapper replacing each page's `<Stack maw=…>` | the sidebar (top of the page), *Language* (the header's buttons) |
 | 3 | `app-redesign-components` | Cards and wells, stage badges and the stage bar, buttons, lists | shared components in `components/` | none expected |
 | 4 | `app-redesign-forms` | Modals, forms, tables, empty states and skeletons | modals, `theme.ts` component defaults | none expected |
-| 5 | `app-redesign-dock` | The docked panel component, used first by Applications (list and board) | `ApplicationDrawer.tsx` → a `DockedPanel`; `ApplicationsPage.tsx`; Layout makes room | the quick view (*Applications: list and board*) |
-| 6 | `app-redesign-dock-pages` | The docked panel on Today, a company's and an agency's page, and the browser tests that find the panel | `TodayPage`, `CompanyPage`, `AgencyPage`; `frontend/e2e/` | the quick view where Today, Companies and agencies mention it |
-| 7 | `app-redesign-today` | Three columns | `pages/TodayPage.tsx`, `TodayPage.module.css` | *Today*: where the three groups sit |
-| 8 | `app-redesign-applications` | The list, and the full-width board with ~180 px columns | `pages/ApplicationsPage.tsx`, `components/Board.tsx` | *Applications: list and board* if it describes widths |
-| 9 | `app-redesign-records` | The shared two-plus-one record layout, on an application's and a company's page | a record layout component; `ApplicationPage`, `CompanyPage` | *An application's page*, *Companies* |
-| 10 | `app-redesign-records-people` | The same layout on a person's, an agency's and a role's page | `PersonPage`, `AgencyPage`, `RolePage` | *People, recruiters and agencies*, *Roles to decide* |
-| 11 | `app-redesign-people` | The list pages: Roles, Recruiters, Companies | those pages | none expected |
-| 12 | `app-redesign-schedule` | Interviews (calendar beside still to book, list cards), Offers, Timeline | those pages, `InterviewCalendar` | *Interviews*: "Under the calendar, Still to book" becomes beside it, and where the day panel goes |
-| 13 | `app-redesign-rest` | Notes grid, Documents cards, Insights' charts in the palette, Search | those pages, chart colours | *Notes*, *Documents* if they describe the layout |
-| 14 | `app-redesign-phone-nav` | The bottom bar and More sheet, with the sidebar's footer at the bottom of the sheet | `Layout.tsx`, a `BottomNav` component, `nav.ts`, locales | the sidebar's footer ("behind the menu button on a phone" becomes "under More") and the tour's mention of the sidebar on a phone |
-| 15 | `app-redesign-dark` | A dark-mode and contrast pass over every page | wherever it finds | *Dark mode* if anything changes |
-| 16 | `app-redesign-docs` | README screenshots, both languages | `docs/screenshots/`, `docs/screenshots/zh-CN/` | none (the guide has no images) |
-| 17 | `app-redesign-gif-card` | The demo GIFs, the social card and the app's icons | `scripts/demo_gif/`, `scripts/social_preview/`, `docs/social-preview.png`, `frontend/public/favicon.svg`, `apple-touch-icon.png` | none |
-| 18 | `app-redesign-website-shots` | The website's captures | `website/src/assets/{hero,demo,story}/`, `AppDemo.astro` overlays | none |
-| 19 | `app-redesign-wrap-up` | Close #354, remove its branch and worktree; mark this RFC built | docs only | none |
+| 5 | `app-redesign-dock` | The docked panel on all four pages that open it (Applications list and board, Today, a company, an agency), and the browser tests that find the panel | `ApplicationDrawer.tsx` → a `DockedPanel`; `ApplicationsPage`, `TodayPage`, `CompanyPage`, `AgencyPage`; Layout makes room; `frontend/e2e/` | the quick view wherever Applications, Today, Companies and agencies mention it |
+| 6 | `app-redesign-today` | Three columns | `pages/TodayPage.tsx`, `TodayPage.module.css` | *Today*: where the three groups sit |
+| 7 | `app-redesign-applications` | The list, and the full-width board with ~180 px columns | `pages/ApplicationsPage.tsx`, `components/Board.tsx` | *Applications: list and board* if it describes widths |
+| 8 | `app-redesign-records` | The shared two-plus-one record layout, on an application's and a company's page | a record layout component; `ApplicationPage`, `CompanyPage` | *An application's page*, *Companies* |
+| 9 | `app-redesign-records-people` | The same layout on a person's, an agency's and a role's page | `PersonPage`, `AgencyPage`, `RolePage` | *People, recruiters and agencies*, *Roles to decide* |
+| 10 | `app-redesign-people` | The list pages: Roles, Recruiters, Companies | those pages | none expected |
+| 11 | `app-redesign-schedule` | Interviews (calendar beside still to book, list cards), Offers, Timeline | those pages, `InterviewCalendar` | *Interviews*: "Under the calendar, Still to book" becomes beside it, and where the day panel goes |
+| 12 | `app-redesign-rest` | Notes grid, Documents cards, Insights' charts in the palette, Search | those pages, chart colours | *Notes*, *Documents* if they describe the layout |
+| 13 | `app-redesign-phone-nav` | The bottom bar and More sheet, with the sidebar's footer at the bottom of the sheet | `Layout.tsx`, a `BottomNav` component, `nav.ts`, locales | the sidebar's footer ("behind the menu button on a phone" becomes "under More") and the tour's mention of the sidebar on a phone |
+| 14 | `app-redesign-dark` | A dark-mode and contrast pass over every page | wherever it finds | *Dark mode* if anything changes |
+| 15 | `app-redesign-docs` | README screenshots, both languages | `docs/screenshots/`, `docs/screenshots/zh-CN/` | none (the guide has no images) |
+| 16 | `app-redesign-gif-card` | The demo GIFs, the social card and the app's icons | `scripts/demo_gif/`, `scripts/social_preview/`, `docs/social-preview.png`, `frontend/public/favicon.svg`, `apple-touch-icon.png` | none |
+| 17 | `app-redesign-website-shots` | The website's captures | `website/src/assets/{hero,demo,story}/`, `AppDemo.astro` overlays | none |
+| 18 | `app-redesign-wrap-up` | Close #354, remove its branch and worktree; mark this RFC built | docs only | none |
 
 **The guide rule.** Every PR updates the guide passages that describe what it changes, checked against the code. The
 last column comes from searching the guide for layout words (sidebar, menu, beside, under, column, panel, quick view,
 on a phone, wide screen); each task searches again when it runs, since the guide changes in between.
 
-Parts 7-13 depend on 4, 5 or 6 only, not on each other, so they can run in parallel worktrees if Kai allows parallel
+Rows 6-12 depend on 4 or 5 only, not on each other, so they can run in parallel worktrees if Kai allows parallel
 builders; they merge one at a time.
 
 ## 5. Images
@@ -143,7 +142,8 @@ app after a release, or every capture shows the version warning (gotchas.md).
 
 ## 6. Text and languages
 
-- New UI text: `nav.more` ("More"; zh-CN 更多), and the More sheet's label. The docked panel may need a close button's
+- New UI text: only `nav.more` ("More"; zh-CN 更多), which also labels the More sheet. The sidebar's footer in the
+  More sheet reuses its existing strings. The docked panel may need a close button's
   label if it loses Mantine's; reuse the existing one where it can. Each PR adds its zh-CN text in step, following
   `docs/i18n/zh-CN.md`.
 - Chinese text runs in the system's CJK fonts after Inter (the stack keeps the CJK fallbacks), checked per PR in
@@ -192,9 +192,11 @@ Read from `frontend/e2e/` (viewport 1,400 × 1,000 by default):
 
 ## 9. Risks
 
-- **Size.** The dock and the record layout are already split in two (§4: the component with its first pages, then
-  the rest with their tests). The theme is now the PR most likely to pass 500 lines; split it if so (e.g. the dark
-  tokens apart from the light).
+- **Size.** The record layout is already split in two (§4: the layout with an application and a company, then the
+  other three). The dock isn't: `ApplicationDrawer` is one component shared by four pages, so docking it on some
+  and not others would leave pages overlaying in between, against §3. It lands everywhere at once with its browser
+  tests, and may go over 500 lines; its PR says why. The theme may also pass 500 lines; split it if so (e.g. the
+  dark tokens apart from the light).
 - **The concepts are overrides.** Their `:has()` and Mantine class selectors work over today's DOM; porting them as
   they are would be fragile. Each part goes into its component.
 - **The docked panel** changes behaviour on four pages: focus, scroll lock, clicks outside. Data is unaffected, but
@@ -203,7 +205,7 @@ Read from `frontend/e2e/` (viewport 1,400 × 1,000 by default):
   smooth, but check CPU on a long session (Kai's tracker is open all day). If it costs, step it (a change a minute).
 - **Fonts** become runtime dependencies (`@fontsource-variable/inter`, `@fontsource-variable/jetbrains-mono`), bundled,
   never fetched from the web. They add to the build's size.
-- **Screenshots and the website's hero overlays** drift out of step until §4's rows 16-18 land; the README says "version
+- **Screenshots and the website's hero overlays** drift out of step until §4's rows 15-17 land; the README says "version
   1.0" only, so text doesn't go stale.
 - **zh-CN layouts** (longer or shorter labels in three columns and 180 px board columns).
 
