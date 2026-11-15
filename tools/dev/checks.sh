@@ -13,8 +13,9 @@ clean_env
 if [ "$1" = "--website" ]; then
   # Only for a PR that changes the website and nothing the app is built from (Kai, 2026-11-12). Refuse
   # otherwise (fail closed): every changed file, committed or not, must be under website/, docs/, the
-  # changelog, CLAUDE.md, the website's workflow or maintainer tooling; a version-bump file must equal main's
-  # copy with only its own version line changed (tools/dev/version_only.py), be a regular file and keep its mode.
+  # changelog, CLAUDE.md, .gitignore, the website's workflow or maintainer tooling; a version-bump file must
+  # equal main's copy with only its own version line changed (tools/dev/version_only.py), be a regular file and
+  # keep its mode.
   command -v python3 >/dev/null || { echo "--website: needs python3" >&2; exit 2; }
   git fetch -q origin main || echo "--website: couldn't fetch origin/main; checking against the last fetched one"
   base=$(git merge-base HEAD origin/main) && [ -n "$base" ] || { echo "--website: no merge base with origin/main" >&2; exit 2; }
@@ -25,7 +26,7 @@ if [ "$1" = "--website" ]; then
   [[ "$old" =~ $semver && "$new" =~ $semver ]] || { echo "--website: can't read the version" >&2; exit 2; }
   # Out of scope: gitignored files (e.g. a local .env), which no PR can carry anyway.
   bump='^(pyproject\.toml|uv\.lock|src/jat/__init__\.py|frontend/package\.json|frontend/openapi\.json|frontend/src/api/schema\.d\.ts)$'
-  ok='^(website/|docs/|CHANGELOG\.md$|CLAUDE\.md$|\.github/workflows/website\.yml$|tools/dev/|tests/dev/|tools/pm/|tests/pm/)'
+  ok='^(website/|docs/|CHANGELOG\.md$|CLAUDE\.md$|\.gitignore$|\.github/workflows/website\.yml$|tools/dev/|tests/dev/|tools/pm/|tests/pm/)'
   names=$(mktemp)
   trap 'rm -f "$names"' EXIT
   { git diff --name-only -z --no-renames "$base" && git ls-files -z --others --exclude-standard; } > "$names" ||
