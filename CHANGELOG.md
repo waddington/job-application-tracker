@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.24.23 (2026-11-15)
+
+- **Fix:** on Windows, when another program (an editor, antivirus or OneDrive) has a note, an uploaded file or an export file open, saving, deleting or downloading a backup tries again for about a second and a half, then says the file is open in another program instead of failing with a server error, with nothing half-saved; `jat restore --force` puts your old database back and says to stop `jat serve` if it can't swap in the restored one, instead of printing a traceback (#376).
+
 ## 1.24.22 (2026-11-15)
 
 - **Developers:** `/api/v1/health` has a typed response model, so the OpenAPI schema describes it, and the sidebar's connection status reads it through the typed API client (#374, carrying #361).
