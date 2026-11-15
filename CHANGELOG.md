@@ -5,9 +5,14 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
-## 1.24.23 (2026-11-15)
+## 1.24.24 (2026-11-15)
 
 - **Fix:** on Windows, when another program (an editor, antivirus or OneDrive) has a note, an uploaded file or an export file open, saving or deleting a note, uploading a file or a CV version, or downloading a backup tries again for about a second and a half, then says the file is open in another program instead of failing with a server error, and nothing is half-saved. Deleting a file, a CV version or a document still goes through: a file that's open is left in `files/` and named in the server's log. `jat restore --force` puts your old database back if it can't swap in the restored one (even on Ctrl-C) and says to stop `jat serve`, instead of printing a traceback (#376, carrying #357).
+
+## 1.24.23 (2026-11-15)
+
+- **Guide:** a Windows test-run checklist for people helping test Windows, on a throwaway data folder (Windows still isn't supported) (#375, carrying #358).
+- **Developers:** tests that need symlinks are skipped, with a reason, where symlinks can't be made, as on Windows without Developer Mode (#375, carrying #358).
 
 ## 1.24.22 (2026-11-15)
 

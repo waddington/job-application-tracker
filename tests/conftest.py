@@ -1,6 +1,7 @@
 import os
 import subprocess
 import sys
+import tempfile
 import zoneinfo
 from pathlib import Path
 
@@ -12,6 +13,25 @@ from jat.datadir import init_data_dir
 from jat.db import db_path, migrate
 
 from .factories import post
+
+
+def _can_symlink() -> bool:
+    try:
+        with tempfile.TemporaryDirectory() as td:
+            target = Path(td) / "target"
+            target.touch()
+            link = Path(td) / "link"
+            link.symlink_to(target)
+            return True
+    except OSError:
+        return False
+
+
+CAN_SYMLINK = _can_symlink()
+symlinks_only = pytest.mark.skipif(
+    not CAN_SYMLINK,
+    reason="can't make symlinks here (Windows needs Developer Mode or admin rights)",
+)
 
 
 @pytest.fixture

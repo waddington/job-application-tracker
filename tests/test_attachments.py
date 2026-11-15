@@ -5,6 +5,7 @@ import pytest
 
 from jat.storage.files import FileError, FileStore, TooLarge, safe_name
 
+from .conftest import symlinks_only
 from .factories import post
 
 PDF = b"%PDF-1.4\n% made-up demo CV\n"
@@ -185,6 +186,7 @@ def test_a_failed_save_takes_its_file_with_it(client, seeded, app, monkeypatch):
     assert files == []
 
 
+@symlinks_only
 def test_symlinks_are_refused(tmp_path):
     store = FileStore(tmp_path)
     (tmp_path / "files").mkdir(exist_ok=True)
