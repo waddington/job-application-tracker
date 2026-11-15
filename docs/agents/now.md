@@ -73,7 +73,8 @@ Nothing Kai asked for is unfinished. Report and wait; Kai picks. In line:
 - **The contributor PRs**, in the report's order, once Kai says go: security read of every changed line first, then
   the two reviews against the plan, Linux checks, the Windows VM one PR at a time, carry with our fixes and bump
   (contributor-prs.md). #357 likely needs coded errors (`CodedError`, zh-CN text). #359 after #357, #358 and #364.
-- **The app redesign** (P12): waits for Kai's picks from #354, then the next concepts round.
+- **The app redesign** (P12): Kai picked concept 11 from #354 (2026-11-15); the plan is `docs/rfc/app-redesign.md` and
+  P12's tasks. Building starts once Kai has seen the plan.
 - **Up next after it:** P13 "For any job" (round types for any job and editable, default currency, generic examples,
   marketing), loading-state parts 2–4.
 - **Bugs:** 55 open (9 medium, 46 low); mediums as before (`fix-double-save-locked` needs a decision).
@@ -84,7 +85,7 @@ PRs, every fix commit re-reviewed; the lead bumps, merges and ships. Roadmap-onl
 
 ## Waiting on Kai (don't start)
 
-- **The redesign concepts** (#354): which to keep and what to change.
+- **The redesign plan** (`docs/rfc/app-redesign.md`): 11 is picked; Kai sees the plan before building starts.
 - **The contributor PRs:** the go-ahead to start reviewing in the planned order.
 - **Restart the tracker** for v1.24.17.
 - **The user-level hook:** add to `~/.claude/settings.json` next to `"env"` (the auto-mode check refuses this edit):
