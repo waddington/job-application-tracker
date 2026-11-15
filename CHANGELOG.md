@@ -7,7 +7,7 @@ Numbers in brackets are pull requests.
 
 ## 1.24.19 (2026-11-15)
 
-- **Developers:** the Insights clock-change test runs on the bundled tzdata package alone, through a shared tzdata_only fixture, so it behaves the same on Windows, macOS and Linux; a duplicate time-zone test goes (#371).
+- **Developers:** the Insights clock-change test runs on the bundled tzdata package alone, through a shared tzdata_only fixture, so it behaves the same on Windows, macOS and Linux; a duplicate time-zone test goes (#371, carrying #360).
 
 ## 1.24.18 (2026-11-15)
 
