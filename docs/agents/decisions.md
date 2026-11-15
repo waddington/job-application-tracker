@@ -107,9 +107,9 @@ Product decisions Kai has made or accepted. Don't re-litigate them; change one o
 
 ## App redesign (P12)
 
-- **Concept 11 is picked and being built** (Kai, 2026-11-15: "i like 11", then "go for 11. plan it out, create the
-  roadmap items"). The plan is `docs/rfc/app-redesign.md`, reviewed with Kai before building starts; the tasks are
-  P12. The reference implementation is draft #354, branch `worktree-app-redesign-concepts` (never merged): `?design=11`
+- **Concept 11 is picked; building waits for Kai's go** (Kai, 2026-11-15: "i like 11", then "go for 11. plan it
+  out, create the roadmap items"). The plan is `docs/rfc/app-redesign.md`, reviewed with Kai before building starts;
+  the tasks are P12. The reference implementation is draft #354, branch `worktree-app-redesign-concepts` (never merged): `?design=11`
   on its dev server, code in `frontend/src/design/`.
 - What 11 is: round 1's 4 (calm soft cards); one background on every page that fades very slowly between calm tints,
   a ten-minute cycle tied to the clock (it carries across page changes and reloads), static under reduced motion;
@@ -138,3 +138,10 @@ Product decisions Kai has made or accepted. Don't re-litigate them; change one o
 - Windows counts as supported without git snapshots (Kai, 2026-11-15: "yes we can say we support windows even without
   the snapshots"): the data is on disk either way; Download a backup is the backup there. `windows-snapshots` (#365)
   is on hold ("dont review/merge 365 yet"); when it's picked up it updates the docs that say snapshots are off.
+- The maintainer tooling (`tools/dev`, `tools/pm`) is outside Windows support: its tests skip on Windows (#373), and
+  making it work there is separate backlog, `windows-dev-tooling` ("the new roadmap item is not part of the current
+  windows support plan").
+
+## Maintainer checks
+
+- `checks.sh --no-e2e` accepts a version-only bump alongside the skip list (#369, via `tools/dev/scope.sh`).
