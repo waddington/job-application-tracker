@@ -122,6 +122,6 @@ thead:not([data-records]) .th button {
 .timeControl[data-active] {
   color: var(--mantine-primary-color-contrast);
 }
-.switchInput:checked + * .switchThumb {
+.switchInput:checked:not(:disabled, [data-disabled]) + * .switchThumb {
   background-color: var(--mantine-primary-color-contrast);
 }
