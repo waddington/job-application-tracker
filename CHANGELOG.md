@@ -7,7 +7,7 @@ Numbers in brackets are pull requests.
 
 ## 1.24.25 (2026-11-15)
 
-- **Developers:** the notes and demo-data tests read the files the app writes as UTF-8, so they pass on Windows too, making the whole test suite pass there; the PM dashboard prints dates without `%-d`, which Windows rejects (#378).
+- **Developers:** the notes and demo-data tests read the files the app writes as UTF-8, so they pass on Windows too, making the whole test suite pass there; the PM dashboard prints dates without `%-d`, which Windows rejects (#378, carrying #364).
 
 ## 1.24.24 (2026-11-15)
 
