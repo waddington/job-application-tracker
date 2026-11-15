@@ -444,18 +444,41 @@ def test_a_locked_temp_file_does_not_hide_the_lock(app, client, lock, tmp_path, 
     assert any("temporary file" in r.getMessage() for r in caplog.records)
 
 
-def test_downloading_a_backup_when_a_note_is_held_open(app, client, lock, tmp_path, monkeypatch):
+@pytest.mark.parametrize(
+    "error",
+    [
+        pytest.param(lock_error, id="winerror 32"),
+        # What open() really raised in the Windows VM: the C runtime drops the winerror.
+        pytest.param(lambda: PermissionError(errno.EACCES, "Permission denied"), id="plain errno 13"),
+    ],
+)
+def test_downloading_a_backup_when_a_note_is_held_open(app, client, lock, tmp_path, monkeypatch, error):
     """Reading a note for the zip fails with a sharing violation: the same 409, and no zip left."""
     post(client, "/api/v1/notes", {"title": "Call notes", "body": "x", "links": []})
     real_write = zipfile.ZipFile.write
 
     def write(self, filename, *args, **kwargs):
         if Path(filename).suffix == ".md":
-            raise lock_error()
+            raise error()
         return real_write(self, filename, *args, **kwargs)
 
     monkeypatch.setattr(zipfile.ZipFile, "write", write)
     assert_locked(client.get("/api/v1/backup/archive"), tmp_path)
+    assert not list((app.state.jat.data_dir / ".tmp").glob("archive-*.zip"))
+
+
+def test_off_windows_a_permission_error_reading_for_a_backup_is_not_a_lock(app, client, monkeypatch):
+    post(client, "/api/v1/notes", {"title": "Call notes", "body": "x", "links": []})
+    real_write = zipfile.ZipFile.write
+
+    def write(self, filename, *args, **kwargs):
+        if Path(filename).suffix == ".md":
+            raise PermissionError(errno.EACCES, "Permission denied")
+        return real_write(self, filename, *args, **kwargs)
+
+    monkeypatch.setattr(zipfile.ZipFile, "write", write)  # IS_WINDOWS stays as it is: False here
+    with pytest.raises(PermissionError):
+        client.get("/api/v1/backup/archive")
     assert not list((app.state.jat.data_dir / ".tmp").glob("archive-*.zip"))
 
 

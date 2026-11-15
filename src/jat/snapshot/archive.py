@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 
-from ..platform import FileLocked, is_lock_error
+from ..platform import FileLocked, is_read_lock_error
 from .git import TRACKED, SnapshotService
 
 log = logging.getLogger(__name__)
@@ -78,7 +78,7 @@ def write_archive(service: SnapshotService, dest: Path, *, day: date | None = No
             except FileNotFoundError:
                 continue
             except OSError as exc:  # a note or file another program holds exclusively (Windows)
-                if not is_lock_error(exc):
+                if not is_read_lock_error(exc):
                     raise
                 log.error("couldn't read %s for the backup: open in another program", path)
                 raise FileLocked(path, exc) from exc

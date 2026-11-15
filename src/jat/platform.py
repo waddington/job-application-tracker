@@ -96,6 +96,15 @@ def is_lock_error(exc: BaseException) -> bool:
     return is_windows() and isinstance(exc, OSError) and getattr(exc, "winerror", None) in _LOCK_WINERRORS
 
 
+def is_read_lock_error(exc: BaseException) -> bool:
+    """Like is_lock_error, for reading a file with open(): that goes through the C runtime, which
+    reports Windows' sharing violation as a plain PermissionError with no winerror (seen in the
+    Windows VM, #376). So on Windows, any PermissionError without one counts."""
+    if is_lock_error(exc):
+        return True
+    return is_windows() and isinstance(exc, PermissionError) and getattr(exc, "winerror", None) is None
+
+
 def _retry_on_lock(op: Callable[[], None], path: Path, what: str, delays: Sequence[float] | None) -> None:
     waits = LOCK_RETRY_DELAYS if delays is None else delays
     for attempt in range(1, len(waits) + 2):
