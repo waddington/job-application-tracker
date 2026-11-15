@@ -7,7 +7,7 @@ Numbers in brackets are pull requests.
 
 ## 1.24.25 (2026-11-15)
 
-- The website is built with Astro 7.4.7, which fixes two security advisories (#379).
+- The website is built with Astro 7.4.7, which fixes two security advisories (#379, carrying #356).
 
 ## 1.24.24 (2026-11-15)
 
