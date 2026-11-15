@@ -49,4 +49,19 @@ It's well worth turning on [automatic history, and backups if you want them](you
 at some point. Everything else is in the [guide](README.md), including
 [updating](commands.md#updating-to-a-newer-version) and [getting unstuck](troubleshooting.md).
 
+## Checking a Windows run
+
+Before relying on the tracker on Windows, run through this short checklist to ensure everything works as intended:
+
+1. **Install and build:** `uv sync`, `pnpm --dir frontend install`, and `pnpm --dir frontend build` complete without errors.
+2. **Initialise:** `uv run jat init` sets up the data folder (`.gitattributes`, `.gitignore`, `config.toml`, and the initial database).
+3. **Start the tracker:** `uv run jat serve` starts the app on http://127.0.0.1:8770.
+4. **Pages load:** Open http://127.0.0.1:8770 in your browser; verify that Today, Applications, Board and Insights load cleanly.
+5. **Add an application:** Click **New application** and add a test application.
+6. **Add a note:** Add a note to the application and save it.
+7. **Attach a file:** Upload an attachment (CV, cover letter or document) to the application.
+8. **Download a backup:** In the sidebar, click **Download a backup** to verify the data directory zips cleanly.
+9. **Insights weekly activity:** Open **Insights** and verify the weekly activity chart displays in your browser's time zone.
+10. **Run tests:** Run `uv run pytest -q` in a terminal to confirm the automated tests pass.
+
 Good luck with the search.
