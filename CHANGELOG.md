@@ -7,7 +7,7 @@ Numbers in brackets are pull requests.
 
 ## 1.24.21 (2026-11-15)
 
-- **Developers:** `/api/v1/health` has a typed response model, so the OpenAPI schema describes it, and the sidebar's connection status reads it through the typed API client (#374).
+- **Developers:** `/api/v1/health` has a typed response model, so the OpenAPI schema describes it, and the sidebar's connection status reads it through the typed API client (#374, carrying #361).
 
 ## 1.24.20 (2026-11-15)
 
