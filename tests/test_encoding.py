@@ -34,8 +34,8 @@ def _keyword(call: ast.Call, name: str) -> ast.expr | None:
 
 def text_io_without_encoding(source: str) -> list[int]:
     """Lines that read or write text without naming an encoding, so on Windows they'd use the locale's (cp1252):
-    read_text/write_text, open/io.open/Path.open/os.fdopen, tempfiles in a text mode, and subprocess calls
-    that decode their output (text=True or universal_newlines=True)."""
+    read_text/write_text, open/io.open/Path.open/os.fdopen/codecs.open, tempfiles in a text mode, and subprocess
+    calls that decode their output (text=True, universal_newlines=True or errors=)."""
     lines = []
     for call in ast.walk(ast.parse(source)):
         if not isinstance(call, ast.Call):
@@ -108,11 +108,13 @@ def test_source_code_text_io_names_encoding():
         "os.fdopen(fd, 'w')",
         "tempfile.NamedTemporaryFile(mode='w')",
         "tempfile.SpooledTemporaryFile(1024, 'w')",
+        "tempfile.SpooledTemporaryFile(mode='w')",
         "subprocess.run(['git', 'log'], text=True)",
         "subprocess.run(['git'], errors='replace')",
         "subprocess.check_output(['git'], universal_newlines=True)",
         "codecs.open('test.txt', 'r')",
         "codecs.open('test.txt')",
+        "codecs.open(f, 'r', errors='x')",
     ],
 )
 def test_the_check_catches_text_io_without_an_encoding(line):
