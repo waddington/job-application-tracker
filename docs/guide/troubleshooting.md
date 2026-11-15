@@ -104,16 +104,18 @@ Files are limited to 50 MB each.
 
 ## "A file is open in another program … Close it there and try again."
 
-Windows won't let the tracker replace or delete a file another program has open. If a note, an
-uploaded file or a file in `export/` is open in Word, an editor, OneDrive (while it syncs) or an
-antivirus scan, the tracker tries again for about a second and a half, then shows this message.
-Nothing was saved or deleted, so nothing is half-done. Close the file in the other program (or
-wait for OneDrive or the scan to finish), then save, upload, delete or download the backup again.
-The server's log names the file.
+Windows won't let the tracker replace or delete a file another program has open, and some
+programs stop it reading one too. If a note, an uploaded file or a file in `export/` is open in
+Word, an editor, OneDrive (while it syncs) or an antivirus scan, saving or deleting a note,
+uploading a file or downloading a backup tries again for about a second and a half (reading a
+note or file into a backup doesn't wait), then shows this message. Nothing was saved or deleted,
+so nothing is half-done. Close the file in the other program (or wait for OneDrive or the scan
+to finish), then try again. The server's log names the file.
 
 When you delete a file or a CV version and its file is the one that's open, the delete still
 goes through, and the file is left in `files/` with nothing pointing at it; the server's log
-names it, and you can delete it yourself later.
+names it. Until you delete it, it's still copied into backups and snapshots, so once the other
+program has closed it, delete that file from `files/` by hand.
 
 ## "The frontend isn't built yet"
 

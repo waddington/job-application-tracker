@@ -7,7 +7,7 @@ Numbers in brackets are pull requests.
 
 ## 1.24.23 (2026-11-15)
 
-- **Fix:** on Windows, when another program (an editor, antivirus or OneDrive) has a note, an uploaded file or an export file open, saving, deleting or downloading a backup tries again for about a second and a half, then says the file is open in another program instead of failing with a server error, with nothing half-saved; `jat restore --force` puts your old database back and says to stop `jat serve` if it can't swap in the restored one, instead of printing a traceback (#376, carrying #357).
+- **Fix:** on Windows, when another program (an editor, antivirus or OneDrive) has a note, an uploaded file or an export file open, saving or deleting a note, uploading a file or a CV version, or downloading a backup tries again for about a second and a half, then says the file is open in another program instead of failing with a server error, and nothing is half-saved. Deleting a file, a CV version or a document still goes through: a file that's open is left in `files/` and named in the server's log. `jat restore --force` puts your old database back if it can't swap in the restored one (even on Ctrl-C) and says to stop `jat serve`, instead of printing a traceback (#376, carrying #357).
 
 ## 1.24.22 (2026-11-15)
 
