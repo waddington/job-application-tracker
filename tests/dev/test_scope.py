@@ -104,6 +104,9 @@ def test_no_e2e_allows_skip_list_files_and_a_version_bump(repo: Path):
         "frontend/e2e/today.spec.ts",
         "scripts/seed_demo.py",
         "frontend/src/notes.md",  # Markdown counts as docs only at the top or under docs/
+        "tests_x/a.py",  # lookalikes of allowed folders
+        "docsx/a.md",
+        "frontend/src/locales/fr-CAN/common.json",  # only starts like the draft code fr-CA
     ],
 )
 def test_no_e2e_refuses_files_off_the_list(repo: Path, path: str):
@@ -120,6 +123,55 @@ def test_no_e2e_refuses_a_lockfile_change_beyond_the_version(repo: Path):
     out = scope(repo, "--no-e2e")
     assert out.returncode == 2
     assert "--no-e2e: uv.lock changes more than its version line (1.0.0 → 1.0.1)" in out.stdout
+
+
+def test_no_e2e_refuses_a_rename_from_off_the_list_into_it(repo: Path):
+    (repo / "tests").mkdir(exist_ok=True)
+    git(repo, "mv", "frontend/src/App.tsx", "tests/x.py")
+    out = scope(repo, "--no-e2e")
+    assert out.returncode == 2
+    assert "--no-e2e: frontend/src/App.tsx isn't on CLAUDE.md's browser-test skip list" in out.stdout
+
+
+def test_no_e2e_refuses_a_deleted_version_file(repo: Path):
+    write(repo, BUMPED)
+    (repo / "frontend/package.json").unlink()
+    out = scope(repo, "--no-e2e")
+    assert out.returncode == 2
+    assert "--no-e2e: frontend/package.json changes more than its version line" in out.stdout
+
+
+def test_no_e2e_refuses_a_mode_change_on_a_version_file(repo: Path):
+    write(repo, BUMPED)
+    (repo / "pyproject.toml").chmod(0o755)
+    out = scope(repo, "--no-e2e")
+    assert out.returncode == 2
+    assert "--no-e2e: pyproject.toml changes more than its version line" in out.stdout
+
+
+def test_no_e2e_refuses_a_new_draft_and_its_folder(repo: Path):
+    language = BASE["frontend/src/i18n/language.ts"].replace(
+        '"fr-CA": "Français",', '"fr-CA": "Français",\n  "de": "Deutsch",'
+    )
+    write(repo, {"frontend/src/i18n/language.ts": language, "frontend/src/locales/de/common.json": "{}\n"})
+    out = scope(repo, "--no-e2e")
+    assert out.returncode == 2
+    assert "--no-e2e: frontend/src/i18n/language.ts isn't on" in out.stdout
+    assert "--no-e2e: frontend/src/locales/de/common.json isn't on" in out.stdout
+
+
+def test_no_e2e_reads_the_drafts_from_origin_main(repo: Path):
+    # Main ships fr-CA after the branch was cut: the branch's edit to it now changes the production build.
+    shipped = BASE["frontend/src/i18n/language.ts"].replace('  "fr-CA": "Français",\n', "")
+    git(repo, "checkout", "-q", "main")
+    write(repo, {"frontend/src/i18n/language.ts": shipped})
+    git(repo, "commit", "-qam", "ship fr-CA")
+    git(repo, "push", "-q", "origin", "main")
+    git(repo, "checkout", "-q", "worktree-x")
+    write(repo, {"frontend/src/locales/fr-CA/common.json": "{}\n"})
+    out = scope(repo, "--no-e2e")
+    assert out.returncode == 2
+    assert "--no-e2e: frontend/src/locales/fr-CA/common.json isn't on" in out.stdout
 
 
 def test_no_e2e_refuses_an_uncommitted_change(repo: Path):
