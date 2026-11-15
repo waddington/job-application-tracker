@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.24.21 (2026-11-15)
+
+- **Developers:** the tests of the maintainer-only tooling (the PM dashboard, the tools/dev scripts and the i18n translate helpers) skip on Windows, so `uv run pytest` there checks the app; Windows support leaves those tools out (#373).
+
 ## 1.24.20 (2026-11-15)
 
 - **Developers:** the Insights clock-change test runs on the bundled tzdata package alone, through a shared tzdata_only fixture, so it behaves the same on Windows, macOS and Linux; a duplicate time-zone test goes (#371, carrying #360).
