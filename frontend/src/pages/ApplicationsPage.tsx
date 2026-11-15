@@ -59,7 +59,7 @@ function SortHeader({
   const active = sort === asc || sort === desc;
   const next = sort === asc && desc ? desc : asc;
   return (
-    <UnstyledButton onClick={() => onSort(next)} fw={600} fz="sm">
+    <UnstyledButton onClick={() => onSort(next)}>
       <Group gap={4} wrap="nowrap">
         {label}
         {active && (sort === desc ? <IconChevronDown size={14} /> : <IconChevronUp size={14} />)}

@@ -11,7 +11,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { router as defaultRouter } from "./router";
-import { themeFor } from "./theme";
+import { cssVariablesResolver, themeFor } from "./theme";
 import { dayjsLocale } from "./utils/format";
 
 export function App({ router = defaultRouter }: { router?: typeof defaultRouter }) {
@@ -23,7 +23,7 @@ export function App({ router = defaultRouter }: { router?: typeof defaultRouter 
   );
   const theme = useMemo(() => themeFor(i18n.language), [i18n.language]);
   return (
-    <MantineProvider theme={theme} defaultColorScheme="auto">
+    <MantineProvider theme={theme} cssVariablesResolver={cssVariablesResolver} defaultColorScheme="auto">
       <DatesProvider settings={{ locale: dayjsLocale(i18n.language), firstDayOfWeek: 1 }}>
         <Notifications position="top-right" />
         <QueryClientProvider client={queryClient}>

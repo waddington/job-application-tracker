@@ -54,6 +54,8 @@ import { joinList } from "../utils/list";
 import { roundLabel } from "../utils/rounds";
 import { useNow, useToday } from "../utils/useToday";
 import text from "../text.module.css";
+import { barColor } from "../theme";
+import look from "../theme.module.css";
 import classes from "./InterviewCalendar.module.css";
 import { roundStatus } from "./Interviews";
 import { RecruiterLine } from "./RecruiterLine";
@@ -233,7 +235,9 @@ function PeriodSummary({
       <Group gap="lg" style={{ rowGap: 8 }}>
         {stats.map((s) => (
           <div key={s.id} className={classes.stat} data-stat={s.id}>
-            {s.color && <span className={classes.statDot} style={dotColor(s.color)} />}
+            {s.color && (
+              <span className={look.keyDot} style={{ "--key-dot": barColor(s.color) } as CSSProperties} />
+            )}
             <span className={classes.statNumber}>{now[s.id]}</span>
             <Text span size="sm" c="dimmed">
               {t(s.key, { count: now[s.id] })}

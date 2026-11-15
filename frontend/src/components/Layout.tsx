@@ -20,7 +20,7 @@ import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { isActive, NAV, NAV_GROUP_KEYS, NAV_GROUPS } from "../nav";
-import text from "../text.module.css";
+import theme from "../theme.module.css";
 import { ApiStatus } from "./ApiStatus";
 import { AppVersion } from "./AppVersion";
 import { HeaderSearch } from "./HeaderSearch";
@@ -90,7 +90,7 @@ export function Layout() {
             <div key={group} role="group" aria-label={t(NAV_GROUP_KEYS[group])}>
               {n > 0 && <Divider my={4} />}
               {heading && (
-                <Text size="xs" fw={600} c="dimmed" className={text.caps} px="sm" pt={6} pb={2}>
+                <Text className={theme.eyebrow} px="sm" pt={6} pb={2}>
                   {t(NAV_GROUP_KEYS[group])}
                 </Text>
               )}

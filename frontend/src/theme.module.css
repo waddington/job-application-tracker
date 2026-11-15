@@ -1,4 +1,4 @@
-/* Today in every calendar: a ring in the primary colour, so you can see where you are. */
+/* Today in every calendar: a ring in the primary colour (lavender in dark mode), so you can see where you are. */
 .day[data-today][data-highlight-today]:not(
     [data-selected],
     [data-in-range],
@@ -9,13 +9,119 @@
   font-weight: 700;
 }
 
-/* A lighter indigo on the dark dropdown, for contrast. */
-:where([data-mantine-color-scheme="dark"])
-  .day[data-today][data-highlight-today]:not(
-    [data-selected],
-    [data-in-range],
-    [data-disabled],
-    [data-outside]
-  ) {
-  border-color: var(--mantine-color-indigo-4);
+/* Soft cards: no outline in light mode (the shadow lifts them), a faint one in dark. */
+.card {
+  border-color: transparent;
+}
+:where([data-mantine-color-scheme="dark"]) .card {
+  border-color: var(--jat-ink-faint);
+}
+
+/* Filled buttons lift on a soft shadow; the plum one carries the website's gradient. */
+.button[data-variant="filled"]:not(:disabled, [data-disabled], [data-loading]) {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.22),
+    0 10px 24px -12px rgb(var(--jat-shadow) / 0.55);
+}
+.plum:not(:disabled, [data-disabled], [data-loading]) {
+  background-image: var(--jat-plum-gradient);
+}
+@media (hover: hover) {
+  .plum:not(:disabled, [data-disabled], [data-loading]):hover {
+    background-image: var(--jat-plum-gradient-hover);
+  }
+}
+
+/* The website's eyebrow: mono capitals after a small square (nav group headings, table headers). A header
+   row that names records rather than labelling columns (Offers' companies) says so with data-records. */
+.eyebrow,
+thead:not([data-records]) .th {
+  font-family: var(--mantine-font-family-monospace);
+  font-size: var(--jat-eyebrow-size);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: var(--jat-eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--mantine-color-dimmed);
+}
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.eyebrow::before,
+thead:not([data-records]) .th:not(:empty)::before {
+  content: "";
+  flex: none;
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: currentColor;
+}
+thead:not([data-records]) .th:not(:empty)::before {
+  margin-inline-end: 8px;
+  vertical-align: 0.1em;
+}
+/* A header that sorts is a button: it reads as the label around it. */
+thead:not([data-records]) .th button {
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+}
+/* Chinese has no capitals, and spaced-out characters read as broken: the tracking is for Latin text.
+   Its characters also need a little more size than mono capitals to read. */
+:lang(zh) .eyebrow,
+:lang(zh) thead:not([data-records]) .th {
+  font-size: 12px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* Bars: deeper pastels with ink numbers, in both modes. */
+.progress {
+  --mantine-color-gray-filled: var(--jat-bar-gray);
+  --mantine-color-dark-filled: var(--jat-bar-dark);
+  --mantine-color-blue-filled: var(--jat-bar-blue);
+  --mantine-color-cyan-filled: var(--jat-bar-cyan);
+  --mantine-color-indigo-filled: var(--jat-bar-indigo);
+  --mantine-color-violet-filled: var(--jat-bar-violet);
+  --mantine-color-grape-filled: var(--jat-bar-grape);
+  --mantine-color-teal-filled: var(--jat-bar-teal);
+  --mantine-color-green-filled: var(--jat-bar-green);
+  --mantine-color-lime-filled: var(--jat-bar-lime);
+  --mantine-color-yellow-filled: var(--jat-bar-yellow);
+  --mantine-color-orange-filled: var(--jat-bar-orange);
+  --mantine-color-red-filled: var(--jat-bar-red);
+  --mantine-color-pink-filled: var(--jat-bar-pink);
+}
+.progressSection {
+  border-radius: 999px;
+}
+.progressLabel {
+  color: var(--jat-bar-ink);
+}
+/* A bar's key: a dot in the bar's pastel, with a thin ring so a pale one still shows on white. */
+.keyDot {
+  display: inline-block;
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--key-dot);
+  box-shadow: 0 0 0 1px rgb(var(--jat-ring) / 0.45);
+  vertical-align: 0.05em;
+  align-self: center;
+}
+
+/* Text on the primary colour takes its contrast colour (white on plum, dark on lavender), where Mantine
+   writes white: the arrow-key option in a dropdown, the time picker's focused field and chosen value,
+   and a switch's thumb when it's on. */
+.option[data-combobox-selected],
+.timeField:focus,
+.timeField:focus::placeholder,
+.timeControl[data-active] {
+  color: var(--mantine-primary-color-contrast);
+}
+.switchInput:checked:not(:disabled, [data-disabled]) + * .switchThumb {
+  background-color: var(--mantine-primary-color-contrast);
 }
