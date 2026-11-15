@@ -23,25 +23,32 @@ import {
   type MantineThemeOverride,
 } from "@mantine/core";
 
-import { router } from "../router";
+import { createElement, StrictMode } from "react";
+import { createRoot } from "react-dom/client";
 
-// Round 1 had four concepts; 4 (Soft cards) was the pick, so 1-3 are gone (see PR #354's history for them).
-// Round 2 varies 4. Each flag becomes a data attribute on <html> that concepts.css keys on:
+import { router } from "../router";
+import { BottomNav } from "./BottomNav";
+
+// Round 1 had four concepts; 4 (Soft cards) was the pick. Rounds 2 and 3 vary it; the concepts that weren't
+// kept (1-3, 5, 6, 8) are in PR #354's history. Each flag becomes a data attribute on <html> that concepts.css
+// keys on:
 //   soft: 4's look; oneBg: one background on every page; wide: full width up to a cap; drift: the slow fade;
-//   bones: Today in three columns, a full-width board, an application docked beside the list; topbar: the nav
-//   as a bar under the header.
-type Flag = "soft" | "oneBg" | "wide" | "drift" | "bones" | "topbar";
+//   today3: Today in three columns; wideBoard: the board's columns share the full width; dock: an application
+//   opens docked beside the list; subpages: wider layouts for records, notes, documents and interviews;
+//   bottomNav: on a phone, a bottom bar instead of the slide-out menu.
+type Flag = "soft" | "oneBg" | "wide" | "drift" | "today3" | "wideBoard" | "dock" | "subpages" | "bottomNav";
+const PICK: Flag[] = ["soft", "oneBg", "wide", "drift", "today3", "dock", "bottomNav"];
 export const CONCEPTS: { n: number; name: string; flags: Flag[] }[] = [
   { n: 0, name: "Today's look", flags: [] },
   { n: 4, name: "Soft cards (round 1's pick)", flags: ["soft"] },
-  { n: 5, name: "Still: 4, one background, full width", flags: ["soft", "oneBg", "wide"] },
-  { n: 6, name: "Drift: 5 with a slow colour fade", flags: ["soft", "oneBg", "wide", "drift"] },
-  { n: 7, name: "Wide bones: 5 with new page layouts", flags: ["soft", "oneBg", "wide", "bones"] },
   {
-    n: 8,
-    name: "Top bar: 7's layouts, nav on top, drifting",
-    flags: ["soft", "oneBg", "wide", "drift", "bones", "topbar"],
+    n: 7,
+    name: "Wide bones (round 2)",
+    flags: ["soft", "oneBg", "wide", "today3", "wideBoard", "dock"],
   },
+  { n: 9, name: "The pick: drift, three-column Today, docked application", flags: PICK },
+  { n: 10, name: "9 and a full-width board", flags: [...PICK, "wideBoard"] },
+  { n: 11, name: "10 and new sub-page layouts", flags: [...PICK, "wideBoard", "subpages"] },
 ];
 
 const DRIFT_CYCLE_MS = 600_000; // keep in step with the drift animation's 600s in concepts.css
@@ -123,7 +130,7 @@ const soft = createTheme({
   },
 });
 
-// With the new bones, an application's drawer is a panel docked beside the list: no overlay, and the page
+// With dock, an application's drawer is a panel docked beside the list: no overlay, and the page
 // behind it still scrolls, takes clicks (another row swaps what it shows) and keeps the keyboard.
 const docked = createTheme({
   components: {
@@ -134,7 +141,7 @@ const docked = createTheme({
 });
 
 function themeOf(flags: Flag[]): MantineThemeOverride {
-  return flags.includes("bones") ? mergeThemeOverrides(soft, docked) : soft;
+  return flags.includes("dock") ? mergeThemeOverrides(soft, docked) : soft;
 }
 
 // The drift's phase is the time into its cycle by the clock, so it carries on across reloads; it's set again
@@ -191,7 +198,9 @@ function mountSwitch(current: number) {
 
 function trackArea() {
   const set = (path: string) => {
-    document.documentElement.dataset.area = path.split("/")[1] || "today";
+    const parts = path.split("/").filter(Boolean);
+    document.documentElement.dataset.area = parts[0] ?? "today";
+    document.documentElement.dataset.depth = String(parts.length);
   };
   set(window.location.pathname);
   router.subscribe("onResolved", ({ toLocation }) => set(toLocation.pathname));
@@ -207,6 +216,11 @@ export function startDesign(): MantineThemeOverride | undefined {
   html.dataset.design = String(n);
   for (const f of flags) html.setAttribute(`data-${f.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`, "");
   if (flags.includes("drift")) syncDrift();
+  if (flags.includes("bottomNav")) {
+    const host = document.createElement("div");
+    document.body.append(host);
+    createRoot(host).render(createElement(StrictMode, null, createElement(BottomNav)));
+  }
   trackArea();
   return themeOf(flags);
 }
