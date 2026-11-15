@@ -34,7 +34,7 @@ def run(*args: str, **kw) -> str:
 
 def node_env() -> dict[str, str]:
     env = dict(os.environ)
-    node = env.get("NODE_BIN") or str(Path.home() / ".nvm/versions/node/v22.23.3/bin")
+    node = env.get("NODE_BIN") or str(Path.home() / ".nvm/versions/node/v22.23.5/bin")
     if Path(node).is_dir():
         env["PATH"] = f"{node}:{env['PATH']}"
     return env

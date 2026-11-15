@@ -191,10 +191,11 @@ PR.** PRs that only touch internal files (`CLAUDE.md`, `.claude/settings.json`, 
   `uv run jat serve --dev` plus `pnpm --dir frontend dev` (http://127.0.0.1:5173, which proxies `/api`).
 - Frontend checks (run in `frontend/`): `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm e2e` (browser tests),
   `pnpm format:check`. TypeScript is pinned to 5.9 (typescript-eslint doesn't support TS 7 yet).
-- **Node >= 22.12** (`.nvmrc` says `22`; Node 22.23.3 is installed in nvm, alongside Kai's
-  22.5.1). Vite 8's native rolldown binary needs it, and `engine-strict` makes pnpm fail
-  loudly on older Node. In a non-interactive shell, put
-  `/home/kai/.nvm/versions/node/v22.23.3/bin` first on `PATH` before running pnpm.
+- **Node >= 22.12** for the app, and **>= 22.23.4 for the website**, whose Astro (7.4.2 and
+  later) exits on older Node (`.nvmrc` says `22`; Node 22.23.5 is installed in nvm, alongside
+  22.5.1 and others). Vite 8's native rolldown binary needs 22.12, and `engine-strict` makes
+  pnpm fail loudly on older Node. In a non-interactive shell, put
+  `/home/kai/.nvm/versions/node/v22.23.5/bin` first on `PATH` before running pnpm.
 - API changes: after changing routes or schemas run `uv run python -m jat.openapi` and
   `pnpm --dir frontend gen:api`, and commit `frontend/openapi.json` and `src/api/schema.d.ts`
   (`tests/test_openapi.py` fails on drift). Use the typed client in `frontend/src/api/client.ts`.
