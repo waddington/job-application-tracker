@@ -41,6 +41,8 @@ export default {
       insights: "Insights",
       timeline: "Timeline",
     },
+    // On a phone, the last tab of the bottom bar: it opens the pages that don't have a tab of their own.
+    more: "More",
   },
   // The language switch in the header. Languages are listed by their own names, not here.
   language: {

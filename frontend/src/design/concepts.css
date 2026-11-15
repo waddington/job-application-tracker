@@ -1,0 +1,762 @@
+/* DEV ONLY: the app redesign concepts (concepts.ts). Everything here is keyed on <html data-design="N">, which only
+   the dev server's concept switch sets. Tokens follow the website (website/src/styles/site.css, concept 1i). */
+
+/* ---------- The dev switch ---------- */
+.design-switch {
+  position: fixed;
+  z-index: 10000;
+  right: 12px;
+  bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 6px 5px 12px;
+  border-radius: 999px;
+  font:
+    500 11px/1 "JetBrains Mono Variable",
+    ui-monospace,
+    monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #2a1e3f;
+  background: rgb(255 255 255 / 0.7);
+  border: 1px solid rgb(42 30 63 / 0.18);
+  box-shadow: 0 10px 30px -12px rgb(42 30 63 / 0.35);
+  backdrop-filter: blur(16px) saturate(1.4);
+}
+.design-switch button {
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+.design-switch button:hover {
+  background: rgb(42 30 63 / 0.08);
+}
+.design-switch button[aria-pressed="true"] {
+  color: #fff;
+  background: #2a1e3f;
+}
+
+/* ---------- Shared tokens, light ---------- */
+html[data-design] {
+  --c-ink: #2a1e3f;
+  --c-ink-soft: rgb(42 30 63 / 0.7);
+  --c-ink-faint: rgb(42 30 63 / 0.12);
+  --c-page: #f4f1fb;
+  --c-surface: #fff;
+  --c-plum: #2a1e3f;
+  --c-plum-2: #4a3a68;
+  --c-on-plum: #f7f5fc;
+  --c-lavender: #c9b8f0;
+  --c-glass: rgb(255 255 255 / 0.5);
+  --c-glass-edge: rgb(255 255 255 / 0.75);
+  --c-shadow: 42 30 63;
+  --mono: "JetBrains Mono Variable", ui-monospace, monospace;
+  /* Stage and status pastels (Mantine's colour names, which stages use), with ink to read on them. */
+  --p-gray: #ebe8f1;
+  --i-gray: #3b3349;
+  --p-dark: #e4e0ec;
+  --i-dark: #2a1e3f;
+  --p-blue: #dde8f7;
+  --i-blue: #1f3a5f;
+  --p-cyan: #d5edf0;
+  --i-cyan: #164349;
+  --p-indigo: #e4defa;
+  --i-indigo: #2f2466;
+  --p-violet: #ece2f8;
+  --i-violet: #45236b;
+  --p-grape: #f2def3;
+  --i-grape: #55215c;
+  --p-teal: #d9efe3;
+  --i-teal: #1b4a33;
+  --p-green: #dcf0d6;
+  --i-green: #24481a;
+  --p-lime: #e9f2cf;
+  --i-lime: #3a4712;
+  --p-yellow: #f8efcd;
+  --i-yellow: #4d3d08;
+  --p-orange: #f7e5d3;
+  --i-orange: #5a3313;
+  --p-red: #f6e0e5;
+  --i-red: #6a1f30;
+  --p-pink: #f8dfea;
+  --i-pink: #5f1f3c;
+}
+
+/* ---------- Shared tokens, dark: plum night, the pastels as light text on a faint wash ---------- */
+html[data-design][data-mantine-color-scheme="dark"] {
+  --c-ink: #ece8f6;
+  --c-ink-soft: rgb(236 232 246 / 0.7);
+  --c-ink-faint: rgb(236 232 246 / 0.1);
+  --c-page: #15101f;
+  --c-surface: #211a30;
+  --c-plum: #c9b8f0;
+  --c-plum-2: #d9cdf6;
+  --c-on-plum: #1a1426;
+  --c-glass: rgb(44 34 64 / 0.45);
+  --c-glass-edge: rgb(255 255 255 / 0.1);
+  --c-shadow: 0 0 0;
+}
+
+/* Mantine's own variables: text, dimmed text, borders, surfaces. (html + two attributes outranks Mantine's
+   :root[data-mantine-color-scheme] rules.) */
+html[data-design][data-mantine-color-scheme] {
+  --mantine-color-body: var(--c-surface);
+  --mantine-color-text: var(--c-ink);
+  --mantine-color-dimmed: var(--c-ink-soft);
+  --mantine-color-default-border: var(--c-ink-faint);
+  --mantine-color-anchor: #5d4a94;
+  --mantine-color-placeholder: rgb(42 30 63 / 0.56);
+}
+html[data-design][data-mantine-color-scheme="light"] {
+  /* Greys with a little lilac, for soft fills (Today's rows, hovers). */
+  --mantine-color-gray-0: #f9f8fd;
+  --mantine-color-gray-1: #f3f0fa;
+  --mantine-color-gray-2: #e9e5f3;
+  --mantine-color-gray-3: #dcd6ea;
+}
+html[data-design][data-mantine-color-scheme="dark"] {
+  --mantine-color-anchor: var(--c-lavender);
+  --mantine-color-placeholder: rgb(236 232 246 / 0.5);
+}
+/* Mantine paints dark cards dark-6, the same as Today's rows: cards take the surface instead. */
+html[data-design][data-mantine-color-scheme="dark"] .mantine-Card-root {
+  background-color: var(--c-surface);
+}
+html[data-design] body {
+  background: var(--c-page);
+  color: var(--c-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Stage badges and light buttons: the website's pastels. Light: pastel and ink. Dark: the pastel as text on a wash. */
+html[data-design][data-mantine-color-scheme="light"] {
+  --mantine-color-gray-light: var(--p-gray);
+  --mantine-color-gray-light-color: var(--i-gray);
+  --mantine-color-gray-outline: var(--i-gray);
+  --mantine-color-dark-light: var(--p-dark);
+  --mantine-color-dark-light-color: var(--i-dark);
+  --mantine-color-dark-outline: var(--i-dark);
+  --mantine-color-blue-light: var(--p-blue);
+  --mantine-color-blue-light-color: var(--i-blue);
+  --mantine-color-blue-outline: var(--i-blue);
+  --mantine-color-cyan-light: var(--p-cyan);
+  --mantine-color-cyan-light-color: var(--i-cyan);
+  --mantine-color-cyan-outline: var(--i-cyan);
+  --mantine-color-indigo-light: var(--p-indigo);
+  --mantine-color-indigo-light-color: var(--i-indigo);
+  --mantine-color-indigo-outline: var(--i-indigo);
+  --mantine-color-violet-light: var(--p-violet);
+  --mantine-color-violet-light-color: var(--i-violet);
+  --mantine-color-violet-outline: var(--i-violet);
+  --mantine-color-grape-light: var(--p-grape);
+  --mantine-color-grape-light-color: var(--i-grape);
+  --mantine-color-grape-outline: var(--i-grape);
+  --mantine-color-teal-light: var(--p-teal);
+  --mantine-color-teal-light-color: var(--i-teal);
+  --mantine-color-teal-outline: var(--i-teal);
+  --mantine-color-green-light: var(--p-green);
+  --mantine-color-green-light-color: var(--i-green);
+  --mantine-color-green-outline: var(--i-green);
+  --mantine-color-lime-light: var(--p-lime);
+  --mantine-color-lime-light-color: var(--i-lime);
+  --mantine-color-lime-outline: var(--i-lime);
+  --mantine-color-yellow-light: var(--p-yellow);
+  --mantine-color-yellow-light-color: var(--i-yellow);
+  --mantine-color-yellow-outline: var(--i-yellow);
+  --mantine-color-orange-light: var(--p-orange);
+  --mantine-color-orange-light-color: var(--i-orange);
+  --mantine-color-orange-outline: var(--i-orange);
+  --mantine-color-red-light: var(--p-red);
+  --mantine-color-red-light-color: var(--i-red);
+  --mantine-color-red-outline: var(--i-red);
+  --mantine-color-pink-light: var(--p-pink);
+  --mantine-color-pink-light-color: var(--i-pink);
+  --mantine-color-pink-outline: var(--i-pink);
+  /* Coloured text ("Replied today", "Waiting 8 days"): darker than Mantine's shade 6, for 4.5:1 on tints. */
+  --mantine-color-orange-text: #a84400;
+  --mantine-color-red-text: #b42323;
+  --mantine-color-yellow-text: #7d5800;
+  --mantine-color-green-text: #22692f;
+  --mantine-color-teal-text: #0b6b4f;
+  --mantine-color-blue-text: #1a5aa3;
+  --mantine-color-plum-light: #ebe6f8;
+  --mantine-color-plum-light-color: #2a1e3f;
+}
+html[data-design][data-mantine-color-scheme="dark"] {
+  --mantine-color-gray-light: color-mix(in srgb, var(--p-gray) 12%, transparent);
+  --mantine-color-gray-light-color: var(--p-gray);
+  --mantine-color-gray-outline: var(--p-gray);
+  --mantine-color-dark-light: color-mix(in srgb, var(--p-dark) 10%, transparent);
+  --mantine-color-dark-light-color: #b9b1cc;
+  --mantine-color-dark-outline: #a89fbc;
+  --mantine-color-blue-light: color-mix(in srgb, var(--mantine-color-blue-5) 24%, transparent);
+  --mantine-color-blue-light-color: var(--p-blue);
+  --mantine-color-blue-outline: var(--p-blue);
+  --mantine-color-cyan-light: color-mix(in srgb, var(--mantine-color-cyan-5) 24%, transparent);
+  --mantine-color-cyan-light-color: var(--p-cyan);
+  --mantine-color-cyan-outline: var(--p-cyan);
+  --mantine-color-indigo-light: color-mix(in srgb, var(--mantine-color-indigo-5) 24%, transparent);
+  --mantine-color-indigo-light-color: var(--p-indigo);
+  --mantine-color-indigo-outline: var(--p-indigo);
+  --mantine-color-violet-light: color-mix(in srgb, var(--mantine-color-violet-5) 24%, transparent);
+  --mantine-color-violet-light-color: var(--p-violet);
+  --mantine-color-violet-outline: var(--p-violet);
+  --mantine-color-grape-light: color-mix(in srgb, var(--mantine-color-grape-5) 24%, transparent);
+  --mantine-color-grape-light-color: var(--p-grape);
+  --mantine-color-grape-outline: var(--p-grape);
+  --mantine-color-teal-light: color-mix(in srgb, var(--mantine-color-teal-5) 24%, transparent);
+  --mantine-color-teal-light-color: var(--p-teal);
+  --mantine-color-teal-outline: var(--p-teal);
+  --mantine-color-green-light: color-mix(in srgb, var(--mantine-color-green-5) 24%, transparent);
+  --mantine-color-green-light-color: var(--p-green);
+  --mantine-color-green-outline: var(--p-green);
+  --mantine-color-lime-light: color-mix(in srgb, var(--mantine-color-lime-5) 24%, transparent);
+  --mantine-color-lime-light-color: var(--p-lime);
+  --mantine-color-lime-outline: var(--p-lime);
+  --mantine-color-yellow-light: color-mix(in srgb, var(--mantine-color-yellow-5) 24%, transparent);
+  --mantine-color-yellow-light-color: var(--p-yellow);
+  --mantine-color-yellow-outline: var(--p-yellow);
+  --mantine-color-orange-light: color-mix(in srgb, var(--mantine-color-orange-5) 24%, transparent);
+  --mantine-color-orange-light-color: var(--p-orange);
+  --mantine-color-orange-outline: var(--p-orange);
+  --mantine-color-red-light: color-mix(in srgb, var(--mantine-color-red-5) 24%, transparent);
+  --mantine-color-red-light-color: var(--p-red);
+  --mantine-color-red-outline: var(--p-red);
+  --mantine-color-pink-light: color-mix(in srgb, var(--mantine-color-pink-5) 24%, transparent);
+  --mantine-color-pink-light-color: var(--p-pink);
+  --mantine-color-pink-outline: var(--p-pink);
+  --mantine-color-plum-light: rgb(201 184 240 / 0.14);
+  --mantine-color-plum-light-color: #d9cdf6;
+}
+
+/* Small labels in capitals (nav group headings, table headers) become the website's eyebrow: mono, after a square. */
+html[data-design] .mantine-AppShell-navbar [role="group"] > p {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 500 10.5px/1.2 var(--mono);
+  letter-spacing: 0.14em;
+  color: var(--c-ink-soft);
+}
+html[data-design] .mantine-AppShell-navbar [role="group"] > p::before {
+  content: "";
+  flex: none;
+  width: 6px;
+  height: 6px;
+  background: currentColor;
+}
+html[data-design] .mantine-AppShell-navbar .mantine-Divider-root {
+  border-color: transparent;
+}
+html[data-design] .mantine-Title-root {
+  color: var(--c-ink);
+}
+html[data-design] .mantine-AppShell-header .mantine-Title-root {
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+/* Pill buttons: the plum one carries the website's gradient and lift. */
+html[data-design] .mantine-Button-root[data-variant="filled"]:not([data-disabled]),
+html[data-design] .mantine-ActionIcon-root[data-variant="filled"]:not([data-disabled]) {
+  background-image: linear-gradient(180deg, rgb(255 255 255 / 0.12), rgb(255 255 255 / 0));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.22),
+    0 10px 24px -12px rgb(var(--c-shadow) / 0.55);
+}
+
+/* =================================================================== 4. Soft cards, and the round-2 variations built on it (data-soft) */
+html[data-soft] {
+  --c-page: #f4f1fb;
+}
+html[data-design="4"][data-area="today"] {
+  --c-page: #fcf8ea;
+}
+html[data-design="4"]:is(
+    [data-area="roles"],
+    [data-area="companies"],
+    [data-area="recruiters"],
+    [data-area="people"],
+    [data-area="agencies"]
+  ) {
+  --c-page: #eff8f2;
+}
+html[data-design="4"]:is([data-area="interviews"], [data-area="offers"], [data-area="timeline"]) {
+  --c-page: #eef3fb;
+}
+html[data-design="4"]:is([data-area="insights"], [data-area="search"]) {
+  --c-page: #fcf3ea;
+}
+html[data-design="4"]:is([data-area="notes"], [data-area="documents"]) {
+  --c-page: #fcf0f3;
+}
+html[data-soft][data-mantine-color-scheme="dark"] {
+  --c-page: #17121f;
+  --c-surface: #231b31;
+}
+html[data-design="4"][data-mantine-color-scheme="dark"][data-area="today"] {
+  --c-page: #1b1712;
+}
+html[data-design="4"][data-mantine-color-scheme="dark"]:is(
+    [data-area="roles"],
+    [data-area="companies"],
+    [data-area="recruiters"],
+    [data-area="people"],
+    [data-area="agencies"]
+  ) {
+  --c-page: #111a16;
+}
+html[data-design="4"][data-mantine-color-scheme="dark"]:is(
+    [data-area="interviews"],
+    [data-area="offers"],
+    [data-area="timeline"]
+  ) {
+  --c-page: #111722;
+}
+html[data-design="4"][data-mantine-color-scheme="dark"]:is([data-area="insights"], [data-area="search"]) {
+  --c-page: #1c1510;
+}
+html[data-design="4"][data-mantine-color-scheme="dark"]:is([data-area="notes"], [data-area="documents"]) {
+  --c-page: #1c1218;
+}
+html[data-soft] body {
+  transition: background-color 0.6s cubic-bezier(0.22, 0.61, 0.24, 1);
+}
+html[data-soft] .mantine-AppShell-header,
+html[data-soft] .mantine-AppShell-navbar {
+  background: var(--c-page);
+  border-color: transparent;
+  transition: background-color 0.6s cubic-bezier(0.22, 0.61, 0.24, 1);
+}
+html[data-soft] .mantine-AppShell-main {
+  padding-left: calc(var(--app-shell-navbar-offset, 0rem) + 28px);
+  padding-right: 28px;
+}
+html[data-soft] .mantine-NavLink-root {
+  border-radius: 999px;
+  margin-bottom: 2px;
+}
+html[data-soft] .mantine-NavLink-root[data-active] {
+  background: var(--c-surface);
+  color: var(--c-ink);
+  font-weight: 600;
+  box-shadow: 0 8px 22px -12px rgb(var(--c-shadow) / 0.35);
+}
+html[data-soft] .mantine-AppShell-main h2.mantine-Title-root {
+  --title-fz: 52px !important;
+  --title-lh: 1.04 !important;
+  font-weight: 300;
+  letter-spacing: -0.035em;
+}
+html[data-soft] .mantine-Card-root {
+  border-color: transparent;
+}
+/* Big air in the top-level cards; cards inside cards (the board's) stay compact. */
+html[data-soft] .mantine-Card-root:not(:is(.mantine-Card-root, .mantine-Paper-root) .mantine-Card-root) {
+  --card-padding: 26px !important;
+}
+html[data-soft] :is(.mantine-Card-root, .mantine-Paper-root) .mantine-Card-root {
+  --card-padding: 14px !important;
+  border-radius: 20px;
+}
+/* A card that holds cards (a board column) is a soft well of the page's tint, so its cards stand out. */
+html[data-soft] .mantine-AppShell-main :is(.mantine-Card-root, .mantine-Paper-root):has(.mantine-Card-root) {
+  background-color: color-mix(in srgb, var(--c-surface) 45%, transparent);
+  box-shadow: none;
+}
+html[data-soft][data-mantine-color-scheme="dark"] .mantine-Card-root {
+  border-color: var(--c-ink-faint);
+}
+html[data-soft] .mantine-Card-root :is(h3, h4).mantine-Title-root {
+  --title-fz: 21px !important;
+  font-weight: 400;
+  letter-spacing: -0.015em;
+}
+
+/* The stage bar on Today: deeper pastels with ink numbers, in every concept and both modes. */
+html[data-design] .mantine-Progress-root {
+  --mantine-color-gray-filled: #d9d4e3;
+  --mantine-color-dark-filled: #cfc9da;
+  --mantine-color-blue-filled: #b9cff0;
+  --mantine-color-cyan-filled: #a9dde3;
+  --mantine-color-indigo-filled: #cbbff4;
+  --mantine-color-violet-filled: #dac8f4;
+  --mantine-color-grape-filled: #e6c4ea;
+  --mantine-color-teal-filled: #b1dfc6;
+  --mantine-color-green-filled: #bfe3b4;
+  --mantine-color-lime-filled: #d6e8a6;
+  --mantine-color-yellow-filled: #f1dd95;
+  --mantine-color-orange-filled: #f1cba6;
+  --mantine-color-red-filled: #efbcc8;
+  --mantine-color-pink-filled: #f2c3d7;
+  gap: 3px;
+  background: transparent;
+}
+html[data-design] .mantine-Progress-section {
+  border-radius: 999px;
+}
+html[data-design] .mantine-Progress-label {
+  color: #2a1e3f;
+}
+
+/* =================================================================== Round 2: variations of 4 (5 to 8) */
+
+/* One background for every page: 4's lilac, the same on Today, Applications and everywhere else. */
+html[data-one-bg] {
+  --c-page: #f4f1fb;
+}
+html[data-one-bg][data-mantine-color-scheme="dark"] {
+  --c-page: #17121f;
+}
+
+/* Full width, up to a cap: every page fills the space beside the nav, starting right after it, up to 2,400 px of
+   content (so a 2,560 px screen is used whole, and a 4K one doesn't get 3,000 px lines). Pages' own narrower
+   limits are lifted. */
+html[data-wide] .mantine-AppShell-main > * {
+  max-width: 2400px !important;
+  margin-inline: 0 auto;
+}
+
+/* The slow drift: the page's tint moves through five calm colours over ten minutes. The phase comes from the
+   clock (concepts.ts sets --drift-delay to minus the time into the cycle), and <html> outlives page changes,
+   so moving between pages, or reloading, never restarts it. Still for reduced motion. */
+@property --c-page {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #f4f1fb;
+}
+@keyframes drift-light {
+  0%,
+  100% {
+    --c-page: #f4f1fb;
+  }
+  20% {
+    --c-page: #fcf8ea;
+  }
+  40% {
+    --c-page: #eff8f2;
+  }
+  60% {
+    --c-page: #eef3fb;
+  }
+  80% {
+    --c-page: #fcf3ea;
+  }
+}
+@keyframes drift-dark {
+  0%,
+  100% {
+    --c-page: #17121f;
+  }
+  20% {
+    --c-page: #1b1712;
+  }
+  40% {
+    --c-page: #111a16;
+  }
+  60% {
+    --c-page: #111722;
+  }
+  80% {
+    --c-page: #1c1510;
+  }
+}
+html[data-drift] {
+  animation: drift-light 600s linear infinite;
+  animation-delay: var(--drift-delay, 0s);
+}
+html[data-drift][data-mantine-color-scheme="dark"] {
+  animation-name: drift-dark;
+}
+html[data-drift] body,
+html[data-drift] .mantine-AppShell-header,
+html[data-drift] .mantine-AppShell-navbar {
+  transition: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-drift] {
+    animation: none;
+  }
+}
+
+/* Today as three columns: what to do now, what's coming up, who you're waiting on. The right-hand
+   column's wrapper steps aside (display: contents) so its two lists become columns of their own. Wide screens
+   only; narrower ones keep today's stacking. */
+@media (min-width: 75em) {
+  html[data-today3] .mantine-Grid-root:has(#your-move) > .mantine-Grid-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 1fr);
+    gap: 28px;
+    margin: 0;
+    width: 100%;
+  }
+  html[data-today3] .mantine-Grid-root:has(#your-move) .mantine-Grid-col {
+    max-width: none;
+    width: auto;
+    flex: none;
+    padding: 0;
+  }
+  html[data-today3] .mantine-Grid-root:has(#your-move) .mantine-Grid-col:not(:has(#your-move)),
+  html[data-today3] .mantine-Grid-root:has(#your-move) .mantine-Grid-col:not(:has(#your-move)) > * {
+    display: contents;
+  }
+}
+
+/* The board fills the width: it escapes the page cap and takes the whole window beside the menu (a 16 px gutter),
+   and its columns share that width, down to 180 px each, rather than sitting at 250 px. Other pages keep the cap. */
+html[data-wide-board][data-area="applications"][data-depth="1"]:has(
+    .mantine-ScrollArea-root .mantine-Group-root > .mantine-Paper-root
+  )
+  .mantine-AppShell-main {
+  padding-right: 16px;
+}
+html[data-wide-board][data-area="applications"][data-depth="1"]:has(
+    .mantine-ScrollArea-root .mantine-Group-root > .mantine-Paper-root
+  )
+  .mantine-AppShell-main
+  > * {
+  max-width: none !important;
+}
+html[data-wide-board][data-area="applications"] .mantine-ScrollArea-viewport > div {
+  display: block !important;
+}
+html[data-wide-board][data-area="applications"]
+  .mantine-ScrollArea-root
+  .mantine-Group-root
+  > .mantine-Paper-root {
+  flex: 1 1 0;
+  width: auto !important;
+  min-width: 180px !important;
+}
+
+/* An application opens in a panel docked beside the list (the drawer, without its overlay, scroll lock or focus
+   trap: concepts.ts). It slides in below the header, so search and New application stay in reach, and the page
+   slides over to make room, so you can go down the list with it open. Tablet and desktop only. */
+@media (min-width: 48em) {
+  html[data-dock] .mantine-AppShell-main {
+    transition: padding-right 0.35s cubic-bezier(0.22, 0.61, 0.24, 1);
+  }
+  html[data-dock] .mantine-Drawer-inner {
+    top: 56px;
+    height: calc(100dvh - 56px);
+  }
+  html[data-dock] .mantine-Drawer-content {
+    border-radius: 26px;
+    margin: 12px;
+    height: calc(100dvh - 56px - 24px);
+    max-width: 520px;
+    background: var(--c-surface) !important; /* opaque, whatever card rules say */
+    box-shadow: 0 18px 50px -24px rgb(var(--c-shadow) / 0.35);
+  }
+  /* Any page with a side panel open (Applications in list or board view, Today, a company, an agency) makes room:
+     the content, the board included, shrinks beside the panel instead of running under it. */
+  html[data-dock]:has(.mantine-Drawer-content) .mantine-AppShell-main {
+    padding-right: 560px !important;
+  }
+}
+
+/* Sub-page layouts (11), on wide screens: the width goes to more columns, not longer lines. */
+@media (min-width: 80em) {
+  /* A record's page (an application, company, person, agency, role): its main cards flow in two columns, with
+     the side cards (to-dos, role, people) in a third, narrower one. An application's summary spans the top. */
+  html[data-subpages][data-depth="2"]
+    .mantine-AppShell-main
+    > .mantine-Stack-root
+    > .mantine-Grid-root
+    > .mantine-Grid-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 420px;
+    gap: 24px;
+    margin: 0;
+    width: 100%;
+  }
+  html[data-subpages][data-depth="2"]
+    .mantine-AppShell-main
+    > .mantine-Stack-root
+    > .mantine-Grid-root
+    > .mantine-Grid-inner
+    > .mantine-Grid-col {
+    max-width: none;
+    width: auto;
+    flex: none;
+    padding: 0;
+  }
+  html[data-subpages][data-depth="2"]
+    .mantine-AppShell-main
+    > .mantine-Stack-root
+    > .mantine-Grid-root
+    > .mantine-Grid-inner
+    > .mantine-Grid-col:first-of-type
+    > .mantine-Stack-root {
+    display: block;
+    column-count: 2;
+    column-gap: 24px;
+  }
+  html[data-subpages][data-depth="2"]
+    .mantine-AppShell-main
+    > .mantine-Stack-root
+    > .mantine-Grid-root
+    > .mantine-Grid-inner
+    > .mantine-Grid-col:first-of-type
+    > .mantine-Stack-root
+    > * {
+    break-inside: avoid;
+    margin-bottom: 24px;
+  }
+  html[data-subpages][data-depth="2"]
+    .mantine-AppShell-main
+    > .mantine-Stack-root
+    > .mantine-Grid-root
+    > .mantine-Grid-inner
+    > .mantine-Grid-col:first-of-type
+    > .mantine-Stack-root
+    > :first-child:not(.mantine-Card-root) {
+    column-span: all;
+  }
+
+  /* Notes: a grid of note cards rather than one long column. */
+  html[data-subpages][data-area="notes"]
+    .mantine-AppShell-main
+    .mantine-Stack-root:has(> .mantine-Card-root) {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(440px, 1fr));
+    align-items: start;
+    gap: 20px;
+  }
+
+  /* Documents: the CV files and each document as cards side by side. */
+  html[data-subpages][data-area="documents"] .mantine-AppShell-main > .mantine-Stack-root {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(560px, 1fr));
+    align-items: start;
+    gap: 24px;
+  }
+  html[data-subpages][data-area="documents"]
+    .mantine-AppShell-main
+    > .mantine-Stack-root
+    > :not(.mantine-Card-root) {
+    grid-column: 1 / -1;
+  }
+
+  /* Interviews: the calendar with what's still to book beside it; the list view's cards side by side. */
+  html[data-subpages][data-area="interviews"][data-depth="1"] .mantine-AppShell-main > .mantine-Stack-root {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(640px, 1fr);
+    align-items: start;
+    gap: 24px;
+  }
+  html[data-subpages][data-area="interviews"][data-depth="1"]
+    .mantine-AppShell-main
+    > .mantine-Stack-root
+    > :first-child {
+    grid-column: 1 / -1;
+  }
+}
+
+/* The phone's bottom bar (9 to 11, below 768 px): four tabs and More, which opens the other pages in a sheet. It
+   replaces the burger and the slide-out menu; tablets and desktops keep the side menu. Chrome, so glass. */
+.bottom-nav,
+.bottom-sheet-backdrop {
+  display: none;
+}
+@media (max-width: 47.99em) {
+  html[data-bottom-nav] .bottom-nav {
+    position: fixed;
+    z-index: 200;
+    left: 10px;
+    right: 10px;
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    padding: 6px;
+    border-radius: 26px;
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.35), rgb(255 255 255 / 0) 55%), var(--c-glass);
+    border: 1px solid var(--c-glass-edge);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.5),
+      0 14px 40px -18px rgb(var(--c-shadow) / 0.4);
+    backdrop-filter: blur(24px) saturate(1.5);
+    -webkit-backdrop-filter: blur(24px) saturate(1.5);
+  }
+  html[data-bottom-nav] .mantine-Burger-root {
+    display: none;
+  }
+  html[data-bottom-nav] .design-switch {
+    bottom: calc(96px + env(safe-area-inset-bottom));
+  }
+  html[data-bottom-nav] .mantine-AppShell-main {
+    padding-bottom: calc(96px + env(safe-area-inset-bottom));
+  }
+  html[data-bottom-nav] .bottom-sheet-backdrop[data-open] {
+    position: fixed;
+    z-index: 300;
+    inset: 0;
+    display: flex;
+    align-items: flex-end;
+    background: rgb(var(--c-shadow) / 0.28);
+  }
+}
+.bottom-nav button,
+.bottom-sheet button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  padding: 7px 2px;
+  border: 0;
+  border-radius: 20px;
+  font: 500 11px/1.2 var(--mantine-font-family);
+  color: var(--c-ink-soft);
+  background: transparent;
+  cursor: pointer;
+}
+.bottom-nav button span,
+.bottom-sheet button span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bottom-nav button[aria-current="page"],
+.bottom-nav button[aria-expanded="true"] {
+  color: var(--c-ink);
+  background: var(--c-surface);
+  box-shadow: 0 6px 16px -10px rgb(var(--c-shadow) / 0.4);
+}
+.bottom-sheet {
+  width: 100%;
+  padding: 10px 16px calc(28px + env(safe-area-inset-bottom));
+  border-radius: 28px 28px 0 0;
+  background: var(--c-surface);
+  box-shadow: 0 -18px 50px -24px rgb(var(--c-shadow) / 0.4);
+}
+.bottom-sheet::before {
+  content: "";
+  display: block;
+  width: 40px;
+  height: 4px;
+  margin: 0 auto 14px;
+  border-radius: 2px;
+  background: var(--c-ink-faint);
+}
+.bottom-sheet-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.bottom-sheet button {
+  padding: 12px 4px;
+  font-size: 12px;
+  color: var(--c-ink);
+  background: var(--c-page);
+}
+.bottom-sheet button[aria-current="page"] {
+  outline: 2px solid var(--c-plum-2);
+}
