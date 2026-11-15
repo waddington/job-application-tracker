@@ -68,6 +68,7 @@ def render(url: str, png: Path, profile: str) -> None:
         capture_output=True,
         text=True,
         encoding="utf-8",
+        errors="replace",
     )
     if result.returncode != 0 or not png.exists():
         sys.exit(f"Chrome couldn't render {url}:\n{result.stderr}")
@@ -102,7 +103,10 @@ def main() -> int:
             args += ["-delay", str(delay), str(png)]
         args += ["-resize", f"{WIDTH}x", "-colors", "192", "-layers", "Optimize", str(out)]
         subprocess.run(args, check=True)
-    count = subprocess.run([*identify, str(out)], capture_output=True, text=True, encoding="utf-8").stdout.count("\n")
+    identified = subprocess.run(
+        [*identify, str(out)], capture_output=True, text=True, encoding="utf-8", errors="replace"
+    )
+    count = identified.stdout.count("\n")
     print(f"{out}: {count} frames, {out.stat().st_size // 1024} KB")
     return 0
 
