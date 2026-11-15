@@ -1,3 +1,3 @@
 """Job Application Tracker: a local-first job search tracker."""
 
-__version__ = "1.24.26"
+__version__ = "1.24.27"
