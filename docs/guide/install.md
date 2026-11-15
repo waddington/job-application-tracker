@@ -69,9 +69,10 @@ new folder outside the code, such as `C:\jat-test`, and use it in place of `<fol
 8. **Download a backup:** at the bottom of the sidebar, press **Download a backup**, and check the
    zip opens and holds your note and file.
 9. **Weekly activity:** on **Insights**, **Weekly activity** shows this week's application.
-10. **The tests:** run `uv run pytest -q` from the code folder. On Windows the maintainer-tooling
-    tests (the PM dashboard and the dev scripts) are skipped, and so are the symlink tests unless
-    Developer Mode is on (or you run as an administrator). Some tests still fail on Windows:
+10. **The tests:** run `uv run pytest -q` from the code folder. On Windows the tests of the
+    maintainer-only tools (the PM dashboard, the dev scripts and the translation helpers) are
+    skipped, and so are the symlink tests unless Developer Mode is on (or you run as an
+    administrator). Some tests still fail on Windows:
     compare any failures with the known list in the task `windows-tests-green` on the
     [roadmap](../ROADMAP.yaml).
 
