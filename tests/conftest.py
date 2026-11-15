@@ -77,3 +77,22 @@ def git_repo(tmp_path, git_env):
     repo.mkdir()
     subprocess.run(["git", "init", "-q", "-b", "main", str(repo)], check=True)
     return repo
+
+
+@pytest.fixture
+def tzdata_only():
+    """Clear system TZPATH so zoneinfo is forced to use the tzdata package.
+
+    On Linux and macOS, system timezone files (/usr/share/zoneinfo) are normally
+    read first. Resetting TZPATH to empty forces resolution exclusively through
+    tzdata, ensuring identical behavior across OSs.
+    """
+    import zoneinfo
+
+    zoneinfo.reset_tzpath(to=[])
+    zoneinfo.ZoneInfo.clear_cache()
+    try:
+        yield
+    finally:
+        zoneinfo.reset_tzpath()
+        zoneinfo.ZoneInfo.clear_cache()
