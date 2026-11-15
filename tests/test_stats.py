@@ -127,7 +127,7 @@ def test_weekly_activity(client, seeded):
     assert client.get("/api/v1/insights/activity", params={"tz": "Europe"}).status_code == 422
 
 
-def test_weekly_activity_uses_local_weeks_across_a_clock_change(client, seeded):
+def test_weekly_activity_uses_local_weeks_across_a_clock_change(client, seeded, tzdata_only):
     app = post(client, "/api/v1/applications", {"role_id": seeded["role"]["id"], "stage": "applied"})
     # UK clocks go back on Sunday 25 October 2026. Local weeks start at local midnight on Mondays.
     for when in (
