@@ -99,6 +99,11 @@ Product decisions Kai has made or accepted. Don't re-litigate them; change one o
   stay. The website is English only.
 - The GitHub links show the star count, live (Kai, 2026-11-12): baked in at build, refreshed by the visitor's browser
   from `api.github.com` (GitHub again, which already hosts the site); no cookies, credentials or analytics.
+- The privacy promises are the app's, not the website's (Kai, 2026-11-12: "the privacy promises are just about the app,
+  not the static github pages site"). Even so, the site has Search Console only, no analytics ("i will stick to just
+  search console for now"); if that changes, a cookie-free counter (Umami, GoatCounter) or GA4 with a consent banner,
+  and the footer's "no cookies, analytics or trackers" changes with it.
+- Search words: "job application tracker" in the title and h1, "job search tracker" in the description (#352).
 
 ## Loading states
 
@@ -110,3 +115,6 @@ Product decisions Kai has made or accepted. Don't re-litigate them; change one o
 - Basic support first (`docs/rfc/windows.md`): the Windows-unsafe parts behind one is-Windows check and off there;
   `JAT_WINDOWS_SNAPSHOTS=1` for testing; `tzdata` on every platform; each Windows change is run on real
   Windows before merging, since 2026-11-11 in Kai's Windows VM driven by the agent (no CI job unless Kai asks).
+- Windows counts as supported without git snapshots (Kai, 2026-11-15: "yes we can say we support windows even without
+  the snapshots"): the data is on disk either way; Download a backup is the backup there. `windows-snapshots` (#365)
+  is on hold ("dont review/merge 365 yet"); when it's picked up it updates the docs that say snapshots are off.

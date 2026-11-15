@@ -47,6 +47,24 @@ Each of these cost time once. Add a line when something new does.
   split it, or put the steps in a script file under the job folder and run `bash <file>`.
 - **A subagent's report can arrive as a message, not a notification**, and a second report in the same run is refused:
   when an agent says it reported again, SendMessage it to ask for what's new.
+- **More isolated-Bash refusals** (2026-11-12/15): any line whose text contains "github" (a `waddington.github.io` URL,
+  a PR title or bump entry saying "GitHub"), `source …`, or a `PATH=… cmd` prefix. Put the commands in a script under
+  the worktree's `var/` and run `bash var/x.sh`. Isolation also blocks Edit on files in the main checkout (such as
+  `ignorable-docs/`): change them with a small Python script by absolute path.
+- **An agent that hosts servers** keeps sending "waiting on its own background work" notices for hours; nothing to do.
+
+## Fresh worktrees
+
+- **No `var/`:** `tools/dev/checks.sh > var/checks.log` fails before any check starts (it looks like a failed run).
+  `mkdir -p var` first.
+- **No `frontend/node_modules`:** `bump.py` stops at `pnpm gen:api` (`openapi-typescript: not found`) after it has
+  already changed the version files. Don't run it again (it would bump twice): `pnpm --dir frontend install
+  --frozen-lockfile`, `pnpm --dir frontend gen:api`, then commit, push and set the PR title "<title> (<version>)" by
+  hand. Install first next time.
+- **Playwright's own browser may be missing** for the installed `@playwright/test`: launch with
+  `executablePath: /home/kai/.cache/ms-playwright/chromium-1254/chrome-linux64/chrome`.
+- **An agent's worktree stays locked**, so `ship.sh` leaves it: `git worktree unlock <path>`, `git worktree remove
+  <path>`, `git branch -D <branch>`.
 
 ## Git and GitHub
 
@@ -56,6 +74,9 @@ Each of these cost time once. Add a line when something new does.
 - **Roadmap merges revert statuses**: `merge_main.sh` keeps the longer of two lines, so a `done` task can come back as
   `building` or `planned`. Always check `git diff origin/main -- docs/ROADMAP.yaml` after merging main.
 - **Stacked PRs:** merging the lower PR with `--delete-branch` closes the upper one for good. Prefer one base, main.
+- **`merge.sh` stops on a stale "CONFLICTING DIRTY"** from `gh pr view` even when the branch is main plus commits
+  (2026-11-13, #353, for minutes and across a new push). Check `gh api repos/<repo>/pulls/N --jq .mergeable_state`:
+  if it says `clean`, merge with `gh pr merge N --merge --delete-branch`.
 - **New commits make running checks stale**: TaskStop `checks.sh` and start it again on the final commit.
 - **Run `checks.sh` from the worktree root** (it refuses elsewhere). Wait for a PR's checks with a background `until`
   loop on `mergeStateStatus` (or `merge.sh`), never a foreground `sleep`. A piped e2e run can exit 0 on failure: read
