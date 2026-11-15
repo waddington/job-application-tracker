@@ -17,7 +17,7 @@ def test_notes_round_trip_through_files(client, seeded, app):
     assert made["path"].endswith("-call-with-alex.md")
     assert made["excerpt"] == "Salary £650/day, outside IR35"
     data_dir = app.state.jat.data_dir
-    assert (data_dir / "notes" / made["path"]).read_text().endswith("- **£650/day**, outside IR35\n")
+    assert (data_dir / "notes" / made["path"]).read_text(encoding="utf-8").endswith("- **£650/day**, outside IR35\n")
 
     # Listed on its application, and on its timeline.
     listed = client.get("/api/v1/notes", params={"entity": link}).json()
@@ -58,7 +58,8 @@ def test_note_validation(client, seeded):
 def test_notes_edited_outside_the_app_show_up(client, seeded, app):
     notes = app.state.jat.data_dir / "notes"
     (notes / "from-my-editor.md").write_text(
-        f"---\ntitle: Written in vim\nlinks: [{{type: company, id: {seeded['company']['id']}}}]\n---\nHello\n"
+        f"---\ntitle: Written in vim\nlinks: [{{type: company, id: {seeded['company']['id']}}}]\n---\nHello\n",
+        encoding="utf-8",
     )
     listed = client.get("/api/v1/notes", params={"entity": f"company:{seeded['company']['id']}"}).json()
     assert [n["title"] for n in listed] == ["Written in vim"]
@@ -80,7 +81,7 @@ def test_symlinked_notes_are_skipped(client, app, tmp_path):
     notes = app.state.jat.data_dir / "notes"
     post(client, "/api/v1/notes", {"title": "Fine"})
     secret = tmp_path / "secret.md"
-    secret.write_text("---\ntitle: Outside\n---\nshh\n")
+    secret.write_text("---\ntitle: Outside\n---\nshh\n", encoding="utf-8")
     (notes / "sneaky.md").symlink_to(secret)
     r = client.get("/api/v1/notes")
     assert r.status_code == 200
@@ -102,7 +103,10 @@ def test_saving_still_works_when_a_linked_thing_is_gone(client, seeded):
 def test_edits_made_elsewhere_are_not_overwritten(client, app):
     note = post(client, "/api/v1/notes", {"title": "Plan", "body": "v1"})
     path = app.state.jat.data_dir / "notes" / note["path"]
-    path.write_text(path.read_text().replace(note["updated_at"].replace("+00:00", "Z"), "2030-01-01T00:00:00Z"))
+    path.write_text(
+        path.read_text(encoding="utf-8").replace(note["updated_at"].replace("+00:00", "Z"), "2030-01-01T00:00:00Z"),
+        encoding="utf-8",
+    )
     r = client.patch(f"/api/v1/notes/{note['id']}", json={"body": "v2", "base_updated_at": note["updated_at"]})
     assert r.status_code == 409
     fresh = client.get(f"/api/v1/notes/{note['id']}").json()

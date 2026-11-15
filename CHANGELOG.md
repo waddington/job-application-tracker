@@ -5,9 +5,13 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
-## 1.24.25 (2026-11-15)
+## 1.24.26 (2026-11-15)
 
 - The website is built with Astro 7.4.7, which fixes two security advisories (#356).
+
+## 1.24.25 (2026-11-15)
+
+- **Developers:** the notes and demo-data tests read the files the app writes as UTF-8, so they pass on Windows too, making the whole test suite pass there; the PM dashboard prints dates without `%-d`, which Windows rejects (#378, carrying #364).
 
 ## 1.24.24 (2026-11-15)
 
