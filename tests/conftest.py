@@ -1,5 +1,6 @@
 import os
 import subprocess
+import zoneinfo
 
 import pytest
 from fastapi.testclient import TestClient
@@ -87,8 +88,6 @@ def tzdata_only():
     read first. Resetting TZPATH to empty forces resolution exclusively through
     tzdata, ensuring identical behavior across OSs.
     """
-    import zoneinfo
-
     zoneinfo.reset_tzpath(to=[])
     zoneinfo.ZoneInfo.clear_cache()
     try:
