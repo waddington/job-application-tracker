@@ -2,9 +2,12 @@ import { Group, Text, Tooltip } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
-import { api, type Health } from "../api/client";
+import { api, type Health as HealthOut } from "../api/client";
 
-export type { Health };
+// `snapshots_enabled` and `windows` are missing from a server older than 1.23.0 (one still running
+// after an update).
+type Health = Omit<HealthOut, "snapshots_enabled" | "windows"> &
+  Partial<Pick<HealthOut, "snapshots_enabled" | "windows">>;
 
 async function fetchHealth(): Promise<Health> {
   const { data, error, response } = await api.GET("/api/v1/health");
