@@ -1,4 +1,4 @@
-"""Is a version-bump file main's copy with only its own version line changed? For checks.sh --website.
+"""Is a version-bump file main's copy with only its own version line changed? For tools/dev/scope.sh.
 
 usage: git show <base>:<file> | python3 tools/dev/version_only.py <file> <old version> <new version>
 Exit 0 when <file> equals main's copy with exactly its version line's old version swapped for the new one (or
@@ -14,6 +14,8 @@ LINES = {
     "src/jat/__init__.py": r'^__version__ = "{v}"$',
     "pyproject.toml": r'^version = "{v}"$',
     "frontend/package.json": r'^  "version": "{v}",$',
+    "website/package.json": r'^  "version": "{v}",$',
+    "website/src/components/SiteHead.astro": r'^ *softwareVersion: "{v}",$',
     "frontend/openapi.json": r'^    "version": "{v}"$',
     "uv.lock": r'^name = "job-application-tracker"\nversion = "{v}"$',
     "frontend/src/api/schema.d.ts": None,  # no version in it: it may not change at all
