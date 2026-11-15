@@ -76,9 +76,11 @@ That's the default chosen for this plan (the concept hid the footer on phones); 
 - **Small PRs that each work alone** (about 500 changed lines), in the order below. Every PR leaves the app
   consistent: the theme lands for every page at once (no page half old, half new), and later PRs change layout one
   area at a time on top of it.
-- Each PR: light and dark; English and zh-CN checked; a demo URL and before-and-after screenshots for Kai before it
-  merges (Kai: "show me the mock server before merging"); the full checks including `pnpm e2e`; every guide passage
-  that describes what it changes updated in the same PR (§4, *The guide rule*).
+- Each PR: light and dark; English and zh-CN checked; a demo URL for the reviewer; the full checks including
+  `pnpm e2e`; every guide passage that describes what it changes updated in the same PR (§4, *The guide rule*). The
+  first PR (#382) also went to Kai with before-and-after screenshots; since 2026-11-15 Kai doesn't approve these PRs'
+  screenshots, and the review cycle is enough (`docs/agents/working-with-kai.md`). Images that get applied (§5) still
+  go to Kai first.
 - **Versions:** each PR is a patch (it changes how the app looks and is laid out, adds no capability and breaks
   nothing). The bottom bar and docked panel change how you get around but not what you can do. If a PR turns out to
   remove something someone relies on, it's a major and needs Kai's yes.

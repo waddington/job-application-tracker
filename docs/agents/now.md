@@ -1,14 +1,15 @@
 # Now: state and live plan
 
-Snapshot 2026-11-15, after #382 (main at `9762beb`, v1.24.27). Refresh this file before each compaction. Before
+Snapshot 2026-11-15, after #384 (main at `ce51a7e`, v1.24.28). Refresh this file before each compaction. Before
 trusting it, check `gh pr list`, `git worktree list`, `git log --oneline -5` and `docs/ROADMAP.yaml`.
 
 ## State
 
-- Released up to **v1.24.27**. Branches on GitHub: `main`, `worktree-app-redesign-concepts` (draft #354, not for
+- Released up to **v1.24.28**. Branches on GitHub: `main`, `worktree-app-redesign-concepts` (draft #354, not for
   merging), the contributor's forks for #359 and #365, and this refresh until it merges.
-- **The redesign build is paused by Kai** after the theme (#382; the roadmap's part 2, the RFC's row 1). Kai: "pause after this PR is done, ill
-  continue it another time". Resume only on Kai's word; the agreed scope for then is under *Next*.
+- **The redesign build goes one task at a time on Kai's word.** After the theme (#382), Kai paused ("pause after this
+  PR is done, ill continue it another time"), then said "do the next 1 task" → the frame (#384). Start the next only
+  when Kai says so; the agreed scope is under *Next*.
 - **Open PRs:**
   - **#354** DO NOT MERGE: the redesign concepts, round 3, with concept 11 picked. It's the reference implementation
     (read its files) and stays open until `app-redesign-wrap-up`; worktree `.claude/worktrees/agent-a1abf04926d779406`
@@ -37,6 +38,7 @@ trusting it, check `gh pr list`, `git worktree list`, `git log --oneline -5` and
 | 1.24.25 | #378 | Carrying #364: the Windows suite has 0 failures (1170 passed, 319 skipped on the VM) |
 | 1.24.26 | #356 | Dependabot's Astro 7.4.7, done on its own branch; the repo's Node moved to 22.23.5 (Astro 7.4.2+ needs ≥ 22.23.4). #379 opened, then closed for it |
 | 1.24.27 | #382 | The redesign's theme (roadmap part 2) (plum, pastel stages, Inter and JetBrains Mono, soft cards, pill buttons, plum-tinted dark mode). Kai saw the demo and said \"looks good ship it\" |
+| 1.24.28 | #384 | The redesign's frame (roadmap part 3): one background drifting through five tints over ten minutes (stepped every 6 s for CPU, 0.18%), pages full width up to 2,400 px from the menu, a readable 75ch for notes, the restyled menu and page titles. Recorded `fix-tablet-header-overflow` |
 
 Internal: #369 (`checks.sh --no-e2e` accepts a version-only bump, via the new `tools/dev/scope.sh`), #372
 (`fix-scope-tests-windows` recorded; contributor rules), #377 (`fix-pnpm-version-mismatch-install` recorded), #380
@@ -63,23 +65,25 @@ rules), this refresh.
 11. "build, sequentially" → #382. "only do up to and including redesign 4*, dont start 5", then "continue up to and
     include 4*, and also do the things those require, but dont start 5 and its requirements", "yes include skeletons"
     (see *Next*). "you can shutdown the current redesign demo" → done. Then "pause after this PR is done, ill continue
-    it another time. but we will see this 1 in-progress PR through" → #382 merged, the build paused, this refresh.
+    it another time. but we will see this 1 in-progress PR through" → #382 merged, the build paused, #383.
+12. "do the next 1 task" → #384. "i dont need to approve the screenshots, your reviews are fine" → recorded here and in
+    working-with-kai.md.
 
 ## Next
 
-- **The redesign build, paused; resume on Kai's word only.** The scope Kai set, one PR at a time, then stop:
-  1. `app-redesign-shell`;
+- **The redesign build, one task at a time on Kai's word.** The scope Kai set, one PR at a time, then stop:
+  1. `app-redesign-shell` → done (#384);
   2. `loading-state-failed-loads`;
   3. `loading-state-silent-cards`;
   4. `loading-state-page-skeletons`;
   5. `app-redesign-components`, which depends on the loading-state chain;
   6. `app-redesign-forms`. Its roadmap task now lists what #382's review left for it.
-  Don't start `app-redesign-dock` (part 5) or anything only it needs. Each redesign PR, `loading-state-silent-cards` and
-  `loading-state-page-skeletons` are shown to Kai on a demo URL with before-and-after screenshots, and merge only on
-  Kai's OK. `loading-state-failed-loads` isn't shown first: it merges after the usual review cycle. New images go to Kai before they're applied.
+  Don't start `app-redesign-dock` (part 5) or anything only it needs. Kai no longer approves these PRs' screenshots ("i dont need
+  to approve the screenshots, your reviews are fine", working-with-kai.md): each merges and releases after the review
+  cycle and the checks, and Kai gets a line on what shipped. New images go to Kai before they're applied.
 - `e2e-seed-once` (next).
 - #359 when its author updates it.
-- **Bugs:** 58 open (9 medium, 49 low); `fix-double-save-locked` still needs a decision.
+- **Bugs:** 59 open (10 medium, 49 low); `fix-double-save-locked` still needs a decision.
 
 **How work runs** (keep doing it this way unless Kai says otherwise): one builder agent per change in its own worktree,
 Opus reviewers for data safety or structure, Sonnet or Haiku for small and docs PRs, every fix commit re-reviewed; the
@@ -87,7 +91,7 @@ lead bumps, merges and ships. Roadmap-only PRs: `uv run pytest -q tests/pm`.
 
 ## Waiting on Kai (don't start)
 
-- **The go to resume the redesign build** (paused after #382).
+- **The go for each next redesign task** (one at a time; the last was #384).
 - **Restart the tracker** (running since before v1.24.22).
 - **New backlog bugs and tasks:** `fix-merge-people-notes-half-relinked`, `fix-note-held-open-not-found`,
   `fix-pnpm-version-mismatch-install`, `orphan-files-sweep`, `scripts-lf-endings`, `tz-spring-forward-test`;
