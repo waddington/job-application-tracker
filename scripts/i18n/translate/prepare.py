@@ -76,12 +76,12 @@ def main(lang: str, ns: str) -> None:
     )
     folder = LOCALES / lang
     target = folder / f"{ns}.json"
-    if target.exists() and "[TRANSLATE]" not in target.read_text():
+    if target.exists() and "[TRANSLATE]" not in target.read_text(encoding="utf-8"):
         sys.exit(f"{target} is already translated; delete it first to start again")
     folder.mkdir(parents=True, exist_ok=True)
-    target.write_text(start.read_text())
+    target.write_text(start.read_text(encoding="utf-8"), encoding="utf-8")
     names = sorted({p.stem for p in folder.glob("*.json")})
-    (folder / "index.ts").write_text(index_ts(names))
+    (folder / "index.ts").write_text(index_ts(names), encoding="utf-8")
 
     pages = [p["name"] for p in read_json(ROOT / "scripts" / "i18n" / "translate" / "pages.json").get(ns, [])]
     flat = {k: v.removeprefix("[TRANSLATE] ") for k, v in flatten(read_json(start)).items()}

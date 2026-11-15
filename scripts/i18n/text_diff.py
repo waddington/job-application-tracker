@@ -8,8 +8,8 @@ import json
 import sys
 from pathlib import Path
 
-before = json.loads(Path(sys.argv[1]).read_text())
-after = json.loads(Path(sys.argv[2]).read_text())
+before = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+after = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
 views = sorted(set(before) | set(after))
 changed = 0
 for view in views:

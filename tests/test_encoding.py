@@ -71,14 +71,16 @@ def text_io_without_encoding(source: str) -> list[int]:
 
 
 def test_source_code_text_io_names_encoding():
-    """Fail on any text read or write in src/jat that doesn't name an encoding.
+    """Fail on any text read or write in src/jat and scripts that doesn't name an encoding.
 
     On Linux and macOS the default is UTF-8, so a missing encoding works there and breaks only on Windows.
     """
-    root = Path(__file__).resolve().parents[1] / "src" / "jat"
+    repo = Path(__file__).resolve().parents[1]
+    targets = [repo / "src" / "jat", repo / "scripts"]
     violations = [
-        f"{path.relative_to(root)}:{line}"
-        for path in sorted(root.rglob("*.py"))
+        f"{path.relative_to(repo)}:{line}"
+        for target in targets
+        for path in sorted(target.rglob("*.py"))
         for line in text_io_without_encoding(path.read_text(encoding="utf-8"))
     ]
     assert not violations, "Text read or written without an encoding:\n" + "\n".join(violations)

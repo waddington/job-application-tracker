@@ -75,7 +75,7 @@ def main(lang: str, ns: str, name: str = "review") -> None:
         work / "changed.json",
         [{"key": d["key"], "en": english[d["key"]], "now": d["final"], "why_changed": d["why"]} for d in changes],
     )
-    (work / f"{name}-table.md").write_text(table(decided))
+    (work / f"{name}-table.md").write_text(table(decided), encoding="utf-8")
     print("findings by model and severity:", dict(Counter((m, f["severity"]) for m, f in findings(result))))
     for d in decided:
         print(f"  {d['verdict']:6} {d.get('severity', ''):10} {who(d)[:12]:12} {d['key']} => {d['final']}")

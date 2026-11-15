@@ -37,7 +37,8 @@ def main(lang: str, ns: str, *fix_files: str) -> None:
     if found:
         sys.exit("not written:\n  " + "\n  ".join(found))
     (LOCALES / lang / f"{ns}.json").write_text(
-        json.dumps(fill(read_json(start_file(lang, ns)), texts), ensure_ascii=False, indent=2) + "\n"
+        json.dumps(fill(read_json(start_file(lang, ns)), texts), ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
     )
     write_json(work / "translated.json", texts)
     for area in read_json(work / "areas.json"):
