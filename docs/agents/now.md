@@ -1,16 +1,19 @@
 # Now: state and live plan
 
-Snapshot 2026-11-15, after #380 (main at `e3a258a`, v1.24.26). Refresh this file before each compaction. Before
+Snapshot 2026-11-15, after #382 (main at `9762beb`, v1.24.27). Refresh this file before each compaction. Before
 trusting it, check `gh pr list`, `git worktree list`, `git log --oneline -5` and `docs/ROADMAP.yaml`.
 
 ## State
 
-- Released up to **v1.24.26**. Branches on GitHub: `main`, `worktree-app-redesign-concepts` (draft #354, not for
+- Released up to **v1.24.27**. Branches on GitHub: `main`, `worktree-app-redesign-concepts` (draft #354, not for
   merging), the contributor's forks for #359 and #365, and this refresh until it merges.
+- **The redesign build is paused by Kai** after the theme (#382; the roadmap's part 2, the RFC's row 1). Kai: "pause after this PR is done, ill
+  continue it another time". Resume only on Kai's word; the agreed scope for then is under *Next*.
 - **Open PRs:**
   - **#354** DO NOT MERGE: the redesign concepts, round 3, with concept 11 picked. It's the reference implementation
-    and stays open until `app-redesign-wrap-up`. Its builder hosts Vite on 5183 and the demo API on 8893 (data
-    `/tmp/jat-concepts-data`); worktree `.claude/worktrees/agent-a1abf04926d779406` (locked).
+    (read its files) and stays open until `app-redesign-wrap-up`; worktree `.claude/worktrees/agent-a1abf04926d779406`
+    (locked). Its demo servers (5183, 8893) are shut down at Kai's request: "you can shutdown the current redesign
+    demo that showed the different options". Don't restart them unless Kai asks.
   - **#359** (`windows-support`, the milestone): on hold. A comment was posted at Kai's request asking the author to
     merge main and update it (conflicts; snapshots off on Windows; no `&&` in PowerShell 5.1; `llms.txt`). When they
     push: review it fully, carry it, walk its PowerShell steps on the VM. A minor bump (a new supported platform).
@@ -20,7 +23,7 @@ trusting it, check `gh pr list`, `git worktree list`, `git log --oneline -5` and
   frontend is rebuilt.
 - The user-level after-compaction hook is still **not** in `~/.claude/settings.json` (JSON under *Waiting on Kai*).
 
-## Done since the last snapshot (main `9f3dcb9`, v1.24.17)
+## Done since v1.24.17 (main `9f3dcb9`)
 
 | Version | PR | What |
 |---|---|---|
@@ -33,6 +36,7 @@ trusting it, check `gh pr list`, `git worktree list`, `git log --oneline -5` and
 | 1.24.24 | #376 | Carrying #357: locked-file retry (6 attempts, 50/100/200/400/800 ms, winerror 5/32/33 on Windows only, a coded `file_locked` 409 with no path, logging, restore rollback) |
 | 1.24.25 | #378 | Carrying #364: the Windows suite has 0 failures (1170 passed, 319 skipped on the VM) |
 | 1.24.26 | #356 | Dependabot's Astro 7.4.7, done on its own branch; the repo's Node moved to 22.23.5 (Astro 7.4.2+ needs ≥ 22.23.4). #379 opened, then closed for it |
+| 1.24.27 | #382 | The redesign's theme (roadmap part 2) (plum, pastel stages, Inter and JetBrains Mono, soft cards, pill buttons, plum-tinted dark mode). Kai saw the demo and said \"looks good ship it\" |
 
 Internal: #369 (`checks.sh --no-e2e` accepts a version-only bump, via the new `tools/dev/scope.sh`), #372
 (`fix-scope-tests-windows` recorded; contributor rules), #377 (`fix-pnpm-version-mismatch-install` recorded), #380
@@ -55,12 +59,24 @@ rules), this refresh.
    on its branch; #379 closed.
 10. Redesign rounds 2 and 3 → "i like 11" → "go for 11, plan it out, create the roadmap items. we'll also need to
     regenerate screenshots…" → #380 → "before starting the build we will do a compact … you will finish the plan, i
-    will compact, then i will tell you to build" → this refresh.
+    will compact, then i will tell you to build" → #381.
+11. "build, sequentially" → #382. "only do up to and including redesign 4*, dont start 5", then "continue up to and
+    include 4*, and also do the things those require, but dont start 5 and its requirements", "yes include skeletons"
+    (see *Next*). "you can shutdown the current redesign demo" → done. Then "pause after this PR is done, ill continue
+    it another time. but we will see this 1 in-progress PR through" → #382 merged, the build paused, this refresh.
 
 ## Next
 
-- **The redesign build, on Kai's word only:** P12 in the RFC's order, starting with `app-redesign-theme`. Each UI PR
-  is shown to Kai on a demo URL before merging; new images go to Kai before they're applied.
+- **The redesign build, paused; resume on Kai's word only.** The scope Kai set, one PR at a time, then stop:
+  1. `app-redesign-shell`;
+  2. `loading-state-failed-loads`;
+  3. `loading-state-silent-cards`;
+  4. `loading-state-page-skeletons`;
+  5. `app-redesign-components`, which depends on the loading-state chain;
+  6. `app-redesign-forms`. Its roadmap task now lists what #382's review left for it.
+  Don't start `app-redesign-dock` (part 5) or anything only it needs. Each redesign PR, `loading-state-silent-cards` and
+  `loading-state-page-skeletons` are shown to Kai on a demo URL with before-and-after screenshots, and merge only on
+  Kai's OK. `loading-state-failed-loads` isn't shown first: it merges after the usual review cycle. New images go to Kai before they're applied.
 - `e2e-seed-once` (next).
 - #359 when its author updates it.
 - **Bugs:** 58 open (9 medium, 49 low); `fix-double-save-locked` still needs a decision.
@@ -71,7 +87,7 @@ lead bumps, merges and ships. Roadmap-only PRs: `uv run pytest -q tests/pm`.
 
 ## Waiting on Kai (don't start)
 
-- **The go for the redesign build.**
+- **The go to resume the redesign build** (paused after #382).
 - **Restart the tracker** (running since before v1.24.22).
 - **New backlog bugs and tasks:** `fix-merge-people-notes-half-relinked`, `fix-note-held-open-not-found`,
   `fix-pnpm-version-mismatch-install`, `orphan-files-sweep`, `scripts-lf-endings`, `tz-spring-forward-test`;
