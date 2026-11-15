@@ -77,7 +77,9 @@ roadmap is `docs/ROADMAP.yaml`, shown by the PM dashboard (see "Project manageme
   `scripts/i18n/`, `scripts/demo_gif/`, `scripts/social_preview/`, `.claude/workflows/`, `.claude/settings.json`, `tools/dev/`,
   Python tests (`tests/`), and docs. Anything else runs it, including `scripts/seed_demo.py` (the browser tests'
   demo data), `frontend/e2e/`, any config or lockfile, `frontend/src/i18n/` and `DRAFT_LANGUAGES`
-  itself, and switching a draft on. The PR says it skipped and why.
+  itself, and switching a draft on. A version bump's own change (the old version swapped for the new in the
+  version files) doesn't force it either. `tools/dev/checks.sh --no-e2e` checks the list and refuses otherwise.
+  The PR says it skipped and why.
 - **A website-only PR skips the app's checks** (Kai, 2026-11-12: "if we're changing only website files and
   theres no way it can affect the actual app then we can skip app tests"). When every changed file is under
   `website/` or `docs/`, is `CHANGELOG.md`, `CLAUDE.md`, `.gitignore` or the website's workflow (`.github/workflows/website.yml`,
