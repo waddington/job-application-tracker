@@ -131,7 +131,8 @@ export function OffersPage() {
           </Text>
           <Table.ScrollContainer minWidth={240 + 220 * offers.length}>
             <Table withColumnBorders verticalSpacing="sm">
-              <Table.Thead>
+              {/* Each column is an offer, headed by its company and role: names, not labels. */}
+              <Table.Thead data-records>
                 <Table.Tr>
                   <Table.Th w={160}>
                     <VisuallyHidden>{t("page.detail")}</VisuallyHidden>

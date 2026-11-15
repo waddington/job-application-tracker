@@ -32,9 +32,10 @@
   }
 }
 
-/* The website's eyebrow: mono capitals after a small square (nav group headings, table headers). */
+/* The website's eyebrow: mono capitals after a small square (nav group headings, table headers). A header
+   row that names records rather than labelling columns (Offers' companies) says so with data-records. */
 .eyebrow,
-thead .th {
+thead:not([data-records]) .th {
   font-family: var(--mantine-font-family-monospace);
   font-size: var(--jat-eyebrow-size);
   font-weight: 500;
@@ -49,7 +50,7 @@ thead .th {
   gap: 8px;
 }
 .eyebrow::before,
-thead .th:not(:empty)::before {
+thead:not([data-records]) .th:not(:empty)::before {
   content: "";
   flex: none;
   display: inline-block;
@@ -57,12 +58,12 @@ thead .th:not(:empty)::before {
   height: 6px;
   background: currentColor;
 }
-thead .th:not(:empty)::before {
+thead:not([data-records]) .th:not(:empty)::before {
   margin-inline-end: 8px;
   vertical-align: 0.1em;
 }
 /* A header that sorts is a button: it reads as the label around it. */
-thead .th button {
+thead:not([data-records]) .th button {
   font: inherit;
   letter-spacing: inherit;
   text-transform: inherit;
@@ -70,7 +71,7 @@ thead .th button {
 /* Chinese has no capitals, and spaced-out characters read as broken: the tracking is for Latin text.
    Its characters also need a little more size than mono capitals to read. */
 :lang(zh) .eyebrow,
-:lang(zh) thead .th {
+:lang(zh) thead:not([data-records]) .th {
   font-size: 12px;
   letter-spacing: 0;
   text-transform: none;
