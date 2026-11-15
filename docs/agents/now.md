@@ -7,7 +7,7 @@ trusting it, check `gh pr list`, `git worktree list`, `git log --oneline -5` and
 
 - Released up to **v1.24.27**. Branches on GitHub: `main`, `worktree-app-redesign-concepts` (draft #354, not for
   merging), the contributor's forks for #359 and #365, and this refresh until it merges.
-- **The redesign build is paused by Kai** after part 1 (#382, the theme). Kai: "pause after this PR is done, ill
+- **The redesign build is paused by Kai** after the theme (#382; the roadmap's part 2, the RFC's row 1). Kai: "pause after this PR is done, ill
   continue it another time". Resume only on Kai's word; the agreed scope for then is under *Next*.
 - **Open PRs:**
   - **#354** DO NOT MERGE: the redesign concepts, round 3, with concept 11 picked. It's the reference implementation
@@ -23,7 +23,7 @@ trusting it, check `gh pr list`, `git worktree list`, `git log --oneline -5` and
   frontend is rebuilt.
 - The user-level after-compaction hook is still **not** in `~/.claude/settings.json` (JSON under *Waiting on Kai*).
 
-## Done since the snapshot before last (main `9f3dcb9`, v1.24.17)
+## Done since v1.24.17 (main `9f3dcb9`)
 
 | Version | PR | What |
 |---|---|---|
@@ -36,7 +36,7 @@ trusting it, check `gh pr list`, `git worktree list`, `git log --oneline -5` and
 | 1.24.24 | #376 | Carrying #357: locked-file retry (6 attempts, 50/100/200/400/800 ms, winerror 5/32/33 on Windows only, a coded `file_locked` 409 with no path, logging, restore rollback) |
 | 1.24.25 | #378 | Carrying #364: the Windows suite has 0 failures (1170 passed, 319 skipped on the VM) |
 | 1.24.26 | #356 | Dependabot's Astro 7.4.7, done on its own branch; the repo's Node moved to 22.23.5 (Astro 7.4.2+ needs ≥ 22.23.4). #379 opened, then closed for it |
-| 1.24.27 | #382 | The redesign, part 1: the theme (plum, pastel stages, Inter and JetBrains Mono, soft cards, pill buttons, plum-tinted dark mode). Kai saw the demo and said \"looks good ship it\" |
+| 1.24.27 | #382 | The redesign's theme (roadmap part 2) (plum, pastel stages, Inter and JetBrains Mono, soft cards, pill buttons, plum-tinted dark mode). Kai saw the demo and said \"looks good ship it\" |
 
 Internal: #369 (`checks.sh --no-e2e` accepts a version-only bump, via the new `tools/dev/scope.sh`), #372
 (`fix-scope-tests-windows` recorded; contributor rules), #377 (`fix-pnpm-version-mismatch-install` recorded), #380
@@ -74,9 +74,9 @@ rules), this refresh.
   4. `loading-state-page-skeletons`;
   5. `app-redesign-components`, which depends on the loading-state chain;
   6. `app-redesign-forms`. Its roadmap task now lists what #382's review left for it.
-  Don't start `app-redesign-dock` (part 5) or anything only it needs. Each redesign PR and both skeleton PRs are shown
-  to Kai on a demo URL with before-and-after screenshots, and merge only on Kai's OK. `loading-state-failed-loads`
-  takes the usual review cycle. New images go to Kai before they're applied.
+  Don't start `app-redesign-dock` (part 5) or anything only it needs. Each redesign PR, `loading-state-silent-cards` and
+  `loading-state-page-skeletons` are shown to Kai on a demo URL with before-and-after screenshots, and merge only on
+  Kai's OK. `loading-state-failed-loads` isn't shown first: it merges after the usual review cycle. New images go to Kai before they're applied.
 - `e2e-seed-once` (next).
 - #359 when its author updates it.
 - **Bugs:** 58 open (9 medium, 49 low); `fix-double-save-locked` still needs a decision.
