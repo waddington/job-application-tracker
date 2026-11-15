@@ -47,8 +47,9 @@ file and reload the page.
 Define the full list under `[workflow]`. Each stage has an `id` (used in the data; don't
 change it once applications use it), a display `name`, a `kind`, an optional
 `stale_after_days`, the usual `next` stages, and an optional `color` (a Mantine colour name:
-gray, red, pink, grape, violet, indigo, blue, cyan, teal, green, lime, yellow, orange, dark),
-shown as a soft pastel version of that colour.
+gray, red, pink, grape, violet, indigo, blue, cyan, teal, green, lime, yellow, orange, dark).
+A stage's badge shows a soft pastel of that colour (a closed stage's, an outline in a deep shade of
+it), Today's pipeline bar and its key a deeper pastel, and Insights' charts the colour itself.
 
 ```toml
 [workflow]
