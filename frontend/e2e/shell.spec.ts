@@ -417,6 +417,7 @@ test.describe("the background", () => {
   });
 
   test("stays lilac, or plum night, when motion is reduced", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
     await page.clock.install({ time: 2_000 * cycle + cycle / 5 });
     await opened(page);
     expect(await background(page, "body")).toBe("rgb(244, 241, 251)");
