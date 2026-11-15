@@ -29,7 +29,7 @@ trusting it, check `gh pr list`, `git worktree list`, `git log --oneline -5` and
 |---|---|---|
 | 1.24.14 | #348 | The website's GitHub links show the star count, live (baked in at build, refreshed in the browser) |
 | 1.24.15 | #350 | Google Search Console verification tag on the website |
-| 1.24.16 | #352 | The website's h1 holds the "Job application tracker" eyebrow; the description leads with "job search tracker" |
+| 1.24.16 | #352 | The website's h1 carries "Job application tracker"; the description leads with "job search tracker" |
 | 1.24.17 | #355 | Marking a round Done moves its application to Waiting to hear back, from the round's day |
 
 Internal: #347 (last refresh), #349 (app redesign P12, ten `next` tasks heading Up next), #351 (`readme-visuals`),
@@ -110,4 +110,4 @@ PRs, every fix commit re-reviewed; the lead bumps, merges and ships. Roadmap-onl
 - Ghost and star marks are missing in the Timeline *About* select and to-do "about" text.
 - `tools/pm/yamlish.py` and `scripts/i18n/translate/pages.json` aren't formatter-clean (neither is in the checks).
 - A failed startup write of `.gitattributes` is silent (no log); snapshots report it where they run.
-- A fork (`mentalko/job-application-tracker`) outranks the repo for the site's exact title in search; harmless.
+- A plain fork of the repo outranks it for the site's exact title in search; harmless.
