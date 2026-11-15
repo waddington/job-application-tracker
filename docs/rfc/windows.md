@@ -111,7 +111,8 @@ Each is its own small pull request:
 - **`windows-testing`:** the Windows check (run in the Windows VM, see Decisions) written down as a
   short checklist in the guide:
   install, `jat init`, `jat serve`, the pages load, add an application, a note and a file,
-  Download a backup, Insights' weekly activity, and `uv run pytest`.
+  Download a backup, Insights' weekly activity, and `uv run pytest` (the app's tests: the
+  development tools' tests skip on Windows, see Not covered).
 
 ### Windows supported
 
@@ -176,9 +177,11 @@ not under `/mnt/c`. This hasn't been tested.
 
 - A one-command install (`packaged-install`) and a double-click desktop app (`desktop-app`).
   They're separate roadmap work, not part of Windows support.
-- The project's own development tools: the PM dashboard (`tools/pm`), the demo GIF and social
-  card scripts, and the frontend's test runner. The test runner already handles Windows
-  (`frontend/scripts/test-run.mjs`); the rest are maintainer-only.
+- The project's own development tools: the PM dashboard (`tools/pm`), the maintainer scripts
+  (`tools/dev`), the translation, demo GIF and social card scripts, and the frontend's test
+  runner. The test runner already handles Windows (`frontend/scripts/test-run.mjs`); the rest
+  are maintainer-only, so their tests skip on Windows (`tests/conftest.py`). Making the tools
+  work on Windows is separate backlog work (`windows-dev-tooling`).
 - Symlink tests: Windows needs Developer Mode or admin rights to make symlinks, so the few
   tests that make one should skip there instead of failing. That's part of `windows-testing`,
   getting `uv run pytest` through on Windows.
