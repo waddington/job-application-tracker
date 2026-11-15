@@ -46,7 +46,8 @@ Each of these cost time once. Add a line when something new does.
 - **In a worktree-isolated session** a Bash line that mixes git with other commands (or `cd`s first) is refused:
   split it, or put the steps in a script file under the job folder and run `bash <file>`.
 - **A subagent's report can arrive as a message, not a notification**, and a second report in the same run is refused:
-  when an agent says it reported again, SendMessage it to ask for what's new.
+  when an agent says it reported again, SendMessage it to ask for what's new. A builder's second SubagentHandback is
+  usually a duplicate: ask once, then ignore further repeats.
 - **More isolated-Bash refusals** (2026-11-12/15): any line whose text contains "github" (a `waddington.github.io` URL,
   a PR title or bump entry saying "GitHub"), `source …`, or a `PATH=… cmd` prefix. Put the commands in a script under
   the worktree's `var/` and run `bash var/x.sh`. Isolation also blocks Edit on files in the main checkout (such as
@@ -85,6 +86,11 @@ Each of these cost time once. Add a line when something new does.
 - **A flaky `test.fail`** (`fix-offer-kind-pin-flaky`) can block a merge: rerun just the browser suite
   (`tools/dev/e2e_only.sh`) when everything else passed and the failure isn't the PR's.
 - **CI:** only the website builds on GitHub; `mergeStateStatus` is UNSTABLE until it passes.
+- **Carries merging in sequence:** the second takes main's version and re-bumps by hand (`bump.py` always adds a
+  CHANGELOG entry), keeping main's CHANGELOG sections unchanged.
+- **`checks.sh --no-e2e` refuses `tools/pm` changes** (they aren't on the skip list): run the full checks.
+- **Dependabot:** push our commits onto its branch as a fast-forward (`git push origin HEAD:<dependabot branch>`),
+  never force.
 
 ## Browser tests (`frontend/e2e/`)
 
@@ -191,6 +197,8 @@ Each of these cost time once. Add a line when something new does.
 
 - **Astro doesn't scope `@keyframes`**: two components' `drift` collide and one silently replaces the other. Prefix
   every keyframe with its component (`hero-drift`, `story-nudge`).
+- **Node:** Astro 7.4.2+ needs Node ≥ 22.23.4 (`bin/astro.mjs` exits otherwise); 22.23.5 is in nvm, with pnpm 10.28.2
+  installed into it.
 - **Layout shift from fonts:** preload the font used above the fold and give it a metric-matched fallback
   (`size-adjust`, ascent/descent overrides). Playwright's bundled headless shell has different fallback fonts from
   system Chrome: measure CLS in both, with the font delayed.
@@ -229,6 +237,14 @@ Each of these cost time once. Add a line when something new does.
     `PYTHONUNBUFFERED=1` to see its output), query `/api/v1/health` with `Invoke-RestMethod`, then stop the `python`/`uv` processes.
   - The VM has no global git identity: set `git config user.name/user.email` in each test data repo before a
     snapshot can commit.
-  - On Windows the whole suite isn't green yet: compare failures with the list in the `windows-tests-green` task (added in #300).
+  - The suite is green there since #378 (0 failures); a new failure is real.
+  - Never run it while browser tests run: the load flipped board.spec.ts:351's drag-scroll and the
+    `fix-double-save-locked` `test.fail`.
+  - Its corepack pnpm is 12.x; the project pins 10.28.2: use `npx pnpm@10.28.2`.
+  - `virsh` needs `sg libvirt -c '…'`. It sometimes ignores a clean shutdown: `virsh destroy` after a wait.
+  - On real Windows, `open()` reports a sharing violation as PermissionError errno 13 with no winerror (only
+    `os.replace`/`unlink` give winerror 32).
+- **Concept CSS over Mantine:** inspect the real DOM in a browser rather than guessing class selectors (the board width
+  rule matched nothing at first).
 - **Vite's hot reload can silently keep old code** on `TodayPage.tsx` ("Could not Fast Refresh (useNextActions export
   is incompatible)"): if a dev page doesn't show a change, restart Vite with `--force` before debugging the code.
