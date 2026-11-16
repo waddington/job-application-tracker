@@ -3,7 +3,7 @@ import {
   Badge,
   Card,
   Group,
-  Loader,
+  Skeleton,
   Switch,
   Table,
   Text,
@@ -19,6 +19,8 @@ import { useTranslation } from "react-i18next";
 
 import { headline, money, OFFER_STATUS, useOffers, type Offer } from "../api/offerHooks";
 import { Page } from "../components/Page";
+import { TableSkeleton } from "../components/PageSkeleton";
+import { Pending } from "../components/QueryState";
 import { RecruiterLine } from "../components/RecruiterLine";
 import { i18n } from "../i18n";
 import { formatDate } from "../utils/time";
@@ -93,7 +95,8 @@ function rows(t: TFunction<"offers">): { label: string; cell: (o: Offer) => Reac
 export function OffersPage() {
   const { t } = useTranslation("offers");
   const [showClosed, setShowClosed] = useState(false);
-  const { data, isLoading } = useOffers({});
+  const query = useOffers({});
+  const { data } = query;
   const offers = (data ?? [])
     .filter((o) => showClosed || o.status === "pending" || o.status === "accepted")
     .sort((a, b) => (b.annual_value ?? -1) - (a.annual_value ?? -1));
@@ -116,8 +119,16 @@ export function OffersPage() {
           onChange={(e) => setShowClosed(e.currentTarget.checked)}
         />
       </Group>
-      {isLoading ? (
-        <Loader />
+      {data === undefined ? (
+        <Pending
+          query={query}
+          skeleton={
+            <Card withBorder>
+              <Skeleton height={17} width="60%" radius="sm" mb={24} />
+              <TableSkeleton rows={12} rowHeight={47} headHeight={66} />
+            </Card>
+          }
+        />
       ) : !offers.length ? (
         <Card withBorder>
           <Text c="dimmed" size="sm">

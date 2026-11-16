@@ -1,4 +1,4 @@
-import { Anchor, Badge, Card, Group, Loader, SegmentedControl, Table, Text, Title } from "@mantine/core";
+import { Anchor, Badge, Card, Group, SegmentedControl, Skeleton, Table, Text, Title } from "@mantine/core";
 import { useLocalStorage } from "@mantine/hooks";
 import { IconCalendarEvent } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
@@ -9,6 +9,8 @@ import { useInterviews, type Interview } from "../api/interviewHooks";
 import { InterviewCalendar } from "../components/InterviewCalendar";
 import { roundStatus } from "../components/Interviews";
 import { Page } from "../components/Page";
+import { CardsSkeleton } from "../components/PageSkeleton";
+import { bothQueries, Pending } from "../components/QueryState";
 import { RescheduledBadge, wasText } from "../components/Reschedule";
 import { RecruiterLine } from "../components/RecruiterLine";
 import { RoundActions } from "../components/RoundActions";
@@ -119,7 +121,7 @@ export function InterviewsPage() {
   midnight.setHours(0, 0, 0, 0);
   const upcomingQuery = useInterviews({ upcoming: true, since: midnight.toISOString() });
   const allQuery = useInterviews({});
-  const isLoading = upcomingQuery.isLoading || allQuery.isLoading;
+  const both = bothQueries(upcomingQuery, allQuery);
   const all = allQuery.data ?? [];
   const upcoming = upcomingQuery.data;
   const upcomingIds = new Set((upcoming ?? []).map((i) => i.id));
@@ -146,8 +148,17 @@ export function InterviewsPage() {
           aria-label={t("page.view.label")}
         />
       </Group>
-      {isLoading ? (
-        <Loader />
+      {both.data === undefined ? (
+        <Pending
+          query={both}
+          skeleton={
+            view === "calendar" ? (
+              <Skeleton height={697} radius="md" />
+            ) : (
+              <CardsSkeleton count={2} height={218} />
+            )
+          }
+        />
       ) : view === "calendar" ? (
         <>
           <InterviewCalendar rounds={all} />

@@ -9,24 +9,66 @@ export type QueryLike<T> = Pick<UseQueryResult<T>, "data" | "isError" | "isFetch
 };
 
 /**
- * Two queries read as one, for a card that shows both: loaded once both have, failed when either
- * failed before it loaded (Retry tries the failed ones again), loading otherwise.
+ * Several queries read as one, for a card or page that shows them together: loaded once all have,
+ * failed when any failed before it loaded (Retry tries the failed ones again), loading otherwise.
  */
-export function bothQueries<A, B>(a: QueryLike<A>, b: QueryLike<B>): QueryLike<[A, B]> {
-  const both = [a, b];
-  const failed = both.filter((q) => q.isError && q.data === undefined);
+export function allQueries(...queries: QueryLike<unknown>[]): QueryLike<unknown[]> {
+  const failed = queries.filter((q) => q.isError && q.data === undefined);
   return {
-    data: a.data !== undefined && b.data !== undefined ? [a.data, b.data] : undefined,
+    data: queries.every((q) => q.data !== undefined) ? queries.map((q) => q.data) : undefined,
     isError: failed.length > 0,
     // Retry spins only for the lists it retries, not for one still on its first load.
-    isFetching: (failed.length ? failed : both).some((q) => q.isFetching),
-    fetchStatus: both.some((q) => q.fetchStatus === "fetching")
+    isFetching: (failed.length ? failed : queries).some((q) => q.isFetching),
+    fetchStatus: queries.some((q) => q.fetchStatus === "fetching")
       ? "fetching"
-      : both.some((q) => q.fetchStatus === "paused")
+      : queries.some((q) => q.fetchStatus === "paused")
         ? "paused"
         : "idle",
     refetch: () => Promise.all(failed.map((q) => q.refetch())),
   };
+}
+
+/** Two queries read as one (allQueries), keeping each one's type. */
+export function bothQueries<A, B>(a: QueryLike<A>, b: QueryLike<B>): QueryLike<[A, B]> {
+  return allQueries(a, b) as QueryLike<[A, B]>;
+}
+
+/** What a skeleton sits in while its query loads: busy for screen readers, found by tests. */
+export function Loading({ children }: { children: ReactNode }) {
+  return (
+    <Stack gap="xs" aria-busy="true" data-testid="query-loading">
+      {children}
+    </Stack>
+  );
+}
+
+/**
+ * What a query shows before it has data, for a page that decides the rest itself: while it loads,
+ * the skeleton; on a failed load, a dimmed line with Retry (spinning while it tries again). A query
+ * that has never started (`enabled: false`) shows nothing. Render it only while the query has no data
+ * (`data === undefined`): it shows the failed line whenever the query has failed, so after a failed
+ * refetch it would replace content that's still good.
+ */
+export function Pending({ query, skeleton }: { query: QueryLike<unknown>; skeleton: ReactNode }) {
+  const { t } = useTranslation("common");
+  if (query.isError)
+    return (
+      <Group gap="xs" role="status">
+        <Text size="sm" c="dimmed">
+          {t("load.failed")}
+        </Text>
+        <Button
+          size="compact-xs"
+          variant="subtle"
+          loading={query.isFetching}
+          onClick={() => void query.refetch()}
+        >
+          {t("load.retry")}
+        </Button>
+      </Group>
+    );
+  if (query.fetchStatus === "idle") return null; // never started: a disabled query
+  return <Loading>{skeleton}</Loading>;
 }
 
 /**
@@ -34,7 +76,7 @@ export function bothQueries<A, B>(a: QueryLike<A>, b: QueryLike<B>): QueryLike<[
  * failed) never shows the "nothing here" text. While it loads: skeleton lines sized like the rows
  * they stand for. On a failed load: a dimmed line with Retry (spinning while it tries again). The
  * empty text only for a list that loaded empty; otherwise the children, with the list. A query that
- * has never started (`enabled: false`) shows nothing. Whole-page loads keep their Loader.
+ * has never started (`enabled: false`) shows nothing. Pages use the same pieces (PageSkeleton.tsx).
  *
  * `select` turns the query's data into the list to show (a filtered one, say); it defaults to the
  * data itself. `skeleton` stands in for the plain lines when the list has a shape of its own (a
@@ -59,32 +101,16 @@ export function QueryState<T, L extends readonly unknown[] = Extract<T, readonly
   skeleton?: ReactNode;
   children: (list: L) => ReactNode;
 }) {
-  const { t } = useTranslation("common");
-  if (query.data === undefined) {
-    if (query.isError)
-      return (
-        <Group gap="xs" role="status">
-          <Text size="sm" c="dimmed">
-            {t("load.failed")}
-          </Text>
-          <Button
-            size="compact-xs"
-            variant="subtle"
-            loading={query.isFetching}
-            onClick={() => void query.refetch()}
-          >
-            {t("load.retry")}
-          </Button>
-        </Group>
-      );
-    if (query.fetchStatus === "idle") return null; // never started: a disabled query
+  if (query.data === undefined)
     return (
-      <Stack gap="xs" aria-busy="true" data-testid="query-loading">
-        {skeleton ??
-          Array.from({ length: rows }, (_, i) => <Skeleton key={i} height={rowHeight} radius="sm" />)}
-      </Stack>
+      <Pending
+        query={query}
+        skeleton={
+          skeleton ??
+          Array.from({ length: rows }, (_, i) => <Skeleton key={i} height={rowHeight} radius="sm" />)
+        }
+      />
     );
-  }
   const list = select ? select(query.data) : (query.data as unknown as L);
   return list.length === 0 ? empty : children(list);
 }

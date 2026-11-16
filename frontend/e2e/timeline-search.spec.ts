@@ -44,7 +44,10 @@ const yesterdayNoon = () => {
 /** Until the page stops loading, its retries included, however it ends up answering. */
 const settled = async (page: Page) => {
   await page.waitForTimeout(500);
-  await expect(page.locator(".mantine-Loader-root")).toHaveCount(0, { timeout: 25_000 });
+  // A spinner, or a page's or list's skeleton (loading-state-page-skeletons).
+  await expect(page.locator(".mantine-Loader-root, [data-testid=query-loading]")).toHaveCount(0, {
+    timeout: 25_000,
+  });
 };
 const theDialog = (page: Page) => page.locator(".mantine-Modal-content");
 const menu = (page: Page, name: string) =>

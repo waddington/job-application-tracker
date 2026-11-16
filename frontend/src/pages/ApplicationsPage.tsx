@@ -2,13 +2,13 @@ import {
   Badge,
   Button,
   Card,
-  Center,
   Group,
   Loader,
   MultiSelect,
   ScrollArea,
   SegmentedControl,
   Select,
+  Skeleton,
   Stack,
   Switch,
   Table,
@@ -24,6 +24,8 @@ import { useTranslation } from "react-i18next";
 
 import { PersonMarks } from "../components/GhostMark";
 import { Page } from "../components/Page";
+import { TableSkeleton } from "../components/PageSkeleton";
+import { Pending } from "../components/QueryState";
 import { RecruiterLine } from "../components/RecruiterLine";
 import type { ApplicationRow } from "../api/client";
 import {
@@ -120,7 +122,8 @@ export function ApplicationsPage() {
     archived,
     sort,
   };
-  const { data: rows, isLoading, isFetching } = useApplications(filters);
+  const applications = useApplications(filters);
+  const { data: rows, isLoading, isFetching } = applications;
   const filtered = !!(debouncedQ || stage.length || route || agencyId || staleOnly || archived);
 
   return (
@@ -202,11 +205,22 @@ export function ApplicationsPage() {
         />
       </Group>
 
-      {isLoading ? (
-        <Center p="xl">
-          <Loader />
-        </Center>
-      ) : !rows?.length ? (
+      {rows === undefined ? (
+        <Pending
+          query={applications}
+          skeleton={
+            view === "board" ? (
+              <Group gap="sm" wrap="nowrap" align="flex-start">
+                {Array.from({ length: 5 }, (_, i) => (
+                  <Skeleton key={i} w={250} miw={250} height={420} radius="md" />
+                ))}
+              </Group>
+            ) : (
+              <TableSkeleton rows={8} rowHeight={66} headHeight={39} />
+            )
+          }
+        />
+      ) : !rows.length ? (
         <Card withBorder p="xl">
           <Stack align="center" gap="xs">
             <Text fw={600}>{filtered ? t("empty.noMatch") : t("empty.none")}</Text>

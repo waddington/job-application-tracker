@@ -57,6 +57,25 @@ test.describe("the list", () => {
     await expect(row(page, ...ADVENTURE)).not.toContainText("needs chasing");
   });
 
+  // loading-state-page-skeletons: the list's shape under the page's heading and filters, not a spinner.
+  test("shows a skeleton of the list, not a spinner, while it loads", async ({ page }) => {
+    let release = () => {};
+    const held = new Promise<void>((ok) => (release = ok));
+    await page.route(/\/api\/v1\/applications(\?|$)/, async (route) => {
+      await held;
+      await route.continue();
+    });
+    await page.reload();
+    await expect(page.getByRole("heading", { name: "Applications", level: 2 })).toBeVisible();
+    await expect(page.getByTestId("query-loading")).toBeVisible();
+    await expect(page.getByRole("main").getByLabel("Search", { exact: true })).toBeVisible();
+    await expect(page.locator(".mantine-Loader-root")).toHaveCount(0);
+    await expect(page.getByText("No applications yet")).toHaveCount(0);
+    release();
+    await expect(row(page, ...CONTOSO)).toBeVisible();
+    await expect(page.getByTestId("query-loading")).toHaveCount(0);
+  });
+
   test("counts what it lists", async ({ page }) => {
     const shown = await page.locator("tbody tr").count();
     await expect(page.locator("main").locator(".mantine-Badge-root").first()).toHaveText(String(shown));

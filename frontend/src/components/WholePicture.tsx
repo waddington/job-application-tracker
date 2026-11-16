@@ -1,9 +1,9 @@
-import { Card, Group, Loader, Text, Title } from "@mantine/core";
+import { Card, Group, Text, Title } from "@mantine/core";
 import { useTranslation } from "react-i18next";
 
 import { useWholeFlow } from "../api/insightHooks";
 import { RoundsNote, RoundsToggle, useShowRounds } from "./RoundsToggle";
-import { SankeyChart } from "./SankeyChart";
+import { SankeyChart, SankeySkeleton } from "./SankeyChart";
 
 /**
  * The whole picture: every role from where it came from (a recruiter, a referral, or you found
@@ -25,7 +25,7 @@ export function WholePicture({ since }: { since?: string }) {
       </Text>
       <RoundsNote on={rounds} flow={flow} placeholder={isPlaceholderData} />
       {isLoading ? (
-        <Loader />
+        <SankeySkeleton />
       ) : isError || !flow ? (
         <Text c="red">{t("whole.loadFailed")}</Text>
       ) : !flow.links.length ? (

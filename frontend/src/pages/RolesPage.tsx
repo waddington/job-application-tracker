@@ -1,10 +1,12 @@
-import { Button, Card, Group, Loader, SegmentedControl, Stack, Text, Title } from "@mantine/core";
+import { Button, Card, Group, SegmentedControl, Stack, Text, Title } from "@mantine/core";
 import { IconListDetails, IconPlus } from "@tabler/icons-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useRoleSummaries, type RoleStatus } from "../api/roleHooks";
 import { Page } from "../components/Page";
+import { CardsSkeleton } from "../components/PageSkeleton";
+import { Pending } from "../components/QueryState";
 import { RoleFormModal, RoleLine } from "../components/Roles";
 
 type View = RoleStatus | "all";
@@ -32,7 +34,8 @@ export function RolesPage() {
   const { t } = useTranslation("roles");
   const [view, setView] = useState<View>("to_decide");
   const [adding, setAdding] = useState(false);
-  const { data: roles, isLoading } = useRoleSummaries(view === "all" ? {} : { status: view });
+  const rolesQuery = useRoleSummaries(view === "all" ? {} : { status: view });
+  const roles = rolesQuery.data;
 
   return (
     <Page>
@@ -57,9 +60,16 @@ export function RolesPage() {
         aria-label={t("views.label")}
         style={{ alignSelf: "flex-start" }}
       />
-      {isLoading ? (
-        <Loader />
-      ) : !roles?.length ? (
+      {roles === undefined ? (
+        <Pending
+          query={rolesQuery}
+          skeleton={
+            <Card withBorder>
+              <CardsSkeleton count={4} height={37} gap="sm" />
+            </Card>
+          }
+        />
+      ) : !roles.length ? (
         <Card withBorder p="xl">
           <Text c="dimmed" size="sm" ta="center">
             {t(EMPTY[view])}

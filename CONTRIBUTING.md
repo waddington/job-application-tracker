@@ -66,8 +66,16 @@ pnpm --dir frontend dev                             # UI on http://127.0.0.1:517
 load this." with Retry when it fails, and the empty text only for a list that loaded empty. Never default
 query data to `[]` (`data ?? []`) before deciding it's empty: a list still loading, or one that
 failed, would say there's nothing there. A card that shows two queries' lists waits for both through
-`bothQueries` in the same file (the Files card and the files it inherits). Whole-page loads keep their
-`Loader`.
+`bothQueries` in the same file (the Files card and the files it inherits), and one that shows more
+through `allQueries` (Recruiters).
+
+**Pages show a skeleton, not a spinner, while they load.** The page's heading and toolbar show at once,
+inside `Page`; where its list goes, a skeleton shaped like it (a table's rows, a grid of tiles, cards)
+and as tall as the real rows, so nothing jumps when they come. The pieces are in
+`frontend/src/components/PageSkeleton.tsx`; `Pending` (in `QueryState.tsx`) shows one while the query
+loads and the failed line when it fails, for a page that decides its loaded and empty states itself. A
+page with its own error text keeps it, showing the skeleton through `Loading` (Today, Insights). Keep
+`Loader` for small in-place spinners, such as a refetch beside the filters.
 
 **Every page's outer wrapper is `Page`** (`frontend/src/components/Page.tsx`): full width beside the
 menu, up to 2,400 px, from the left. Don't give a page its own narrower `maw`. Its title is a

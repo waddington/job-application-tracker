@@ -1,4 +1,4 @@
-import { Text } from "@mantine/core";
+import { Skeleton, Text } from "@mantine/core";
 import { useElementSize } from "@mantine/hooks";
 import { sankey, sankeyLinkHorizontal, type SankeyLink, type SankeyNode } from "d3-sankey";
 import { useMemo, useState } from "react";
@@ -7,11 +7,12 @@ import { useTranslation } from "react-i18next";
 import type { Flow, FlowLink, FlowNode } from "../api/insightHooks";
 import { i18n } from "../i18n";
 import { stageName } from "../utils/stageName";
+import { Loading } from "./QueryState";
 
 type Node = SankeyNode<FlowNode, FlowLink>;
 type Link = SankeyLink<FlowNode, FlowLink>;
 
-const HEIGHT = 440;
+const SANKEY_HEIGHT = 440;
 const LABEL_SPACE = 200; // room for the last column's labels on the right ("Deciding on the offer 12")
 const COLUMN_SPACE = 110; // room per column for a label beside a node mid-chart (with its halo, it may cross a flow)
 
@@ -202,6 +203,15 @@ export function nodeName(node: FlowNode, lng = i18n.language): string {
   return i18n.t(NODE_NAMES[node.code], { lng });
 }
 
+/** The chart's place while its flow loads, as tall as the smallest chart. */
+export function SankeySkeleton() {
+  return (
+    <Loading>
+      <Skeleton height={SANKEY_HEIGHT} radius="md" />
+    </Loading>
+  );
+}
+
 /**
  * Stage-to-stage flows, left to right. Each node sits one column after the furthest thing that
  * leads to it, so outcomes and what's waiting follow their stage. `unit` is what the flow counts:
@@ -247,7 +257,7 @@ export function SankeyChart({
   // Never so narrow that labels run into the next column: on a phone it scrolls sideways instead.
   const { columns, busiest } = shape(flow);
   const width = Math.max(measured || 900, columns * COLUMN_SPACE + LABEL_SPACE);
-  const height = Math.max(HEIGHT, busiest * ROW_SPACE);
+  const height = Math.max(SANKEY_HEIGHT, busiest * ROW_SPACE);
   const [hover, setHover] = useState<string | null>(null);
 
   // The search for the least tangled order runs once per diagram, at a typical size (the order

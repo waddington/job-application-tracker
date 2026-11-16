@@ -1,4 +1,4 @@
-import { Card, Group, Loader, SegmentedControl, Select, Stack, Tabs, Text, Title } from "@mantine/core";
+import { Card, Group, SegmentedControl, Select, Stack, Tabs, Text, Title } from "@mantine/core";
 import { IconChartSankey } from "@tabler/icons-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -13,7 +13,7 @@ import { RejectionRoundsCard } from "../components/RejectionRounds";
 import { ReschedulingCard } from "../components/Rescheduling";
 import { RoundsNote, RoundsToggle, useShowRounds } from "../components/RoundsToggle";
 import { ScorecardCard } from "../components/Scorecard";
-import { SankeyChart } from "../components/SankeyChart";
+import { SankeyChart, SankeySkeleton } from "../components/SankeyChart";
 import { WholePicture } from "../components/WholePicture";
 
 type Range = "all" | "90" | "30";
@@ -106,7 +106,7 @@ export function InsightsPage() {
               </Group>
               <RoundsNote on={rounds} flow={flow} placeholder={isPlaceholderData} />
               {isLoading ? (
-                <Loader />
+                <SankeySkeleton />
               ) : isError || !flow ? (
                 <Text c="red">{t("flow.loadFailed")}</Text>
               ) : !flow.links.length ? (

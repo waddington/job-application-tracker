@@ -44,6 +44,8 @@ import {
 } from "../api/documentHooks";
 import { humanSize } from "../components/Attachments";
 import { Page, READING_WIDTH } from "../components/Page";
+import { CardsSkeleton } from "../components/PageSkeleton";
+import { Pending } from "../components/QueryState";
 import { stageName } from "../utils/stageName";
 import { formatDate } from "../utils/time";
 
@@ -303,7 +305,8 @@ function DocumentCard({ doc }: { doc: DocumentItem }) {
 /** CVs and cover letters, with every version and where each was sent (PRD FR14). */
 export function DocumentsPage() {
   const { t } = useTranslation("documents");
-  const { data: documents, isLoading } = useDocuments();
+  const query = useDocuments();
+  const documents = query.data;
   const [creating, setCreating] = useState(false);
   return (
     <Page>
@@ -317,8 +320,8 @@ export function DocumentsPage() {
         </Button>
       </Group>
       <CvFilesCard />
-      {isLoading || !documents ? (
-        <Loader />
+      {documents === undefined ? (
+        <Pending query={query} skeleton={<CardsSkeleton count={3} height={160} />} />
       ) : documents.length ? (
         documents.map((doc) => <DocumentCard key={doc.id} doc={doc} />)
       ) : (
