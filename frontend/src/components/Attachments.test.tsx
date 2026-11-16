@@ -1,6 +1,6 @@
 import { MantineProvider } from "@mantine/core";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { mockApiAnswering } from "../test/mockApi";
@@ -119,10 +119,12 @@ describe("attachments: loading and failed", () => {
     );
 
   it("shows a skeleton until both its files and the inherited ones load, not the empty text", async () => {
-    answering({ own: () => "ok", theirs: () => "hang" });
+    const calls = answering({ own: () => "ok", theirs: () => "hang" });
     renderCard(fromAgency);
     expect(await screen.findByTestId("query-loading")).toHaveAttribute("aria-busy", "true");
-    await new Promise((done) => setTimeout(done, 50)); // its own files have loaded by now
+    // Its own files have answered; let React Query take the answer in before looking again.
+    await waitFor(() => expect(calls.some((c) => c.path.includes("entity_id=co1"))).toBe(true));
+    await act(() => new Promise((done) => setTimeout(done, 0)));
     expect(screen.getByTestId("query-loading")).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "CV v3.pdf" })).toBeNull();
     expect(screen.queryByText(empty)).toBeNull();
