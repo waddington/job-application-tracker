@@ -133,7 +133,8 @@ export function RecordSkeleton({
       {back}
       <Loading gap="md">
         <Group justify="space-between" wrap="wrap" align="flex-start">
-          <Stack gap={2}>
+          {/* Capped, or on a phone the name's bar would push the page wider than the screen. */}
+          <Stack gap={2} maw="100%" miw={0}>
             <LineSkeleton height={54} width="24rem" />
             {lines.map((height, i) => (
               <LineSkeleton key={i} height={height} width="16rem" />
