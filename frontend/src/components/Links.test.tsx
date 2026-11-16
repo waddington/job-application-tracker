@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { mockApi } from "../test/mockApi";
+import { mockApi, mockApiAnswering } from "../test/mockApi";
 import { LinksCard } from "./Links";
 
 const link = (overrides: Record<string, unknown> = {}) => ({
@@ -96,5 +96,28 @@ describe("links", () => {
     fireEvent.change(box, { target: { value: "Brief v2" } });
     fireEvent.blur(box, { relatedTarget: null });
     await waitFor(() => expect(calls.filter((c) => c.method === "PATCH")).toHaveLength(1));
+  });
+});
+
+describe("links: loading and failed", () => {
+  const empty = "Job ads, Google Docs, repos: anything with a URL.";
+
+  it("shows a skeleton while loading, not the empty text", async () => {
+    mockApiAnswering({}, "/api/v1/links", () => "hang");
+    renderCard();
+    expect(await screen.findByTestId("query-loading")).toHaveAttribute("aria-busy", "true");
+    expect(screen.queryByText(empty)).toBeNull();
+  });
+
+  it("says a failed load failed, not that there are none, and Retry loads it", async () => {
+    let how: "fail" | "ok" = "fail";
+    mockApiAnswering({ "GET /api/v1/links": [link()] }, "/api/v1/links", () => how);
+    renderCard();
+    expect(await screen.findByText("Couldn't load this.")).toBeInTheDocument();
+    expect(screen.queryByText(empty)).toBeNull();
+    how = "ok";
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(await screen.findByRole("link", { name: "Take-home brief" })).toBeInTheDocument();
+    expect(screen.queryByText("Couldn't load this.")).toBeNull();
   });
 });

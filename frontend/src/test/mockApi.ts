@@ -29,6 +29,32 @@ export function mockApi(routes: Record<string, unknown | Handler>) {
   return calls;
 }
 
+/**
+ * mockApi, but a request whose path and query contain `path` hangs, fails (500) or gets its mocked answer,
+ * as `how(path and query)` says when it's sent: for a card's loading and failed states.
+ */
+export function mockApiAnswering(
+  routes: Record<string, unknown | Handler>,
+  path: string,
+  how: (sent: string) => "hang" | "fail" | "ok",
+) {
+  const calls = mockApi(routes);
+  const mocked = globalThis.fetch;
+  vi.stubGlobal("fetch", (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = new URL(input instanceof Request ? input.url : String(input), "http://localhost");
+    const sent = url.pathname + url.search;
+    if (!sent.includes(path)) return mocked(input, init);
+    const answer = how(sent);
+    if (answer === "hang") return new Promise<Response>(() => {});
+    if (answer === "fail")
+      return Promise.resolve(
+        new Response('{"detail":"Failed"}', { status: 500, headers: { "Content-Type": "application/json" } }),
+      );
+    return mocked(input, init);
+  });
+  return calls;
+}
+
 export const WORKFLOW = {
   initial: "interested",
   transitions: "configured",
