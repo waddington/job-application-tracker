@@ -1,18 +1,5 @@
-import {
-  Alert,
-  Anchor,
-  Badge,
-  Button,
-  Card,
-  Grid,
-  Group,
-  Loader,
-  Stack,
-  Table,
-  Text,
-  Title,
-} from "@mantine/core";
-import { IconArrowLeft, IconExternalLink, IconPencil, IconTargetArrow } from "@tabler/icons-react";
+import { Alert, Anchor, Badge, Button, Card, Grid, Group, Stack, Table, Text, Title } from "@mantine/core";
+import { IconExternalLink, IconPencil, IconTargetArrow } from "@tabler/icons-react";
 import { Link, useParams, useRouter } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
 import { Trans, useTranslation } from "react-i18next";
@@ -25,7 +12,8 @@ import { DeleteButton } from "../components/DeleteButton";
 import { LinksCard } from "../components/Links";
 import { Markdown } from "../components/Markdown";
 import { NotesCard } from "../components/Notes";
-import { Page } from "../components/Page";
+import { BackLink, Page } from "../components/Page";
+import { RecordSkeleton } from "../components/PageSkeleton";
 import { pay, RoleActions, RoleFormModal } from "../components/Roles";
 import { StageBadge } from "../components/StageBadge";
 import { TodosCard } from "../components/Todos";
@@ -74,15 +62,23 @@ function callOf(role: RoleSummary) {
 export function RolePage() {
   const { t } = useTranslation("roles");
   const { roleId } = useParams({ from: "/roles/$roleId" });
-  const { data: role, isLoading, isError } = useRoleSummary(roleId);
+  const { data: role, isError } = useRoleSummary(roleId);
   const { data: rows } = useApplications({});
   const { data: workflow } = useWorkflow();
   const stages = stageLookup(workflow);
   const [editing, setEditing] = useState(false);
   const router = useRouter();
 
-  if (isError) return <Alert color="red">{t("page.loadFailed")}</Alert>;
-  if (isLoading || !role) return <Loader />;
+  const back = <BackLink to="/roles">{t("page.back")}</BackLink>;
+  if (isError)
+    return (
+      <Page>
+        {back}
+        <Alert color="red">{t("page.loadFailed")}</Alert>
+      </Page>
+    );
+  if (!role)
+    return <RecordSkeleton back={back} lines={[29]} actions={2} main={[180, 130]} side={[195, 117, 134]} />;
   const status = roleBadge(role);
   const money = pay(role);
   const applications = (rows ?? []).filter((r) => r.role_id === role.id);
@@ -92,11 +88,7 @@ export function RolePage() {
 
   return (
     <Page>
-      <Anchor component={Link} to="/roles" size="sm">
-        <Group gap={4}>
-          <IconArrowLeft size={14} /> {t("page.back")}
-        </Group>
-      </Anchor>
+      {back}
       <Group justify="space-between" wrap="wrap" align="flex-start">
         <Stack gap={2}>
           <Group gap="sm">

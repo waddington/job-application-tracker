@@ -1,19 +1,6 @@
-import {
-  Alert,
-  Anchor,
-  Badge,
-  Button,
-  Card,
-  Grid,
-  Group,
-  Loader,
-  Stack,
-  Table,
-  Text,
-  Title,
-} from "@mantine/core";
-import { IconArrowLeft, IconPencil, IconPlus, IconUsers } from "@tabler/icons-react";
-import { Link, useParams, useRouter } from "@tanstack/react-router";
+import { Alert, Anchor, Badge, Button, Card, Grid, Group, Stack, Table, Text, Title } from "@mantine/core";
+import { IconPencil, IconPlus, IconUsers } from "@tabler/icons-react";
+import { useParams, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -23,7 +10,8 @@ import { useAgencySummary } from "../api/detailHooks";
 import { stageLookup, useWorkflow } from "../api/hooks";
 import { useUpdateAgency } from "../api/peopleHooks";
 import { ApplicationDrawer } from "../components/ApplicationDrawer";
-import { Page } from "../components/Page";
+import { BackLink, Page } from "../components/Page";
+import { RecordSkeleton } from "../components/PageSkeleton";
 import { TimelineButton } from "../components/TimelineButton";
 import { AttachmentsCard } from "../components/Attachments";
 import { LinksCard } from "../components/Links";
@@ -39,7 +27,7 @@ import { ago } from "../utils/time";
 export function AgencyPage() {
   const { t } = useTranslation("people");
   const { agencyId } = useParams({ from: "/agencies/$agencyId" });
-  const { data, isLoading, isError } = useAgencySummary(agencyId);
+  const { data, isError } = useAgencySummary(agencyId);
   const { data: workflow } = useWorkflow();
   const stages = stageLookup(workflow);
   const [openId, setOpenId] = useState<string | null>(null);
@@ -48,17 +36,20 @@ export function AgencyPage() {
   const [editingName, setEditingName] = useState(false);
   const updateAgency = useUpdateAgency();
 
-  if (isError) return <Alert color="red">{t("agency.loadFailed")}</Alert>;
-  if (isLoading || !data) return <Loader />;
+  const back = <BackLink to="/recruiters">{t("agency.all")}</BackLink>;
+  if (isError)
+    return (
+      <Page>
+        {back}
+        <Alert color="red">{t("agency.loadFailed")}</Alert>
+      </Page>
+    );
+  if (!data) return <RecordSkeleton back={back} actions={3} span={7} main={[175]} side={[155, 120, 96]} />;
   const { agency, recruiters, applications } = data;
 
   return (
     <Page>
-      <Anchor component={Link} to="/recruiters" size="sm">
-        <Group gap={4}>
-          <IconArrowLeft size={14} /> {t("agency.all")}
-        </Group>
-      </Anchor>
+      {back}
       <Group justify="space-between" wrap="wrap">
         <Group gap="sm">
           <IconUsers size={26} stroke={1.6} />

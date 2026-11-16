@@ -1,23 +1,11 @@
-import {
-  Alert,
-  Anchor,
-  Badge,
-  Button,
-  Card,
-  Grid,
-  Group,
-  Loader,
-  Stack,
-  Table,
-  Text,
-  Title,
-} from "@mantine/core";
-import { IconArrowLeft, IconPencil, IconUser } from "@tabler/icons-react";
+import { Alert, Anchor, Badge, Button, Card, Grid, Group, Stack, Table, Text, Title } from "@mantine/core";
+import { IconPencil, IconUser } from "@tabler/icons-react";
 import { Link, useParams, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Page } from "../components/Page";
+import { BackLink, Page } from "../components/Page";
+import { RecordSkeleton } from "../components/PageSkeleton";
 import { RecruiterLine } from "../components/RecruiterLine";
 import { ReplyHabit } from "../components/ReplyHabit";
 import { stageLookup, useWorkflow } from "../api/hooks";
@@ -46,15 +34,25 @@ import { ago, formatDateTime } from "../utils/time";
 export function PersonPage() {
   const { t } = useTranslation("people");
   const { personId } = useParams({ from: "/people/$personId" });
-  const { data, isLoading, isError } = useContactSummary(personId);
+  const { data, isError } = useContactSummary(personId);
   const { data: workflow } = useWorkflow();
   const stages = stageLookup(workflow);
   const [editing, setEditing] = useState(false);
   const router = useRouter();
   const rebookTodoIds = useRebookTodoIds(personId);
 
-  if (isError) return <Alert color="red">{t("person.loadFailed")}</Alert>;
-  if (isLoading || !data) return <Loader />;
+  const back = <BackLink to="/recruiters">{t("person.allPeople")}</BackLink>;
+  if (isError)
+    return (
+      <Page>
+        {back}
+        <Alert color="red">{t("person.loadFailed")}</Alert>
+      </Page>
+    );
+  if (!data)
+    return (
+      <RecordSkeleton back={back} lines={[25, 21]} actions={9} main={[300, 200]} side={[120, 176, 151]} />
+    );
   const { contact, agency_name, company_name, applications, interviews } = data;
   const where = contact.agency_id ? (
     <Anchor component={Link} to={`/agencies/${contact.agency_id}`}>
@@ -68,11 +66,7 @@ export function PersonPage() {
 
   return (
     <Page>
-      <Anchor component={Link} to="/recruiters" size="sm">
-        <Group gap={4}>
-          <IconArrowLeft size={14} /> {t("person.allPeople")}
-        </Group>
-      </Anchor>
+      {back}
       <Group justify="space-between" wrap="wrap">
         <Group gap="sm" align="flex-start">
           {contact.closed_as === "ghosted" ? (

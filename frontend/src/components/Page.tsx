@@ -1,4 +1,6 @@
-import { Stack, type StackProps } from "@mantine/core";
+import { Anchor, Group, Stack, type StackProps } from "@mantine/core";
+import { IconArrowLeft } from "@tabler/icons-react";
+import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
 /** The widest a page's content goes (docs/rfc/app-redesign.md §2, Frame). */
@@ -19,5 +21,16 @@ export function Page({ children, ...props }: Omit<StackProps, "maw"> & { childre
     <Stack maw={PAGE_MAX_WIDTH} {...props}>
       {children}
     </Stack>
+  );
+}
+
+/** A record page's link back to its list, above its header (and its skeleton's, while it loads). */
+export function BackLink({ to, children }: { to: string; children: ReactNode }) {
+  return (
+    <Anchor component={Link} to={to} size="sm">
+      <Group gap={4}>
+        <IconArrowLeft size={14} /> {children}
+      </Group>
+    </Anchor>
   );
 }

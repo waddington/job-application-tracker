@@ -6,7 +6,6 @@ import {
   Divider,
   Grid,
   Group,
-  Loader,
   Select,
   SimpleGrid,
   Stack,
@@ -16,7 +15,7 @@ import {
   Title,
 } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
-import { IconArrowLeft, IconPlus, IconTrash } from "@tabler/icons-react";
+import { IconPlus, IconTrash } from "@tabler/icons-react";
 import { Link, useParams, useRouter } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { useState } from "react";
@@ -35,7 +34,9 @@ import {
 import { AtAGlance } from "../components/AtAGlance";
 import { AttachmentsCard } from "../components/Attachments";
 import { LinksCard } from "../components/Links";
-import { Page } from "../components/Page";
+import { BackLink, Page } from "../components/Page";
+import { ButtonsSkeleton, ColumnsSkeleton, LineSkeleton } from "../components/PageSkeleton";
+import { Loading } from "../components/QueryState";
 import { TodosCard } from "../components/Todos";
 import { NotesCard } from "../components/Notes";
 import { relationLabel, relationOptions, type Relation } from "../api/peopleHooks";
@@ -267,18 +268,14 @@ function RoleCard({ app }: { app: ApplicationDetail }) {
 export function ApplicationPage() {
   const { t } = useTranslation("applications");
   const { appId } = useParams({ from: "/applications/$appId" });
-  const { data: app, isLoading, isError, error } = useApplication(appId);
+  const { data: app, isError, error } = useApplication(appId);
   const router = useRouter();
 
   return (
     <Page>
       <Group justify="space-between">
-        <Anchor component={Link} to="/applications" size="sm">
-          <Group gap={4}>
-            <IconArrowLeft size={14} /> {t("page.back")}
-          </Group>
-        </Anchor>
-        {app && (
+        <BackLink to="/applications">{t("page.back")}</BackLink>
+        {app ? (
           <DeleteButton
             kind="application"
             id={app.id}
@@ -286,12 +283,40 @@ export function ApplicationPage() {
             confirm={t("page.deleteConfirm", { company: app.company_name, role: app.role_title })}
             onDeleted={() => router.history.push("/applications")}
           />
+        ) : (
+          // Delete's place, so the row doesn't grow when it comes; busy like the skeleton below it.
+          !isError && (
+            <Loading>
+              <ButtonsSkeleton count={1} />
+            </Loading>
+          )
         )}
       </Group>
       {isError ? (
         <ApplicationLoadError error={error} />
-      ) : isLoading || !app ? (
-        <Loader />
+      ) : !app ? (
+        <Loading gap="md">
+          {/* The summary (role, company, badges, buttons, route lines), then the first cards. */}
+          <ColumnsSkeleton
+            top={
+              <Stack>
+                <div>
+                  <LineSkeleton height={31} width="20rem" />
+                  <LineSkeleton height={25} width="12rem" />
+                </div>
+                <LineSkeleton height={22} width="16rem" />
+                <ButtonsSkeleton count={4} />
+                <div>
+                  {[0, 1, 2].map((i) => (
+                    <LineSkeleton key={i} height={23} width="18rem" />
+                  ))}
+                </div>
+              </Stack>
+            }
+            main={[250, 287]}
+            side={[195, 139, 309]}
+          />
+        </Loading>
       ) : (
         <Grid gap="lg">
           <Grid.Col span={{ base: 12, md: 8 }}>
