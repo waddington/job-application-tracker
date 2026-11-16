@@ -6,20 +6,20 @@ import {
   Card,
   Grid,
   Group,
-  Loader,
   Stack,
   Table,
   Text,
   Textarea,
   Title,
 } from "@mantine/core";
-import { IconArrowLeft, IconBuilding, IconPencil, IconPlus } from "@tabler/icons-react";
+import { IconBuilding, IconPencil, IconPlus } from "@tabler/icons-react";
 import { Link, useParams, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { PersonMarks, PersonName } from "../components/GhostMark";
-import { Page } from "../components/Page";
+import { BackLink, Page } from "../components/Page";
+import { RecordSkeleton } from "../components/PageSkeleton";
 import { RecruiterLine } from "../components/RecruiterLine";
 import type { Schemas } from "../api/client";
 import { useCompanySummary, useUpdateCompany } from "../api/detailHooks";
@@ -79,7 +79,7 @@ function Description({ company }: { company: Schemas["CompanyOut"] }) {
 export function CompanyPage() {
   const { t } = useTranslation(["people", "applications"]);
   const { companyId } = useParams({ from: "/companies/$companyId" });
-  const { data, isLoading, isError } = useCompanySummary(companyId);
+  const { data, isError } = useCompanySummary(companyId);
   const { data: workflow } = useWorkflow();
   const stages = stageLookup(workflow);
   const [openId, setOpenId] = useState<string | null>(null);
@@ -88,17 +88,14 @@ export function CompanyPage() {
   const update = useUpdateCompany();
   const router = useRouter();
 
+  const back = <BackLink to="/companies">{t("company.all")}</BackLink>;
   if (isError) return <Alert color="red">{t("company.loadFailed")}</Alert>;
-  if (isLoading || !data) return <Loader />;
+  if (!data) return <RecordSkeleton back={back} actions={3} main={[125, 180, 96]} side={[195, 145]} />;
   const { company, applications, contacts } = data;
 
   return (
     <Page>
-      <Anchor component={Link} to="/companies" size="sm">
-        <Group gap={4}>
-          <IconArrowLeft size={14} /> {t("company.all")}
-        </Group>
-      </Anchor>
+      {back}
       <Group justify="space-between" wrap="wrap">
         <Group gap="sm">
           <IconBuilding size={26} stroke={1.6} />

@@ -1,4 +1,4 @@
-import { Button, Group, Skeleton, Stack, Text } from "@mantine/core";
+import { Button, Group, Skeleton, Stack, Text, type MantineSpacing } from "@mantine/core";
 import type { UseQueryResult } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
@@ -33,10 +33,13 @@ export function bothQueries<A, B>(a: QueryLike<A>, b: QueryLike<B>): QueryLike<[
   return allQueries(a, b) as QueryLike<[A, B]>;
 }
 
-/** What a skeleton sits in while its query loads: busy for screen readers, found by tests. */
-export function Loading({ children }: { children: ReactNode }) {
+/**
+ * What a skeleton sits in while its query loads: busy for screen readers, found by tests. `gap` spaces
+ * its pieces as the real ones are (a page's own gap, say).
+ */
+export function Loading({ children, gap = "xs" }: { children: ReactNode; gap?: MantineSpacing }) {
   return (
-    <Stack gap="xs" aria-busy="true" data-testid="query-loading">
+    <Stack gap={gap} aria-busy="true" data-testid="query-loading">
       {children}
     </Stack>
   );
