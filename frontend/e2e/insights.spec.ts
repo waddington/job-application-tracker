@@ -694,12 +694,20 @@ test.describe("weekly activity", () => {
     await expect(weeks.last()).toHaveAttribute("aria-label", new RegExp(`\\b${before + 1} added`));
   });
 
-  // KNOWN BUG (fix-weekly-activity-no-error on the roadmap): expected to fail until it is fixed.
-  test.fail("if it can't load, it says so rather than spinning", async ({ page, problems }) => {
+  // fix-weekly-activity-no-error: a failed load used to spin for ever.
+  test("if it can't load, it says so rather than spinning", async ({ page, problems }) => {
     problems.allow(/500.*\/insights\/activity/);
-    await refuse(page, "activity");
+    const activity = /\/insights\/activity(\?|$)/;
+    await page.route(activity, (route) =>
+      route.fulfill({ status: 500, json: { detail: "Failed for the test" } }),
+    );
     await openInsights(page);
-    await expect(page.getByText(/could(n.t| not) load/i).first()).toBeVisible({ timeout: 20_000 });
+    const weekly = card(page, "Weekly activity");
+    await expect(weekly.getByText(/could(n.t| not) load/i)).toBeVisible({ timeout: 20_000 });
+    await expect(weekly.locator(".mantine-Loader-root")).toHaveCount(0);
+    await page.unroute(activity);
+    await weekly.getByRole("button", { name: "Retry" }).click();
+    await expect(weekly.getByRole("list", { name: "Weekly activity" }).getByRole("listitem")).toHaveCount(12);
   });
 });
 

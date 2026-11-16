@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.24.29 (2026-11-16)
+
+- Timeline and Insights' Weekly activity show a skeleton while they load, and "Couldn't load this." with a Retry button when they can't load, where Timeline used to say there was nothing here and Weekly activity spun for ever (#387).
+
 ## 1.24.28 (2026-11-15)
 
 - The app's new look, part two: one background on every page that fades very slowly through five calm tints (still under reduced motion), pages that use the full width of the window up to a limit, and a restyled side menu and page titles. Notes and documents keep a readable line length (#384).

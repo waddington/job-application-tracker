@@ -81,4 +81,18 @@ describe("QueryState", () => {
     renderState(query({ data: ["Contoso"] }), (d) => d.filter((x) => x !== "Contoso"));
     expect(screen.getByText("Nothing here yet.")).toBeInTheDocument();
   });
+
+  it("draws a skeleton of its own shape in place of the lines, if given one", () => {
+    render(
+      <MantineProvider>
+        <QueryState query={query({})} empty="Nothing here yet." skeleton={<p>A chart-shaped skeleton</p>}>
+          {(list: string[]) => list.join()}
+        </QueryState>
+      </MantineProvider>,
+    );
+    const loading = screen.getByTestId("query-loading");
+    expect(loading).toHaveAttribute("aria-busy", "true");
+    expect(loading.children).toHaveLength(1);
+    expect(loading).toHaveTextContent("A chart-shaped skeleton");
+  });
 });

@@ -374,15 +374,23 @@ test.describe("Timeline: lanes", () => {
     await expect(lanes).toHaveCount(30);
   });
 
-  // KNOWN BUG (fix-timeline-load-error-silent on the roadmap): expected to fail until it is fixed.
-  test.fail("if it can't load, it says so rather than that there's nothing", async ({ page, problems }) => {
+  // fix-timeline-load-error-silent: a failed load used to say there was nothing here.
+  test("if it can't load, it says so rather than that there's nothing", async ({ page, problems }) => {
     problems.allow(/500.*\/api\/v1\/timeline/);
-    await page.route(/\/api\/v1\/timeline/, (route) =>
+    const timeline = /\/api\/v1\/timeline/;
+    await page.route(timeline, (route) =>
       route.fulfill({ status: 500, json: { detail: "Failed for the test" } }),
     );
     await openTimeline(page);
-    await settled(page);
+    // A skeleton while it loads (its retries take a few seconds), never the empty text.
+    await expect(page.getByTestId("query-loading")).toBeVisible();
+    const failed = page.getByRole("status").filter({ hasText: "Couldn't load this." });
+    await expect(failed).toBeVisible({ timeout: 20_000 });
     await expect(page.getByText("Nothing here yet")).toHaveCount(0);
+    await page.unroute(timeline);
+    await failed.getByRole("button", { name: "Retry" }).click();
+    await expect(failed).toBeHidden();
+    await expect(page.getByRole("heading", { level: 3 }).first()).toBeVisible();
   });
 });
 
