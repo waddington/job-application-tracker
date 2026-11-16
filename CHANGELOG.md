@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.24.32 (2026-11-16)
+
+- An application's, role's, person's, company's and agency's page show a skeleton of their header and first cards instead of a spinner while they load, and a page that can't load keeps its back link (#399).
+
 ## 1.24.31 (2026-11-16)
 
 - Ten list pages (Applications, Companies, Roles, Recruiters, Interviews, Offers, Notes, Documents, Today and Insights) show a skeleton shaped like the page instead of a spinner while they load, so the page no longer jumps when it arrives; a page that can't load says so with Retry instead of saying there's nothing there or spinning for ever (#396).
