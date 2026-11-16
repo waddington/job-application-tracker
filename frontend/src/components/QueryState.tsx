@@ -4,7 +4,30 @@ import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 /** What QueryState reads from a TanStack Query result. */
-type QueryLike<T> = Pick<UseQueryResult<T>, "data" | "isError" | "isFetching" | "fetchStatus" | "refetch">;
+export type QueryLike<T> = Pick<UseQueryResult<T>, "data" | "isError" | "isFetching" | "fetchStatus"> & {
+  refetch: () => unknown;
+};
+
+/**
+ * Two queries read as one, for a card that shows both: loaded once both have, failed when either
+ * failed before it loaded (Retry tries the failed ones again), loading otherwise.
+ */
+export function bothQueries<A, B>(a: QueryLike<A>, b: QueryLike<B>): QueryLike<[A, B]> {
+  const both = [a, b];
+  const failed = both.filter((q) => q.isError && q.data === undefined);
+  return {
+    data: a.data !== undefined && b.data !== undefined ? [a.data, b.data] : undefined,
+    isError: failed.length > 0,
+    // Retry spins only for the lists it retries, not for one still on its first load.
+    isFetching: (failed.length ? failed : both).some((q) => q.isFetching),
+    fetchStatus: both.some((q) => q.fetchStatus === "fetching")
+      ? "fetching"
+      : both.some((q) => q.fetchStatus === "paused")
+        ? "paused"
+        : "idle",
+    refetch: () => Promise.all(failed.map((q) => q.refetch())),
+  };
+}
 
 /**
  * A card's or list's loading, failed and empty states, so a query that hasn't answered (or has

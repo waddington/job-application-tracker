@@ -88,6 +88,33 @@ test("a person's Calls card doesn't say there are none while loading or after a 
   await failsThenRetries(page, calls, url, empty, "Held intro call");
 });
 
+test("a company's Links card doesn't say it has none while loading or after a failed load", async ({
+  page,
+  request,
+  problems,
+}) => {
+  problems.allow(/\/links\?/);
+  const company = await post(request, "companies", { name: "Loading Links Co" });
+  await post(request, "links", {
+    entity_type: "company",
+    entity_id: company.id,
+    url: "https://jobs.example.com/held",
+    title: "Held job ad",
+  });
+  const url = `**${API}/links?*entity_id=${company.id}*`;
+  const release = await hold(page, url);
+  await page.goto(`/companies/${company.id}`);
+  const links = card(page, "Links");
+  const empty = "Job ads, Google Docs, repos: anything with a URL.";
+  await expect(links).toBeVisible();
+  await expect(links.getByText(empty)).toBeHidden();
+  await expect(loading(links)).toBeVisible();
+  release();
+  await expect(links.getByText("Held job ad")).toBeVisible();
+  await expect(loading(links)).toHaveCount(0);
+  await failsThenRetries(page, links, url, empty, "Held job ad");
+});
+
 test.describe("Today", () => {
   const section = (page: Page, name: string) => page.getByRole("group", { name, exact: true });
 

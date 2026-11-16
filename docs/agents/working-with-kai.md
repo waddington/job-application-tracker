@@ -63,6 +63,10 @@ where things run. Quotes are Kai's words.
   for Kai to post; never post for Kai. Dates in English are day, month, year ("31 Oct 2026").
 - **Privacy:** never copy names from Kai's screenshots (real companies and recruiters) into the repo, commits or PRs.
   Never POST, PATCH or DELETE against Kai's tracker on 8770; GETs to check health or a migration are fine.
+- **Agents never edit Kai's live data directly** (2026-11-16: "i dont want you editing any live data. there is a plan for
+  an mcp layer (or other) which should help make it safer for agents to modify data"). Not through the API, the
+  database or the data folder, even when it would save Kai time (e.g. entering LinkedIn messages). Changes by an agent
+  wait for that safer layer (`docs/rfc/mcp.md`, `mcp-write`).
 - **No agent-team skill here** unless Kai names it ("use /agent-team to do a code review" for contributors' PRs, with
   `/code-review:code-review` alongside, saying which found each finding); otherwise plain `general-purpose` subagents.
   **Never give a one-off agent a `name`**: named agents become teammates that don't report back by themselves.

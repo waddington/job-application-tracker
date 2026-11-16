@@ -5,7 +5,7 @@ import { createMemoryHistory, createRootRoute, createRouter, RouterProvider } fr
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { mockApi, todo } from "../test/mockApi";
+import { mockApi, mockApiAnswering, todo } from "../test/mockApi";
 import { dueLabel, TodosCard } from "./Todos";
 
 function renderCard() {
@@ -110,5 +110,28 @@ describe("to-dos", () => {
     expect(dueLabel("2026-10-02", "2026-10-02").label).toBe("Today");
     expect(dueLabel("2026-10-03", "2026-10-02").label).toBe("Tomorrow");
     expect(dueLabel("2026-10-09", "2026-10-02").label).toMatch(/^By /);
+  });
+});
+
+describe("to-dos: loading and failed", () => {
+  const empty = /^Nothing to do here\./;
+
+  it("shows a skeleton while loading, not the empty text", async () => {
+    mockApiAnswering({}, "/api/v1/todos", () => "hang");
+    renderCard();
+    expect(await screen.findByTestId("query-loading")).toHaveAttribute("aria-busy", "true");
+    expect(screen.queryByText(empty)).toBeNull();
+  });
+
+  it("says a failed load failed, not that there's nothing to do, and Retry loads it", async () => {
+    let how: "fail" | "ok" = "fail";
+    mockApiAnswering({ "GET /api/v1/todos": [todo()] }, "/api/v1/todos", () => how);
+    renderCard();
+    expect(await screen.findByText("Couldn't load this.")).toBeInTheDocument();
+    expect(screen.queryByText(empty)).toBeNull();
+    how = "ok";
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(await screen.findByText("Reply to their message")).toBeInTheDocument();
+    expect(screen.queryByText("Couldn't load this.")).toBeNull();
   });
 });

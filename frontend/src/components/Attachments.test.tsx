@@ -1,8 +1,9 @@
 import { MantineProvider } from "@mantine/core";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { mockApiAnswering } from "../test/mockApi";
 import { AttachmentsCard, humanSize } from "./Attachments";
 
 const att = (overrides: Record<string, unknown> = {}) => ({
@@ -21,12 +22,14 @@ const att = (overrides: Record<string, unknown> = {}) => ({
   ...overrides,
 });
 
-function renderCard() {
+type Answer = "hang" | "fail" | "ok";
+
+function renderCard(inherited?: { entityType: string; entityId: string; label: string }) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   render(
     <MantineProvider>
       <QueryClientProvider client={qc}>
-        <AttachmentsCard entityType="company" entityId="co1" />
+        <AttachmentsCard entityType="company" entityId="co1" inherited={inherited} />
       </QueryClientProvider>
     </MantineProvider>,
   );
@@ -96,5 +99,56 @@ describe("attachments", () => {
     expect((posted[0]!.get("file") as File).name).toBe("brief.pdf");
     expect(posted[0]!.get("entity_type")).toBe("company");
     expect(posted[0]!.get("entity_id")).toBe("co1");
+  });
+});
+
+describe("attachments: loading and failed", () => {
+  const empty = /^Drop files here/;
+  const fromAgency = { entityType: "agency", entityId: "ag1", label: "From the agency" };
+  /** The company's files and the agency's answer as `own` and `theirs` say when each is asked for. */
+  const answering = (answers: { own: () => Answer; theirs: () => Answer }) =>
+    mockApiAnswering(
+      {
+        "GET /api/v1/attachments": (url: URL) =>
+          url.searchParams.get("entity_id") === "co1"
+            ? [att()]
+            : [att({ id: "f9", entity_type: "agency", entity_id: "ag1", original_name: "Agency terms.pdf" })],
+      },
+      "/api/v1/attachments",
+      (sent) => (sent.includes("entity_id=co1") ? answers.own() : answers.theirs()),
+    );
+
+  it("shows a skeleton until both its files and the inherited ones load, not the empty text", async () => {
+    const calls = answering({ own: () => "ok", theirs: () => "hang" });
+    renderCard(fromAgency);
+    expect(await screen.findByTestId("query-loading")).toHaveAttribute("aria-busy", "true");
+    // Its own files have answered; let React Query take the answer in before looking again.
+    await waitFor(() => expect(calls.some((c) => c.path.includes("entity_id=co1"))).toBe(true));
+    await act(() => new Promise((done) => setTimeout(done, 0)));
+    expect(screen.getByTestId("query-loading")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "CV v3.pdf" })).toBeNull();
+    expect(screen.queryByText(empty)).toBeNull();
+  });
+
+  it("says a failed load failed when either list fails, and Retry loads it", async () => {
+    let theirs: Answer = "fail";
+    answering({ own: () => "ok", theirs: () => theirs });
+    renderCard(fromAgency);
+    expect(await screen.findByText("Couldn't load this.")).toBeInTheDocument();
+    expect(screen.queryByText(empty)).toBeNull();
+    expect(screen.queryByRole("link", { name: "CV v3.pdf" })).toBeNull();
+    theirs = "ok";
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(await screen.findByRole("link", { name: "Agency terms.pdf" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "CV v3.pdf" })).toBeInTheDocument();
+    expect(screen.getByText("From the agency")).toBeInTheDocument();
+    expect(screen.queryByText("Couldn't load this.")).toBeNull();
+  });
+
+  it("says a failed load of its own files failed, with nothing inherited", async () => {
+    answering({ own: () => "fail", theirs: () => "ok" });
+    renderCard();
+    expect(await screen.findByText("Couldn't load this.")).toBeInTheDocument();
+    expect(screen.queryByText(empty)).toBeNull();
   });
 });

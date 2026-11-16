@@ -35,6 +35,7 @@ import {
   type EntityType,
   type LinkItem,
 } from "../api/linkHooks";
+import { QueryState } from "./QueryState";
 
 const ICONS: Record<string, typeof IconLink> = {
   google_doc: IconFileText,
@@ -208,10 +209,13 @@ function LinkRow({ link }: { link: LinkItem }) {
   );
 }
 
+/** One skeleton row while the links load, a link's height (most cards hold none or one). */
+const ROW_HEIGHT = 37;
+
 /** External links on one thing: the job ad, a Google Doc brief, a take-home repo… */
 export function LinksCard({ entityType, entityId }: { entityType: EntityType; entityId: string }) {
   const { t } = useTranslation("files");
-  const { data: links } = useLinks(entityType, entityId);
+  const links = useLinks(entityType, entityId);
   const add = useAddLink();
   const form = useForm({
     initialValues: { url: "", title: "" },
@@ -230,14 +234,18 @@ export function LinksCard({ entityType, entityId }: { entityType: EntityType; en
     <Card withBorder>
       <Stack gap="sm">
         <Title order={4}>{t("links.title")}</Title>
-        {(links ?? []).map((link) => (
-          <LinkRow key={link.id} link={link} />
-        ))}
-        {links && !links.length && (
-          <Text size="sm" c="dimmed">
-            {t("links.empty")}
-          </Text>
-        )}
+        <QueryState
+          query={links}
+          rows={1}
+          rowHeight={ROW_HEIGHT}
+          empty={
+            <Text size="sm" c="dimmed">
+              {t("links.empty")}
+            </Text>
+          }
+        >
+          {(list) => list.map((link) => <LinkRow key={link.id} link={link} />)}
+        </QueryState>
         <form onSubmit={submit}>
           <Group align="flex-start" gap="xs" wrap="nowrap">
             <TextInput
