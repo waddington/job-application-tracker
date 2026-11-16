@@ -134,7 +134,8 @@ Each of these cost time once. Add a line when something new does.
   unsaved edits, and Save sends only `draft.changes`.
 - Never default query data to `[]` before deciding it's empty: loading and failed then read as "nothing here". Cards
   and lists use `QueryState` (`src/components/QueryState.tsx`; CONTRIBUTING, *Where things are*); pages show a
-  skeleton (`Pending` and `PageSkeleton.tsx`; a record's page `RecordSkeleton`), not `Loader`.
+  skeleton (`Pending` and `PageSkeleton.tsx`; a role's, person's, company's or agency's page `RecordSkeleton`, an
+  application's `ColumnsSkeleton` and the line and button pieces), not `Loader`.
   A browser test waiting for a page to settle waits for `[data-testid=query-loading]` to go, not just the spinner.
 - Prove a test catches a bug by breaking the code and watching it fail.
 - TanStack Router: routes built from `NAV` aren't typed for `navigate({ to })`; navigate to `"."`.
