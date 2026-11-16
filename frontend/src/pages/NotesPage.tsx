@@ -1,4 +1,4 @@
-import { Button, Group, Loader, SegmentedControl, TextInput, Title } from "@mantine/core";
+import { Button, Group, SegmentedControl, TextInput, Title } from "@mantine/core";
 import { useDebouncedValue } from "@mantine/hooks";
 import { IconNotes, IconPlus, IconSearch } from "@tabler/icons-react";
 import { useState } from "react";
@@ -8,6 +8,8 @@ import { useNotes } from "../api/noteHooks";
 import { NoteEditorModal } from "../components/NoteEditorModal";
 import { NotesList } from "../components/Notes";
 import { Page } from "../components/Page";
+import { CardsSkeleton } from "../components/PageSkeleton";
+import { Pending } from "../components/QueryState";
 
 /** Every note: general ones and those attached to applications, companies and people. */
 export function NotesPage() {
@@ -16,10 +18,11 @@ export function NotesPage() {
   const [debouncedQ] = useDebouncedValue(q, 250);
   const [scope, setScope] = useState<"all" | "none">("all");
   const [adding, setAdding] = useState(false);
-  const { data: notes, isLoading } = useNotes({
+  const query = useNotes({
     q: debouncedQ.trim(),
     entity: scope === "none" ? "none" : undefined,
   });
+  const notes = query.data;
 
   return (
     <Page>
@@ -51,8 +54,8 @@ export function NotesPage() {
           ]}
         />
       </Group>
-      {isLoading || !notes ? (
-        <Loader />
+      {notes === undefined ? (
+        <Pending query={query} skeleton={<CardsSkeleton count={4} height={88} gap="sm" />} />
       ) : (
         <NotesList notes={notes} empty={debouncedQ.trim() ? t("page.noMatches") : t("page.none")} />
       )}

@@ -6,8 +6,8 @@ import {
   Card,
   Grid,
   Group,
-  Loader,
   Progress,
+  Skeleton,
   Stack,
   Text,
   Title,
@@ -63,7 +63,8 @@ import { ChaseActions } from "../components/ChaseActions";
 import { NewApplicationButton } from "../components/HeaderButtons";
 import { HowItWorks } from "../components/HowItWorks";
 import { PersonChase, waitingOrChased } from "../components/PersonChase";
-import { QueryState } from "../components/QueryState";
+import { CardsSkeleton } from "../components/PageSkeleton";
+import { Loading, QueryState } from "../components/QueryState";
 import { StageBadge } from "../components/StageBadge";
 import { i18n } from "../i18n";
 import text from "../text.module.css";
@@ -534,6 +535,24 @@ function RescheduleDialog({
   return <CallRescheduleDialog key={id} meeting={call} waiting={target.waiting} onClose={onClose} />;
 }
 
+/** Today's shape while it loads: the strip of numbers, then the two columns of lists. */
+function TodaySkeleton() {
+  return (
+    <Loading>
+      <Skeleton height={93} radius="md" mb={6} />
+      <Grid gap="xl">
+        <Grid.Col span={{ base: 12, lg: 7 }}>
+          <Skeleton height={24} width={200} radius="sm" mb={12} />
+          <Skeleton height={600} radius="md" />
+        </Grid.Col>
+        <Grid.Col span={{ base: 12, lg: 5 }}>
+          <CardsSkeleton count={2} height={400} gap="xl" />
+        </Grid.Col>
+      </Grid>
+    </Loading>
+  );
+}
+
 /** A stage's dot in the pipeline's key, in its bar's pastel. */
 const dotStyle = (color: string) => ({ "--key-dot": barColor(color) }) as CSSProperties;
 
@@ -700,7 +719,7 @@ export function TodayPage() {
       </Group>
 
       {isLoading || waitForApps || settling ? (
-        <Loader />
+        <TodaySkeleton />
       ) : !data ? (
         <Text c="red" size="sm">
           {t("loadFailed")}

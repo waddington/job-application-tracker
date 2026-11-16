@@ -4,7 +4,6 @@ import {
   Button,
   Card,
   Group,
-  Loader,
   Modal,
   Stack,
   Table,
@@ -21,6 +20,8 @@ import { Trans, useTranslation } from "react-i18next";
 import { useCreateCompany } from "../api/detailHooks";
 import { useApplications, useCompanies } from "../api/hooks";
 import { Page } from "../components/Page";
+import { TableSkeleton } from "../components/PageSkeleton";
+import { Pending } from "../components/QueryState";
 import text from "../text.module.css";
 
 const companyPath = (id: string) => `/companies/${id}`;
@@ -77,7 +78,8 @@ function NewCompanyModal({ opened, onClose }: { opened: boolean; onClose: () => 
 
 export function CompaniesPage() {
   const { t } = useTranslation("people");
-  const { data: companies, isLoading } = useCompanies();
+  const companiesQuery = useCompanies();
+  const companies = companiesQuery.data;
   const { data: apps } = useApplications({});
   const [q, setQ] = useState("");
   const [creating, setCreating] = useState(false);
@@ -117,8 +119,11 @@ export function CompaniesPage() {
         w={300}
         aria-label={t("companies.search")}
       />
-      {isLoading ? (
-        <Loader />
+      {companies === undefined ? (
+        <Pending
+          query={companiesQuery}
+          skeleton={<TableSkeleton rows={8} rowHeight={47} headHeight={37} />}
+        />
       ) : !shown.length ? (
         <Card withBorder p="xl">
           <Text ta="center" c="dimmed">

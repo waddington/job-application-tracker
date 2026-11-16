@@ -5,10 +5,10 @@ import {
   Button,
   Card,
   Group,
-  Loader,
   Modal,
   SegmentedControl,
   SimpleGrid,
+  Skeleton,
   Stack,
   Text,
   TextInput,
@@ -34,6 +34,8 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Page } from "../components/Page";
+import { CardsSkeleton } from "../components/PageSkeleton";
+import { allQueries, Pending } from "../components/QueryState";
 import { ReplyHabit } from "../components/ReplyHabit";
 import type { Contact } from "../api/client";
 import { FavouriteMark, FavouriteToggle, GhostMark } from "../components/GhostMark";
@@ -260,18 +262,24 @@ function PersonTile({
   );
 }
 
+const TILE_COLUMNS = { base: 1, xs: 2, md: 3, xl: 4 };
+
 type Show = "all" | "agency" | "company" | "independent" | "inProgress" | "favourites" | "ghosted";
 
 export function RecruitersPage() {
   const { t } = useTranslation("people");
-  const { data: agencies, isLoading: agenciesLoading } = useAgencies();
-  const { data: contacts } = useContacts();
-  const { data: apps } = useApplications({});
-  const { data: companies } = useCompanies();
-  const { data: roles } = useRoleSummaries({});
+  const queries = [
+    useAgencies(),
+    useContacts(),
+    useApplications({}),
+    useCompanies(),
+    useRoleSummaries({}),
+  ] as const;
+  const [{ data: agencies }, { data: contacts }, { data: apps }, { data: companies }, { data: roles }] =
+    queries;
   // Wait for everyone, where they work and what's in progress with them, so no one shows as
   // Independent, or the In progress count as 0, for a moment.
-  const isLoading = agenciesLoading || !contacts || !companies || !apps || !roles;
+  const everything = allQueries(...queries);
 
   // What's in progress with each person, as their recruiter: applications through them still
   // open (not archived, at an active stage, Interested included), and roles they pitched with no
@@ -422,8 +430,16 @@ export function RecruitersPage() {
           })}
         </Group>
       )}
-      {isLoading ? (
-        <Loader />
+      {everything.data === undefined ? (
+        <Pending
+          query={everything}
+          skeleton={
+            <>
+              <Skeleton height={17} width={220} radius="sm" mb={6} />
+              <CardsSkeleton count={8} height={181} cols={TILE_COLUMNS} gap="sm" />
+            </>
+          }
+        />
       ) : !shown.length ? (
         <Card withBorder p="xl">
           <Text ta="center" c="dimmed">
@@ -437,7 +453,7 @@ export function RecruitersPage() {
               ? t("recruiters.countFavourites", { count: shown.length })
               : t("recruiters.count", { count: shown.length })}
           </Text>
-          <SimpleGrid cols={{ base: 1, xs: 2, md: 3, xl: 4 }} spacing="sm" verticalSpacing="sm">
+          <SimpleGrid cols={TILE_COLUMNS} spacing="sm" verticalSpacing="sm">
             {shown.map((c) => (
               <PersonTile
                 key={c.id}
