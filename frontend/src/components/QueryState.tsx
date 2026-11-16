@@ -45,7 +45,9 @@ export function Loading({ children }: { children: ReactNode }) {
 /**
  * What a query shows before it has data, for a page that decides the rest itself: while it loads,
  * the skeleton; on a failed load, a dimmed line with Retry (spinning while it tries again). A query
- * that has never started (`enabled: false`) shows nothing.
+ * that has never started (`enabled: false`) shows nothing. Render it only while the query has no data
+ * (`data === undefined`): it shows the failed line whenever the query has failed, so after a failed
+ * refetch it would replace content that's still good.
  */
 export function Pending({ query, skeleton }: { query: QueryLike<unknown>; skeleton: ReactNode }) {
   const { t } = useTranslation("common");
