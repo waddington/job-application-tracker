@@ -18,7 +18,8 @@ export function bothQueries<A, B>(a: QueryLike<A>, b: QueryLike<B>): QueryLike<[
   return {
     data: a.data !== undefined && b.data !== undefined ? [a.data, b.data] : undefined,
     isError: failed.length > 0,
-    isFetching: both.some((q) => q.isFetching),
+    // Retry spins only for the lists it retries, not for one still on its first load.
+    isFetching: (failed.length ? failed : both).some((q) => q.isFetching),
     fetchStatus: both.some((q) => q.fetchStatus === "fetching")
       ? "fetching"
       : both.some((q) => q.fetchStatus === "paused")

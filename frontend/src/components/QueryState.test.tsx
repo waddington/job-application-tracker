@@ -2,7 +2,7 @@ import { MantineProvider } from "@mantine/core";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import { QueryState } from "./QueryState";
+import { bothQueries, QueryState, type QueryLike } from "./QueryState";
 
 type Query = {
   data: string[] | undefined;
@@ -94,5 +94,35 @@ describe("QueryState", () => {
     expect(loading).toHaveAttribute("aria-busy", "true");
     expect(loading.children).toHaveLength(1);
     expect(loading).toHaveTextContent("A chart-shaped skeleton");
+  });
+});
+
+describe("bothQueries", () => {
+  const query = <T,>(over: Partial<QueryLike<T>>): QueryLike<T> => ({
+    data: undefined,
+    isError: false,
+    isFetching: false,
+    fetchStatus: "idle",
+    refetch: vi.fn(),
+    ...over,
+  });
+
+  it("is loaded once both are, as a pair", () => {
+    const both = bothQueries(query({ data: [1] }), query({ data: ["a"] }));
+    expect(both.data).toEqual([[1], ["a"]]);
+    expect(both.isError).toBe(false);
+  });
+
+  it("fails when one fails, and Retry neither spins for nor retries the one still loading", () => {
+    const failed = query<number[]>({ isError: true });
+    const loading = query<number[]>({ isFetching: true, fetchStatus: "fetching" });
+    const both = bothQueries(failed, loading);
+    expect(both.data).toBeUndefined();
+    expect(both.isError).toBe(true);
+    expect(both.isFetching).toBe(false);
+    void both.refetch();
+    expect(failed.refetch).toHaveBeenCalledTimes(1);
+    expect(loading.refetch).not.toHaveBeenCalled();
+    expect(bothQueries(query({ isError: true, isFetching: true }), loading).isFetching).toBe(true);
   });
 });
