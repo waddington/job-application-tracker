@@ -67,7 +67,7 @@ Product decisions Kai has made or accepted. Don't re-litigate them; change one o
 ## Product and positioning
 
 - "No AI. No cloud. No account. No tracking." in that order (Kai, 2026-11-03). Not "no external dependencies"; "plain
-  files" only with the SQLite caveat; git backups are optional. The app never calls out to the web. No coined phrase.
+  files" only with the SQLite caveat; git backups are optional. The app never calls out to the web (except the opt-in update check below). No coined phrase.
   Keep the repo name `job-application-tracker`.
 - One opt-in exception, planned (`update-check`): a check for a newer release, off by default, switched on by a setting in
   `config.toml` and later in the Settings page (`settings-page`) (Kai, 2026-11-16: "lets make it an opt-in settng that
