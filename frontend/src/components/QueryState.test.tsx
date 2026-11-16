@@ -2,7 +2,7 @@ import { MantineProvider } from "@mantine/core";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import { bothQueries, QueryState, type QueryLike } from "./QueryState";
+import { allQueries, bothQueries, Pending, QueryState, type QueryLike } from "./QueryState";
 
 type Query = {
   data: string[] | undefined;
@@ -124,5 +124,35 @@ describe("bothQueries", () => {
     expect(failed.refetch).toHaveBeenCalledTimes(1);
     expect(loading.refetch).not.toHaveBeenCalled();
     expect(bothQueries(query({ isError: true, isFetching: true }), loading).isFetching).toBe(true);
+  });
+
+  it("reads any number of queries the same way (allQueries)", () => {
+    const loaded = [query({ data: [1] }), query({ data: [2] }), query({ data: [3] })];
+    expect(allQueries(...loaded).data).toEqual([[1], [2], [3]]);
+    const third = query<number[]>({ isFetching: true, fetchStatus: "fetching" });
+    const waiting = allQueries(loaded[0]!, loaded[1]!, third);
+    expect(waiting.data).toBeUndefined();
+    expect(waiting.isError).toBe(false);
+    expect(waiting.fetchStatus).toBe("fetching");
+  });
+});
+
+describe("Pending", () => {
+  it("shows the skeleton while loading, and the failed line with Retry on a failure", () => {
+    const failed = query({ isError: true, isFetching: false, fetchStatus: "idle" });
+    const { rerender } = render(
+      <MantineProvider>
+        <Pending query={query({})} skeleton={<p>A page-shaped skeleton</p>} />
+      </MantineProvider>,
+    );
+    expect(screen.getByTestId("query-loading")).toHaveTextContent("A page-shaped skeleton");
+    rerender(
+      <MantineProvider>
+        <Pending query={failed} skeleton={<p>A page-shaped skeleton</p>} />
+      </MantineProvider>,
+    );
+    expect(screen.queryByTestId("query-loading")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(failed.refetch).toHaveBeenCalledTimes(1);
   });
 });
