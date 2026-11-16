@@ -16,7 +16,8 @@ import { Loading } from "./QueryState";
 /**
  * The shapes a page's list takes while it loads, inside QueryState's `skeleton` (or `Loading`), under
  * the page's own header and toolbar, which show at once. Each piece is as tall as the real rows or
- * cards it stands for, so the page doesn't jump when they come.
+ * cards it stands for, so the page doesn't jump when they come. A record's page, whose header needs
+ * the record too, draws the whole page's shape instead (RecordSkeleton, below).
  */
 
 /** A table: its header row, then the first rows. */

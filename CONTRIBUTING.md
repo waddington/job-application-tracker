@@ -74,7 +74,10 @@ inside `Page`; where its list goes, a skeleton shaped like it (a table's rows, a
 and as tall as the real rows, so nothing jumps when they come. The pieces are in
 `frontend/src/components/PageSkeleton.tsx`; `Pending` (in `QueryState.tsx`) shows one while the query
 loads and the failed line when it fails, for a page that decides its loaded and empty states itself. A
-page with its own error text keeps it, showing the skeleton through `Loading` (Today, Insights). Keep
+page with its own error text keeps it, showing the skeleton through `Loading` (Today, Insights). A
+record's page (an application, role, person, company or agency) shows `RecordSkeleton` under its
+`BackLink` while the record loads: its header (name, lines under it, action buttons) and its first cards
+in the page's own columns, each as tall as the real ones. Keep
 `Loader` for small in-place spinners, such as a refetch beside the filters.
 
 **Every page's outer wrapper is `Page`** (`frontend/src/components/Page.tsx`): full width beside the

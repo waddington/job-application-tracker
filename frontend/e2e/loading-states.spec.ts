@@ -115,6 +115,23 @@ test("a company's Links card doesn't say it has none while loading or after a fa
   await failsThenRetries(page, links, url, empty, "Held job ad");
 });
 
+// loading-state-page-skeletons-records: a record's page draws its own shape while its record loads.
+test("a company's page shows a skeleton of the page, not a spinner, while its record loads", async ({
+  page,
+  request,
+}) => {
+  const company = await post(request, "companies", { name: "Held Page Co" });
+  const release = await hold(page, `**${API}/companies/${company.id}/summary`);
+  await page.goto(`/companies/${company.id}`);
+  const main = page.getByRole("main");
+  await expect(main.getByRole("link", { name: "All companies" })).toBeVisible();
+  await expect(main.getByTestId("query-loading").first()).toBeVisible();
+  await expect(main.locator(".mantine-Loader-root")).toHaveCount(0);
+  await expect(main.getByRole("heading", { name: "Held Page Co" })).toHaveCount(0);
+  release();
+  await expect(main.getByRole("heading", { name: "Held Page Co", level: 2 })).toBeVisible();
+});
+
 test.describe("Today", () => {
   const section = (page: Page, name: string) => page.getByRole("group", { name, exact: true });
 
