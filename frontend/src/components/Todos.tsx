@@ -35,6 +35,7 @@ import {
 import { i18n } from "../i18n";
 import { formatDate } from "../utils/time";
 import { useToday } from "../utils/useToday";
+import { QueryState } from "./QueryState";
 
 /** "Overdue", "Today", "Tomorrow" or "By 5 Oct 2026", and how loudly to say it. */
 export function dueLabel(due: string, today: string): { label: string; color: string } {
@@ -313,6 +314,9 @@ export function AddTodo({
   );
 }
 
+/** One skeleton row while the to-dos load, about a to-do's height (most cards hold none or one). */
+const ROW_HEIGHT = 36;
+
 /** To-dos about one thing, for its page: the open ones, the last few done, and a box to add one. */
 export function TodosCard({
   entityType,
@@ -324,13 +328,15 @@ export function TodosCard({
   shownElsewhere?: string[]; // open ones the page shows with what they're for (a waiting call's)
 }) {
   const { t } = useTranslation("todos");
-  const { data: todos, isPlaceholderData } = useTodos({
+  const todos = useTodos({
     entity_type: entityType,
     entity_id: entityId,
     status: "all",
   });
-  const open = (todos ?? []).filter((x) => !x.done_at && !shownElsewhere.includes(x.id));
-  const done = (todos ?? []).filter((x) => x.done_at).slice(0, 3);
+  const { isPlaceholderData } = todos;
+  const openOf = (list: Todo[]) => list.filter((x) => !x.done_at && !shownElsewhere.includes(x.id));
+  const open = openOf(todos.data ?? []);
+  const done = (todos.data ?? []).filter((x) => x.done_at).slice(0, 3);
   return (
     // Dimmed, but still there and usable, while it shows yesterday's list as a new day loads.
     <Card
@@ -343,14 +349,19 @@ export function TodosCard({
           <Title order={4}>{t("title")}</Title>
           {open.length > 0 && <Badge variant="light">{open.length}</Badge>}
         </Group>
-        {open.map((x) => (
-          <TodoLine key={x.id} todo={x} showAbout={false} />
-        ))}
-        {todos && !open.length && (
-          <Text size="sm" c="dimmed">
-            {t("none")}
-          </Text>
-        )}
+        <QueryState
+          query={todos}
+          select={openOf}
+          rows={1}
+          rowHeight={ROW_HEIGHT}
+          empty={
+            <Text size="sm" c="dimmed">
+              {t("none")}
+            </Text>
+          }
+        >
+          {(list) => list.map((x) => <TodoLine key={x.id} todo={x} showAbout={false} />)}
+        </QueryState>
         {done.map((x) => (
           <TodoLine key={x.id} todo={x} showAbout={false} />
         ))}

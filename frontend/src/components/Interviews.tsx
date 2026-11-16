@@ -13,6 +13,7 @@ import { roundLabel } from "../utils/rounds";
 import { formatDateTime } from "../utils/time";
 import { InterviewFormModal } from "./InterviewFormModal";
 import { InterviewOutcome } from "./OutcomeNotes";
+import { QueryState } from "./QueryState";
 import { RescheduleButton, RescheduledBadge, RoundDaysMoved, wasText } from "./Reschedule";
 
 type RoundLike = {
@@ -218,14 +219,18 @@ function InterviewItem({
   );
 }
 
+/** One skeleton block while the rounds load, a round's card's height. */
+const ROUND_HEIGHT = 100;
+
 /** Every interview round for one application, in round order, with add and edit. */
 export function InterviewsCard({ applicationId }: { applicationId: string }) {
   const { t } = useTranslation("interviews");
-  const { data: interviews } = useInterviews({ application_id: applicationId });
+  const interviews = useInterviews({ application_id: applicationId });
   const { data: contacts } = useContacts();
   const [editing, setEditing] = useState<Interview | null | undefined>(undefined); // undefined = closed, null = new
   const names = new Map((contacts ?? []).map((c) => [c.id, c.name]));
-  const rounds = [...(interviews ?? [])].sort((a, b) => (a.round ?? 0) - (b.round ?? 0));
+  const inOrder = (list: Interview[]) => [...list].sort((a, b) => (a.round ?? 0) - (b.round ?? 0));
+  const rounds = interviews.data ?? [];
   const nextRound = Math.max(0, ...rounds.map((i) => i.round ?? 0)) + 1;
 
   return (
@@ -242,14 +247,23 @@ export function InterviewsCard({ applicationId }: { applicationId: string }) {
             {t("card.addRound", { round: nextRound })}
           </Button>
         </Group>
-        {rounds.map((i) => (
-          <InterviewItem key={i.id} interview={i} names={names} onEdit={() => setEditing(i)} />
-        ))}
-        {interviews && !rounds.length && (
-          <Text size="sm" c="dimmed">
-            {t("card.empty")}
-          </Text>
-        )}
+        <QueryState
+          query={interviews}
+          select={inOrder}
+          rows={1}
+          rowHeight={ROUND_HEIGHT}
+          empty={
+            <Text size="sm" c="dimmed">
+              {t("card.empty")}
+            </Text>
+          }
+        >
+          {(list) =>
+            list.map((i) => (
+              <InterviewItem key={i.id} interview={i} names={names} onEdit={() => setEditing(i)} />
+            ))
+          }
+        </QueryState>
       </Stack>
       {editing !== undefined && (
         <InterviewFormModal

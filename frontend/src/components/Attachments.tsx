@@ -32,6 +32,7 @@ import {
 import { i18n } from "../i18n";
 import text from "../text.module.css";
 import { formatDate, formatDateTime } from "../utils/time";
+import { bothQueries, QueryState, type QueryLike } from "./QueryState";
 
 /** An icon for the file's type. */
 function AttachmentIcon({ att }: { att: AttachmentItem }) {
@@ -157,6 +158,20 @@ function UploadButton({ onFiles, loading }: { onFiles: (f: File[]) => void; load
   );
 }
 
+/** A card with nothing to inherit: no second query to wait for. */
+const NONE: QueryLike<AttachmentItem[]> = {
+  data: [],
+  isError: false,
+  isFetching: false,
+  fetchStatus: "idle",
+  refetch: () => undefined,
+};
+/**
+ * One skeleton row while the files load, a file's height (most cards hold none or one, so a single
+ * row keeps the jump small either way).
+ */
+const ROW_HEIGHT = 37;
+
 /**
  * Files on one thing: CVs sent, briefs, screenshots, exported emails. Drop files on the card to
  * add them. `inherited` lists another thing's files too (an application shows its role's job
@@ -175,15 +190,12 @@ export function AttachmentsCard({
   empty?: string;
 }) {
   const { t } = useTranslation("files");
-  const { data: files } = useAttachments(entityType, entityId);
-  const { data: theirs } = useAttachments(
-    inherited?.entityType ?? "",
-    inherited?.entityId ?? "",
-    !!inherited,
-  );
+  const files = useAttachments(entityType, entityId);
+  const theirs = useAttachments(inherited?.entityType ?? "", inherited?.entityId ?? "", !!inherited);
+  // The card waits for its inherited files too, so they don't pop in under it.
+  const both = bothQueries(files, inherited ? theirs : NONE);
   const upload = useUploadAttachments(entityType, entityId);
   const drop = useFileDrop((dropped) => upload.mutate(dropped));
-  const fromThem = inherited ? (theirs ?? []) : [];
 
   return (
     <Card withBorder {...drop.handlers} style={drop.style}>
@@ -195,24 +207,38 @@ export function AttachmentsCard({
           </Group>
           <UploadButton onFiles={(picked) => upload.mutate(picked)} loading={upload.isPending} />
         </Group>
-        {(files ?? []).map((att) => (
-          <AttachmentRow key={att.id} att={att} />
-        ))}
-        {files && !files.length && !fromThem.length && (
-          <Text size="sm" c="dimmed">
-            {empty ?? t("attachments.empty")}
-          </Text>
-        )}
-        {fromThem.length > 0 && (
-          <>
-            <Text size="xs" c="dimmed" fw={600} className={text.caps}>
-              {inherited!.label}
+        <QueryState
+          query={both}
+          select={([mine, fromThem]) => [...mine, ...fromThem]}
+          rows={1}
+          rowHeight={ROW_HEIGHT}
+          empty={
+            <Text size="sm" c="dimmed">
+              {empty ?? t("attachments.empty")}
             </Text>
-            {fromThem.map((att) => (
-              <AttachmentRow key={att.id} att={att} />
-            ))}
-          </>
-        )}
+          }
+        >
+          {() => {
+            const [mine, fromThem] = both.data!;
+            return (
+              <>
+                {mine.map((att) => (
+                  <AttachmentRow key={att.id} att={att} />
+                ))}
+                {fromThem.length > 0 && (
+                  <>
+                    <Text size="xs" c="dimmed" fw={600} className={text.caps}>
+                      {inherited!.label}
+                    </Text>
+                    {fromThem.map((att) => (
+                      <AttachmentRow key={att.id} att={att} />
+                    ))}
+                  </>
+                )}
+              </>
+            );
+          }}
+        </QueryState>
       </Stack>
     </Card>
   );
