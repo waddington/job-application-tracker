@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.24.30 (2026-11-16)
+
+- To-dos, interview rounds, files and links show a skeleton while they load, and "Couldn't load this." with Retry when they can't, instead of showing nothing; Add round waits until the rounds have loaded (#395).
+
 ## 1.24.29 (2026-11-16)
 
 - Timeline and Insights' Weekly activity show a skeleton while they load, and "Couldn't load this." with a Retry button when they can't load, where Timeline used to say there was nothing here and Weekly activity spun for ever (#387).
