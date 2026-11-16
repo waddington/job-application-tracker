@@ -65,7 +65,9 @@ pnpm --dir frontend dev                             # UI on http://127.0.0.1:517
 `skeleton` prop, a skeleton in the list's own shape, as Timeline and Weekly activity have), "Couldn't
 load this." with Retry when it fails, and the empty text only for a list that loaded empty. Never default
 query data to `[]` (`data ?? []`) before deciding it's empty: a list still loading, or one that
-failed, would say there's nothing there. Whole-page loads keep their `Loader`.
+failed, would say there's nothing there. A card that shows two queries' lists waits for both through
+`bothQueries` in the same file (the Files card and the files it inherits). Whole-page loads keep their
+`Loader`.
 
 **Every page's outer wrapper is `Page`** (`frontend/src/components/Page.tsx`): full width beside the
 menu, up to 2,400 px, from the left. Don't give a page its own narrower `maw`. Its title is a
