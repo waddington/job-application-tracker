@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.24.31 (2026-11-16)
+
+- Ten list pages (Applications, Companies, Roles, Recruiters, Interviews, Offers, Notes, Documents, Today and Insights) show a skeleton shaped like the page instead of a spinner while they load, so the page no longer jumps when it arrives; a page that can't load says so with Retry instead of saying there's nothing there or spinning for ever (#396).
+
 ## 1.24.30 (2026-11-16)
 
 - To-dos, interview rounds, files and links show a skeleton while they load, and "Couldn't load this." with Retry when they can't, instead of showing nothing; Add round waits until the rounds have loaded (#395).
