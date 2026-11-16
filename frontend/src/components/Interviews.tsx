@@ -242,6 +242,8 @@ export function InterviewsCard({ applicationId }: { applicationId: string }) {
             size="xs"
             variant="light"
             leftSection={<IconPlus size={14} />}
+            // Until the rounds load it can't know the next round's number, and would offer round 1 again.
+            disabled={interviews.data === undefined}
             onClick={() => setEditing(null)}
           >
             {t("card.addRound", { round: nextRound })}

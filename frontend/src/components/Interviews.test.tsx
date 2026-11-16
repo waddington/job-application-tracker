@@ -51,6 +51,7 @@ describe("interview rounds: loading and failed", () => {
     renderCard();
     expect(await screen.findByTestId("query-loading")).toHaveAttribute("aria-busy", "true");
     expect(screen.queryByText(empty)).toBeNull();
+    expect(screen.getByRole("button", { name: /^Add round/ })).toBeDisabled();
   });
 
   it("says a failed load failed, not that there are none, and Retry loads it", async () => {
@@ -63,9 +64,12 @@ describe("interview rounds: loading and failed", () => {
     renderCard();
     expect(await screen.findByText("Couldn't load this.")).toBeInTheDocument();
     expect(screen.queryByText(empty)).toBeNull();
+    expect(screen.getByRole("button", { name: /^Add round/ })).toBeDisabled();
     how = "ok";
     fireEvent.click(screen.getByRole("button", { name: "Retry" }));
     expect(await screen.findByText(/Recruiter screen/)).toBeInTheDocument();
+    // Loaded, it offers the next round.
+    expect(screen.getByRole("button", { name: "Add round 2" })).toBeEnabled();
     expect(screen.queryByText("Couldn't load this.")).toBeNull();
   });
 
@@ -74,5 +78,6 @@ describe("interview rounds: loading and failed", () => {
     renderCard();
     expect(await screen.findByText(empty)).toBeInTheDocument();
     expect(screen.queryByTestId("query-loading")).toBeNull();
+    expect(screen.getByRole("button", { name: "Add round 1" })).toBeEnabled();
   });
 });
