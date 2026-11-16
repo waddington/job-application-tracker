@@ -130,12 +130,13 @@ describe.each(PAGES)("$path", ({ path, request, back, failed, loaded }) => {
     expect(screen.queryByRole("heading", { name: loaded })).toBeNull();
   });
 
-  it("keeps its own message when the record can't load", async () => {
+  it("keeps its own message, under its back link, when the record can't load", async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     answering("fail");
     renderAt(path);
     await vi.advanceTimersByTimeAsync(10_000); // past React Query's retries
     expect(await screen.findByText(failed)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: back })).toBeInTheDocument();
     expect(document.querySelector('main [aria-busy="true"]')).toBeNull();
     expect(spinners()).toHaveLength(0);
   });

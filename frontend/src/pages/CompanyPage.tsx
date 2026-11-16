@@ -89,7 +89,13 @@ export function CompanyPage() {
   const router = useRouter();
 
   const back = <BackLink to="/companies">{t("company.all")}</BackLink>;
-  if (isError) return <Alert color="red">{t("company.loadFailed")}</Alert>;
+  if (isError)
+    return (
+      <Page>
+        {back}
+        <Alert color="red">{t("company.loadFailed")}</Alert>
+      </Page>
+    );
   if (!data) return <RecordSkeleton back={back} actions={3} main={[125, 180, 96]} side={[195, 145]} />;
   const { company, applications, contacts } = data;
 

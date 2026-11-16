@@ -70,7 +70,13 @@ export function RolePage() {
   const router = useRouter();
 
   const back = <BackLink to="/roles">{t("page.back")}</BackLink>;
-  if (isError) return <Alert color="red">{t("page.loadFailed")}</Alert>;
+  if (isError)
+    return (
+      <Page>
+        {back}
+        <Alert color="red">{t("page.loadFailed")}</Alert>
+      </Page>
+    );
   if (!role)
     return <RecordSkeleton back={back} lines={[29]} actions={2} main={[180, 130]} side={[195, 117, 134]} />;
   const status = roleBadge(role);

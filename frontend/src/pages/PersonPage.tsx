@@ -42,7 +42,13 @@ export function PersonPage() {
   const rebookTodoIds = useRebookTodoIds(personId);
 
   const back = <BackLink to="/recruiters">{t("person.allPeople")}</BackLink>;
-  if (isError) return <Alert color="red">{t("person.loadFailed")}</Alert>;
+  if (isError)
+    return (
+      <Page>
+        {back}
+        <Alert color="red">{t("person.loadFailed")}</Alert>
+      </Page>
+    );
   if (!data)
     return (
       <RecordSkeleton back={back} lines={[25, 21]} actions={9} main={[300, 200]} side={[120, 176, 151]} />

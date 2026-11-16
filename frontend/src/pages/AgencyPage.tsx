@@ -37,7 +37,13 @@ export function AgencyPage() {
   const updateAgency = useUpdateAgency();
 
   const back = <BackLink to="/recruiters">{t("agency.all")}</BackLink>;
-  if (isError) return <Alert color="red">{t("agency.loadFailed")}</Alert>;
+  if (isError)
+    return (
+      <Page>
+        {back}
+        <Alert color="red">{t("agency.loadFailed")}</Alert>
+      </Page>
+    );
   if (!data) return <RecordSkeleton back={back} actions={3} span={7} main={[175]} side={[155, 120, 96]} />;
   const { agency, recruiters, applications } = data;
 
