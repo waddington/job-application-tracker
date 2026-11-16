@@ -284,7 +284,12 @@ export function ApplicationPage() {
             onDeleted={() => router.history.push("/applications")}
           />
         ) : (
-          !isError && <ButtonsSkeleton count={1} />
+          // Delete's place, so the row doesn't grow when it comes; busy like the skeleton below it.
+          !isError && (
+            <Loading>
+              <ButtonsSkeleton count={1} />
+            </Loading>
+          )
         )}
       </Group>
       {isError ? (
