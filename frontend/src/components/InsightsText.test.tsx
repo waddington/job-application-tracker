@@ -119,6 +119,48 @@ describe("weekly activity", () => {
         name: "Week of 12 Oct: 2 added, 2 applied, 2 stage moves, 2 interviews, 2 calls, 2 roles pitched",
       }),
     ).toBeInTheDocument();
+    expect(screen.queryByTestId("query-loading")).toBeNull();
+  });
+
+  const once = (node: ReactNode) =>
+    render(
+      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+        <MantineProvider>{node}</MantineProvider>
+      </QueryClientProvider>,
+    );
+
+  it("shows a skeleton the chart's height while it loads, not a spinner", () => {
+    vi.stubGlobal("fetch", () => new Promise<Response>(() => {}));
+    const { container } = once(<WeeklyActivity />);
+    expect(screen.getByTestId("query-loading")).toHaveAttribute("aria-busy", "true");
+    expect(container.querySelector(".mantine-Loader-root")).toBeNull();
+  });
+
+  it("says a failed load failed, and Retry loads it", async () => {
+    let fail = true;
+    mockApi({
+      "/api/v1/insights/activity": () => {
+        if (fail) throw new Error("Failed for the test");
+        return [{ start: "2026-10-05", added: 1, applied: 0, moves: 0, interviews: 0, calls: 0, pitched: 0 }];
+      },
+    });
+    once(<WeeklyActivity />);
+    const failed = await screen.findByRole("status");
+    expect(failed).toHaveTextContent("Couldn't load this.");
+    expect(screen.queryByTestId("query-loading")).toBeNull();
+    fail = false;
+    fireEvent.click(within(failed).getByRole("button", { name: "Retry" }));
+    expect(await screen.findByRole("listitem", { name: /^Week of 5 Oct: 1 added/ })).toBeInTheDocument();
+    expect(screen.queryByRole("status")).toBeNull();
+  });
+
+  it("draws no chart, and no failure, for no weeks", async () => {
+    const calls = mockApi({ "/api/v1/insights/activity": [] });
+    once(<WeeklyActivity />);
+    await vi.waitFor(() => expect(calls).toHaveLength(1));
+    await vi.waitFor(() => expect(screen.queryByTestId("query-loading")).toBeNull());
+    expect(screen.queryByRole("list", { name: "Weekly activity" })).toBeNull();
+    expect(screen.queryByRole("status")).toBeNull();
   });
 });
 

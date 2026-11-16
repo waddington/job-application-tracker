@@ -229,3 +229,74 @@ describe("timeline", () => {
     expect(within(pitched).getAllByRole("button")).toHaveLength(2); // the pitch and the call
   });
 });
+
+describe("timeline: loading, failed and empty", () => {
+  const OTHERS = {
+    "/api/v1/companies": [],
+    "/api/v1/agencies": [],
+    "/api/v1/contacts": [],
+    "/api/v1/health": {},
+  };
+  /** The timeline request answers as `answer` says; everything else goes to mockApi. */
+  function timelineAnswers(answer: () => "hang" | "fail" | "ok") {
+    mockApi({ ...OTHERS, "/api/v1/timeline": { items: ITEMS, now } });
+    const others = globalThis.fetch;
+    vi.stubGlobal("fetch", (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = input instanceof Request ? input.url : String(input);
+      if (!url.includes("/api/v1/timeline")) return others(input, init);
+      const how = answer();
+      if (how === "hang") return new Promise<Response>(() => {});
+      if (how === "fail")
+        return Promise.resolve(
+          new Response('{"detail":"Failed"}', {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+          }),
+        );
+      return others(input, init);
+    });
+  }
+
+  afterEach(() => vi.useRealTimers());
+
+  it("shows a skeleton while it loads, not the empty text", async () => {
+    timelineAnswers(() => "hang");
+    renderTimeline();
+    expect(await screen.findByTestId("query-loading")).toHaveAttribute("aria-busy", "true");
+    expect(screen.queryByText("Nothing here yet")).toBeNull();
+    expect(screen.queryByText("Couldn't load this.")).toBeNull();
+  });
+
+  it("says a failed load failed, not that there's nothing, and Retry loads it", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    let how: "fail" | "ok" = "fail";
+    timelineAnswers(() => how);
+    renderTimeline();
+    await screen.findByTestId("query-loading");
+    await vi.advanceTimersByTimeAsync(10_000); // past React Query's retries
+    const failed = (await screen.findByText("Couldn't load this.")).closest<HTMLElement>('[role="status"]')!;
+    expect(screen.queryByText("Nothing here yet")).toBeNull();
+    expect(screen.queryByText(/Try a longer period/)).toBeNull();
+    how = "ok";
+    fireEvent.click(within(failed).getByRole("button", { name: "Retry" }));
+    expect(await screen.findByText("Applied → Screen")).toBeInTheDocument();
+    expect(screen.queryByText("Couldn't load this.")).toBeNull();
+  });
+
+  it("says there's nothing, with the filter advice, only when it loaded empty", async () => {
+    mockApi({ ...OTHERS, "/api/v1/timeline": { items: [], now } });
+    renderTimeline();
+    expect(await screen.findByText("Nothing here yet")).toBeInTheDocument();
+    expect(screen.getByText("Try a longer period, tick more kinds, or clear a filter.")).toBeInTheDocument();
+    expect(screen.queryByTestId("query-loading")).toBeNull();
+    expect(screen.queryByText("Couldn't load this.")).toBeNull();
+  });
+
+  it("shows the list once it loads, without the skeleton", async () => {
+    mockApi({ ...OTHERS, "/api/v1/timeline": { items: ITEMS, now } });
+    renderTimeline();
+    expect(await screen.findByText("Applied → Screen")).toBeInTheDocument();
+    expect(screen.queryByTestId("query-loading")).toBeNull();
+    expect(screen.queryByText("Nothing here yet")).toBeNull();
+  });
+});

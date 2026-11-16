@@ -61,8 +61,9 @@ pnpm --dir frontend dev                             # UI on http://127.0.0.1:517
 | `docs/prd/`, `docs/rfc/`, `docs/ROADMAP.yaml` | The product plan, design decisions and roadmap |
 
 **Cards and lists that load their own data** go through `QueryState`
-(`frontend/src/components/QueryState.tsx`): skeleton lines while the query loads, "Couldn't load
-this." with Retry when it fails, and the empty text only for a list that loaded empty. Never default
+(`frontend/src/components/QueryState.tsx`): skeleton lines while the query loads (or, through its
+`skeleton` prop, a skeleton in the list's own shape, as Timeline and Weekly activity have), "Couldn't
+load this." with Retry when it fails, and the empty text only for a list that loaded empty. Never default
 query data to `[]` (`data ?? []`) before deciding it's empty: a list still loading, or one that
 failed, would say there's nothing there. Whole-page loads keep their `Loader`.
 
