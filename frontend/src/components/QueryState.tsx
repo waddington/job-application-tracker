@@ -14,7 +14,8 @@ type QueryLike<T> = Pick<UseQueryResult<T>, "data" | "isError" | "isFetching" | 
  * has never started (`enabled: false`) shows nothing. Whole-page loads keep their Loader.
  *
  * `select` turns the query's data into the list to show (a filtered one, say); it defaults to the
- * data itself.
+ * data itself. `skeleton` stands in for the plain lines when the list has a shape of its own (a
+ * chart, or rows under headings).
  */
 export function QueryState<T, L extends readonly unknown[] = Extract<T, readonly unknown[]>>({
   query,
@@ -22,6 +23,7 @@ export function QueryState<T, L extends readonly unknown[] = Extract<T, readonly
   empty,
   rows = 3,
   rowHeight = 20,
+  skeleton,
   children,
 }: {
   query: QueryLike<T>;
@@ -30,6 +32,8 @@ export function QueryState<T, L extends readonly unknown[] = Extract<T, readonly
   /** How many skeleton lines, and how tall each is, so the layout doesn't jump when the rows come. */
   rows?: number;
   rowHeight?: number;
+  /** Drawn in place of the skeleton lines while the query loads. */
+  skeleton?: ReactNode;
   children: (list: L) => ReactNode;
 }) {
   const { t } = useTranslation("common");
@@ -53,9 +57,8 @@ export function QueryState<T, L extends readonly unknown[] = Extract<T, readonly
     if (query.fetchStatus === "idle") return null; // never started: a disabled query
     return (
       <Stack gap="xs" aria-busy="true" data-testid="query-loading">
-        {Array.from({ length: rows }, (_, i) => (
-          <Skeleton key={i} height={rowHeight} radius="sm" />
-        ))}
+        {skeleton ??
+          Array.from({ length: rows }, (_, i) => <Skeleton key={i} height={rowHeight} radius="sm" />)}
       </Stack>
     );
   }

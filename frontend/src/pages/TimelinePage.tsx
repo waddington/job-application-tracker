@@ -9,6 +9,7 @@ import {
   Loader,
   SegmentedControl,
   Select,
+  Skeleton,
   Stack,
   Text,
   Title,
@@ -24,6 +25,7 @@ import { useTranslation } from "react-i18next";
 import { Page } from "../components/Page";
 import { movedRoundText, moveLine } from "../components/eventText";
 import { PersonName } from "../components/GhostMark";
+import { QueryState } from "../components/QueryState";
 import { timelineDetail, timelineTitle } from "../components/timelineTitle";
 import { useAgencies, useCompanies, useContacts } from "../api/hooks";
 import {
@@ -479,6 +481,38 @@ function useTimelineSearch() {
   return { view, period, about, set };
 }
 
+/** Stands in for the list (days of rows) or the lanes (rows of dots) while the timeline loads. */
+function TimelineSkeleton({ view }: { view: "list" | "lanes" }) {
+  if (view === "lanes")
+    return (
+      <Card withBorder padding="sm">
+        <Skeleton height={12} width={160} ml={220} mb="sm" radius="sm" />
+        {[0, 1, 2, 3, 4].map((i) => (
+          <Group key={i} gap="sm" wrap="nowrap" h={28}>
+            <Skeleton height={14} width={180} radius="sm" />
+            <Skeleton height={8} style={{ flex: 1 }} radius="sm" />
+          </Group>
+        ))}
+      </Card>
+    );
+  return (
+    <Stack gap="md">
+      {[0, 1].map((day) => (
+        <Box key={day}>
+          <Skeleton height={12} width={120} mb={6} radius="sm" />
+          {[0, 1, 2].map((row) => (
+            <Group key={row} gap="sm" wrap="nowrap" py={6}>
+              <Skeleton height={12} width={52} radius="sm" />
+              <Skeleton height={18} width={112} radius="xl" />
+              <Skeleton height={14} width={`${60 - 12 * row}%`} radius="sm" />
+            </Group>
+          ))}
+        </Box>
+      ))}
+    </Stack>
+  );
+}
+
 export function TimelinePage() {
   const { t, i18n } = useTranslation("timeline");
   const { view, period, about: asked, set } = useTimelineSearch();
@@ -522,8 +556,8 @@ export function TimelinePage() {
     if (kind === "agency") filters.agency_id = id;
     if (kind === "contact") filters.contact_id = id;
   }
-  const { data, isLoading, isFetching } = useTimeline(filters, !nothingTicked);
-  const items = data?.items ?? [];
+  const timeline = useTimeline(filters, !nothingTicked);
+  const { isLoading, isFetching } = timeline;
 
   return (
     <Page>
@@ -614,22 +648,31 @@ export function TimelinePage() {
         <Text c="dimmed" size="sm" py="xl" ta="center">
           {t("empty.nothingTicked")}
         </Text>
-      ) : isLoading ? (
-        <Loader />
-      ) : items.length === 0 ? (
-        <Stack align="center" gap="xs" py="xl">
-          <IconTimeline size={32} stroke={1.4} />
-          <Text fw={600}>{t("empty.title")}</Text>
-          <Text c="dimmed" size="sm">
-            {about || period !== "all" || categories.length < DEFAULT_CATEGORIES.length
-              ? t("empty.filtered")
-              : t("empty.start")}
-          </Text>
-        </Stack>
-      ) : view === "list" ? (
-        <ListView items={items} now={data!.now} />
       ) : (
-        <LanesView items={items} now={data!.now} since={since} />
+        <QueryState
+          query={timeline}
+          select={(d) => d.items}
+          skeleton={<TimelineSkeleton view={view} />}
+          empty={
+            <Stack align="center" gap="xs" py="xl">
+              <IconTimeline size={32} stroke={1.4} />
+              <Text fw={600}>{t("empty.title")}</Text>
+              <Text c="dimmed" size="sm">
+                {about || period !== "all" || categories.length < DEFAULT_CATEGORIES.length
+                  ? t("empty.filtered")
+                  : t("empty.start")}
+              </Text>
+            </Stack>
+          }
+        >
+          {(items) =>
+            view === "list" ? (
+              <ListView items={items} now={timeline.data!.now} />
+            ) : (
+              <LanesView items={items} now={timeline.data!.now} since={since} />
+            )
+          }
+        </QueryState>
       )}
     </Page>
   );

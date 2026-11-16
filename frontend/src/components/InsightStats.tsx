@@ -1,4 +1,4 @@
-import { Badge, Box, Card, Group, Loader, Progress, Stack, Table, Text, Title, Tooltip } from "@mantine/core";
+import { Badge, Box, Card, Group, Progress, Stack, Table, Text, Title, Tooltip } from "@mantine/core";
 import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
 
@@ -7,6 +7,7 @@ import { i18n } from "../i18n";
 import text from "../text.module.css";
 import { formatDay } from "../utils/format";
 import { joinList } from "../utils/list";
+import { QueryState } from "./QueryState";
 import { stageName } from "../utils/stageName";
 
 function routeLabel(route: string) {
@@ -201,8 +202,8 @@ export function WeeklyActivity() {
   const start = activityStart();
   // The server works out local midnights itself, so weeks with a clock change come out right.
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
-  const { data: weeks, isLoading } = useActivity(start, WEEKS, tz);
-  const max = Math.max(1, ...(weeks ?? []).flatMap((w) => SERIES.map((s) => w[s.key])));
+  const activity = useActivity(start, WEEKS, tz);
+  const max = Math.max(1, ...(activity.data ?? []).flatMap((w) => SERIES.map((s) => w[s.key])));
   return (
     <Card withBorder>
       <Group justify="space-between" mb="sm" wrap="wrap">
@@ -216,67 +217,68 @@ export function WeeklyActivity() {
           ))}
         </Group>
       </Group>
-      {isLoading || !weeks ? (
-        <Loader />
-      ) : (
-        <Stack gap={4}>
-          <Group
-            gap={0}
-            align="flex-end"
-            wrap="nowrap"
-            h={BAR_HEIGHT}
-            role="list"
-            aria-label={t("weekly.title")}
-          >
-            {weeks.map((w) => {
-              const label = t("weekly.week", {
-                date: formatDay(w.start, "dayMonth", language),
-                counts: joinList(SERIES.map((s) => s.count(w[s.key]))),
-              });
-              return (
-                <Tooltip key={w.start} label={label} withinPortal>
-                  <Group
-                    gap={1}
-                    align="flex-end"
-                    wrap="nowrap"
-                    justify="center"
-                    h="100%"
-                    style={{ flex: 1 }}
-                    role="listitem"
-                    aria-label={label}
-                  >
-                    {SERIES.map((s) => (
-                      <Box
-                        key={s.key}
-                        w="18%"
-                        maw={12}
-                        h={`${(100 * w[s.key]) / max}%`}
-                        mih={w[s.key] ? 2 : 0}
-                        bg={`${s.color}.6`}
-                        style={{ borderRadius: "2px 2px 0 0" }}
-                      />
-                    ))}
-                  </Group>
-                </Tooltip>
-              );
-            })}
-          </Group>
-          <Group gap={0} wrap="nowrap">
-            {weeks.map((w, i) => (
-              <Text
-                key={w.start}
-                size="xs"
-                c="dimmed"
-                ta="center"
-                style={{ flex: 1 }}
-                className={text.keepWords}
-              >
-                {(WEEKS - 1 - i) % 2 === 0 ? formatDay(w.start, "dayMonth", language) : ""}
-              </Text>
-            ))}
-          </Group>
-        </Stack>
-      )}
+      {/* The bars and the date line under them: one skeleton the chart's height. */}
+      <QueryState query={activity} rows={1} rowHeight={BAR_HEIGHT + 22} empty={null}>
+        {(weeks) => (
+          <Stack gap={4}>
+            <Group
+              gap={0}
+              align="flex-end"
+              wrap="nowrap"
+              h={BAR_HEIGHT}
+              role="list"
+              aria-label={t("weekly.title")}
+            >
+              {weeks.map((w) => {
+                const label = t("weekly.week", {
+                  date: formatDay(w.start, "dayMonth", language),
+                  counts: joinList(SERIES.map((s) => s.count(w[s.key]))),
+                });
+                return (
+                  <Tooltip key={w.start} label={label} withinPortal>
+                    <Group
+                      gap={1}
+                      align="flex-end"
+                      wrap="nowrap"
+                      justify="center"
+                      h="100%"
+                      style={{ flex: 1 }}
+                      role="listitem"
+                      aria-label={label}
+                    >
+                      {SERIES.map((s) => (
+                        <Box
+                          key={s.key}
+                          w="18%"
+                          maw={12}
+                          h={`${(100 * w[s.key]) / max}%`}
+                          mih={w[s.key] ? 2 : 0}
+                          bg={`${s.color}.6`}
+                          style={{ borderRadius: "2px 2px 0 0" }}
+                        />
+                      ))}
+                    </Group>
+                  </Tooltip>
+                );
+              })}
+            </Group>
+            <Group gap={0} wrap="nowrap">
+              {weeks.map((w, i) => (
+                <Text
+                  key={w.start}
+                  size="xs"
+                  c="dimmed"
+                  ta="center"
+                  style={{ flex: 1 }}
+                  className={text.keepWords}
+                >
+                  {(WEEKS - 1 - i) % 2 === 0 ? formatDay(w.start, "dayMonth", language) : ""}
+                </Text>
+              ))}
+            </Group>
+          </Stack>
+        )}
+      </QueryState>
     </Card>
   );
 }
