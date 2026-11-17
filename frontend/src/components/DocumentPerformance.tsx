@@ -340,7 +340,14 @@ export function DocumentPerformanceSection({ since }: { since?: string }) {
         </Loading>
       </Stack>
     );
-  if (isError || !data) return <Text c="red">{t("documents.loadFailed")}</Text>;
+  // The CV files alert has its own count, so it stays when this card can't load.
+  if (isError || !data)
+    return (
+      <Stack>
+        {sortAlert}
+        <Text c="red">{t("documents.loadFailed")}</Text>
+      </Stack>
+    );
   const current = data.kinds.find((k) => k.kind === kind) ?? data.kinds[0];
   const rows = current ? rowsOf(current) : [];
   const recorded = current?.documents.some((d) => d.sent > 0) ?? false;
