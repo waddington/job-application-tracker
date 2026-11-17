@@ -50,7 +50,7 @@ async function block(
       </MantineProvider>
     </QueryClientProvider>,
   );
-  await vi.waitFor(() => expect(view.container.querySelector(".mantine-Loader-root")).toBeNull());
+  await vi.waitFor(() => expect(view.container.querySelector('[data-testid="query-loading"]')).toBeNull());
   return view;
 }
 
