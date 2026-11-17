@@ -116,6 +116,31 @@ test("Year shows twelve months and the year's figures; choosing a day fills the 
   await expect(page.getByRole("button", { name: "Previous year" })).toBeVisible();
 });
 
+test("each day's number sits just above its own dot, however wide the screen", async ({ page, request }) => {
+  await twoRounds(request, "Calendar Number Co");
+  for (const width of [2048, 1440, 375]) {
+    await page.setViewportSize({ width, height: 1000 });
+    await openCalendar(page);
+    await expect(dot(page, LATER)).toBeVisible();
+    // A day's cell holds its number, then its dot (a small one, or a button with rounds).
+    const cells = await page
+      .locator("section[aria-label='June 2030'] span:has(> span + *)")
+      .evaluateAll((els) =>
+        els.map((cell) => {
+          const [num, mark] = [cell.children[0]!, cell.children[1]!].map((e) => e.getBoundingClientRect());
+          return {
+            day: cell.children[0]!.textContent,
+            apart: Math.abs(num!.left + num!.width / 2 - (mark!.left + mark!.width / 2)),
+            above: num!.bottom <= mark!.top + 1,
+          };
+        }),
+      );
+    expect(cells).toHaveLength(30);
+    for (const c of cells) expect(c, `day ${c.day} at ${width} px`).toMatchObject({ above: true });
+    for (const c of cells) expect(c.apart, `day ${c.day} at ${width} px`).toBeLessThan(3);
+  }
+});
+
 test("on a phone nothing scrolls sideways; the panel is under the month and above the year", async ({
   page,
   request,

@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.24.35 (2026-11-17)
+
+- On a wide screen, the Interviews calendar's day numbers now sit just above their own dots instead of far to their left, under the day before (#405).
+
 ## 1.24.34 (2026-11-17)
 
 - The app's new look, part three: roomier cards, a card that holds cards (a board column, interview rounds, notes, offers) as a soft well of the page's tint, stage badges as pills, the stage bars as separate pastel segments, and Today's rows standing out in dark mode (#402).
