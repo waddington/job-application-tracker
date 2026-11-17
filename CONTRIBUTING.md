@@ -97,8 +97,9 @@ A card that holds cards (a board column, an application's Interviews) is a soft 
 
 **Dialogs and forms take their look from the theme too.** A `Modal` gets its radius, padding, title and
 overlay there: leave those props off. A one-line box's `description` (its hint) shows under the box, so
-boxes side by side line up whether or not each has one; don't line them up by hand. A `Textarea` keeps its
-hint above. A delete or other red action is `color="red"` with `variant="subtle"` or `"outline"` (or a red
+boxes side by side line up whether or not each has one; don't line them up by hand. A dropdown or calendar
+opens below the hint (the theme measures it), so don't pass your own `comboboxProps` or `popoverProps`
+offset. A `Textarea` keeps its hint above. A delete or other red action is `color="red"` with `variant="subtle"` or `"outline"` (or a red
 `Menu.Item`), which the theme draws in the red that reads at 4.5:1, not the pastel's ink.
 
 **Project dashboard.** `python3 -m tools.pm` (→ http://127.0.0.1:8767) shows the roadmap,
