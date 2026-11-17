@@ -4,9 +4,9 @@ import {
   Box,
   Card,
   Group,
-  Loader,
   SegmentedControl,
   Select,
+  Skeleton,
   Stack,
   Table,
   Text,
@@ -26,6 +26,7 @@ import {
 import { i18n } from "../i18n";
 import { TOO_FEW, verdict } from "../utils/abtest";
 import { useCvFilesToSort } from "./CvFiles";
+import { Loading } from "./QueryState";
 import { daysText } from "./Scorecard";
 
 function kindLabel(kind: string) {
@@ -314,26 +315,46 @@ export function DocumentPerformanceSection({ since }: { since?: string }) {
   const { data, isLoading, isError } = useDocumentPerformance(filters);
   const toSort = useCvFilesToSort();
 
-  if (isLoading) return <Loader />;
-  if (isError || !data) return <Text c="red">{t("documents.loadFailed")}</Text>;
+  // Its own count, so it shows while the rest loads too.
+  const sortAlert = toSort > 0 && (
+    <Alert color="blue" variant="light">
+      <Text size="sm">
+        <Trans
+          t={t}
+          i18nKey="documents.toSort"
+          count={toSort}
+          components={{ place: <Anchor component={Link} to="/documents" size="sm" /> }}
+        />
+      </Text>
+    </Alert>
+  );
+
+  if (isLoading)
+    // The card and the note under it, as tall as on the demo.
+    return (
+      <Stack>
+        {sortAlert}
+        <Loading gap="md">
+          <Skeleton height={554} radius="xl" />
+          <Skeleton height={67} maw={820} radius="sm" />
+        </Loading>
+      </Stack>
+    );
+  // The CV files alert has its own count, so it stays when this card can't load.
+  if (isError || !data)
+    return (
+      <Stack>
+        {sortAlert}
+        <Text c="red">{t("documents.loadFailed")}</Text>
+      </Stack>
+    );
   const current = data.kinds.find((k) => k.kind === kind) ?? data.kinds[0];
   const rows = current ? rowsOf(current) : [];
   const recorded = current?.documents.some((d) => d.sent > 0) ?? false;
 
   return (
     <Stack>
-      {toSort > 0 && (
-        <Alert color="blue" variant="light">
-          <Text size="sm">
-            <Trans
-              t={t}
-              i18nKey="documents.toSort"
-              count={toSort}
-              components={{ place: <Anchor component={Link} to="/documents" size="sm" /> }}
-            />
-          </Text>
-        </Alert>
-      )}
+      {sortAlert}
       <Card withBorder>
         <Group justify="space-between" mb="md" wrap="wrap" align="flex-start">
           <div>

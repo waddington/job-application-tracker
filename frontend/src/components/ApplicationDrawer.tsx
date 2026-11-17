@@ -6,9 +6,9 @@ import {
   Divider,
   Drawer,
   Group,
-  Loader,
   Menu,
   SegmentedControl,
+  Skeleton,
   Stack,
   Text,
   Textarea,
@@ -40,6 +40,8 @@ import { ago, formatDate, formatDateTime } from "../utils/time";
 import { AtAGlance } from "./AtAGlance";
 import { DuplicateWarning } from "./DuplicateWarning";
 import { RoundBadge } from "./Interviews";
+import { ButtonsSkeleton, LineSkeleton } from "./PageSkeleton";
+import { Loading } from "./QueryState";
 import { RejectionFeedback, useMoveAsking } from "./RejectionFeedback";
 import { RescheduleButton } from "./Reschedule";
 import { StageBadge } from "./StageBadge";
@@ -131,6 +133,25 @@ function LogActivity({ id }: { id: string }) {
           {t(LOG_BUTTON[kind])}
         </Button>
       </Group>
+    </Stack>
+  );
+}
+
+/** ApplicationSummary's shape while the application loads: role and company, badges, buttons, route lines. */
+export function ApplicationSummarySkeleton() {
+  return (
+    <Stack>
+      <div>
+        <LineSkeleton height={31} width="20rem" />
+        <LineSkeleton height={25} width="12rem" />
+      </div>
+      <LineSkeleton height={22} width="16rem" />
+      <ButtonsSkeleton count={4} />
+      <div>
+        {[0, 1, 2].map((i) => (
+          <LineSkeleton key={i} height={23} width="18rem" />
+        ))}
+      </div>
     </Stack>
   );
 }
@@ -321,7 +342,14 @@ export function ApplicationDrawer({ id, onClose }: { id: string | null; onClose:
       {isError ? (
         <ApplicationLoadError error={error} />
       ) : isLoading || !app ? (
-        <Loader />
+        // The summary, At a glance, Open full page, then the activity form under its divider, as on the demo.
+        <Loading gap="md">
+          <ApplicationSummarySkeleton />
+          <Skeleton height={250} radius="xl" />
+          <Skeleton height={30} radius="xl" />
+          <LineSkeleton height={19} width="8rem" />
+          <Skeleton height={138} radius="md" />
+        </Loading>
       ) : (
         <Stack>
           <ApplicationSummary app={app} canReschedule />

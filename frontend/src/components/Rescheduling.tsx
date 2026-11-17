@@ -1,9 +1,25 @@
-import { Card, Loader, Stack, Table, Text, Title } from "@mantine/core";
+import { Card, Skeleton, Stack, Table, Text, Title } from "@mantine/core";
 import { useTranslation } from "react-i18next";
 
 import { PersonName } from "./GhostMark";
 import { useRescheduling, type Rescheduling, type RescheduledNamed } from "../api/insightHooks";
 import { joinSentences } from "../utils/list";
+import { LineSkeleton } from "./PageSkeleton";
+import { Loading } from "./QueryState";
+
+/** Moved's shape while it loads, as on the demo: the count, the by-who table, two hints and the two lists. */
+function MovedSkeleton() {
+  return (
+    <Loading gap="sm">
+      <LineSkeleton height={20} width="28rem" />
+      <Skeleton height={210} maw={360} radius="md" />
+      <LineSkeleton height={20} width="24rem" />
+      <LineSkeleton height={20} width="24rem" />
+      <Skeleton height={76} radius="md" />
+      <Skeleton height={76} radius="md" />
+    </Loading>
+  );
+}
 
 function MovedList({ title, rows, person }: { title: string; rows: RescheduledNamed[]; person?: boolean }) {
   const { t } = useTranslation("insights");
@@ -100,7 +116,7 @@ export function ReschedulingCard({ since }: { since?: string }) {
         {t("rescheduling.intro")}
       </Text>
       {isLoading ? (
-        <Loader />
+        <MovedSkeleton />
       ) : isError || !data ? (
         <Text c="red">{t("rescheduling.loadFailed")}</Text>
       ) : !data.booked_rounds ? (

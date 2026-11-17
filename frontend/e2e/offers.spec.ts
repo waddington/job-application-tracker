@@ -828,8 +828,9 @@ test.describe("more permutations", () => {
     await page.route(`**${API}/offers?*`, (route) => route.fulfill({ status: 500, body: "{}" }));
     await page.goto(`/applications/${app.id}`);
     await expect(card(page).getByRole("button", { name: /^Add/ })).toBeVisible();
-    // The query retries before it gives up; wait past that, then check the card never claimed none.
-    await expect(card(page).locator(".mantine-Loader-root")).toHaveCount(0, { timeout: 15_000 });
+    // The query retries before it gives up; then the card says it failed, and never claimed none.
+    await expect(card(page).getByText("Couldn't load this.")).toBeVisible({ timeout: 15_000 });
+    await expect(card(page).getByTestId("query-loading")).toHaveCount(0);
     await expect(page.getByText("No offer yet.")).toBeHidden();
   });
 

@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { App } from "../App";
 import { makeRouter } from "../router";
-import { mockApi } from "../test/mockApi";
+import { mockApi, mockApiAnswering } from "../test/mockApi";
 
 function renderAt(path: string) {
   render(<App router={makeRouter(createMemoryHistory({ initialEntries: [path] }))} />);
@@ -309,18 +309,19 @@ const DOCUMENTS = {
   ],
 };
 
+const ROUTES = {
+  "/api/v1/insights/flow": FLOW,
+  "/api/v1/insights/whole-flow": WHOLE,
+  "/api/v1/insights/stats": STATS,
+  "/api/v1/insights/activity": ACTIVITY,
+  "/api/v1/insights/scorecard": SCORECARD,
+  "/api/v1/insights/conversations": CONVERSATIONS,
+  "/api/v1/insights/documents": DOCUMENTS,
+  "/api/v1/health": {},
+};
+
 function mockInsights(overrides: Record<string, unknown> = {}) {
-  return mockApi({
-    "/api/v1/insights/flow": FLOW,
-    "/api/v1/insights/whole-flow": WHOLE,
-    "/api/v1/insights/stats": STATS,
-    "/api/v1/insights/activity": ACTIVITY,
-    "/api/v1/insights/scorecard": SCORECARD,
-    "/api/v1/insights/conversations": CONVERSATIONS,
-    "/api/v1/insights/documents": DOCUMENTS,
-    "/api/v1/health": {},
-    ...overrides,
-  });
+  return mockApi({ ...ROUTES, ...overrides });
 }
 
 const rows = (table: HTMLElement) =>
@@ -607,5 +608,111 @@ describe("insights", () => {
       "href",
       "/documents",
     );
+  });
+});
+
+// loading-state-card-spinners: each Insights part that loads on its own shows a skeleton shaped like it
+// while its request is out, never a spinner; a failed load keeps its own text; a loaded one its content.
+describe("each part's loading and failed states", () => {
+  const card = (title: string) =>
+    screen.getByRole("heading", { name: title }).closest<HTMLElement>(".mantine-Card-root")!;
+  const panel = () => screen.getByRole("tabpanel");
+  const PARTS = [
+    {
+      name: "the scorecard",
+      tab: "Applications",
+      request: "/api/v1/insights/scorecard",
+      where: () => card("Recruiter scorecard"),
+      failed: "Couldn't load the scorecard.",
+      loaded: "Alex Recruiter",
+    },
+    {
+      name: "rescheduling",
+      tab: "Applications",
+      request: "/api/v1/insights/rescheduling",
+      where: () => card("Rescheduling"),
+      failed: "Couldn't load the rescheduling numbers.",
+      loaded: "No booked rounds on applications added in this period.",
+    },
+    {
+      name: "recruiter conversations",
+      tab: "Recruiter conversations",
+      request: "/api/v1/insights/conversations",
+      where: panel,
+      failed: "Couldn't load recruiter conversations.",
+      loaded: "Who you talk to",
+    },
+    {
+      name: "CVs and cover letters",
+      tab: "CVs and cover letters",
+      request: "/api/v1/insights/documents",
+      where: panel,
+      failed: "Couldn't load how your CVs are doing.",
+      loaded: "Which CV works best",
+    },
+    {
+      name: "which round rejections came after",
+      tab: "Rejections",
+      request: "/api/v1/insights/rejections/rounds",
+      where: () => card("Which round rejections came after"),
+      failed:
+        "Couldn't load which round rejections came after. If you've just updated the tracker, restart it.",
+      loaded: "No rejections yet.",
+    },
+    {
+      name: "rejection feedback",
+      tab: "Rejections",
+      request: "/api/v1/insights/rejections",
+      where: () => card("Rejection feedback"),
+      failed: "Couldn't load the rejection feedback. If you've just updated the tracker, restart it.",
+      loaded: /^No rejection feedback yet\./,
+    },
+  ];
+  const routes = {
+    ...ROUTES,
+    "/api/v1/insights/rescheduling": { booked_rounds: 0, moved_rounds: 0 },
+    "/api/v1/insights/rejections": [],
+    "/api/v1/insights/rejections/rounds": {
+      rejections: 0,
+      no_rounds: 0,
+      unnumbered: 0,
+      by_kind: [],
+      by_number: [],
+    },
+    "/api/v1/cv-files": [],
+  };
+
+  afterEach(() => vi.useRealTimers());
+
+  describe.each(PARTS)("$name", ({ tab, request, where, failed, loaded }) => {
+    // Only this part's request (by its path, so the rounds don't hold the feedback); the rest answer.
+    const open = async (how: "hang" | "fail" | "ok") => {
+      mockApiAnswering(routes, request, (sent) => (sent.split("?")[0] === request ? how : "ok"));
+      renderAt("/insights");
+      fireEvent.click(await screen.findByRole("tab", { name: tab }));
+    };
+
+    it("shows a skeleton while it loads, not a spinner", async () => {
+      await open("hang");
+      const busy = await within(await waitFor(where)).findByTestId("query-loading");
+      expect(busy).toHaveAttribute("aria-busy", "true");
+      expect(busy.querySelectorAll(".mantine-Skeleton-root").length).toBeGreaterThan(0);
+      expect(where().querySelectorAll(".mantine-Loader-root")).toHaveLength(0);
+      expect(within(where()).queryByText(loaded)).toBeNull();
+    });
+
+    it("keeps its own text when it can't load", async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      await open("fail");
+      await vi.advanceTimersByTimeAsync(10_000); // past React Query's retries
+      expect(await within(await waitFor(where)).findByText(failed)).toBeInTheDocument();
+      expect(within(where()).queryByTestId("query-loading")).toBeNull();
+    });
+
+    it("shows what it found once it loads, with no skeleton left", async () => {
+      await open("ok");
+      expect(await within(await waitFor(where)).findByText(loaded)).toBeInTheDocument();
+      expect(within(where()).queryByTestId("query-loading")).toBeNull();
+    });
   });
 });
