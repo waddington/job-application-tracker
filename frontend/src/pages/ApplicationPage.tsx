@@ -28,6 +28,7 @@ import { useApplication, useContacts, useRoles, useUpdateApplication } from "../
 import {
   ApplicationLoadError,
   ApplicationSummary,
+  ApplicationSummarySkeleton,
   ApplicationTimeline,
   LogActivity,
 } from "../components/ApplicationDrawer";
@@ -35,7 +36,7 @@ import { AtAGlance } from "../components/AtAGlance";
 import { AttachmentsCard } from "../components/Attachments";
 import { LinksCard } from "../components/Links";
 import { BackLink, Page } from "../components/Page";
-import { ButtonsSkeleton, ColumnsSkeleton, LineSkeleton } from "../components/PageSkeleton";
+import { ButtonsSkeleton, ColumnsSkeleton } from "../components/PageSkeleton";
 import { Loading } from "../components/QueryState";
 import { TodosCard } from "../components/Todos";
 import { NotesCard } from "../components/Notes";
@@ -297,25 +298,7 @@ export function ApplicationPage() {
       ) : !app ? (
         <Loading gap="md">
           {/* The summary (role, company, badges, buttons, route lines), then the first cards. */}
-          <ColumnsSkeleton
-            top={
-              <Stack>
-                <div>
-                  <LineSkeleton height={31} width="20rem" />
-                  <LineSkeleton height={25} width="12rem" />
-                </div>
-                <LineSkeleton height={22} width="16rem" />
-                <ButtonsSkeleton count={4} />
-                <div>
-                  {[0, 1, 2].map((i) => (
-                    <LineSkeleton key={i} height={23} width="18rem" />
-                  ))}
-                </div>
-              </Stack>
-            }
-            main={[250, 287]}
-            side={[195, 139, 309]}
-          />
+          <ColumnsSkeleton top={<ApplicationSummarySkeleton />} main={[250, 287]} side={[195, 139, 309]} />
         </Loading>
       ) : (
         <Grid gap="lg">

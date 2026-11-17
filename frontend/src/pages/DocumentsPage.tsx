@@ -6,9 +6,9 @@ import {
   Card,
   FileButton,
   Group,
-  Loader,
   Modal,
   SegmentedControl,
+  Skeleton,
   Stack,
   Text,
   TextInput,
@@ -197,10 +197,24 @@ function VersionRow({ version }: { version: DocumentVersion }) {
   );
 }
 
-function WhereUsed({ id }: { id: string }) {
+function WhereUsed({ id, sent }: { id: string; sent: number }) {
   const { t } = useTranslation("documents");
-  const { data } = useDocument(id);
-  if (!data) return <Loader size="xs" />;
+  const query = useDocument(id);
+  const { data } = query;
+  // A line per application it went to (the button's count), or the line for none; the failed line with Retry.
+  if (!data)
+    return (
+      <Pending
+        query={query}
+        skeleton={
+          <Stack gap={4}>
+            {Array.from({ length: Math.max(sent, 1) }, (_, i) => (
+              <Skeleton key={i} height={22} radius="sm" />
+            ))}
+          </Stack>
+        }
+      />
+    );
   if (!data.used_in.length) {
     return (
       <Text size="sm" c="dimmed">
@@ -295,7 +309,7 @@ function DocumentCard({ doc }: { doc: DocumentItem }) {
             </Text>
           </Group>
         </UnstyledButton>
-        {showUsage && <WhereUsed id={doc.id} />}
+        {showUsage && <WhereUsed id={doc.id} sent={sent} />}
       </Stack>
       {adding && <AddVersionModal doc={doc} onClose={() => setAdding(false)} />}
     </Card>

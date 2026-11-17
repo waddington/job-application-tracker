@@ -4,12 +4,12 @@ import {
   Button,
   Card,
   Group,
-  Loader,
   Modal,
   NumberInput,
   SegmentedControl,
   Select,
   SimpleGrid,
+  Skeleton,
   Stack,
   Text,
   Textarea,
@@ -37,6 +37,7 @@ import {
 import { useRoles } from "../api/hooks";
 import { i18n } from "../i18n";
 import { formatDate } from "../utils/time";
+import { Pending } from "./QueryState";
 
 type Kind = "permanent" | "contract" | "fixed_term";
 type Num = number | string;
@@ -294,7 +295,8 @@ export function offerFacts(o: Offer): string[] {
 /** Offers on an application, newest first; a revised offer goes on top. */
 export function OffersCard({ applicationId, roleId }: { applicationId: string; roleId: string }) {
   const { t } = useTranslation("offers");
-  const { data: offers, isPending } = useOffers({ application_id: applicationId, latest: false });
+  const query = useOffers({ application_id: applicationId, latest: false });
+  const offers = query.data;
   const { data: roles } = useRoles();
   // A new offer starts as the kind of job the role is.
   const defaultKind = (roles?.find((r) => r.id === roleId)?.employment_type as Kind | null) ?? "permanent";
@@ -316,9 +318,10 @@ export function OffersCard({ applicationId, roleId }: { applicationId: string; r
           {offers?.length ? t("card.addRevised") : t("card.add")}
         </Button>
       </Group>
-      {/* Not loaded yet: a loader while pending, nothing if the load failed, never "no offer". */}
+      {/* Not loaded yet: a line's skeleton (most have no offer: its text's line), or the failed line with
+          Retry; never "no offer". */}
       {!offers ? (
-        isPending && <Loader size="sm" />
+        <Pending query={query} skeleton={<Skeleton height={20} radius="sm" />} />
       ) : !offers.length ? (
         <Text size="sm" c="dimmed">
           {t("card.empty")}

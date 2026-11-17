@@ -3,7 +3,7 @@ import {
   Button,
   Card,
   Group,
-  Loader,
+  Skeleton,
   Stack,
   Text,
   Title,
@@ -18,11 +18,18 @@ import { useDeleteNote, useNote, useNotes, type Note, type NoteSummary } from ".
 import { formatDateTime } from "../utils/time";
 import { Markdown } from "./Markdown";
 import { NoteEditorModal } from "./NoteEditorModal";
+import { Pending } from "./QueryState";
+
+/** A few lines of text while something loads: what the note's body or its list will be. */
+const lines = (count: number) =>
+  Array.from({ length: count }, (_, i) => <Skeleton key={i} height={20} radius="sm" />);
 
 function NoteBody({ id }: { id: string }) {
   const { t } = useTranslation("notes");
-  const { data } = useNote(id);
-  if (!data) return <Loader size="xs" />;
+  const query = useNote(id);
+  const { data } = query;
+  // Its text's first lines while it loads (the excerpt it replaces is two); the failed line with Retry.
+  if (!data) return <Pending query={query} skeleton={lines(3)} />;
   return data.body.trim() ? (
     <Markdown>{data.body}</Markdown>
   ) : (
@@ -131,7 +138,8 @@ export function NotesList({ notes, empty }: { notes: NoteSummary[]; empty: strin
 /** Notes attached to one thing (an application, company, agency…), for its page. */
 export function NotesCard({ entity }: { entity: string }) {
   const { t } = useTranslation("notes");
-  const { data: notes } = useNotes({ entity });
+  const query = useNotes({ entity });
+  const notes = query.data;
   const [adding, setAdding] = useState(false);
   return (
     <Card withBorder>
@@ -147,7 +155,12 @@ export function NotesCard({ entity }: { entity: string }) {
             {t("card.add")}
           </Button>
         </Group>
-        {notes ? <NotesList notes={notes} empty={t("card.none")} /> : <Loader size="sm" />}
+        {/* Most have none yet: the empty text's line while it loads. */}
+        {notes ? (
+          <NotesList notes={notes} empty={t("card.none")} />
+        ) : (
+          <Pending query={query} skeleton={lines(1)} />
+        )}
       </Stack>
       {adding && (
         <NoteEditorModal opened onClose={() => setAdding(false)} note={null} defaultLinks={[entity]} />
