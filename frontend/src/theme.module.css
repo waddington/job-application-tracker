@@ -175,3 +175,66 @@ thead:not([data-records]) .th button {
 .switchInput:checked:not(:disabled, [data-disabled]) + * .switchThumb {
   background-color: var(--mantine-primary-color-contrast);
 }
+/* The same for a switch's on-label and the native time box's focused hour or minute (neither used yet). */
+.switchInput:checked + .switchTrack {
+  --switch-text-color: var(--mantine-primary-color-contrast);
+}
+.timeInput::-webkit-datetime-edit-hour-field:focus,
+.timeInput::-webkit-datetime-edit-minute-field:focus,
+.timeInput::-webkit-datetime-edit-second-field:focus,
+.timeInput::-webkit-datetime-edit-ampm-field:focus {
+  color: var(--mantine-primary-color-contrast);
+}
+
+/* Boxes you type in or tick: an outline at 3:1 or more on a card and on the page (docs/rfc/app-redesign.md
+   §8), where Mantine's grey is about 1.4:1. A box with an error keeps its red; a focused one the primary. */
+[data-mantine-color-scheme] .input[data-variant="default"] {
+  --input-bd: var(--jat-input-border);
+}
+.tick:not(:checked, :indeterminate, :disabled, [data-error]) {
+  border-color: var(--jat-input-border);
+}
+/* A switch that's off is a pale track: a ring in the same outline shows where it is. */
+input:not(:checked, :disabled) + .switchTrack {
+  box-shadow: inset 0 0 0 1px var(--jat-input-border);
+}
+
+/* Dialogs (Modal, and the Drawer's header): a lifted card, roomy, under a see-through plum. A dialog's title
+   reads like a card's. */
+.dialog {
+  --jat-dialog-padding: 26px;
+  --jat-dialog-radius: var(--mantine-radius-xl);
+}
+@media (max-width: 48em) {
+  .dialog {
+    --jat-dialog-padding: 20px;
+    --jat-dialog-radius: var(--mantine-radius-lg);
+  }
+}
+/* In dark mode a faint edge, as cards have, so the dialog doesn't melt into the dimmed page. */
+:where([data-mantine-color-scheme="dark"]) .dialogContent {
+  border: 1px solid var(--jat-ink-faint);
+}
+.dialogTitle {
+  font-size: 21px;
+  font-weight: 400;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+}
+:lang(zh) .dialogTitle {
+  letter-spacing: 0;
+}
+
+/* Red menu items (Delete) in the red that reads on white and on the dark dropdown, not Mantine's paler
+   shade 6; theme.ts does the same for subtle and outline red buttons. */
+.menuItem {
+  --mantine-color-red-6: var(--mantine-color-red-text);
+  --mantine-color-red-light-hover: var(--jat-danger-hover);
+}
+
+/* Tables: soft lines, and the row you point at in the plum's wash. */
+.table {
+  --table-border-color: var(--jat-ink-faint);
+  --table-hover-color: var(--jat-row-hover);
+  --table-striped-color: color-mix(in srgb, var(--jat-row-hover) 45%, transparent);
+}

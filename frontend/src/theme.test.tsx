@@ -4,11 +4,16 @@ import {
   Checkbox,
   DEFAULT_THEME,
   defaultCssVariablesResolver,
+  defaultVariantColorsResolver,
   MantineProvider,
+  Menu,
   mergeMantineTheme,
+  Modal,
   Paper,
   Select,
   Table,
+  Textarea,
+  TextInput,
   Title,
 } from "@mantine/core";
 import { DateInput, DatesProvider, DateTimePicker } from "@mantine/dates";
@@ -20,7 +25,15 @@ import type { ReactNode } from "react";
 import { expect, test } from "vitest";
 import dayjs from "dayjs";
 import { DRIFT_TINTS } from "./drift";
-import { cssVariablesResolver, PASTELS, theme, themeFor, typedDate } from "./theme";
+import {
+  clearHint,
+  cssVariablesResolver,
+  PASTELS,
+  theme,
+  themeFor,
+  typedDate,
+  variantColorResolver,
+} from "./theme";
 import classes from "./theme.module.css";
 import { dayjsLocale } from "./utils/format";
 
@@ -344,4 +357,160 @@ test("a dropdown's options carry the class that writes in the primary's contrast
   for (const option of screen.getAllByRole("option", { hidden: true })) {
     expect(option).toHaveClass(String(classes.option));
   }
+});
+
+// The values in tokens.css's dark block, a hex or an rgb() with an alpha, laid over a background as a hex.
+const darkTokens = tokens.split(":root[data-mantine-color-scheme")[1]!;
+const darkOver = (name: string, bg: string) => {
+  const value = new RegExp(`--jat-${name}: ([^;]+);`).exec(darkTokens)?.[1];
+  if (!value) throw new Error(`no dark --jat-${name}`);
+  if (value.startsWith("#")) return value;
+  const [r, g, b, a] = /rgb\((\d+) (\d+) (\d+) \/ ([\d.]+)\)/.exec(value)!.slice(1).map(Number);
+  const hex = "#" + [r!, g!, b!].map((c) => c.toString(16).padStart(2, "0")).join("");
+  return over(hex, a!, bg);
+};
+// Dark mode's card, and the dialog's body behind its boxes.
+const [darkCard, darkBody] = [full.colors.dark[6], full.colors.dark[7]];
+
+test("the outline of a box you type in or tick is 3:1 on the card, a dialog and every tint, light and dark", () => {
+  for (const bg of ["#ffffff", ...tints("light")]) {
+    expect(contrast(token("input-border"), bg), bg).toBeGreaterThanOrEqual(3);
+  }
+  for (const bg of [darkCard, darkBody, ...tints("dark")]) {
+    expect(contrast(darkOver("input-border", bg), bg), bg).toBeGreaterThanOrEqual(3);
+  }
+});
+
+test("red actions read red at 4.5:1 on the card, every tint and their hover, light and dark", () => {
+  const { light } = cssVariablesResolver(full);
+  const red = light["--mantine-color-red-text"]!;
+  for (const bg of ["#ffffff", token("danger-hover"), ...tints("light")]) {
+    expect(contrast(red, bg), bg).toBeGreaterThanOrEqual(4.5);
+  }
+  // Dark mode's red text is Mantine's red-4.
+  const darkRed = DEFAULT_THEME.colors.red[4];
+  for (const bg of [darkCard, darkBody, ...tints("dark")]) {
+    expect(contrast(darkRed, bg), bg).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(darkRed, darkOver("danger-hover", bg)), `hover on ${bg}`).toBeGreaterThanOrEqual(4.5);
+  }
+  // And a red action is visibly red, not the maroon ink a red badge has on its pastel.
+  expect(red).not.toBe("var(--jat-i-red)");
+});
+
+test("subtle, outline and transparent red actions take the red text; a red badge keeps its ink on its pastel", () => {
+  const resolve = (variant: string) => variantColorResolver({ color: "red", variant, theme: full });
+  const mantine = (variant: string) => defaultVariantColorsResolver({ color: "red", variant, theme: full });
+  for (const variant of ["subtle", "outline", "transparent"]) {
+    expect(resolve(variant).color, variant).toBe("var(--mantine-color-red-text)");
+  }
+  for (const variant of ["subtle", "outline"]) {
+    expect(resolve(variant).hover, variant).toBe("var(--jat-danger-hover)");
+  }
+  // A transparent action has no hover fill, and only the outline one draws a border.
+  expect(resolve("transparent").hover).toBe(mantine("transparent").hover);
+  expect(resolve("outline").border).toBe("1px solid var(--mantine-color-red-text)");
+  expect(resolve("subtle").border).toBe(mantine("subtle").border);
+  // Filled and light red are Mantine's own (light is the pastel and its ink).
+  expect(resolve("filled")).toEqual(mantine("filled"));
+  expect(resolve("light")).toEqual(mantine("light"));
+  expect(resolve("light").color).toBe("var(--mantine-color-red-light-color)");
+  expect(variantColorResolver({ color: "plum", variant: "subtle", theme: full }).color).toBe(
+    "var(--mantine-color-plum-light-color)",
+  );
+});
+
+test("text on a table row you point at reads at 4.5:1, light and dark", () => {
+  const { light } = cssVariablesResolver(full);
+  const row = token("row-hover");
+  expect(contrast(token("ink"), row)).toBeGreaterThanOrEqual(4.5);
+  expect(contrast(over(token("ink"), 0.7, row), row)).toBeGreaterThanOrEqual(4.5);
+  for (const colour of ["orange", "red", "yellow", "green", "teal", "blue"]) {
+    expect(contrast(light[`--mantine-color-${colour}-text`]!, row), colour).toBeGreaterThanOrEqual(4.5);
+  }
+  const darkRow = darkOver("row-hover", darkCard);
+  expect(contrast(full.colors.dark[2], darkRow)).toBeGreaterThanOrEqual(4.5);
+  expect(contrast(DEFAULT_THEME.colors.red[4], darkRow)).toBeGreaterThanOrEqual(4.5);
+});
+
+test("a one-line box's hint sits under the box, so boxes side by side line up; a big text box's stays above", () => {
+  render(
+    <MantineProvider theme={theme}>
+      <TextInput label="Company" description="Pick one" />
+      <Textarea label="Notes" description="What they said" />
+    </MantineProvider>,
+  );
+  const follows = (a: Node, b: Node) => !!(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+  const company = screen.getByLabelText("Company");
+  expect(follows(company, screen.getByText("Pick one"))).toBe(true);
+  // The box's own wrapper carries the class that gives it an outline you can see.
+  expect(company.closest(".mantine-Input-wrapper")).toHaveClass(String(classes.input));
+  expect(follows(screen.getByLabelText("Notes"), screen.getByText("What they said"))).toBe(false);
+});
+
+test("a dialog is a lifted card with a card's title, under the see-through plum", () => {
+  render(
+    <MantineProvider theme={theme}>
+      <Modal opened onClose={() => {}} title="New application">
+        Body
+      </Modal>
+    </MantineProvider>,
+  );
+  const dialog = screen.getByRole("dialog");
+  expect(dialog).toHaveClass("mantine-Modal-content", String(classes.dialogContent));
+  expect(screen.getByRole("heading", { name: "New application" })).toHaveClass(String(classes.dialogTitle));
+  const root = document.querySelector(".mantine-Modal-root") as HTMLElement;
+  expect(root).toHaveClass(String(classes.dialog));
+  expect(root.style.getPropertyValue("--mb-padding")).toBe("var(--jat-dialog-padding)");
+  const overlay = document.querySelector(".mantine-Modal-overlay") as HTMLElement;
+  expect(overlay.style.getPropertyValue("--overlay-bg")).toContain("var(--jat-overlay)");
+});
+
+test("a red menu item (Delete) carries the class that draws it in the red that reads", async () => {
+  render(
+    <MantineProvider theme={theme}>
+      <Menu opened>
+        <Menu.Target>
+          <button type="button">More</button>
+        </Menu.Target>
+        <Menu.Dropdown>
+          <Menu.Item color="red">Delete</Menu.Item>
+        </Menu.Dropdown>
+      </Menu>
+    </MantineProvider>,
+  );
+  const item = await screen.findByRole("menuitem", { name: "Delete", hidden: true });
+  expect(item).toHaveClass(String(classes.menuItem));
+  // The class swaps the shade Mantine paints a red item in for the red text, on the item itself.
+  expect(item.style.getPropertyValue("--menu-item-color")).toBe("var(--mantine-color-red-6)");
+});
+
+test("a dropdown opens below its box's hint, so the list never covers it", () => {
+  document.body.innerHTML =
+    '<div><input id="company" /><p id="company-description">New company: it\'s added for you</p></div>';
+  const box = document.getElementById("company")!;
+  const hint = document.getElementById("company-description")!;
+  const rect = (top: number, height: number) => ({ top, bottom: top + height, height }) as DOMRect;
+  box.getBoundingClientRect = () => rect(100, 36);
+  hint.getBoundingClientRect = () => rect(140, 18);
+  // The hint ends 22 px under the box; the list opens 8 px past it.
+  expect(clearHint({ elements: { reference: box }, placement: "bottom-start" })).toBe(30);
+  // Above the box, or for a box without a hint, the usual 8 px.
+  expect(clearHint({ elements: { reference: box }, placement: "top" })).toBe(8);
+  hint.remove();
+  expect(clearHint({ elements: { reference: box }, placement: "bottom" })).toBe(8);
+  const select = full.components.Select?.defaultProps as { comboboxProps?: { offset?: unknown } };
+  expect(select.comboboxProps?.offset).toBe(clearHint);
+});
+
+test("a box of pills (MultiSelect, TagsInput) opens its list below its hint too", () => {
+  // Its list is anchored to the wrapper around the pills, which has no id; the input inside has.
+  document.body.innerHTML =
+    '<div id="pills"><input id="attached" /></div><p id="attached-description">Leave empty for a general note</p>';
+  const box = document.getElementById("pills")!;
+  box.removeAttribute("id");
+  const rect = (top: number, height: number) => ({ top, bottom: top + height, height }) as DOMRect;
+  box.getBoundingClientRect = () => rect(478, 36);
+  document.getElementById("attached-description")!.getBoundingClientRect = () => rect(519, 14);
+  // The hint ends 19 px under the box; the list opens 8 px past it.
+  expect(clearHint({ elements: { reference: box }, placement: "bottom" })).toBe(27);
 });

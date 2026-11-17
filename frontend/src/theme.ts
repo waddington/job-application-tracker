@@ -5,19 +5,28 @@ import {
   Card,
   Checkbox,
   createTheme,
+  defaultVariantColorsResolver,
+  Drawer,
+  FileInput,
+  Input,
+  Menu,
+  Modal,
   MultiSelect,
+  NumberInput,
   Paper,
   Progress,
   Select,
   Switch,
   Table,
   TagsInput,
+  TextInput,
   Title,
   virtualColor,
   type CSSVariablesResolver,
   type MantineColorsTuple,
+  type VariantColorsResolver,
 } from "@mantine/core";
-import { DateInput, DateTimePicker, TimePicker } from "@mantine/dates";
+import { DateInput, DateTimePicker, TimeInput, TimePicker } from "@mantine/dates";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import { FALLBACK } from "./i18n/language";
@@ -173,6 +182,75 @@ export const cssVariablesResolver: CSSVariablesResolver = () => {
 const onPrimary = { classNames: { option: classes.option } };
 
 /**
+ * A one-line box's hint goes under the box, not between its label and the box, so boxes side by side
+ * line up whether or not each has a hint (fix-new-application-fields-misaligned). A big text box
+ * (Textarea) keeps its hint above, where it's read before writing.
+ */
+const hintBelow = {
+  defaultProps: {
+    inputWrapperOrder: ["label", "input", "description", "error"] as (
+      "label" | "input" | "description" | "error"
+    )[],
+  },
+};
+
+/**
+ * How far below its box a dropdown opens: past the box's hint, if it has one under it, so the list never
+ * covers the hint ("New company: it's added for you" shows exactly while you type). Floating UI calls it
+ * each time it places the dropdown, so a hint that changes as you type is measured afresh. Above the box
+ * (when there's no room below) the usual 8 px.
+ */
+export const clearHint = ({
+  elements,
+  placement,
+}: {
+  elements: { reference: unknown };
+  placement: string;
+}) => {
+  const box = elements.reference;
+  if (!(box instanceof Element) || !placement.startsWith("bottom")) return 8;
+  // A box of pills (MultiSelect, TagsInput) anchors its list to a wrapper around the input with the id.
+  const id = box.id || box.querySelector("input[id]")?.id;
+  if (!id) return 8;
+  const hint = document.getElementById(`${id}-description`);
+  if (!hint) return 8;
+  return Math.max(8, Math.ceil(hint.getBoundingClientRect().bottom - box.getBoundingClientRect().bottom) + 8);
+};
+// Mantine types a dropdown's offset as a number, but hands it to Floating UI as it is, which takes a function.
+const belowHint = clearHint as unknown as number;
+
+const oneLine = {
+  defaultProps: { ...hintBelow.defaultProps, comboboxProps: { offset: belowHint } },
+  ...onPrimary,
+};
+const pickerBelowHint = { ...hintBelow.defaultProps, popoverProps: { offset: belowHint } };
+
+/**
+ * Red subtle and outline actions (Delete) in the red that reads at 4.5:1 on white, the page and the dark
+ * card, not the pastel's maroon ink (which suits a red badge on its pastel), with a hover that keeps it.
+ */
+export const variantColorResolver: VariantColorsResolver = (input) => {
+  const colors = defaultVariantColorsResolver(input);
+  if (input.color !== "red" || !["subtle", "outline", "transparent"].includes(input.variant)) return colors;
+  return {
+    ...colors,
+    color: "var(--mantine-color-red-text)",
+    hover: input.variant === "transparent" ? colors.hover : "var(--jat-danger-hover)",
+    border: input.variant === "outline" ? "1px solid var(--mantine-color-red-text)" : colors.border,
+  };
+};
+
+/** Dialogs: a lifted card with a card's title, under a see-through plum (theme.module.css). */
+const dialog = {
+  defaultProps: {
+    padding: "var(--jat-dialog-padding)",
+    shadow: "xl",
+    overlayProps: { color: "var(--jat-overlay)", backgroundOpacity: 1, blur: 2 },
+  },
+  classNames: { root: classes.dialog, content: classes.dialogContent, title: classes.dialogTitle },
+};
+
+/**
  * A colour's deeper pastel, as bars use it (tokens.css), for the key beside a bar; a colour without one
  * keeps Mantine's filled shade.
  */
@@ -194,6 +272,7 @@ export function themeFor(lang: string) {
     },
     primaryColor: "plum",
     autoContrast: true,
+    variantColorResolver,
     fontFamily: SANS,
     fontFamilyMonospace: MONO,
     // Light display titles: 300 for the biggest, 400 below.
@@ -252,8 +331,20 @@ export function themeFor(lang: string) {
               : {},
         }),
       }),
-      // Table headers are the website's eyebrow: mono capitals after a small square.
-      Table: Table.extend({ classNames: { th: classes.th } }),
+      // Table headers are the website's eyebrow: mono capitals after a small square; rows hover in plum.
+      Table: Table.extend({ classNames: { table: classes.table, th: classes.th } }),
+      Modal: Modal.extend({
+        ...dialog,
+        defaultProps: { ...dialog.defaultProps, radius: "var(--jat-dialog-radius)" },
+      }),
+      // The application's side panel keeps its square edge against the window; it docks later (RFC §4 #5).
+      Drawer: Drawer.extend(dialog),
+      // Every box you type in: an outline you can see (theme.module.css).
+      Input: Input.extend({ classNames: { wrapper: classes.input } }),
+      TextInput: TextInput.extend(hintBelow),
+      NumberInput: NumberInput.extend(hintBelow),
+      FileInput: FileInput.extend(hintBelow),
+      Menu: Menu.extend({ classNames: { item: classes.menuItem } }),
       // Bars (the pipeline on Today) in deeper pastels, with ink numbers.
       Progress: Progress.extend({
         classNames: {
@@ -265,6 +356,7 @@ export function themeFor(lang: string) {
       // Mantine writes white on the primary colour in a few places; on dark mode's lavender that's
       // unreadable, so these take the primary's contrast colour (white on plum, dark on lavender).
       Checkbox: Checkbox.extend({
+        classNames: { input: classes.tick },
         vars: (_theme, props) => ({
           root: {
             "--checkbox-icon-color":
@@ -274,29 +366,40 @@ export function themeFor(lang: string) {
           },
         }),
       }),
+      // A switch's track is ringed while off; a primary one, on, has its label and thumb in the primary's
+      // contrast colour.
       Switch: Switch.extend({
         classNames: (_theme, props) =>
-          props.color ? {} : { input: classes.switchInput, thumb: classes.switchThumb },
+          props.color
+            ? { track: classes.switchTrack }
+            : { input: classes.switchInput, track: classes.switchTrack, thumb: classes.switchThumb },
       }),
-      Select: Select.extend(onPrimary),
-      MultiSelect: MultiSelect.extend(onPrimary),
-      Autocomplete: Autocomplete.extend(onPrimary),
-      TagsInput: TagsInput.extend(onPrimary),
+      Select: Select.extend(oneLine),
+      MultiSelect: MultiSelect.extend(oneLine),
+      Autocomplete: Autocomplete.extend(oneLine),
+      TagsInput: TagsInput.extend(oneLine),
       // The time fields (in DateTimePicker too): the focused field and the chosen hour or minute.
       TimePicker: TimePicker.extend({
+        defaultProps: pickerBelowHint,
         classNames: { field: classes.timeField, control: classes.timeControl },
       }),
+      TimeInput: TimeInput.extend({ ...hintBelow, classNames: { input: classes.timeInput } }),
       DateInput: DateInput.extend({
         ...today,
         defaultProps: {
           ...today.defaultProps,
+          ...pickerBelowHint,
           valueFormat: pickerDate,
           dateParser: typedDate(pickerDate, lang),
         },
       }),
       DateTimePicker: DateTimePicker.extend({
         ...today,
-        defaultProps: { ...today.defaultProps, valueFormat: datePattern("pickerDateTime", lang) },
+        defaultProps: {
+          ...today.defaultProps,
+          ...pickerBelowHint,
+          valueFormat: datePattern("pickerDateTime", lang),
+        },
       }),
     },
   });

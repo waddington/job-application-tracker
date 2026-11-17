@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.24.36 (2026-11-17)
+
+- The app's new look, part four: dialogs, forms and tables. Input outlines are easier to see, delete actions read red, a field's hint sits under its box so the boxes in a row line up (New application, the offer dialog and an application's dates), a dropdown opens below the hint, and the offer dialog's dates show in full (#403).
+
 ## 1.24.35 (2026-11-17)
 
 - On a wide screen, the Interviews calendar's day numbers now sit just above their own dots instead of far to their left, under the day before (#405).

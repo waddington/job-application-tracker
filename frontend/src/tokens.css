@@ -14,6 +14,14 @@
   --jat-ring: 42 30 63;
   /* A card's surface, for things lifted off the page (the menu's current page). */
   --jat-surface: #fff;
+  /* The outline of a box you type in or tick: 3:1 or more on a card and on every tint of the page. */
+  --jat-input-border: #8a7f9c;
+  /* Behind a dialog: the plum ink, see-through. */
+  --jat-overlay: rgb(42 30 63 / 0.42);
+  /* Under a red action (Delete) when you point at it, keeping its red text at 4.5:1 or more. */
+  --jat-danger-hover: #f6e0e5;
+  /* A table row you point at: the plum's wash, under dimmed and coloured text at 4.5:1 or more. */
+  --jat-row-hover: #ebe6f8;
 
   /* The plum button: the website's gradient, a step lighter on hover. */
   --jat-plum-gradient: linear-gradient(180deg, #4a3a68, #2a1e3f);
@@ -85,6 +93,10 @@
   --jat-shadow: 0 0 0;
   --jat-ring: 236 232 246;
   --jat-surface: var(--mantine-color-dark-6);
+  --jat-input-border: #8a80a0;
+  --jat-overlay: rgb(13 9 20 / 0.62);
+  --jat-danger-hover: rgb(255 107 107 / 0.14);
+  --jat-row-hover: rgb(201 184 240 / 0.08);
 
   /* The lavender button, with dark text on it. */
   --jat-plum-gradient: linear-gradient(180deg, #d9cdf6, #c9b8f0);
