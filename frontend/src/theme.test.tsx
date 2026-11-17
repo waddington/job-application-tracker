@@ -501,3 +501,16 @@ test("a dropdown opens below its box's hint, so the list never covers it", () =>
   const select = full.components.Select?.defaultProps as { comboboxProps?: { offset?: unknown } };
   expect(select.comboboxProps?.offset).toBe(clearHint);
 });
+
+test("a box of pills (MultiSelect, TagsInput) opens its list below its hint too", () => {
+  // Its list is anchored to the wrapper around the pills, which has no id; the input inside has.
+  document.body.innerHTML =
+    '<div id="pills"><input id="attached" /></div><p id="attached-description">Leave empty for a general note</p>';
+  const box = document.getElementById("pills")!;
+  box.removeAttribute("id");
+  const rect = (top: number, height: number) => ({ top, bottom: top + height, height }) as DOMRect;
+  box.getBoundingClientRect = () => rect(478, 36);
+  document.getElementById("attached-description")!.getBoundingClientRect = () => rect(519, 14);
+  // The hint ends 19 px under the box; the list opens 8 px past it.
+  expect(clearHint({ elements: { reference: box }, placement: "bottom" })).toBe(27);
+});

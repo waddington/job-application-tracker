@@ -208,8 +208,11 @@ export const clearHint = ({
   placement: string;
 }) => {
   const box = elements.reference;
-  if (!(box instanceof Element) || !box.id || !placement.startsWith("bottom")) return 8;
-  const hint = document.getElementById(`${box.id}-description`);
+  if (!(box instanceof Element) || !placement.startsWith("bottom")) return 8;
+  // A box of pills (MultiSelect, TagsInput) anchors its list to a wrapper around the input with the id.
+  const id = box.id || box.querySelector("input[id]")?.id;
+  if (!id) return 8;
+  const hint = document.getElementById(`${id}-description`);
   if (!hint) return 8;
   return Math.max(8, Math.ceil(hint.getBoundingClientRect().bottom - box.getBoundingClientRect().bottom) + 8);
 };
