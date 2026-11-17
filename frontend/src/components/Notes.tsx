@@ -45,7 +45,7 @@ function NoteItem({ note, onEdit }: { note: NoteSummary; onEdit: (id: string) =>
   const remove = useDeleteNote();
   const Chevron = open ? IconChevronDown : IconChevronRight;
   return (
-    <Card withBorder padding="sm">
+    <Card withBorder>
       <Group justify="space-between" align="flex-start" wrap="nowrap">
         <UnstyledButton
           onClick={() => setOpen((o) => !o)}

@@ -166,7 +166,7 @@ function InterviewItem({
         ? formatDateTime(when)
         : t("due", { when: formatDateTime(when) });
   return (
-    <Card withBorder padding="sm">
+    <Card withBorder>
       <Group justify="space-between" align="flex-start" wrap="nowrap">
         <Stack gap={4}>
           <Group gap="xs">

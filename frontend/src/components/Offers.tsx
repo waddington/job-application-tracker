@@ -330,7 +330,7 @@ export function OffersCard({ applicationId, roleId }: { applicationId: string; r
       ) : (
         <Stack gap="sm">
           {offers.map((o, i) => (
-            <Card key={o.id} withBorder padding="sm" opacity={i === 0 ? 1 : 0.6}>
+            <Card key={o.id} withBorder opacity={i === 0 ? 1 : 0.6}>
               <Group justify="space-between" wrap="nowrap" align="flex-start">
                 <Stack gap={4}>
                   <Group gap="xs">
