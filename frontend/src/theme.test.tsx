@@ -6,9 +6,12 @@ import {
   defaultCssVariablesResolver,
   MantineProvider,
   mergeMantineTheme,
+  Modal,
   Paper,
   Select,
   Table,
+  Textarea,
+  TextInput,
   Title,
 } from "@mantine/core";
 import { DateInput, DatesProvider, DateTimePicker } from "@mantine/dates";
@@ -20,7 +23,7 @@ import type { ReactNode } from "react";
 import { expect, test } from "vitest";
 import dayjs from "dayjs";
 import { DRIFT_TINTS } from "./drift";
-import { cssVariablesResolver, PASTELS, theme, themeFor, typedDate } from "./theme";
+import { cssVariablesResolver, PASTELS, theme, themeFor, typedDate, variantColorResolver } from "./theme";
 import classes from "./theme.module.css";
 import { dayjsLocale } from "./utils/format";
 
@@ -344,4 +347,101 @@ test("a dropdown's options carry the class that writes in the primary's contrast
   for (const option of screen.getAllByRole("option", { hidden: true })) {
     expect(option).toHaveClass(String(classes.option));
   }
+});
+
+// The values in tokens.css's dark block, a hex or an rgb() with an alpha, laid over a background as a hex.
+const darkTokens = tokens.split(":root[data-mantine-color-scheme")[1]!;
+const darkOver = (name: string, bg: string) => {
+  const value = new RegExp(`--jat-${name}: ([^;]+);`).exec(darkTokens)?.[1];
+  if (!value) throw new Error(`no dark --jat-${name}`);
+  if (value.startsWith("#")) return value;
+  const [r, g, b, a] = /rgb\((\d+) (\d+) (\d+) \/ ([\d.]+)\)/.exec(value)!.slice(1).map(Number);
+  const hex = "#" + [r!, g!, b!].map((c) => c.toString(16).padStart(2, "0")).join("");
+  return over(hex, a!, bg);
+};
+// Dark mode's card, and the dialog's body behind its boxes.
+const [darkCard, darkBody] = [full.colors.dark[6], full.colors.dark[7]];
+
+test("the outline of a box you type in or tick is 3:1 on the card, a dialog and every tint, light and dark", () => {
+  for (const bg of ["#ffffff", ...tints("light")]) {
+    expect(contrast(token("input-border"), bg), bg).toBeGreaterThanOrEqual(3);
+  }
+  for (const bg of [darkCard, darkBody, ...tints("dark")]) {
+    expect(contrast(darkOver("input-border", bg), bg), bg).toBeGreaterThanOrEqual(3);
+  }
+});
+
+test("red actions read red at 4.5:1 on the card, every tint and their hover, light and dark", () => {
+  const { light } = cssVariablesResolver(full);
+  const red = light["--mantine-color-red-text"]!;
+  for (const bg of ["#ffffff", token("danger-hover"), ...tints("light")]) {
+    expect(contrast(red, bg), bg).toBeGreaterThanOrEqual(4.5);
+  }
+  // Dark mode's red text is Mantine's red-4.
+  const darkRed = DEFAULT_THEME.colors.red[4];
+  for (const bg of [darkCard, darkBody, ...tints("dark")]) {
+    expect(contrast(darkRed, bg), bg).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(darkRed, darkOver("danger-hover", bg)), `hover on ${bg}`).toBeGreaterThanOrEqual(4.5);
+  }
+  // And a red action is visibly red, not the maroon ink a red badge has on its pastel.
+  expect(red).not.toBe("var(--jat-i-red)");
+});
+
+test("subtle and outline red actions take the red text; a red badge keeps its ink on its pastel", () => {
+  const resolve = (variant: string) => variantColorResolver({ color: "red", variant, theme: full });
+  for (const variant of ["subtle", "outline"]) {
+    expect(resolve(variant).color, variant).toBe("var(--mantine-color-red-text)");
+    expect(resolve(variant).hover, variant).toBe("var(--jat-danger-hover)");
+  }
+  expect(resolve("outline").border).toContain("var(--mantine-color-red-text)");
+  expect(resolve("light").color).toBe("var(--mantine-color-red-light-color)");
+  expect(variantColorResolver({ color: "plum", variant: "subtle", theme: full }).color).toBe(
+    "var(--mantine-color-plum-light-color)",
+  );
+});
+
+test("text on a table row you point at reads at 4.5:1, light and dark", () => {
+  const { light } = cssVariablesResolver(full);
+  const row = token("row-hover");
+  expect(contrast(token("ink"), row)).toBeGreaterThanOrEqual(4.5);
+  expect(contrast(over(token("ink"), 0.7, row), row)).toBeGreaterThanOrEqual(4.5);
+  for (const colour of ["orange", "red", "yellow", "green", "teal", "blue"]) {
+    expect(contrast(light[`--mantine-color-${colour}-text`]!, row), colour).toBeGreaterThanOrEqual(4.5);
+  }
+  const darkRow = darkOver("row-hover", darkCard);
+  expect(contrast(full.colors.dark[2], darkRow)).toBeGreaterThanOrEqual(4.5);
+  expect(contrast(DEFAULT_THEME.colors.red[4], darkRow)).toBeGreaterThanOrEqual(4.5);
+});
+
+test("a one-line box's hint sits under the box, so boxes side by side line up; a big text box's stays above", () => {
+  render(
+    <MantineProvider theme={theme}>
+      <TextInput label="Company" description="Pick one" />
+      <Textarea label="Notes" description="What they said" />
+    </MantineProvider>,
+  );
+  const follows = (a: Node, b: Node) => !!(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+  const company = screen.getByLabelText("Company");
+  expect(follows(company, screen.getByText("Pick one"))).toBe(true);
+  // The box's own wrapper carries the class that gives it an outline you can see.
+  expect(company.closest(".mantine-Input-wrapper")).toHaveClass(String(classes.input));
+  expect(follows(screen.getByLabelText("Notes"), screen.getByText("What they said"))).toBe(false);
+});
+
+test("a dialog is a lifted card with a card's title, under the see-through plum", () => {
+  render(
+    <MantineProvider theme={theme}>
+      <Modal opened onClose={() => {}} title="New application">
+        Body
+      </Modal>
+    </MantineProvider>,
+  );
+  const dialog = screen.getByRole("dialog");
+  expect(dialog).toHaveClass("mantine-Modal-content", String(classes.dialogContent));
+  expect(screen.getByRole("heading", { name: "New application" })).toHaveClass(String(classes.dialogTitle));
+  const root = document.querySelector(".mantine-Modal-root") as HTMLElement;
+  expect(root).toHaveClass(String(classes.dialog));
+  expect(root.style.getPropertyValue("--mb-padding")).toBe("var(--jat-dialog-padding)");
+  const overlay = document.querySelector(".mantine-Modal-overlay") as HTMLElement;
+  expect(overlay.style.getPropertyValue("--overlay-bg")).toContain("var(--jat-overlay)");
 });
