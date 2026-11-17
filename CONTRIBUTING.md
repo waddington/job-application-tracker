@@ -79,8 +79,11 @@ record's page shows its own shape under its `BackLink` while the record loads, t
 failed load too: a role, person, company or agency through `RecordSkeleton` (its header's name, lines
 under it and action buttons, then its first cards in the page's own columns, each as tall as the real
 ones); an application, whose header is its summary card, from the smaller pieces (`ColumnsSkeleton` with
-its `top`, `LineSkeleton`, `ButtonsSkeleton`). Keep
-`Loader` for small in-place spinners, such as a refetch beside the filters.
+its `top` set to `ApplicationSummarySkeleton`, which the quick view's skeleton shares). The same goes for
+a card or panel that loads on its own outside `QueryState`: Insights' parts keep their own failed text
+and show a skeleton of their content through `Loading`; one without failed text (the Offer and Notes
+cards, an opened note, where a document was used) goes through `Pending`, so a failed load says so with
+Retry. Keep `Loader` for small in-place spinners, such as a refetch beside the filters.
 
 **Every page's outer wrapper is `Page`** (`frontend/src/components/Page.tsx`): full width beside the
 menu, up to 2,400 px, from the left. Don't give a page its own narrower `maw`. Its title is a
