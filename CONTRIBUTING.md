@@ -89,6 +89,12 @@ Retry. Keep `Loader` for small in-place spinners, such as a refetch beside the f
 menu, up to 2,400 px, from the left. Don't give a page its own narrower `maw`. Its title is a
 `<Title order={2}>`, which the theme makes the big display title.
 
+**Cards take their padding and radius from the theme** (`theme.ts`, `theme.module.css`): roomy on the
+page, compact inside another card. Leave `padding` and `radius` off unless a card really needs its own.
+A card that holds cards (a board column, an application's Interviews) is a soft well of the page's tint:
+`variant="well"` on its `Card` or `Paper`. A bar made of parts (the pipeline on Today) adds
+`className={look.segments}` from `theme.module.css`.
+
 **Project dashboard.** `python3 -m tools.pm` (→ http://127.0.0.1:8767) shows the roadmap,
 progress and live PR status of the build itself. It needs nothing but Python; the
 [`gh` CLI](https://cli.github.com/) adds PR status.

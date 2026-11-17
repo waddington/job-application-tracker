@@ -6,6 +6,7 @@ import {
   Checkbox,
   createTheme,
   MultiSelect,
+  Paper,
   Progress,
   Select,
   Switch,
@@ -213,7 +214,18 @@ export function themeFor(lang: string) {
       xl: "0 36px 90px -30px rgb(var(--jat-shadow) / 0.45)",
     },
     components: {
-      Card: Card.extend({ defaultProps: { radius: "xl", shadow: "sm" }, classNames: { root: classes.card } }),
+      // Cards: roomy at the top level and compact inside another card or a well; their padding and
+      // radius come from theme.module.css (a padding or radius passed to a card still wins). A card
+      // that holds cards (variant "well") is a soft well of the page's tint.
+      Card: Card.extend({
+        defaultProps: { radius: "var(--jat-card-radius)", padding: "var(--jat-card-padding)", shadow: "sm" },
+        classNames: (_theme, props) => ({
+          root: props.variant === "well" ? `${classes.card} ${classes.well}` : classes.card,
+        }),
+      }),
+      Paper: Paper.extend({
+        classNames: (_theme, props) => (props.variant === "well" ? { root: classes.well } : {}),
+      }),
       // Pill buttons, filled ones lifted by a soft shadow.
       Button: Button.extend({
         defaultProps: { radius: "xl" },
@@ -224,9 +236,15 @@ export function themeFor(lang: string) {
         }),
       }),
       Badge: Badge.extend({ defaultProps: { radius: "xl" } }),
-      // A page's title (every page's is an h2): a big, light display title.
+      // A page's title (every page's is an h2): a big, light display title. A card's own title (an h3
+      // or h4 without a size of its own) is a step bigger and light too (theme.module.css).
       Title: Title.extend({
-        classNames: (_theme, props) => (props.order === 2 ? { root: classes.pageTitle } : {}),
+        classNames: (_theme, props) =>
+          props.order === 2
+            ? { root: classes.pageTitle }
+            : (props.order === 3 || props.order === 4) && props.size === undefined
+              ? { root: classes.cardTitle }
+              : {},
         vars: (_theme, props) => ({
           root:
             props.order === 2

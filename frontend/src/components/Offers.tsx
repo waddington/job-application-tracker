@@ -303,7 +303,8 @@ export function OffersCard({ applicationId, roleId }: { applicationId: string; r
   const remove = useDeleteOffer();
   const [editing, setEditing] = useState<Offer | "new" | null>(null);
   return (
-    <Card withBorder>
+    // A well: it holds a card per offer.
+    <Card withBorder variant="well">
       <Group justify="space-between" mb="sm">
         <Group gap="xs">
           <IconCash size={20} stroke={1.6} />
@@ -329,7 +330,7 @@ export function OffersCard({ applicationId, roleId }: { applicationId: string; r
       ) : (
         <Stack gap="sm">
           {offers.map((o, i) => (
-            <Card key={o.id} withBorder padding="sm" opacity={i === 0 ? 1 : 0.6}>
+            <Card key={o.id} withBorder opacity={i === 0 ? 1 : 0.6}>
               <Group justify="space-between" wrap="nowrap" align="flex-start">
                 <Stack gap={4}>
                   <Group gap="xs">

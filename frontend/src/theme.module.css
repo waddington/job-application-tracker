@@ -19,12 +19,46 @@
   letter-spacing: 0;
 }
 
-/* Soft cards: no outline in light mode (the shadow lifts them), a faint one in dark. */
+/* Soft cards: no outline in light mode (the shadow lifts them), a faint one in dark. A card on the page is
+   roomy; a card inside another card or a well (a board column's) is compact, with a smaller radius. A card
+   outside one that should look like it (the board's card while you drag it) says so with data-nested. A
+   card's padding or radius passed as a prop still wins (theme.ts). */
 .card {
+  --jat-card-padding: 26px;
+  --jat-card-radius: var(--mantine-radius-xl);
   border-color: transparent;
+}
+:is(.card, .well) .card,
+.card[data-nested] {
+  --jat-card-padding: 14px;
+  --jat-card-radius: 20px;
+}
+@media (max-width: 48em) {
+  .card {
+    --jat-card-padding: 20px; /* a phone keeps more room for what's in the card */
+  }
 }
 :where([data-mantine-color-scheme="dark"]) .card {
   border-color: var(--jat-ink-faint);
+}
+
+/* A card that holds cards (a board column, the interviews on an application) is a soft well of the page's
+   tint, so the cards in it stand out. */
+.well[data-variant="well"] {
+  background-color: color-mix(in srgb, var(--jat-surface) 45%, transparent);
+  border-color: transparent;
+  box-shadow: none;
+}
+
+/* A card's own title: a step bigger, light, and drawn in a little (not for Chinese, whose characters
+   would touch). */
+.card .cardTitle {
+  font-size: 21px;
+  font-weight: 400;
+  letter-spacing: -0.015em;
+}
+:lang(zh) .card .cardTitle {
+  letter-spacing: 0;
 }
 
 /* Filled buttons lift on a soft shadow; the plum one carries the website's gradient. */
@@ -109,6 +143,12 @@ thead:not([data-records]) .th button {
 }
 .progressLabel {
   color: var(--jat-bar-ink);
+}
+/* A bar made of parts (the pipeline on Today, the interviews on the calendar): separate pills with a little
+   space between them, and no track behind. */
+.progress.segments {
+  gap: 3px;
+  background-color: transparent;
 }
 /* A bar's key: a dot in the bar's pastel, with a thin ring so a pale one still shows on white. */
 .keyDot {

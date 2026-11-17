@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.24.34 (2026-11-17)
+
+- The app's new look, part three: roomier cards, a card that holds cards (a board column, interview rounds, notes, offers) as a soft well of the page's tint, stage badges as pills, the stage bars as separate pastel segments, and Today's rows standing out in dark mode (#402).
+
 ## 1.24.33 (2026-11-17)
 
 - Insights' cards, the application quick view, the Offers and Notes cards, an opened note and Documents' where-used list show a skeleton instead of a spinner while they load, so Insights' tabs no longer jump; the Offers and Notes cards, an opened note and where-used say when they can't load, with Retry, instead of spinning for ever or showing nothing (#401).

@@ -15,11 +15,7 @@ export function StageBadge({
 }) {
   useTranslation("stages"); // stageName reads i18n directly: this redraws it when the language changes
   return (
-    <Badge
-      color={stage?.color ?? "gray"}
-      variant={stage?.kind === "active" ? "light" : "outline"}
-      radius="sm"
-    >
+    <Badge color={stage?.color ?? "gray"} variant={stage?.kind === "active" ? "light" : "outline"}>
       {stageName({ id, name: stage?.name ?? fallback })}
     </Badge>
   );

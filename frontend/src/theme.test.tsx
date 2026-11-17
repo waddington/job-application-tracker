@@ -1,10 +1,12 @@
 import {
   Button,
+  Card,
   Checkbox,
   DEFAULT_THEME,
   defaultCssVariablesResolver,
   MantineProvider,
   mergeMantineTheme,
+  Paper,
   Select,
   Table,
   Title,
@@ -178,6 +180,28 @@ test("text, dimmed text and coloured text read at 4.5:1 on every tint of the dri
   }
 });
 
+test("Today's tiles in dark mode keep dimmed and red text at 4.5:1, resting and on hover", () => {
+  const css = readFileSync(
+    join(dirname(fileURLToPath(import.meta.url)), "pages", "TodayPage.module.css"),
+    "utf8",
+  );
+  const dark = /\[data-mantine-color-scheme="dark"\]\) \.rows \{([^}]*)\}/.exec(css)?.[1] ?? "";
+  expect(dark).toContain(
+    "--today-tint: color-mix(in srgb, var(--mantine-color-dark-5) 50%, var(--mantine-color-dark-6));",
+  );
+  expect(dark).toContain("--today-tint-strong: var(--mantine-color-dark-5);");
+  const [card, step] = [full.colors.dark[6], full.colors.dark[5]];
+  const resting = over(step, 0.5, card);
+  // Dimmed text is dark-2; red text in dark mode is Mantine's red-4.
+  for (const bg of [resting, step]) {
+    expect(contrast(full.colors.dark[2], bg), bg).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(DEFAULT_THEME.colors.red[4], bg), bg).toBeGreaterThanOrEqual(4.5);
+  }
+  // Each step is still visibly different: from the card, and from the resting tile.
+  expect(contrast(resting, card)).toBeGreaterThan(1.05);
+  expect(contrast(step, resting)).toBeGreaterThan(1.05);
+});
+
 test("a page's title (an h2) is the display title; other headings aren't", () => {
   render(
     <MantineProvider theme={theme}>
@@ -187,6 +211,46 @@ test("a page's title (an h2) is the display title; other headings aren't", () =>
   );
   expect(screen.getByRole("heading", { name: "Today" })).toHaveClass(String(classes.pageTitle));
   expect(screen.getByRole("heading", { name: "Your move" })).not.toHaveClass(String(classes.pageTitle));
+});
+
+test("a card's own title (an h3 or h4 with no size of its own) carries the card title class", () => {
+  render(
+    <MantineProvider theme={theme}>
+      <Title order={4}>Interviews</Title>
+      <Title order={3} size="h5">
+        Sized
+      </Title>
+    </MantineProvider>,
+  );
+  expect(screen.getByRole("heading", { name: "Interviews" })).toHaveClass(String(classes.cardTitle));
+  expect(screen.getByRole("heading", { name: "Sized" })).not.toHaveClass(String(classes.cardTitle));
+});
+
+test("cards take their padding and radius from the theme unless given their own; a well is marked", () => {
+  render(
+    <MantineProvider theme={theme}>
+      <Card data-testid="plain">Plain</Card>
+      <Card data-testid="own" padding="sm" radius="md">
+        Own
+      </Card>
+      <Card data-testid="well" variant="well">
+        Well
+      </Card>
+      <Paper data-testid="column" variant="well">
+        Column
+      </Paper>
+    </MantineProvider>,
+  );
+  const plain = screen.getByTestId("plain");
+  expect(plain.style.getPropertyValue("--card-padding")).toBe("var(--jat-card-padding)");
+  expect(plain.style.getPropertyValue("--paper-radius")).toBe("var(--jat-card-radius)");
+  expect(plain).toHaveClass(String(classes.card));
+  expect(plain).not.toHaveClass(String(classes.well));
+  const own = screen.getByTestId("own");
+  expect(own.style.getPropertyValue("--card-padding")).toBe("var(--mantine-spacing-sm)");
+  expect(own.style.getPropertyValue("--paper-radius")).toBe("var(--mantine-radius-md)");
+  expect(screen.getByTestId("well")).toHaveClass(String(classes.card), String(classes.well));
+  expect(screen.getByTestId("column")).toHaveClass(String(classes.well));
 });
 
 test("Mantine's light and outline colours are the pastels and their inks", () => {

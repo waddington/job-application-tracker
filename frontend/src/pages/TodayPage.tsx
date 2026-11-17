@@ -488,7 +488,7 @@ function Bucket({
           {hint}
         </Text>
       </Group>
-      <Card withBorder padding="md">
+      <Card withBorder>
         <div className={classes.sections}>
           {count === 0 && empty}
           {children}
@@ -725,7 +725,7 @@ export function TodayPage() {
           {t("loadFailed")}
         </Text>
       ) : blank ? (
-        <Card withBorder padding="lg">
+        <Card withBorder>
           <Title order={3} size="h4" mb="xs">
             {t("gettingStarted.title")}
           </Title>
@@ -740,7 +740,7 @@ export function TodayPage() {
       ) : (
         <>
           {fresh && (
-            <Card withBorder padding="md">
+            <Card withBorder>
               <Group justify="space-between" wrap="wrap" gap="sm">
                 <div>
                   <Title order={3} size="h5">
@@ -759,7 +759,7 @@ export function TodayPage() {
           )}
 
           {rows && (
-            <Card withBorder padding="sm">
+            <Card withBorder>
               <Group gap="lg" wrap="wrap" mb={pipeline.length ? 8 : 0}>
                 <Anchor component={Link} to="/applications" size="sm" c="var(--mantine-color-text)">
                   <Trans t={t} i18nKey="numbers.active" count={active.length} components={{ b: <b /> }} />
@@ -773,7 +773,7 @@ export function TodayPage() {
               </Group>
               {pipeline.length > 0 && (
                 <>
-                  <Progress.Root size={16} aria-label={t("numbers.pipeline")}>
+                  <Progress.Root size={16} className={look.segments} aria-label={t("numbers.pipeline")}>
                     {pipeline.map(({ stage, count }) => (
                       <Tooltip
                         key={stage.id}

@@ -166,7 +166,7 @@ function InterviewItem({
         ? formatDateTime(when)
         : t("due", { when: formatDateTime(when) });
   return (
-    <Card withBorder padding="sm">
+    <Card withBorder>
       <Group justify="space-between" align="flex-start" wrap="nowrap">
         <Stack gap={4}>
           <Group gap="xs">
@@ -234,7 +234,8 @@ export function InterviewsCard({ applicationId }: { applicationId: string }) {
   const nextRound = Math.max(0, ...rounds.map((i) => i.round ?? 0)) + 1;
 
   return (
-    <Card withBorder>
+    // A well: it holds a card per round.
+    <Card withBorder variant="well">
       <Stack gap="sm">
         <Group justify="space-between">
           <Title order={4}>{t("card.title")}</Title>
