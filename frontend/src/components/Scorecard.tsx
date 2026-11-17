@@ -1,9 +1,11 @@
-import { Anchor, Badge, Card, Group, Loader, SegmentedControl, Table, Text, Title } from "@mantine/core";
+import { Anchor, Badge, Card, Group, SegmentedControl, Table, Text, Title } from "@mantine/core";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { PersonName } from "./GhostMark";
+import { TableSkeleton } from "./PageSkeleton";
+import { Loading } from "./QueryState";
 import { useScorecard, type Score } from "../api/insightHooks";
 import { i18n } from "../i18n";
 import { ago } from "../utils/time";
@@ -78,7 +80,10 @@ export function ScorecardCard({ since }: { since?: string }) {
         />
       </Group>
       {isLoading ? (
-        <Loader />
+        // The table's header and three rows, as on the demo (a recruiter's row has their agency under them).
+        <Loading>
+          <TableSkeleton rows={3} rowHeight={57} headHeight={39} />
+        </Loading>
       ) : isError ? (
         <Text c="red">{t("scorecard.loadFailed")}</Text>
       ) : !rows.length ? (

@@ -1,8 +1,10 @@
-import { Card, Loader, Stack, Text, Title } from "@mantine/core";
+import { Card, Stack, Text, Title } from "@mantine/core";
 import { useTranslation } from "react-i18next";
 
 import { useRejectionRounds, type RejectionRounds } from "../api/insightHooks";
 import { joinSentences } from "../utils/list";
+import { LineSkeleton } from "./PageSkeleton";
+import { Loading } from "./QueryState";
 
 // Whole keys, so the unused-key scanner sees them; a kind the app doesn't know reads as "other".
 const AFTER_KIND = {
@@ -82,7 +84,11 @@ export function RejectionRoundsCard({ since }: { since?: string }) {
         {t(since ? "rejectionRounds.introPeriod" : "rejectionRounds.intro")}
       </Text>
       {isLoading ? (
-        <Loader />
+        // The total and the hint, as on the demo; the lists between them only show with rounds recorded.
+        <Loading gap="sm">
+          <LineSkeleton height={20} width="24rem" />
+          <LineSkeleton height={20} width="32rem" />
+        </Loading>
       ) : isError || !data ? (
         <Text c="red">{t("rejectionRounds.loadFailed")}</Text>
       ) : !data.rejections ? (

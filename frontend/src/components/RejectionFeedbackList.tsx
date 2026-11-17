@@ -1,4 +1,4 @@
-import { Anchor, Card, Loader, Stack, Text, Title } from "@mantine/core";
+import { Anchor, Card, Stack, Text, Title } from "@mantine/core";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
@@ -8,6 +8,8 @@ import { stageName } from "../utils/stageName";
 import { formatDate } from "../utils/time";
 import { RecruiterLine } from "./RecruiterLine";
 import { REJECTED } from "./RejectionFeedback";
+import { LineSkeleton } from "./PageSkeleton";
+import { Loading } from "./QueryState";
 
 /** When it was rejected and from where, then where it is now if that's somewhere else. */
 function rejectionLine(r: Rejection, t: ReturnType<typeof useTranslation<"insights">>["t"]): string {
@@ -62,7 +64,10 @@ export function RejectionsSection({ since }: { since?: string }) {
         {t(since ? "rejections.introPeriod" : "rejections.intro")}
       </Text>
       {isLoading ? (
-        <Loader />
+        // One line: the count, or the text for none (as on the demo, which has no feedback).
+        <Loading>
+          <LineSkeleton height={20} width="20rem" />
+        </Loading>
       ) : isError || !data ? (
         <Text c="red">{t("rejections.loadFailed")}</Text>
       ) : !data.length ? (

@@ -3,10 +3,10 @@ import {
   Badge,
   Card,
   Group,
-  Loader,
   Paper,
   SegmentedControl,
   SimpleGrid,
+  Skeleton,
   Stack,
   Table,
   Text,
@@ -28,6 +28,7 @@ import { PersonName } from "./GhostMark";
 import text from "../text.module.css";
 import { joinSentences } from "../utils/list";
 import { formatDate } from "../utils/time";
+import { Loading } from "./QueryState";
 import { SankeyChart } from "./SankeyChart";
 import { daysText } from "./Scorecard";
 
@@ -291,7 +292,15 @@ function PassReasons({ data }: { data: Conversations }) {
 export function ConversationsSection({ since }: { since?: string }) {
   const { t } = useTranslation("insights");
   const { data, isLoading, isError } = useConversations(since);
-  if (isLoading) return <Loader />;
+  if (isLoading)
+    // Its three cards (the numbers and the chart, who you talk to, why you passed), as tall as on the demo.
+    return (
+      <Loading gap="md">
+        {[812, 378, 184].map((height) => (
+          <Skeleton key={height} height={height} radius="xl" />
+        ))}
+      </Loading>
+    );
   if (isError || !data) return <Text c="red">{t("conversations.loadFailed")}</Text>;
   const total = data.total;
   return (
