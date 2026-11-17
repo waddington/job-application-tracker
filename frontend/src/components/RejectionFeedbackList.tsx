@@ -58,7 +58,8 @@ export function RejectionsSection({ since }: { since?: string }) {
   const { t } = useTranslation("insights");
   const { data, isLoading, isError } = useRejections(since);
   return (
-    <Card withBorder>
+    // A well: it holds a card per rejection.
+    <Card withBorder variant="well">
       <Title order={4}>{t("rejections.heading")}</Title>
       <Text size="sm" c="dimmed" mb="sm">
         {t(since ? "rejections.introPeriod" : "rejections.intro")}

@@ -303,7 +303,8 @@ export function OffersCard({ applicationId, roleId }: { applicationId: string; r
   const remove = useDeleteOffer();
   const [editing, setEditing] = useState<Offer | "new" | null>(null);
   return (
-    <Card withBorder>
+    // A well: it holds a card per offer.
+    <Card withBorder variant="well">
       <Group justify="space-between" mb="sm">
         <Group gap="xs">
           <IconCash size={20} stroke={1.6} />

@@ -142,8 +142,6 @@ function DraggableCard({ row, onOpen }: { row: ApplicationRow; onOpen: (id: stri
     <Card
       ref={setNodeRef}
       withBorder
-      padding="xs"
-      radius="md"
       style={{
         opacity: isDragging ? 0.4 : 1,
         cursor: "grab",
@@ -187,20 +185,21 @@ function StageColumn({
       ? `2px dashed var(--mantine-color-${isOver ? "teal" : "blue"}-5)`
       : dropState === "allowed"
         ? `1px dashed var(--mantine-color-${isOver ? "teal-5" : "gray-5"})`
-        : "1px solid var(--mantine-color-default-border)";
+        : "1px solid transparent";
   return (
+    // A soft well of the page's tint, so its cards stand out.
     <Paper
       ref={setNodeRef}
+      variant="well"
       w={closed ? 200 : 250}
       miw={closed ? 200 : 250}
       p="xs"
-      radius="md"
-      bg="var(--mantine-color-default-hover)"
+      radius="lg"
       style={{ border, opacity: dropState === "blocked" ? 0.45 : 1, transition: "opacity 120ms" }}
       aria-label={t("board.column", { title: columnTitle(column) })}
     >
       <Group justify="space-between" mb="xs" wrap="nowrap">
-        <Badge color={column.stage.color} variant={closed ? "outline" : "light"} radius="sm">
+        <Badge color={column.stage.color} variant={closed ? "outline" : "light"}>
           {columnTitle(column)}
         </Badge>
         <Text size="xs" c="dimmed">
@@ -317,7 +316,7 @@ export function Board({
         </ScrollArea>
         <DragOverlay dropAnimation={null}>
           {active && (
-            <Card withBorder padding="xs" radius="md" shadow="md" w={228}>
+            <Card withBorder mod="nested" shadow="md" w={228}>
               <CardBody row={active} link={false} />
             </Card>
           )}

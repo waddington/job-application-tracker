@@ -142,7 +142,8 @@ export function NotesCard({ entity }: { entity: string }) {
   const notes = query.data;
   const [adding, setAdding] = useState(false);
   return (
-    <Card withBorder>
+    // A well: it holds a card per note.
+    <Card withBorder variant="well">
       <Stack gap="sm">
         <Group justify="space-between">
           <Title order={4}>{t("card.title")}</Title>

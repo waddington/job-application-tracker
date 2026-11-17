@@ -245,7 +245,7 @@ function PeriodSummary({
           </div>
         ))}
       </Group>
-      <Progress.Root size={6} aria-hidden>
+      <Progress.Root size={6} className={look.segments} aria-hidden>
         {bar.map((s) => (
           <Progress.Section key={s.id} value={(now[s.id] / now.total) * 100} color={s.color!} />
         ))}
