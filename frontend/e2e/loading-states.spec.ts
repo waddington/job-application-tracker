@@ -147,6 +147,30 @@ test("a record page's skeleton fits a phone's width", async ({ page, request }) 
   await expect(page.getByRole("heading", { name: "Held Phone Co", level: 2 })).toBeVisible();
 });
 
+// loading-state-card-spinners: the quick view draws the summary and its first cards while it loads.
+test("the quick view shows a skeleton, not a spinner, while its application loads", async ({
+  page,
+  request,
+}) => {
+  const app = await post(request, "applications/quick", {
+    company_name: "Held Drawer Co",
+    role_title: "Held Drawer Engineer",
+    route: "direct",
+    stage: "applied",
+    tags: [],
+  });
+  const release = await hold(page, `**${API}/applications/${app.id}`);
+  await page.goto("/applications");
+  await page.getByRole("row", { name: "Open Held Drawer Engineer at Held Drawer Co" }).click();
+  const drawer = page.getByRole("dialog");
+  await expect(drawer.getByTestId("query-loading")).toBeVisible();
+  await expect(drawer.locator(".mantine-Loader-root")).toHaveCount(0);
+  await expect(drawer.getByRole("heading", { name: "Held Drawer Engineer" })).toHaveCount(0);
+  release();
+  await expect(drawer.getByRole("heading", { name: "Held Drawer Engineer" })).toBeVisible();
+  await expect(drawer.getByTestId("query-loading")).toHaveCount(0);
+});
+
 test.describe("Today", () => {
   const section = (page: Page, name: string) => page.getByRole("group", { name, exact: true });
 
