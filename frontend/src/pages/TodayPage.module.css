@@ -7,10 +7,11 @@
   flex-direction: column;
   gap: 8px;
 }
-/* In dark mode a card is dark-6, so the tiles take the step above it. */
+/* In dark mode a card is dark-6: a tile sits halfway to dark-5, and takes dark-5 on hover or focus.
+   (dark-4 would drop dimmed and red text under 4.5:1; theme.test.tsx checks.) */
 :where([data-mantine-color-scheme="dark"]) .rows {
-  --today-tint: var(--mantine-color-dark-5);
-  --today-tint-strong: var(--mantine-color-dark-4);
+  --today-tint: color-mix(in srgb, var(--mantine-color-dark-5) 50%, var(--mantine-color-dark-6));
+  --today-tint-strong: var(--mantine-color-dark-5);
 }
 .rows > * {
   background: var(--today-tint);

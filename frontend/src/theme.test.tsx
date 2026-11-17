@@ -180,6 +180,28 @@ test("text, dimmed text and coloured text read at 4.5:1 on every tint of the dri
   }
 });
 
+test("Today's tiles in dark mode keep dimmed and red text at 4.5:1, resting and on hover", () => {
+  const css = readFileSync(
+    join(dirname(fileURLToPath(import.meta.url)), "pages", "TodayPage.module.css"),
+    "utf8",
+  );
+  const dark = /\[data-mantine-color-scheme="dark"\]\) \.rows \{([^}]*)\}/.exec(css)?.[1] ?? "";
+  expect(dark).toContain(
+    "--today-tint: color-mix(in srgb, var(--mantine-color-dark-5) 50%, var(--mantine-color-dark-6));",
+  );
+  expect(dark).toContain("--today-tint-strong: var(--mantine-color-dark-5);");
+  const [card, step] = [full.colors.dark[6], full.colors.dark[5]];
+  const resting = over(step, 0.5, card);
+  // Dimmed text is dark-2; red text in dark mode is Mantine's red-4.
+  for (const bg of [resting, step]) {
+    expect(contrast(full.colors.dark[2], bg), bg).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(DEFAULT_THEME.colors.red[4], bg), bg).toBeGreaterThanOrEqual(4.5);
+  }
+  // Each step is still visibly different: from the card, and from the resting tile.
+  expect(contrast(resting, card)).toBeGreaterThan(1.05);
+  expect(contrast(step, resting)).toBeGreaterThan(1.05);
+});
+
 test("a page's title (an h2) is the display title; other headings aren't", () => {
   render(
     <MantineProvider theme={theme}>
