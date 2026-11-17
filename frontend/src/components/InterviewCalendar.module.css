@@ -120,10 +120,20 @@
   z-index: -1;
 }
 
+/*
+ * The day's number, centred over its dot so the two stay together however wide the cell; the month's
+ * cells keep a band at the top for it, and the dot, ring and disc centre in what's left.
+ */
+.month[data-large] .dotCell {
+  padding-top: 18px;
+}
+
 .cellNumber {
   position: absolute;
   top: 2px;
-  left: 8px;
+  left: 0;
+  right: 0;
+  text-align: center;
   font-size: var(--mantine-font-size-xs);
   color: var(--mantine-color-dimmed);
   font-variant-numeric: tabular-nums;
@@ -235,7 +245,6 @@
 
   .cellNumber {
     top: 0;
-    left: 4px;
     font-size: 10px;
   }
 
