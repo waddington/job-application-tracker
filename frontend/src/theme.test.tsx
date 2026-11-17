@@ -4,7 +4,9 @@ import {
   Checkbox,
   DEFAULT_THEME,
   defaultCssVariablesResolver,
+  defaultVariantColorsResolver,
   MantineProvider,
+  Menu,
   mergeMantineTheme,
   Modal,
   Paper,
@@ -23,7 +25,15 @@ import type { ReactNode } from "react";
 import { expect, test } from "vitest";
 import dayjs from "dayjs";
 import { DRIFT_TINTS } from "./drift";
-import { cssVariablesResolver, PASTELS, theme, themeFor, typedDate, variantColorResolver } from "./theme";
+import {
+  clearHint,
+  cssVariablesResolver,
+  PASTELS,
+  theme,
+  themeFor,
+  typedDate,
+  variantColorResolver,
+} from "./theme";
 import classes from "./theme.module.css";
 import { dayjsLocale } from "./utils/format";
 
@@ -387,13 +397,22 @@ test("red actions read red at 4.5:1 on the card, every tint and their hover, lig
   expect(red).not.toBe("var(--jat-i-red)");
 });
 
-test("subtle and outline red actions take the red text; a red badge keeps its ink on its pastel", () => {
+test("subtle, outline and transparent red actions take the red text; a red badge keeps its ink on its pastel", () => {
   const resolve = (variant: string) => variantColorResolver({ color: "red", variant, theme: full });
-  for (const variant of ["subtle", "outline"]) {
+  const mantine = (variant: string) => defaultVariantColorsResolver({ color: "red", variant, theme: full });
+  for (const variant of ["subtle", "outline", "transparent"]) {
     expect(resolve(variant).color, variant).toBe("var(--mantine-color-red-text)");
+  }
+  for (const variant of ["subtle", "outline"]) {
     expect(resolve(variant).hover, variant).toBe("var(--jat-danger-hover)");
   }
-  expect(resolve("outline").border).toContain("var(--mantine-color-red-text)");
+  // A transparent action has no hover fill, and only the outline one draws a border.
+  expect(resolve("transparent").hover).toBe(mantine("transparent").hover);
+  expect(resolve("outline").border).toBe("1px solid var(--mantine-color-red-text)");
+  expect(resolve("subtle").border).toBe(mantine("subtle").border);
+  // Filled and light red are Mantine's own (light is the pastel and its ink).
+  expect(resolve("filled")).toEqual(mantine("filled"));
+  expect(resolve("light")).toEqual(mantine("light"));
   expect(resolve("light").color).toBe("var(--mantine-color-red-light-color)");
   expect(variantColorResolver({ color: "plum", variant: "subtle", theme: full }).color).toBe(
     "var(--mantine-color-plum-light-color)",
@@ -444,4 +463,41 @@ test("a dialog is a lifted card with a card's title, under the see-through plum"
   expect(root.style.getPropertyValue("--mb-padding")).toBe("var(--jat-dialog-padding)");
   const overlay = document.querySelector(".mantine-Modal-overlay") as HTMLElement;
   expect(overlay.style.getPropertyValue("--overlay-bg")).toContain("var(--jat-overlay)");
+});
+
+test("a red menu item (Delete) carries the class that draws it in the red that reads", async () => {
+  render(
+    <MantineProvider theme={theme}>
+      <Menu opened>
+        <Menu.Target>
+          <button type="button">More</button>
+        </Menu.Target>
+        <Menu.Dropdown>
+          <Menu.Item color="red">Delete</Menu.Item>
+        </Menu.Dropdown>
+      </Menu>
+    </MantineProvider>,
+  );
+  const item = await screen.findByRole("menuitem", { name: "Delete", hidden: true });
+  expect(item).toHaveClass(String(classes.menuItem));
+  // The class swaps the shade Mantine paints a red item in for the red text, on the item itself.
+  expect(item.style.getPropertyValue("--menu-item-color")).toBe("var(--mantine-color-red-6)");
+});
+
+test("a dropdown opens below its box's hint, so the list never covers it", () => {
+  document.body.innerHTML =
+    '<div><input id="company" /><p id="company-description">New company: it\'s added for you</p></div>';
+  const box = document.getElementById("company")!;
+  const hint = document.getElementById("company-description")!;
+  const rect = (top: number, height: number) => ({ top, bottom: top + height, height }) as DOMRect;
+  box.getBoundingClientRect = () => rect(100, 36);
+  hint.getBoundingClientRect = () => rect(140, 18);
+  // The hint ends 22 px under the box; the list opens 8 px past it.
+  expect(clearHint({ elements: { reference: box }, placement: "bottom-start" })).toBe(30);
+  // Above the box, or for a box without a hint, the usual 8 px.
+  expect(clearHint({ elements: { reference: box }, placement: "top" })).toBe(8);
+  hint.remove();
+  expect(clearHint({ elements: { reference: box }, placement: "bottom" })).toBe(8);
+  const select = full.components.Select?.defaultProps as { comboboxProps?: { offset?: unknown } };
+  expect(select.comboboxProps?.offset).toBe(clearHint);
 });

@@ -337,6 +337,32 @@ test.describe("New application", () => {
     await expect(dialog).toBeVisible();
   });
 
+  test("the Company and Role boxes line up, and Company's list opens under its hint", async ({ page }) => {
+    // fix-new-application-fields-misaligned: Company has a hint and Role hasn't.
+    const dialog = await open(page);
+    const company = dialog.getByLabel("Company");
+    const role = dialog.getByLabel("Role", { exact: true });
+    // Both boxes measured in the same frame, so the dialog's opening animation moves them alike.
+    const offset = async () =>
+      company.evaluate(
+        (box, other) => box.getBoundingClientRect().top - other.getBoundingClientRect().top,
+        await role.elementHandle(),
+      );
+    await expect.poll(offset).toBe(0);
+    await company.fill("Co");
+    const hint = dialog.getByText("New company: it's added for you");
+    await expect(hint).toBeVisible();
+    const list = page.getByRole("listbox");
+    await expect(list).toBeVisible();
+    await expect
+      .poll(async () => {
+        const [listBox, hintBox] = [(await list.boundingBox())!, (await hint.boundingBox())!];
+        return listBox.y - (hintBox.y + hintBox.height);
+      })
+      .toBeGreaterThanOrEqual(0);
+    await expect.poll(offset).toBe(0);
+  });
+
   test("refuses a link that isn't one", async ({ page }) => {
     const dialog = await open(page);
     await dialog.getByLabel("Company").fill("Trey Research");

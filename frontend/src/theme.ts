@@ -193,7 +193,34 @@ const hintBelow = {
     )[],
   },
 };
-const oneLine = { ...hintBelow, ...onPrimary };
+
+/**
+ * How far below its box a dropdown opens: past the box's hint, if it has one under it, so the list never
+ * covers the hint ("New company: it's added for you" shows exactly while you type). Floating UI calls it
+ * each time it places the dropdown, so a hint that changes as you type is measured afresh. Above the box
+ * (when there's no room below) the usual 8 px.
+ */
+export const clearHint = ({
+  elements,
+  placement,
+}: {
+  elements: { reference: unknown };
+  placement: string;
+}) => {
+  const box = elements.reference;
+  if (!(box instanceof Element) || !box.id || !placement.startsWith("bottom")) return 8;
+  const hint = document.getElementById(`${box.id}-description`);
+  if (!hint) return 8;
+  return Math.max(8, Math.ceil(hint.getBoundingClientRect().bottom - box.getBoundingClientRect().bottom) + 8);
+};
+// Mantine types a dropdown's offset as a number, but hands it to Floating UI as it is, which takes a function.
+const belowHint = clearHint as unknown as number;
+
+const oneLine = {
+  defaultProps: { ...hintBelow.defaultProps, comboboxProps: { offset: belowHint } },
+  ...onPrimary,
+};
+const pickerBelowHint = { ...hintBelow.defaultProps, popoverProps: { offset: belowHint } };
 
 /**
  * Red subtle and outline actions (Delete) in the red that reads at 4.5:1 on white, the page and the dark
@@ -350,7 +377,7 @@ export function themeFor(lang: string) {
       TagsInput: TagsInput.extend(oneLine),
       // The time fields (in DateTimePicker too): the focused field and the chosen hour or minute.
       TimePicker: TimePicker.extend({
-        ...hintBelow,
+        defaultProps: pickerBelowHint,
         classNames: { field: classes.timeField, control: classes.timeControl },
       }),
       TimeInput: TimeInput.extend({ ...hintBelow, classNames: { input: classes.timeInput } }),
@@ -358,7 +385,7 @@ export function themeFor(lang: string) {
         ...today,
         defaultProps: {
           ...today.defaultProps,
-          ...hintBelow.defaultProps,
+          ...pickerBelowHint,
           valueFormat: pickerDate,
           dateParser: typedDate(pickerDate, lang),
         },
@@ -367,7 +394,7 @@ export function themeFor(lang: string) {
         ...today,
         defaultProps: {
           ...today.defaultProps,
-          ...hintBelow.defaultProps,
+          ...pickerBelowHint,
           valueFormat: datePattern("pickerDateTime", lang),
         },
       }),
