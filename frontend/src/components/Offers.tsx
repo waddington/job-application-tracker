@@ -241,7 +241,8 @@ export function OfferFormModal({
               )}
             </>
           )}
-          <SimpleGrid cols={{ base: 1, sm: 4 }}>
+          {/* Two a row: at four, a date beside its clear button was too narrow to show whole. */}
+          <SimpleGrid cols={{ base: 1, sm: 2 }}>
             <TextInput label={t("form.currency")} maxLength={3} {...form.getInputProps("currency")} />
             <DateInput label={t("form.received")} clearable {...form.getInputProps("receivedOn")} />
             <DateInput label={t("form.replyBy")} clearable {...form.getInputProps("respondBy")} />
