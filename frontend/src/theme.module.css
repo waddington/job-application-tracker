@@ -191,7 +191,7 @@ thead:not([data-records]) .th button {
 [data-mantine-color-scheme] .input[data-variant="default"] {
   --input-bd: var(--jat-input-border);
 }
-.tick:not(:checked, :indeterminate, :disabled) {
+.tick:not(:checked, :indeterminate, :disabled, [data-error]) {
   border-color: var(--jat-input-border);
 }
 /* A switch that's off is a pale track: a ring in the same outline shows where it is. */
