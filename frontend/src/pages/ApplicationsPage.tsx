@@ -8,7 +8,6 @@ import {
   ScrollArea,
   SegmentedControl,
   Select,
-  Skeleton,
   Stack,
   Switch,
   Table,
@@ -36,7 +35,7 @@ import {
   type ApplicationFilters,
 } from "../api/hooks";
 import { ApplicationDrawer } from "../components/ApplicationDrawer";
-import { Board } from "../components/Board";
+import { Board, BoardSkeleton } from "../components/Board";
 import { NewApplicationModal } from "../components/NewApplicationModal";
 import { RoundBadge } from "../components/Interviews";
 import { StageBadge } from "../components/StageBadge";
@@ -127,7 +126,8 @@ export function ApplicationsPage() {
   const filtered = !!(debouncedQ || stage.length || route || agencyId || staleOnly || archived);
 
   return (
-    <Page>
+    // The board fills the window; the list keeps the page's cap.
+    <Page wide={view === "board"}>
       <Group justify="space-between">
         <Group gap="sm">
           <IconBriefcase size={26} stroke={1.6} />
@@ -210,13 +210,11 @@ export function ApplicationsPage() {
           query={applications}
           skeleton={
             view === "board" ? (
-              <Group gap="sm" wrap="nowrap" align="flex-start">
-                {Array.from({ length: 5 }, (_, i) => (
-                  <Skeleton key={i} w={250} miw={250} height={420} radius="md" />
-                ))}
-              </Group>
+              <BoardSkeleton />
             ) : (
-              <TableSkeleton rows={8} rowHeight={66} headHeight={39} />
+              <Card padding="md">
+                <TableSkeleton rows={8} rowHeight={66} headHeight={39} />
+              </Card>
             )
           }
         />
@@ -237,106 +235,111 @@ export function ApplicationsPage() {
       ) : view === "board" && workflow ? (
         <Board workflow={workflow} rows={rows} onOpen={setOpenId} />
       ) : (
-        <ScrollArea>
-          <Table highlightOnHover verticalSpacing="sm" miw={760}>
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>
-                  <SortHeader label={t("columns.companyRole")} asc="company" sort={sort} onSort={setSort} />
-                </Table.Th>
-                <Table.Th>{t("columns.route")}</Table.Th>
-                <Table.Th>
-                  <SortHeader label={t("columns.stage")} asc="stage" sort={sort} onSort={setSort} />
-                </Table.Th>
-                <Table.Th>
-                  <SortHeader
-                    label={t("columns.lastActivity")}
-                    asc="last_activity"
-                    desc="-last_activity"
-                    sort={sort}
-                    onSort={setSort}
-                  />
-                </Table.Th>
-                <Table.Th>{t("columns.tags")}</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {rows.map((row) => (
-                <Table.Tr
-                  key={row.id}
-                  onClick={() => setOpenId(row.id)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      setOpenId(row.id);
-                    }
-                  }}
-                  tabIndex={0}
-                  aria-label={t("openRow", { role: row.role_title, company: row.company_name })}
-                  data-panel-opener={row.id}
-                  style={{ cursor: "pointer" }}
-                >
-                  <Table.Td>
-                    <Text fw={600} size="sm">
-                      {row.company_name}
-                    </Text>
-                    <Text size="sm" c="dimmed">
-                      {row.role_title}
-                    </Text>
-                  </Table.Td>
-                  <Table.Td>
-                    <Text size="sm">
-                      {row.route === "agency" && row.recruiter_name && <PersonMarks id={row.recruiter_id} />}
-                      {row.route === "direct" ? (
-                        // An in-house recruiter: "Direct · Riley Chen".
-                        <RecruiterLine
-                          id={row.recruiter_id}
-                          name={row.recruiter_name}
-                          link={false}
-                          markSize={14}
-                        >
-                          {routeLabel(row)}
-                        </RecruiterLine>
-                      ) : (
-                        routeLabel(row)
-                      )}
-                    </Text>
-                  </Table.Td>
-                  <Table.Td>
-                    <Stack gap={4} align="flex-start">
-                      <StageBadge id={row.stage} stage={stages.get(row.stage)} fallback={row.stage_name} />
-                      <RoundBadge round={row.current_round} stageKind={row.stage_kind} size="xs" />
-                    </Stack>
-                  </Table.Td>
-                  <Table.Td>
-                    <Text size="sm" c={row.stale ? "red" : undefined} fw={row.stale ? 600 : undefined}>
-                      {ago(row.days_since_activity)}
-                    </Text>
-                    {row.stale && (
-                      <Text size="xs" c="red">
-                        {t("needsChasing")}
-                      </Text>
-                    )}
-                    {row.reply_to_read_since && (
-                      <Text size="xs" c="orange" fw={600}>
-                        {t("replyToRead")}
-                      </Text>
-                    )}
-                  </Table.Td>
-                  <Table.Td>
-                    <Group gap={4}>
-                      {row.tags.map((tag) => (
-                        <Badge key={tag} size="sm" variant="dot" color="gray">
-                          {tag}
-                        </Badge>
-                      ))}
-                    </Group>
-                  </Table.Td>
+        // The list on one of the redesign's soft cards, a little tighter than the roomy default for a table.
+        <Card padding="md">
+          <ScrollArea>
+            <Table highlightOnHover verticalSpacing="sm" miw={760}>
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>
+                    <SortHeader label={t("columns.companyRole")} asc="company" sort={sort} onSort={setSort} />
+                  </Table.Th>
+                  <Table.Th>{t("columns.route")}</Table.Th>
+                  <Table.Th>
+                    <SortHeader label={t("columns.stage")} asc="stage" sort={sort} onSort={setSort} />
+                  </Table.Th>
+                  <Table.Th>
+                    <SortHeader
+                      label={t("columns.lastActivity")}
+                      asc="last_activity"
+                      desc="-last_activity"
+                      sort={sort}
+                      onSort={setSort}
+                    />
+                  </Table.Th>
+                  <Table.Th>{t("columns.tags")}</Table.Th>
                 </Table.Tr>
-              ))}
-            </Table.Tbody>
-          </Table>
-        </ScrollArea>
+              </Table.Thead>
+              <Table.Tbody>
+                {rows.map((row) => (
+                  <Table.Tr
+                    key={row.id}
+                    onClick={() => setOpenId(row.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setOpenId(row.id);
+                      }
+                    }}
+                    tabIndex={0}
+                    aria-label={t("openRow", { role: row.role_title, company: row.company_name })}
+                    data-panel-opener={row.id}
+                    style={{ cursor: "pointer" }}
+                  >
+                    <Table.Td>
+                      <Text fw={600} size="sm">
+                        {row.company_name}
+                      </Text>
+                      <Text size="sm" c="dimmed">
+                        {row.role_title}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td>
+                      <Text size="sm">
+                        {row.route === "agency" && row.recruiter_name && (
+                          <PersonMarks id={row.recruiter_id} />
+                        )}
+                        {row.route === "direct" ? (
+                          // An in-house recruiter: "Direct · Riley Chen".
+                          <RecruiterLine
+                            id={row.recruiter_id}
+                            name={row.recruiter_name}
+                            link={false}
+                            markSize={14}
+                          >
+                            {routeLabel(row)}
+                          </RecruiterLine>
+                        ) : (
+                          routeLabel(row)
+                        )}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td>
+                      <Stack gap={4} align="flex-start">
+                        <StageBadge id={row.stage} stage={stages.get(row.stage)} fallback={row.stage_name} />
+                        <RoundBadge round={row.current_round} stageKind={row.stage_kind} size="xs" />
+                      </Stack>
+                    </Table.Td>
+                    <Table.Td>
+                      <Text size="sm" c={row.stale ? "red" : undefined} fw={row.stale ? 600 : undefined}>
+                        {ago(row.days_since_activity)}
+                      </Text>
+                      {row.stale && (
+                        <Text size="xs" c="red">
+                          {t("needsChasing")}
+                        </Text>
+                      )}
+                      {row.reply_to_read_since && (
+                        <Text size="xs" c="orange" fw={600}>
+                          {t("replyToRead")}
+                        </Text>
+                      )}
+                    </Table.Td>
+                    <Table.Td>
+                      <Group gap={4}>
+                        {row.tags.map((tag) => (
+                          <Badge key={tag} size="sm" variant="dot" color="gray">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </Group>
+                    </Table.Td>
+                  </Table.Tr>
+                ))}
+              </Table.Tbody>
+            </Table>
+          </ScrollArea>
+        </Card>
       )}
 
       <NewApplicationModal

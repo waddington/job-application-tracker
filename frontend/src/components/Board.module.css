@@ -1,0 +1,24 @@
+/*
+ * The board fills the room it has (docs/rfc/app-redesign.md §2, Pages): beside the menu, or beside the docked
+ * panel when that's open, its columns share the width, each between 180 and 360 px. A few columns stop at 360 px
+ * rather than stretching across a wide screen; with more than fit at 180 px, the board scrolls sideways.
+ */
+.scroller {
+  /* Mantine's ScrollArea content is a shrink-to-fit table, which would keep the columns at their widest. */
+  display: block !important;
+}
+
+.column {
+  flex: 1 1 0;
+  min-width: 180px;
+  max-width: 360px;
+}
+
+/*
+ * While a card is dragged, the columns keep the width they had when it was picked up, so the closed stages that
+ * appear for the drop come in after them instead of squeezing every column under the pointer.
+ */
+.column[data-frozen] {
+  flex: 0 0 var(--board-column-width);
+  max-width: none;
+}
