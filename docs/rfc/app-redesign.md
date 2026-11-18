@@ -62,7 +62,8 @@ the page beside the menu and the panel was about 100 px wide (the lead's call; K
   to 360 px (a few columns stop at 360 rather than stretching across a 4K screen), laid out by the board's own
   width, so beside the docked panel they share what's left; closed-stage columns share like the others. While a
   card is dragged the columns keep their widths, and the closed stages that appear for the drop come in after them
-  at 200 px, so nothing shifts under the pointer. The list stays at the 2,400 px cap, on a soft card.
+  at 200 px, so nothing shifts under the pointer. Only the board passes the cap: the title and filters keep it, so
+  the List/Board switch stays put. The list stays at the 2,400 px cap, on a soft card.
 - **Record pages** (an application, company, person, agency or role), from 1,280 px: the main cards flow in two
   columns, the side cards (to-dos, role, people) in a narrow third (about 420 px); an application's summary spans the top.
 - **Notes** as a grid of note cards (notes still open in their editor dialog). **Documents**: the CV files and each
