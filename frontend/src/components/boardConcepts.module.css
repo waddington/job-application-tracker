@@ -1,0 +1,115 @@
+/* DEV ONLY: the board concepts (boardConcepts.tsx). DO NOT MERGE. */
+
+/* Concept 1: an empty column folds into a strip with its name rotated; it still takes drops. */
+.strip {
+  flex: 0 0 40px;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  transition:
+    background-color 120ms,
+    opacity 120ms;
+}
+.strip[data-over] {
+  background-color: var(--mantine-color-teal-light);
+}
+.stripLabel {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  white-space: nowrap;
+  font-size: var(--mantine-font-size-xs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Concept 2: the rounds side by side under one Interviewing header, each a narrow sub-column. */
+.group {
+  flex: var(--rounds) 1 0;
+  min-width: calc(var(--rounds) * 140px + (var(--rounds) - 1) * 6px + 20px);
+  max-width: calc(var(--rounds) * 300px);
+}
+.sub {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 6px;
+  border-radius: var(--mantine-radius-md);
+  background-color: rgb(var(--jat-shadow, 0 0 0) / 0.035);
+}
+
+/* Concept 5: the rounds as lanes stacked inside one wider Interviewing column. */
+.lanes {
+  flex: 1.7 1 0;
+  min-width: 250px;
+  max-width: 620px;
+}
+.lane {
+  padding: 6px;
+  border-radius: var(--mantine-radius-md);
+  background-color: rgb(var(--jat-shadow, 0 0 0) / 0.035);
+}
+.lane[data-empty] {
+  padding-block: 3px;
+}
+.laneCards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+  gap: 8px;
+}
+
+/* Concepts 2 and 5: a group keeps its width while a card is dragged, as the columns do. */
+.group[data-frozen],
+.lanes[data-frozen] {
+  flex: 0 0 var(--board-column-width);
+  min-width: 0;
+  max-width: none;
+}
+
+/* Concept 3: while the panel floats over the board, the page doesn't make room for it. */
+:global(html[data-board-overlay]) :global(.mantine-AppShell-main) {
+  --app-shell-aside-offset: 0px;
+}
+:global(html[data-board-overlay]) :global(.mantine-AppShell-aside) > * {
+  box-shadow:
+    -24px 0 48px -16px rgb(0 0 0 / 0.28),
+    0 18px 50px -24px rgb(0 0 0 / 0.35);
+}
+
+/* Concept 4: a shadow at each edge with columns out of sight, and a button that pages to them. */
+.edges {
+  position: relative;
+}
+.fadeLeft,
+.fadeRight {
+  position: absolute;
+  top: 0;
+  bottom: 12px;
+  width: 72px;
+  pointer-events: none;
+  display: flex;
+  align-items: flex-start;
+  padding-top: 4px;
+  z-index: 2;
+}
+.fadeLeft {
+  left: 0;
+  padding-left: 4px;
+  justify-content: flex-start;
+  background: linear-gradient(to right, rgb(0 0 0 / 0.12), transparent);
+  border-radius: var(--mantine-radius-lg) 0 0 var(--mantine-radius-lg);
+}
+.fadeRight {
+  right: 0;
+  padding-right: 4px;
+  justify-content: flex-end;
+  background: linear-gradient(to left, rgb(0 0 0 / 0.12), transparent);
+  border-radius: 0 var(--mantine-radius-lg) var(--mantine-radius-lg) 0;
+}
+.fadeLeft > *,
+.fadeRight > * {
+  pointer-events: auto;
+  white-space: nowrap;
+}
