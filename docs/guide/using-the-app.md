@@ -93,6 +93,11 @@ Today, an application's *Role* card, search, the Timeline) to open its page:
   the role* (it's the same file, not a copy). A paperclip and count next to a role's name
   means it has files.
 
+Like an [application's page](#an-applications-page), a role's page is laid out by the room it has: on a
+wide screen *About the role* and your application in the first column, notes and links in the second, and
+to-dos and files in a narrower third; with a little less room the first two make one column beside the
+third, and on a smaller screen everything stacks.
+
 The **Roles** page shows roles *To decide* (the default), *Interested* (an application that
 hasn't got to *Applied* yet), *Applied* (one that got to *Applied* at some point, even if it
 was closed later; once every application for it has ended, its badge says how, e.g. *Rejected* or
@@ -517,7 +522,11 @@ them, your calls and meetings with them, the roles they've mentioned, every appl
 the interviews they were in, and your notes, links and files about them. Click a name anywhere to open it; **Timeline**,
 **Edit**, **Merge…** and **Delete** are at the top. **Timeline** opens the
 [Timeline](#timeline) filtered to them, over all time: calls, the roles they pitched, the
-applications and interviews they're on, and notes about them or those roles.
+applications and interviews they're on, and notes about them or those roles. The page is laid out by
+the room it has, as an [application's page](#an-applications-page) is: on a wide screen your calls and
+meetings and your notes in the first column, the roles they've mentioned, their applications and interviews
+in the second, and how to reach them, to-dos, links and files in a narrower third; with a little less room
+the first two make one column beside the third, and on a smaller screen everything stacks.
 
 **Two records of the same person?** On the one to keep, press **Merge…** and pick the other
 (people with the same name, email address or LinkedIn profile are listed first). Everything
@@ -573,7 +582,11 @@ Calls show under *Coming up* on Today, on the Timeline, and in
 search. Interview rounds for an application stay on the application's page.
 
 An **agency page** shows its recruiters and every role it put you forward for (click one for its
-[quick view](#applications-list-and-board) beside the page). Applications
+[quick view](#applications-list-and-board) beside the page), with to-dos, notes, links and files. It's
+laid out like a [company's page](#companies): on a wide screen the roles it put you forward for in the first
+column, notes, links and files in the second, and to-dos and its recruiters in a narrower third; with less
+room (the quick view open beside it, say) the first two make one column beside the third, and on a smaller
+screen everything stacks. Applications
 for the same job through two routes (say, directly and via an agency) show a **duplicate
 warning**.
 
