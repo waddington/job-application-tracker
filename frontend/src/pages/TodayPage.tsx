@@ -194,6 +194,7 @@ function AppLine({
       who={
         <UnstyledButton
           onClick={() => onOpen(row.id)}
+          data-panel-opener={row.id}
           style={{ display: "block", minWidth: 0 }}
           aria-label={t("rows.open", { company: row.company_name })}
         >

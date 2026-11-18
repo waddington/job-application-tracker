@@ -273,6 +273,7 @@ export function ApplicationsPage() {
                   }}
                   tabIndex={0}
                   aria-label={t("openRow", { role: row.role_title, company: row.company_name })}
+                  data-panel-opener={row.id}
                   style={{ cursor: "pointer" }}
                 >
                   <Table.Td>

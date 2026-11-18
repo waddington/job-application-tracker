@@ -148,6 +148,7 @@ function DraggableCard({ row, onOpen }: { row: ApplicationRow; onOpen: (id: stri
         borderLeft: row.stale ? "3px solid var(--mantine-color-red-6)" : undefined,
       }}
       aria-label={t("board.card", { company: row.company_name, role: row.role_title })}
+      data-panel-opener={row.id} // focus comes back here when the quick view closes, even after a move
       {...attributes}
       {...listeners}
       onClick={() => onOpen(row.id)}
