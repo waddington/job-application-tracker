@@ -200,7 +200,12 @@ export function CompanyPage() {
                         </Table.Td>
                         <Table.Td>
                           <Group gap={4}>
-                            <StageBadge id={a.stage} stage={stages.get(a.stage)} fallback={a.stage_name} />
+                            <StageBadge
+                              id={a.stage}
+                              stage={stages.get(a.stage)}
+                              fallback={a.stage_name}
+                              whole
+                            />
                             {a.archived && (
                               <Badge size="sm" variant="outline" color="gray">
                                 {t("company.archived")}
