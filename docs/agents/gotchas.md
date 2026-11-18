@@ -69,10 +69,11 @@ Each of these cost time once. Add a line when something new does.
 
 ## Git and GitHub
 
-- **`gh pr close N --delete-branch` can leave the remote branch** (#418, 2026-11-18): check `git ls-remote origin | grep
-  <branch>` and delete it with `git push origin --delete <branch>`.
+- **`gh pr close N --delete-branch` can leave the remote branch** (#418, 2026-11-18: it printed only the local
+  deletion, and `git ls-remote` still showed the branch): check `git ls-remote origin | grep <branch>` and delete it
+  with `git push origin --delete <branch>`.
 - **Quoting Kai: drop names from screenshots.** A roadmap detail may quote Kai's words, but Kai often names a real
-  company or person from the screenshot they're describing ("the <company> item looks funky"). Replace it ("[one
+  company or person from the screenshot they're describing, e.g. calling a card by its company. Replace it ("[one
   card]") before committing: #418 pushed one to a public branch and had to be closed and redone as #419.
 - **`gh pr edit` fails silently**: set title and body with `gh api -X PATCH …/pulls/N -f title=… -F body=@file`.
 - **`gh pr merge` right after a push** can fail (still rechecking) or 504; `tools/dev/merge.sh` retries. From the main
