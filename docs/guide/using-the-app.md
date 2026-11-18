@@ -18,7 +18,8 @@ links to what changed in that release on GitHub, in a new tab. If the running tr
 page are different versions, a sentence under it says so and what to do (see
 [Troubleshooting](troubleshooting.md#the-sidebar-says-the-server-and-this-page-are-different-versions)).
 
-Pages fill the window beside the sidebar, up to 2,400 pixels wide, so a wide screen is used whole. Behind
+Pages fill the window beside the sidebar, up to 2,400 pixels wide (the Applications board has no limit), so a
+wide screen is used whole. Behind
 every page, the background fades very slowly through five soft tints (lilac, butter, mint, sky and apricot,
 or darker twins in dark mode), once round every ten minutes; it carries on where it was when you change page
 or reload. If your system is set to reduce motion, it stays lilac.
@@ -257,6 +258,10 @@ same quick view.
 The **board** shows a column per stage. Drag a card to move it; the usual next stages are
 highlighted while you drag. Closed stages (Rejected, Withdrawn…) are hidden unless you
 switch on *Show closed stages*, but appear while you drag so you can drop a card on them. Cards show the current interview round.
+The board fills the window beside the sidebar (or beside the quick view, when it's open), and its
+columns share that width, from 180 to 360 pixels each; when they don't all fit at 180, it scrolls
+sideways, and dragging a card to the edge scrolls it along. While you drag, the columns stay as they
+were, and the closed stages come in after them.
 
 The round's purple badge, on board cards, list rows and the quick view, names the round, with its
 day once booked: "Round 2 · Technical · Thu 12 Nov" (still, once that day has passed, until you mark

@@ -8,7 +8,6 @@ import {
   ScrollArea,
   SegmentedControl,
   Select,
-  Skeleton,
   Stack,
   Switch,
   Table,
@@ -23,7 +22,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { PersonMarks } from "../components/GhostMark";
-import { Page } from "../components/Page";
+import { Page, PageCapped } from "../components/Page";
 import { TableSkeleton } from "../components/PageSkeleton";
 import { Pending } from "../components/QueryState";
 import { RecruiterLine } from "../components/RecruiterLine";
@@ -36,7 +35,7 @@ import {
   type ApplicationFilters,
 } from "../api/hooks";
 import { ApplicationDrawer } from "../components/ApplicationDrawer";
-import { Board } from "../components/Board";
+import { Board, BoardSkeleton } from "../components/Board";
 import { NewApplicationModal } from "../components/NewApplicationModal";
 import { RoundBadge } from "../components/Interviews";
 import { StageBadge } from "../components/StageBadge";
@@ -127,216 +126,226 @@ export function ApplicationsPage() {
   const filtered = !!(debouncedQ || stage.length || route || agencyId || staleOnly || archived);
 
   return (
-    <Page>
-      <Group justify="space-between">
-        <Group gap="sm">
-          <IconBriefcase size={26} stroke={1.6} />
-          <Title order={2}>{t("title")}</Title>
-          {rows && (
-            <Badge variant="light" color="gray">
-              {rows.length}
-            </Badge>
-          )}
-          {isFetching && !isLoading && <Loader size="xs" />}
+    // The board fills the window; the list keeps the page's cap.
+    <Page wide={view === "board"}>
+      {/* The title and filters keep the cap on the board too, so the List/Board switch stays put. */}
+      <PageCapped>
+        <Group justify="space-between">
+          <Group gap="sm">
+            <IconBriefcase size={26} stroke={1.6} />
+            <Title order={2}>{t("title")}</Title>
+            {rows && (
+              <Badge variant="light" color="gray">
+                {rows.length}
+              </Badge>
+            )}
+            {isFetching && !isLoading && <Loader size="xs" />}
+          </Group>
+          <Group gap="sm">
+            <SegmentedControl
+              value={view}
+              onChange={(v) => setView(v as "list" | "board")}
+              data={[
+                { value: "list", label: t("view.list") },
+                { value: "board", label: t("view.board") },
+              ]}
+              aria-label={t("view.label")}
+            />
+          </Group>
         </Group>
-        <Group gap="sm">
-          <SegmentedControl
-            value={view}
-            onChange={(v) => setView(v as "list" | "board")}
+
+        <Group gap="sm" align="flex-end" wrap="wrap">
+          <TextInput
+            placeholder={t("filters.searchPlaceholder")}
+            leftSection={<IconSearch size={16} />}
+            value={q}
+            onChange={(e) => setQ(e.currentTarget.value)}
+            w={300}
+            aria-label={t("filters.search")}
+          />
+          <MultiSelect
+            placeholder={stage.length ? undefined : t("filters.allStages")}
+            data={(workflow?.stages ?? []).map((s) => ({ value: s.id, label: stageName(s) }))}
+            value={stage}
+            onChange={setStage}
+            clearable
+            w={240}
+            aria-label={t("filters.stages")}
+          />
+          <Select
+            placeholder={t("filters.anyRoute")}
             data={[
-              { value: "list", label: t("view.list") },
-              { value: "board", label: t("view.board") },
+              { value: "direct", label: t("routes.direct") },
+              { value: "agency", label: t("routes.recruiter") },
+              { value: "referral", label: t("routes.referral") },
             ]}
-            aria-label={t("view.label")}
+            value={route}
+            onChange={setRoute}
+            clearable
+            w={140}
+            aria-label={t("filters.route")}
+          />
+          <Select
+            placeholder={t("filters.anyAgency")}
+            data={(agencies ?? []).map((a) => ({ value: a.id, label: a.name }))}
+            value={agencyId}
+            onChange={setAgencyId}
+            clearable
+            searchable
+            w={200}
+            aria-label={t("filters.agency")}
+          />
+          <Switch
+            label={t("filters.needsChasing")}
+            checked={staleOnly}
+            onChange={(e) => setStaleOnly(e.currentTarget.checked)}
+          />
+          <Switch
+            label={t("filters.archived")}
+            checked={archived}
+            onChange={(e) => setArchived(e.currentTarget.checked)}
           />
         </Group>
-      </Group>
-
-      <Group gap="sm" align="flex-end" wrap="wrap">
-        <TextInput
-          placeholder={t("filters.searchPlaceholder")}
-          leftSection={<IconSearch size={16} />}
-          value={q}
-          onChange={(e) => setQ(e.currentTarget.value)}
-          w={300}
-          aria-label={t("filters.search")}
-        />
-        <MultiSelect
-          placeholder={stage.length ? undefined : t("filters.allStages")}
-          data={(workflow?.stages ?? []).map((s) => ({ value: s.id, label: stageName(s) }))}
-          value={stage}
-          onChange={setStage}
-          clearable
-          w={240}
-          aria-label={t("filters.stages")}
-        />
-        <Select
-          placeholder={t("filters.anyRoute")}
-          data={[
-            { value: "direct", label: t("routes.direct") },
-            { value: "agency", label: t("routes.recruiter") },
-            { value: "referral", label: t("routes.referral") },
-          ]}
-          value={route}
-          onChange={setRoute}
-          clearable
-          w={140}
-          aria-label={t("filters.route")}
-        />
-        <Select
-          placeholder={t("filters.anyAgency")}
-          data={(agencies ?? []).map((a) => ({ value: a.id, label: a.name }))}
-          value={agencyId}
-          onChange={setAgencyId}
-          clearable
-          searchable
-          w={200}
-          aria-label={t("filters.agency")}
-        />
-        <Switch
-          label={t("filters.needsChasing")}
-          checked={staleOnly}
-          onChange={(e) => setStaleOnly(e.currentTarget.checked)}
-        />
-        <Switch
-          label={t("filters.archived")}
-          checked={archived}
-          onChange={(e) => setArchived(e.currentTarget.checked)}
-        />
-      </Group>
+      </PageCapped>
 
       {rows === undefined ? (
         <Pending
           query={applications}
           skeleton={
             view === "board" ? (
-              <Group gap="sm" wrap="nowrap" align="flex-start">
-                {Array.from({ length: 5 }, (_, i) => (
-                  <Skeleton key={i} w={250} miw={250} height={420} radius="md" />
-                ))}
-              </Group>
+              <BoardSkeleton />
             ) : (
-              <TableSkeleton rows={8} rowHeight={66} headHeight={39} />
+              <Card padding="md">
+                <TableSkeleton rows={8} rowHeight={66} headHeight={39} />
+              </Card>
             )
           }
         />
       ) : !rows.length ? (
-        <Card withBorder p="xl">
-          <Stack align="center" gap="xs">
-            <Text fw={600}>{filtered ? t("empty.noMatch") : t("empty.none")}</Text>
-            <Text c="dimmed" size="sm">
-              {filtered ? t("empty.clearFilter") : t("empty.addFirst")}
-            </Text>
-            {!filtered && (
-              <Button mt="sm" leftSection={<IconPlus size={16} />} onClick={() => setCreating(true)}>
-                {t("empty.newApplication")}
-              </Button>
-            )}
-          </Stack>
-        </Card>
+        // Capped like the list, so it's the same card in either view however wide the window.
+        <PageCapped>
+          <Card withBorder p="xl">
+            <Stack align="center" gap="xs">
+              <Text fw={600}>{filtered ? t("empty.noMatch") : t("empty.none")}</Text>
+              <Text c="dimmed" size="sm">
+                {filtered ? t("empty.clearFilter") : t("empty.addFirst")}
+              </Text>
+              {!filtered && (
+                <Button mt="sm" leftSection={<IconPlus size={16} />} onClick={() => setCreating(true)}>
+                  {t("empty.newApplication")}
+                </Button>
+              )}
+            </Stack>
+          </Card>
+        </PageCapped>
       ) : view === "board" && workflow ? (
         <Board workflow={workflow} rows={rows} onOpen={setOpenId} />
       ) : (
-        <ScrollArea>
-          <Table highlightOnHover verticalSpacing="sm" miw={760}>
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>
-                  <SortHeader label={t("columns.companyRole")} asc="company" sort={sort} onSort={setSort} />
-                </Table.Th>
-                <Table.Th>{t("columns.route")}</Table.Th>
-                <Table.Th>
-                  <SortHeader label={t("columns.stage")} asc="stage" sort={sort} onSort={setSort} />
-                </Table.Th>
-                <Table.Th>
-                  <SortHeader
-                    label={t("columns.lastActivity")}
-                    asc="last_activity"
-                    desc="-last_activity"
-                    sort={sort}
-                    onSort={setSort}
-                  />
-                </Table.Th>
-                <Table.Th>{t("columns.tags")}</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {rows.map((row) => (
-                <Table.Tr
-                  key={row.id}
-                  onClick={() => setOpenId(row.id)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      setOpenId(row.id);
-                    }
-                  }}
-                  tabIndex={0}
-                  aria-label={t("openRow", { role: row.role_title, company: row.company_name })}
-                  data-panel-opener={row.id}
-                  style={{ cursor: "pointer" }}
-                >
-                  <Table.Td>
-                    <Text fw={600} size="sm">
-                      {row.company_name}
-                    </Text>
-                    <Text size="sm" c="dimmed">
-                      {row.role_title}
-                    </Text>
-                  </Table.Td>
-                  <Table.Td>
-                    <Text size="sm">
-                      {row.route === "agency" && row.recruiter_name && <PersonMarks id={row.recruiter_id} />}
-                      {row.route === "direct" ? (
-                        // An in-house recruiter: "Direct · Riley Chen".
-                        <RecruiterLine
-                          id={row.recruiter_id}
-                          name={row.recruiter_name}
-                          link={false}
-                          markSize={14}
-                        >
-                          {routeLabel(row)}
-                        </RecruiterLine>
-                      ) : (
-                        routeLabel(row)
-                      )}
-                    </Text>
-                  </Table.Td>
-                  <Table.Td>
-                    <Stack gap={4} align="flex-start">
-                      <StageBadge id={row.stage} stage={stages.get(row.stage)} fallback={row.stage_name} />
-                      <RoundBadge round={row.current_round} stageKind={row.stage_kind} size="xs" />
-                    </Stack>
-                  </Table.Td>
-                  <Table.Td>
-                    <Text size="sm" c={row.stale ? "red" : undefined} fw={row.stale ? 600 : undefined}>
-                      {ago(row.days_since_activity)}
-                    </Text>
-                    {row.stale && (
-                      <Text size="xs" c="red">
-                        {t("needsChasing")}
-                      </Text>
-                    )}
-                    {row.reply_to_read_since && (
-                      <Text size="xs" c="orange" fw={600}>
-                        {t("replyToRead")}
-                      </Text>
-                    )}
-                  </Table.Td>
-                  <Table.Td>
-                    <Group gap={4}>
-                      {row.tags.map((tag) => (
-                        <Badge key={tag} size="sm" variant="dot" color="gray">
-                          {tag}
-                        </Badge>
-                      ))}
-                    </Group>
-                  </Table.Td>
+        // The list on one of the redesign's soft cards, a little tighter than the roomy default for a table.
+        <Card padding="md">
+          <ScrollArea>
+            <Table highlightOnHover verticalSpacing="sm" miw={760}>
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>
+                    <SortHeader label={t("columns.companyRole")} asc="company" sort={sort} onSort={setSort} />
+                  </Table.Th>
+                  <Table.Th>{t("columns.route")}</Table.Th>
+                  <Table.Th>
+                    <SortHeader label={t("columns.stage")} asc="stage" sort={sort} onSort={setSort} />
+                  </Table.Th>
+                  <Table.Th>
+                    <SortHeader
+                      label={t("columns.lastActivity")}
+                      asc="last_activity"
+                      desc="-last_activity"
+                      sort={sort}
+                      onSort={setSort}
+                    />
+                  </Table.Th>
+                  <Table.Th>{t("columns.tags")}</Table.Th>
                 </Table.Tr>
-              ))}
-            </Table.Tbody>
-          </Table>
-        </ScrollArea>
+              </Table.Thead>
+              <Table.Tbody>
+                {rows.map((row) => (
+                  <Table.Tr
+                    key={row.id}
+                    onClick={() => setOpenId(row.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setOpenId(row.id);
+                      }
+                    }}
+                    tabIndex={0}
+                    aria-label={t("openRow", { role: row.role_title, company: row.company_name })}
+                    data-panel-opener={row.id}
+                    style={{ cursor: "pointer" }}
+                  >
+                    <Table.Td>
+                      <Text fw={600} size="sm">
+                        {row.company_name}
+                      </Text>
+                      <Text size="sm" c="dimmed">
+                        {row.role_title}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td>
+                      <Text size="sm">
+                        {row.route === "agency" && row.recruiter_name && (
+                          <PersonMarks id={row.recruiter_id} />
+                        )}
+                        {row.route === "direct" ? (
+                          // An in-house recruiter: "Direct · Riley Chen".
+                          <RecruiterLine
+                            id={row.recruiter_id}
+                            name={row.recruiter_name}
+                            link={false}
+                            markSize={14}
+                          >
+                            {routeLabel(row)}
+                          </RecruiterLine>
+                        ) : (
+                          routeLabel(row)
+                        )}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td>
+                      <Stack gap={4} align="flex-start">
+                        <StageBadge id={row.stage} stage={stages.get(row.stage)} fallback={row.stage_name} />
+                        <RoundBadge round={row.current_round} stageKind={row.stage_kind} size="xs" />
+                      </Stack>
+                    </Table.Td>
+                    <Table.Td>
+                      <Text size="sm" c={row.stale ? "red" : undefined} fw={row.stale ? 600 : undefined}>
+                        {ago(row.days_since_activity)}
+                      </Text>
+                      {row.stale && (
+                        <Text size="xs" c="red">
+                          {t("needsChasing")}
+                        </Text>
+                      )}
+                      {row.reply_to_read_since && (
+                        <Text size="xs" c="orange" fw={600}>
+                          {t("replyToRead")}
+                        </Text>
+                      )}
+                    </Table.Td>
+                    <Table.Td>
+                      <Group gap={4}>
+                        {row.tags.map((tag) => (
+                          <Badge key={tag} size="sm" variant="dot" color="gray">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </Group>
+                    </Table.Td>
+                  </Table.Tr>
+                ))}
+              </Table.Tbody>
+            </Table>
+          </ScrollArea>
+        </Card>
       )}
 
       <NewApplicationModal
