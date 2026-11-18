@@ -176,7 +176,7 @@ was that the screenshot helper only supports 1,440 and 375 px, so it wrote a one
 | **Tests** | Browser tests' default 1,400 px ≈ the old 1,100 px cap, so the default width couldn't show it | Yes: measured 1,114 vs 1,100 |
 | **Tests** | No geometry assertion for the calendar; wide-window specs only for the board and the shell | Yes: specs read |
 | **Tests** | No screenshot baselines (`toHaveScreenshot` unused) | Yes: grep |
-| **Tools** | `tools/dev/shot.py` has two widths only: 1,440 and 375 | Yes: `shot.py` lines 18-19 |
+| **Tools** | `tools/dev/shot.py` has two widths only: 1,440 and 375 | Yes: `shot.py` line 19 |
 | **Review** | Prompt named readability, and the reviewer found that class of problem and stopped | Yes: transcript |
 | **Review** | The wide Interviews screenshot was taken but not opened | Yes: reviewer transcript, no `Read` of it |
 | **Review** | Re-review covered only the fix commits | Yes: by design of the cycle |
