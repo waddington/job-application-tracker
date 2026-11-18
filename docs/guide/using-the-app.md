@@ -160,7 +160,8 @@ anything you're waiting on) the buttons stay faint until you point at the tile o
 on a touch screen they always show. On an application: set a follow-up date (tomorrow, in 3 days, next week), **snooze** it
 (3 days, 1 week, 2 weeks) so it stops nagging, or mark it **Ghosted**. A snoozed application,
 one with a follow-up date in the future, or one with an interview booked ahead never counts as
-gone quiet. Click an application's name for its quick view.
+gone quiet. Click an application's name for its quick view, a panel beside Today (see
+[Applications](#applications-list-and-board)).
 
 At the bottom, folded away: **Recent activity** (the last two weeks of the
 [Timeline](#timeline), leaving out companies, agencies and people being added) and **How it
@@ -241,6 +242,12 @@ shows everything rather than nothing.
 The **list** has search (company, role, recruiter) and filters: stage, route, agency,
 *Needs chasing*, and *Archived* (shows only archived applications). Click a row for a quick
 view; open the full page from there.
+
+**The quick view** is a panel beside the page, under the header. The page (the board too) moves
+over to make room rather than going under it, so you can keep scrolling, and clicking another row
+or card shows that one in the panel instead. Its **×**, or Escape while you're in it, closes it,
+and you're back on the row or card you opened it from. On a phone it fills the screen. Today, a
+company's page and an agency's page open the same quick view.
 
 The **board** shows a column per stage. Drag a card to move it; the usual next stages are
 highlighted while you drag. Closed stages (Rejected, Withdrawn…) are hidden unless you
@@ -550,14 +557,16 @@ meetings** on their page:
 Calls show under *Coming up* on Today, on the Timeline, and in
 search. Interview rounds for an application stay on the application's page.
 
-An **agency page** shows its recruiters and every role it put you forward for. Applications
+An **agency page** shows its recruiters and every role it put you forward for (click one for its
+[quick view](#applications-list-and-board) beside the page). Applications
 for the same job through two routes (say, directly and via an agency) show a **duplicate
 warning**.
 
 ## Companies
 
 A list of companies with how many applications and how many need chasing. A **company
-page** has its applications, roles (with whether you've applied, passed or still have to
+page** has its applications (click one for its [quick view](#applications-list-and-board) beside
+the page), roles (with whether you've applied, passed or still have to
 decide, and **Add role**), people (**Add person** for the people you talk to there),
 an *About* box, notes, links and files. **Edit** at the top renames it or sets its website,
 and **Timeline** opens the Timeline filtered to it, over all time (its applications, roles,
