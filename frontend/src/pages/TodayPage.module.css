@@ -42,3 +42,42 @@
 .sections > * + * {
   margin-top: var(--mantine-spacing-lg);
 }
+
+/* Today's three groups: Your move, Coming up, Waiting on them. They lay out by the room the page has, not
+   the window's width (container queries), since the docked panel can take 540 px of a wide window: one
+   stacked column when narrow; Your move beside the other two from 720 px of page; three columns side by
+   side from 900 px (what a 1,200 px window leaves beside the menu). docs/rfc/app-redesign.md §2, Pages. */
+.groupsRoom {
+  container-type: inline-size;
+}
+.groups {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--mantine-spacing-xl);
+  align-items: start;
+}
+.groups > *,
+.ahead > * {
+  min-width: 0; /* a long name truncates rather than widening its column */
+}
+/* Coming up above Waiting on them, in the second column or under Your move. */
+.ahead {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-xl);
+  min-width: 0;
+}
+@container (min-width: 880px) {
+  .groups {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  }
+}
+@container (min-width: 1200px) {
+  .groups {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 1fr);
+  }
+  /* The wrapper steps aside so its two groups become columns of their own. */
+  .ahead {
+    display: contents;
+  }
+}
