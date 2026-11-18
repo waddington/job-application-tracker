@@ -179,6 +179,8 @@ test.describe("opening a card", () => {
     await page.getByRole("menuitem", { name: "Screen" }).click();
     await expect.poll(() => stageOf(request, "Panel Move")).toBe("screen");
     await expect(column(page, "Screen").getByLabel("Panel Move Ltd: Panel Move")).toBeVisible();
+    // The menu unmounts with focus in it; focus comes back to the panel rather than being lost.
+    await expect(panel.getByRole("heading", { name: "Application" })).toBeFocused();
     await page.keyboard.press("Escape");
     await expect(panel).toBeHidden();
     await expect(column(page, "Screen").getByLabel("Panel Move Ltd: Panel Move")).toBeFocused();
@@ -193,6 +195,26 @@ test.describe("opening a card", () => {
     await expect.poll(() => stageOf(request, "Drag Open")).toBe("screen");
     await expect(column(page, "Screen").getByLabel("Drag Open Ltd: Drag Open")).toBeVisible();
     await expect(panel.getByRole("heading", { name: "Senior Backend Engineer" })).toBeVisible();
+  });
+
+  test("Escape cancelling a drag leaves the quick view open", async ({ page, request }) => {
+    await addCard(page, request, "Drag Cancel Ltd", "Drag Cancel");
+    await card(page, "Contoso", "Senior Backend Engineer").click();
+    const panel = page.getByRole("dialog", { name: "Application" });
+    await expect(panel.getByRole("heading", { name: "Senior Backend Engineer" })).toBeVisible();
+    const from = card(page, "Drag Cancel Ltd", "Drag Cancel");
+    const start = await from.boundingBox();
+    if (!start) throw new Error("Nothing to drag");
+    await page.mouse.move(start.x + start.width / 2, start.y + 15);
+    await page.mouse.down();
+    await page.mouse.move(start.x + start.width / 2 + 40, start.y + 40, { steps: 6 });
+    await expect(said(page)).toContainText("Drag Cancel Ltd is over"); // the drag has started
+    await page.keyboard.press("Escape");
+    await expect(said(page)).toContainText("Cancelled.");
+    await page.mouse.up();
+    await settled(page);
+    await expect(panel).toBeVisible();
+    expect(await stageOf(request, "Drag Cancel")).toBe("applied");
   });
 
   test("the recruiter's name opens their page, not the quick view, and moves nothing", async ({ page }) => {

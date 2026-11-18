@@ -41,6 +41,8 @@ const madeRoom = async (page: Page, ...covered: Locator[]) => {
     }
   }).toPass({ timeout: 5_000 });
 };
+/** Lets timers and transitions that might move focus or close something run. */
+const settle = (page: Page) => page.evaluate(() => new Promise((done) => setTimeout(done, 400)));
 /** The page's content: what's in <main>, which AppShell pads to make room. */
 const content = (page: Page) => page.locator("main > *").first();
 
@@ -137,17 +139,49 @@ test.describe("on the Applications list", () => {
     await expect(panel(page)).toBeHidden();
   });
 
-  test("its contents keep their state when the window crosses 992 px", async ({ page }) => {
+  test("its contents keep their state, and focus, when the window crosses 992 px", async ({ page }) => {
     await page.setViewportSize({ width: 1100, height: 900 });
     await listRow(page, ...CONTOSO).click();
     const note = panel(page).getByPlaceholder("What happened?");
     await note.fill("Half a thought");
+    await expect(note).toBeFocused();
     await page.setViewportSize({ width: 800, height: 900 });
     await expect(panel(page)).toHaveAttribute("aria-modal", "true");
     await expect(note).toHaveValue("Half a thought");
+    await settle(page);
+    await expect(note).toBeFocused();
     await page.setViewportSize({ width: 1100, height: 900 });
     await expect(panel(page)).toHaveAttribute("aria-modal", "false");
     await expect(note).toHaveValue("Half a thought");
+    await settle(page);
+    await expect(note).toBeFocused();
+  });
+
+  test("Escape in the feedback dialog it opens leaves the panel open", async ({ page, request }) => {
+    const made = await request.post("/api/v1/applications/quick", {
+      data: {
+        company_name: "Escape Ask Ltd",
+        role_title: "Escape Ask",
+        route: "direct",
+        stage: "applied",
+        tags: [],
+      },
+    });
+    expect(made.ok()).toBe(true);
+    const { id } = await made.json();
+    await page.reload();
+    await listRow(page, "Escape Ask", "Escape Ask Ltd").click();
+    await panel(page).getByRole("button", { name: "Move to…" }).click();
+    await page.getByRole("menuitem", { name: "Rejected" }).click();
+    const asking = page.getByRole("dialog", { name: "Moving to Rejected: any feedback?" });
+    await asking.getByLabel("What did they say?").fill("Not now");
+    await expect(asking.getByLabel("What did they say?")).toBeFocused();
+    await page.keyboard.press("Escape");
+    await expect(asking).toBeHidden();
+    await settle(page);
+    await expect(panel(page).getByRole("heading", { name: "Escape Ask" })).toBeVisible();
+    const app = await (await request.get(`/api/v1/applications/${id}`)).json();
+    expect(app.stage).toBe("applied");
   });
 });
 

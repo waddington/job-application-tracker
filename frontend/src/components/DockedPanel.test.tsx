@@ -123,12 +123,12 @@ describe("DockedPanel", () => {
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
-  it("closes on Escape when focus is nowhere (as after a button that had it was disabled)", () => {
+  it("leaves an Escape with focus nowhere alone (it may be cancelling a drag on the page)", () => {
     render(<Page />);
     fireEvent.click(screen.getByRole("button", { name: "Open A" }));
     (document.activeElement as HTMLElement).blur();
     fireEvent.keyDown(document.body, { key: "Escape" });
-    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(screen.getByRole("dialog", { name: "Application" })).toBeInTheDocument();
   });
 
   it("leaves an Escape on the page itself alone", () => {
