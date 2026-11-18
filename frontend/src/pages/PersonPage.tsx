@@ -1,4 +1,4 @@
-import { Alert, Anchor, Badge, Button, Card, Grid, Group, Stack, Table, Text, Title } from "@mantine/core";
+import { Alert, Anchor, Badge, Button, Card, Group, Stack, Table, Text, Title } from "@mantine/core";
 import { IconPencil, IconUser } from "@tabler/icons-react";
 import { Link, useParams, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 
 import { BackLink, Page } from "../components/Page";
 import { RecordSkeleton } from "../components/PageSkeleton";
+import { RecordLayout } from "../components/RecordLayout";
 import { RecruiterLine } from "../components/RecruiterLine";
 import { ReplyHabit } from "../components/ReplyHabit";
 import { stageLookup, useWorkflow } from "../api/hooks";
@@ -51,7 +52,14 @@ export function PersonPage() {
     );
   if (!data)
     return (
-      <RecordSkeleton back={back} lines={[25, 21]} actions={9} main={[300, 200]} side={[120, 176, 151]} />
+      <RecordSkeleton
+        back={back}
+        lines={[25, 21]}
+        actions={9}
+        main={[182]}
+        second={[182, 200, 117]}
+        side={[120, 214, 216]}
+      />
     );
   const { contact, agency_name, company_name, applications, interviews } = data;
   const where = contact.agency_id ? (
@@ -117,10 +125,12 @@ export function PersonPage() {
         </Group>
       </Group>
       <PossibleDuplicates person={contact} />
-      <Grid gap="lg">
-        <Grid.Col span={{ base: 12, md: 8 }}>
-          <Stack>
-            <MeetingsCard contactId={contact.id} name={contact.name} />
+      <RecordLayout
+        main={[
+          // Your calls with them; then what they're part of, and your notes. Stacked, that's the order the
+          // page always had.
+          <MeetingsCard contactId={contact.id} name={contact.name} />,
+          <>
             <RolesCard
               title={t("person.rolesTitle")}
               filters={{ contact_id: contact.id }}
@@ -162,7 +172,12 @@ export function PersonPage() {
                           </Text>
                         </Table.Td>
                         <Table.Td>
-                          <StageBadge id={a.stage} stage={stages.get(a.stage)} fallback={a.stage_name} />
+                          <StageBadge
+                            id={a.stage}
+                            stage={stages.get(a.stage)}
+                            fallback={a.stage_name}
+                            whole
+                          />
                         </Table.Td>
                         <Table.Td>
                           <Text size="xs" c="dimmed">
@@ -206,17 +221,17 @@ export function PersonPage() {
               </Card>
             )}
             <NotesCard entity={`contact:${contact.id}`} />
-          </Stack>
-        </Grid.Col>
-        <Grid.Col span={{ base: 12, md: 4 }}>
-          <Stack>
+          </>,
+        ]}
+        side={
+          <>
             <ContactCard contact={contact} />
             <TodosCard entityType="contact" entityId={contact.id} shownElsewhere={rebookTodoIds} />
             <LinksCard entityType="contact" entityId={contact.id} />
             <AttachmentsCard entityType="contact" entityId={contact.id} />
-          </Stack>
-        </Grid.Col>
-      </Grid>
+          </>
+        }
+      />
       <ContactFormModal opened={editing} onClose={() => setEditing(false)} contact={contact} />
     </Page>
   );

@@ -2,8 +2,8 @@ import type { APIRequestContext, Page } from "@playwright/test";
 
 import { expect, test } from "./fixtures";
 
-// The record layout (RecordLayout, docs/rfc/app-redesign.md §2 Pages) on an application's and a company's page:
-// laid out by the page's own width, so the docked quick view leaves it the room that's left. Three columns on a
+// The record layout (RecordLayout, docs/rfc/app-redesign.md §2 Pages) on an application's, a company's, a person's,
+// an agency's and a role's page: laid out by the page's own width, so the docked quick view leaves it the room that's left. Three columns on a
 // wide page (two main, one side), the main cards beside the side ones at mid widths, stacked when narrow.
 
 type Box = { x: number; y: number; width: number; height: number };
@@ -35,6 +35,7 @@ const firstApp = async (request: APIRequestContext) => {
     company_id: string;
     company_name: string;
     role_title: string;
+    role_id: string;
   }[];
   return apps.find((a) => a.company_name === "Contoso" && a.role_title === "Senior Backend Engineer")!;
 };
@@ -49,20 +50,84 @@ const cutInSide = (page: Page) =>
     const canvas = document.createElement("canvas").getContext("2d")!;
     for (const label of side.querySelectorAll<HTMLElement>(".mantine-Button-label"))
       if (label.scrollWidth > label.clientWidth + 0.5) cut.push(`button "${label.textContent}"`);
-    for (const input of side.querySelectorAll<HTMLInputElement>(".mantine-Select-input")) {
+    // Selects, and text fields' placeholders (not the new to-do's: its example is meant to run on).
+    const fields = side.querySelectorAll<HTMLInputElement>(
+      ".mantine-Select-input, .mantine-TextInput-input:not([aria-label='New to-do'])",
+    );
+    for (const input of fields) {
       const style = getComputedStyle(input);
       canvas.font = style.font;
       const text = input.value || input.placeholder;
       const room = input.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
-      if (canvas.measureText(text).width > room) cut.push(`select "${text}"`);
+      if (canvas.measureText(text).width > room) cut.push(`field "${text}"`);
     }
     for (const control of side.querySelectorAll<HTMLElement>("button, input")) {
-      const card = control.closest(".mantine-Card-root")!.getBoundingClientRect();
+      // (An agency's Recruiters heading and its button sit in the column itself, not in a card.)
+      const card = (control.closest(".mantine-Card-root") ?? side).getBoundingClientRect();
       if (control.getBoundingClientRect().right > card.right)
         cut.push(`past its card: ${control.outerHTML.slice(0, 80)}`);
     }
     return cut;
   });
+
+/** Nothing in the side column is cut short at 1,100 px (the column at its 320 px floor), 1,440 (378) and 1,920 (420,
+ *  beside two main columns). `last` is a button in the side column's last card, there once the page has loaded. */
+const sideFits = async (page: Page, path: string, last: string) => {
+  await page.goto(path);
+  // The text is measured in the page's font, so wait for it rather than measure the fallback.
+  await page.evaluate(() => document.fonts.ready);
+  for (const width of [1100, 1440, 1920]) {
+    await page.setViewportSize({ width, height: 1000 });
+    await expect.poll(() => arrangement(page), { message: `${path} at ${width} px` }).not.toBe("stacked");
+    await expect(page.locator("[data-record-part=side]").getByRole("button", { name: last })).toBeVisible();
+    await expect.poll(() => cutInSide(page), { message: `${path} at ${width} px` }).toEqual([]);
+  }
+};
+
+/** The badges anywhere in the columns whose text is cut short (a stage squeezed by a long name beside it). */
+const cutBadges = (page: Page) =>
+  page
+    .locator("[data-record-part] .mantine-Badge-label")
+    .evaluateAll((labels) =>
+      labels.filter((l) => l.scrollWidth > l.clientWidth + 0.5).map((l) => l.textContent),
+    );
+
+/**
+ * Gives every stage badge in the columns' tables a long name (a stage can be renamed), then returns the tables that
+ * run past their card, hide their last column or cut a badge short.
+ */
+const longStagesSpill = (page: Page) =>
+  page.evaluate(async () => {
+    const labels = document.querySelectorAll("[data-record-part] td .mantine-Badge-label");
+    for (const label of labels) label.textContent = "Second technical interview with the panel";
+    await new Promise(requestAnimationFrame);
+    const bad: string[] = labels.length ? [] : ["no stage badges in a table"];
+    for (const table of document.querySelectorAll<HTMLElement>("[data-record-part] table")) {
+      const card = table.closest(".mantine-Card-root")!.getBoundingClientRect();
+      const title = table.closest(".mantine-Card-root")!.querySelector("h4")?.textContent;
+      if (table.getBoundingClientRect().right > card.right + 0.5) bad.push(`${title}: past its card`);
+      for (const cell of table.querySelectorAll("tr > td:last-child"))
+        if (cell.getBoundingClientRect().right > card.right + 0.5) bad.push(`${title}: last column hidden`);
+      for (const label of table.querySelectorAll(".mantine-Badge-label"))
+        if (label.scrollWidth > label.clientWidth + 0.5) bad.push(`${title}: a badge cut short`);
+    }
+    return bad;
+  });
+
+/** Each column's last card ends where the column does (it's as tall as its cards: not stretched to the tallest),
+ *  and each card is as wide as its column. Returns the columns that aren't. */
+const unevenColumns = (page: Page) =>
+  page.locator("[data-record-part]").evaluateAll((columns) =>
+    columns.flatMap((column) => {
+      const box = column.getBoundingClientRect();
+      const cards = [...column.children].map((card) => card.getBoundingClientRect());
+      const bad: string[] = [];
+      if (Math.abs(cards.at(-1)!.bottom - box.bottom) > 1) bad.push(`${column.dataset.recordPart} stretched`);
+      if (cards.some((card) => Math.abs(card.width - box.width) > 1))
+        bad.push(`${column.dataset.recordPart} has a card narrower or wider than it`);
+      return bad;
+    }),
+  );
 
 test.describe("an application's page", () => {
   test("three columns on a wide page, under the summary, no column stretched to the tallest", async ({
@@ -117,21 +182,8 @@ test.describe("an application's page", () => {
   }) => {
     const app = await firstApp(request);
     // The application's to-dos, role and people; the company's to-dos, roles and people.
-    for (const [path, last] of [
-      [`/applications/${app.id}`, "New person"],
-      [`/companies/${app.company_id}`, "Add person"],
-    ] as const) {
-      await page.goto(path);
-      // The text is measured in the page's font, so wait for it rather than measure the fallback.
-      await page.evaluate(() => document.fonts.ready);
-      // 1,100 px: the side column at its 320 px floor; 1,440 px: 378 px; 1,920 px: 420 px beside two main columns.
-      for (const width of [1100, 1440, 1920]) {
-        await page.setViewportSize({ width, height: 1000 });
-        await expect.poll(() => arrangement(page), { message: `${path} at ${width} px` }).not.toBe("stacked");
-        await expect(page.getByRole("button", { name: last })).toBeVisible();
-        await expect.poll(() => cutInSide(page), { message: `${path} at ${width} px` }).toEqual([]);
-      }
-    }
+    await sideFits(page, `/applications/${app.id}`, "New person");
+    await sideFits(page, `/companies/${app.company_id}`, "Add person");
   });
 
   test("stacked on a narrow page, and nothing scrolls sideways on a phone", async ({ page, request }) => {
@@ -158,6 +210,8 @@ test.describe("a company's page", () => {
     await page.setViewportSize({ width: 375, height: 800 });
     await expect.poll(() => arrangement(page)).toBe("stacked");
     expect(await noSidewaysScroll(page)).toBe(0);
+    // Its applications' stages whole, beside the role names (on main, "Interviewing" was cut to 44 px here).
+    await expect.poll(() => cutBadges(page)).toEqual([]);
   });
 
   test("with the quick view open, the columns lay out by the room left", async ({ page, request }) => {
@@ -181,4 +235,100 @@ test.describe("a company's page", () => {
       await expect(dialog).toBeHidden();
     }
   });
+});
+
+/** A person's, an agency's and a role's page on the demo data, and a button in each one's last side card. */
+const records = async (request: APIRequestContext) => {
+  const named = async (kind: string, name: string) =>
+    ((await (await request.get(`/api/v1/${kind}`)).json()) as { id: string; name: string }[]).find(
+      (r) => r.name === name,
+    )!.id;
+  return {
+    person: { path: `/people/${await named("contacts", "Alex Morgan")}`, last: "Upload" },
+    agency: { path: `/agencies/${await named("agencies", "Northwind Talent")}`, last: "Add recruiter" },
+    // Contoso's Senior Backend Engineer, which has an application.
+    role: { path: `/roles/${(await firstApp(request)).role_id}`, last: "Upload" },
+  };
+};
+
+test.describe("a person's, an agency's and a role's page", () => {
+  for (const kind of ["person", "agency", "role"] as const) {
+    test(`${kind}: three columns on a wide page, beside the side one at mid widths, stacked when narrow`, async ({
+      page,
+      request,
+    }) => {
+      const { path } = (await records(request))[kind];
+      await page.setViewportSize({ width: 1920, height: 1000 });
+      await page.goto(path);
+      await expect.poll(() => arrangement(page)).toBe("three");
+      const { main, "main-2": second, side } = await parts(page);
+      expect(Math.min(main!.width, second!.width)).toBeGreaterThanOrEqual(400);
+      expect(side!.width).toBe(420);
+      const order = await page
+        .locator("[data-record-part]")
+        .evaluateAll((els) => els.map((el) => el.getAttribute("data-record-part")));
+      expect(order).toEqual(["main", "main-2", "side"]);
+      for (const [width, expected] of [
+        [1920, "three"],
+        [2560, "three"],
+        [1440, "two"],
+        [1100, "two"], // the side column at its 320 px floor, the main one 474 px
+        [900, "stacked"],
+        [375, "stacked"],
+      ] as const) {
+        await page.setViewportSize({ width, height: 1000 });
+        await expect.poll(() => arrangement(page), { message: `at ${width} px` }).toBe(expected);
+        // Level tops are in the arrangement; each card fills its column, and no column stretches to the tallest.
+        await expect.poll(() => unevenColumns(page), { message: `at ${width} px` }).toEqual([]);
+        expect(await cutBadges(page), `at ${width} px`).toEqual([]);
+        expect(await noSidewaysScroll(page), `at ${width} px`).toBe(0);
+      }
+    });
+
+    test(`${kind}: the side cards' buttons and selects fit, down to the narrowest side column`, async ({
+      page,
+      request,
+    }) => {
+      const { path, last } = (await records(request))[kind];
+      await sideFits(page, path, last);
+    });
+  }
+
+  test("an agency's page with the quick view open lays out by the room left", async ({ page, request }) => {
+    await page.goto((await records(request)).agency.path);
+    for (const [width, expected] of [
+      [1440, "stacked"],
+      [1920, "two"],
+      [2560, "three"],
+    ] as const) {
+      await page.setViewportSize({ width, height: 1000 });
+      await page.locator("[data-panel-opener]").first().click();
+      const dialog = page.getByRole("dialog");
+      await expect(dialog.getByRole("button", { name: "Move to…" })).toBeVisible();
+      await expect.poll(() => arrangement(page), { message: `at ${width} px` }).toBe(expected);
+      await expect.poll(() => unevenColumns(page), { message: `at ${width} px` }).toEqual([]);
+      const panelLeft = (await dialog.boundingBox())!.x;
+      for (const box of Object.values(await parts(page)))
+        expect(box.x + box.width).toBeLessThanOrEqual(panelLeft);
+      expect(await noSidewaysScroll(page), `at ${width} px`).toBe(0);
+      await page.keyboard.press("Escape");
+      await expect(dialog).toBeHidden();
+    }
+  });
+});
+
+test("a renamed stage's long name wraps in its badge, its table staying inside the card", async ({
+  page,
+  request,
+}) => {
+  const { person, agency, role } = await records(request);
+  const company = `/companies/${(await firstApp(request)).company_id}`;
+  for (const width of [375, 1100]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const path of [person.path, agency.path, role.path, company]) {
+      await page.goto(path);
+      await expect(page.locator("[data-record-part] td .mantine-Badge-label").first()).toBeVisible();
+      expect(await longStagesSpill(page), `${path} at ${width} px`).toEqual([]);
+    }
+  }
 });

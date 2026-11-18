@@ -66,13 +66,18 @@ the page beside the menu and the panel was about 100 px wide (the lead's call; K
   the List/Board switch stays put. The list stays at the 2,400 px cap, on a soft card.
 - **Record pages** (an application, company, person, agency or role), from 1,280 px: the main cards flow in two
   columns, the side cards (to-dos, role, people) in a narrow third (about 420 px); an application's summary spans the top.
-  *As built (#415, an application and a company; the other three follow in `app-redesign-records-people`):* one
+  *As built (#415, an application and a company; #421, a person, an agency and a role):* one
   `RecordLayout` (`summary`, `main` as one or two columns, `side`), laid out by the page's own width as Today is:
   three columns (the side one 420 px) from 1,280 px of page (about a 1,570 px window, or 2,110 px with the panel
   open), each main column then at least about 400 px; from 760 px the main cards in one column with the side ones
   beside it (at least 320 px), as the old 8:4 grid did; stacked below that. The main cards are split between the two
   columns by hand rather than flowing (CSS columns would move a card across as an autosizing box grows while you
   type). Cards keep their own height and the columns start level; the DOM and Tab order is summary, main, side.
+  All five pages use two main columns. A person: calls and meetings | roles mentioned, applications, interviews,
+  notes (so stacked, the page keeps its old order) | how to reach them, to-dos, links, files. An agency, as a
+  company: its applications | notes, links, files | to-dos, recruiters (on a phone, after the notes, links and
+  files, as a company's people are). A role: about it and its application (kept out of the side, where the stage badge
+  was cut short) | notes, links | to-dos, files. Only an agency's page opens the quick view of these three.
 - **Notes** as a grid of note cards (notes still open in their editor dialog). **Documents**: the CV files and each
   document as cards side by side. **Interviews**: the calendar with "still to book" beside it; the list view's cards
   side by side. Offers stays one comparison table.

@@ -1,6 +1,5 @@
 import {
   Box,
-  Grid,
   Group,
   SimpleGrid,
   Skeleton,
@@ -85,38 +84,19 @@ export function ButtonsSkeleton({ count }: { count: number }) {
 }
 
 type Columns = {
-  /** The heights of the first cards in the main column, and in the side one. */
+  /** The heights of the first cards in the first main column, the second one and the side one (RecordLayout). */
   main: number[];
+  second: number[];
   side: number[];
-  /**
-   * The heights of the first cards in the second main column, for a page in RecordLayout: given, the skeleton
-   * takes that layout too (the summary spanning the top, `span` unused).
-   */
-  second?: number[];
-  /** How many of the grid's 12 columns the main one takes (on a wide screen). */
-  span?: number;
-  /** What comes before the main column's cards (an application's summary). */
+  /** What spans the top (an application's summary). */
   top?: ReactNode;
 };
 
-/** A record page's columns while it loads: the first cards of each, as tall as the real ones. */
-export function ColumnsSkeleton({ main, side, second, span = 8, top }: Columns) {
+/** A record page's columns while it loads, laid out as the page is: the first cards of each, as tall as the real ones. */
+export function ColumnsSkeleton({ main, side, second, top }: Columns) {
   const cards = (heights: number[]) =>
     heights.map((height, i) => <Skeleton key={i} height={height} radius="xl" />);
-  if (second) return <RecordLayout summary={top} main={[cards(main), cards(second)]} side={cards(side)} />;
-  return (
-    <Grid gap="lg">
-      <Grid.Col span={{ base: 12, md: span }}>
-        <Stack>
-          {top}
-          {cards(main)}
-        </Stack>
-      </Grid.Col>
-      <Grid.Col span={{ base: 12, md: 12 - span }}>
-        <Stack>{cards(side)}</Stack>
-      </Grid.Col>
-    </Grid>
-  );
+  return <RecordLayout summary={top} main={[cards(main), cards(second)]} side={cards(side)} />;
 }
 
 /**

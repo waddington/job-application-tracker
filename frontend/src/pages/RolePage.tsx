@@ -1,4 +1,4 @@
-import { Alert, Anchor, Badge, Button, Card, Grid, Group, Stack, Table, Text, Title } from "@mantine/core";
+import { Alert, Anchor, Badge, Button, Card, Group, Stack, Table, Text, Title } from "@mantine/core";
 import { IconExternalLink, IconPencil, IconTargetArrow } from "@tabler/icons-react";
 import { Link, useParams, useRouter } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
@@ -14,6 +14,7 @@ import { Markdown } from "../components/Markdown";
 import { NotesCard } from "../components/Notes";
 import { BackLink, Page } from "../components/Page";
 import { RecordSkeleton } from "../components/PageSkeleton";
+import { RecordLayout } from "../components/RecordLayout";
 import { pay, RoleActions, RoleFormModal } from "../components/Roles";
 import { StageBadge } from "../components/StageBadge";
 import { TodosCard } from "../components/Todos";
@@ -78,7 +79,16 @@ export function RolePage() {
       </Page>
     );
   if (!role)
-    return <RecordSkeleton back={back} lines={[29]} actions={2} main={[180, 130]} side={[195, 117, 134]} />;
+    return (
+      <RecordSkeleton
+        back={back}
+        lines={[29]}
+        actions={2}
+        main={[206]}
+        second={[116, 175]}
+        side={[214, 133]}
+      />
+    );
   const status = roleBadge(role);
   const money = pay(role);
   const applications = (rows ?? []).filter((r) => r.role_id === role.id);
@@ -125,9 +135,10 @@ export function RolePage() {
       </Group>
       {editing && <RoleFormModal opened onClose={() => setEditing(false)} role={role} />}
 
-      <Grid gap="lg">
-        <Grid.Col span={{ base: 12, md: 8 }}>
-          <Stack>
+      <RecordLayout
+        main={[
+          // What it is and what you made of it; then what's kept with it.
+          <>
             <Card withBorder>
               <Stack gap="xs">
                 <Title order={4}>{t("page.about")}</Title>
@@ -237,7 +248,12 @@ export function RolePage() {
                           </Text>
                         </Table.Td>
                         <Table.Td>
-                          <StageBadge id={a.stage} stage={stages.get(a.stage)} fallback={a.stage_name} />
+                          <StageBadge
+                            id={a.stage}
+                            stage={stages.get(a.stage)}
+                            fallback={a.stage_name}
+                            whole
+                          />
                         </Table.Td>
                         <Table.Td>
                           <Text size="xs" c="dimmed">
@@ -250,17 +266,20 @@ export function RolePage() {
                 </Table>
               </Card>
             )}
+          </>,
+          <>
             <NotesCard entity={`role:${role.id}`} />
-          </Stack>
-        </Grid.Col>
-        <Grid.Col span={{ base: 12, md: 4 }}>
-          <Stack>
+            <LinksCard entityType="role" entityId={role.id} />
+          </>,
+        ]}
+        side={
+          // Files beside the rest, near the top: the job description goes there.
+          <>
             <TodosCard entityType="role" entityId={role.id} />
             <AttachmentsCard entityType="role" entityId={role.id} empty={t("page.filesEmpty")} />
-            <LinksCard entityType="role" entityId={role.id} />
-          </Stack>
-        </Grid.Col>
-      </Grid>
+          </>
+        }
+      />
     </Page>
   );
 }
