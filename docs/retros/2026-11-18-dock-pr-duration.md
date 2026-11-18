@@ -135,4 +135,5 @@ checks-and-release cycle (about 12 minutes) without avoiding the focus rounds.
 6. **Think about running `docked-panel.spec.ts` in Firefox too**: a second Playwright project for the
    focus-sensitive specs only. *It would have caught round 3 without a reviewer; it adds run time and possible flakes,
    and touching the test config needs Kai's go-ahead.*
+
 Together, 1-5 would most likely have brought #408 down from about 112 minutes to about 60-65.
