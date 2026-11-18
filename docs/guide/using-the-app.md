@@ -246,8 +246,10 @@ view; open the full page from there.
 **The quick view** is a panel beside the page, under the header. The page (the board too) moves
 over to make room rather than going under it, so you can keep scrolling, and clicking another row
 or card shows that one in the panel instead. Its **×**, or Escape while you're in it, closes it,
-and you're back on the row or card you opened it from. On a phone it fills the screen. Today, a
-company's page and an agency's page open the same quick view.
+and you're back on the row or card you opened it from (even if it has moved to another column; if
+it has gone from the page, on the page's title). In a window narrower than 992 pixels (a phone or a
+small tablet) it fills the screen instead. Today, a company's page and an agency's page open the
+same quick view.
 
 The **board** shows a column per stage. Drag a card to move it; the usual next stages are
 highlighted while you drag. Closed stages (Rejected, Withdrawn…) are hidden unless you
