@@ -239,7 +239,7 @@ export function ApplicationsPage() {
           </Card>
         </PageCapped>
       ) : view === "board" && workflow ? (
-        <Board workflow={workflow} rows={rows} onOpen={setOpenId} />
+        <Board workflow={workflow} rows={rows} onOpen={setOpenId} openId={openId} />
       ) : (
         // The list on one of the redesign's soft cards, a little tighter than the roomy default for a table.
         <Card padding="md">

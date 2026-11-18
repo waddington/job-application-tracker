@@ -54,7 +54,9 @@ export default defineConfig({
   server: {
     host: "127.0.0.1",
     port: 5173,
-    proxy: { "/api": apiTarget },
+    // The page's own host goes through (not the API's), so the API's same-origin check on writes passes on any
+    // dev port, not only 5173 (Vite's shorthand would rewrite Host to the target's).
+    proxy: { "/api": { target: apiTarget, changeOrigin: false } },
   },
   build: { outDir: "dist", sourcemap: true },
   test: {
