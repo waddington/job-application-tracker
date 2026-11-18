@@ -139,7 +139,10 @@ export function DockedPanel({ opened, onClose, title, closeLabel, contentKey, ch
       ownsFocus.current = false;
     };
     const onKeyDown = (e: globalThis.KeyboardEvent) => {
-      if (!ownsFocus.current || document.activeElement !== document.body) return;
+      // The key itself must have been pressed on <body>: a dialog that closes on this same Escape (the feedback
+      // dialog) can drop focus to <body> before this runs, and that Escape was the dialog's.
+      if (!ownsFocus.current || e.target !== document.body || document.activeElement !== document.body)
+        return;
       if (e.ctrlKey || e.metaKey || e.altKey || !REFOCUS_KEYS.test(e.key)) return;
       const otherDialog = [...document.querySelectorAll('[aria-modal="true"]')].some(
         (d) => d !== panel.current,
