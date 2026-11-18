@@ -4,6 +4,7 @@ import {
   createContext,
   useContext,
   useEffect,
+  useEffectEvent,
   useId,
   useLayoutEffect,
   useRef,
@@ -80,6 +81,7 @@ export function DockedPanel({ opened, onClose, title, closeLabel, contentKey, ch
   const wasOpen = useRef(false);
   /** Whether focus is in the panel, or in a menu or dialog opened from it (React's focus events reach the panel). */
   const ownsFocus = useRef(false);
+  const close = useEffectEvent(() => onClose());
 
   // The contents' one element goes in the dock or over the page, and away while closed. Moving it takes focus
   // out of it, so focus goes back to where it was.
@@ -127,8 +129,26 @@ export function DockedPanel({ opened, onClose, title, closeLabel, contentKey, ch
         else heading.current?.focus({ preventScroll: true });
       });
     };
+    // Firefox fires no focusout when the focused element is removed, so focus can sit on <body> with the panel
+    // still owning it. The next key then brings it back to the heading, and an Escape closes the panel, unless
+    // another dialog is open over the page.
+    const onKeyDown = (e: globalThis.KeyboardEvent) => {
+      if (!ownsFocus.current || document.activeElement !== document.body) return;
+      const otherDialog = [...document.querySelectorAll('[aria-modal="true"]')].some(
+        (d) => d !== panel.current,
+      );
+      if (otherDialog) return;
+      heading.current?.focus({ preventScroll: true });
+      if (e.key !== "Escape" || e.isComposing || e.defaultPrevented) return;
+      e.preventDefault();
+      close();
+    };
     document.addEventListener("focusout", onFocusOut, true);
-    return () => document.removeEventListener("focusout", onFocusOut, true);
+    document.addEventListener("keydown", onKeyDown, true);
+    return () => {
+      document.removeEventListener("focusout", onFocusOut, true);
+      document.removeEventListener("keydown", onKeyDown, true);
+    };
   }, [shown]);
 
   // On opening, and on each swap to another item: remember what opened it, then focus the heading.

@@ -41,7 +41,8 @@ const madeRoom = async (page: Page, ...covered: Locator[]) => {
     }
   }).toPass({ timeout: 5_000 });
 };
-/** Lets timers and transitions that might move focus or close something run. */
+/** Lets timers and transitions that might move focus or close something run. A fixed wait on purpose: it
+ * backs "nothing happens later" checks, which have no state to poll for (gotchas.md prefers polling otherwise). */
 const settle = (page: Page) => page.evaluate(() => new Promise((done) => setTimeout(done, 400)));
 /** The page's content: what's in <main>, which AppShell pads to make room. */
 const content = (page: Page) => page.locator("main > *").first();

@@ -123,12 +123,29 @@ describe("DockedPanel", () => {
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
-  it("leaves an Escape with focus nowhere alone (it may be cancelling a drag on the page)", () => {
+  it("leaves an Escape with focus nowhere alone (it may be cancelling a drag on the page)", async () => {
     render(<Page />);
     fireEvent.click(screen.getByRole("button", { name: "Open A" }));
     (document.activeElement as HTMLElement).blur();
+    // A key comes at least a task after the blur, by when the panel has let go of focus that left on purpose.
+    await new Promise((done) => setTimeout(done));
     fireEvent.keyDown(document.body, { key: "Escape" });
     expect(screen.getByRole("dialog", { name: "Application" })).toBeInTheDocument();
+  });
+
+  it("takes back focus that fell to the page without a focusout (Firefox), and closes on Escape", () => {
+    render(<Page />);
+    fireEvent.click(screen.getByRole("button", { name: "Open A" }));
+    const heading = screen.getByRole("heading", { name: "Application" });
+    expect(heading).toHaveFocus();
+    // Firefox drops focus to <body> when the focused element is removed, without a focusout: the panel still owns it.
+    Object.defineProperty(document, "activeElement", { configurable: true, get: () => document.body });
+    try {
+      fireEvent.keyDown(document.body, { key: "Escape" });
+    } finally {
+      delete (document as { activeElement?: Element }).activeElement;
+    }
+    expect(screen.queryByRole("dialog")).toBeNull();
   });
 
   it("leaves an Escape on the page itself alone", () => {
