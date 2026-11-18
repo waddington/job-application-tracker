@@ -69,6 +69,12 @@ Each of these cost time once. Add a line when something new does.
 
 ## Git and GitHub
 
+- **`gh pr close N --delete-branch` can leave the remote branch** (#418, 2026-11-18: it printed only the local
+  deletion, and `git ls-remote` still showed the branch): check `git ls-remote origin | grep <branch>` and delete it
+  with `git push origin --delete <branch>`.
+- **Quoting Kai: drop names from screenshots.** A roadmap detail may quote Kai's words, but Kai often names a real
+  company or person from the screenshot they're describing, e.g. calling a card by its company. Replace it ("[one
+  card]") before committing: #418 pushed one to a public branch and had to be closed and redone as #419.
 - **`gh pr edit` fails silently**: set title and body with `gh api -X PATCH …/pulls/N -f title=… -F body=@file`.
 - **`gh pr merge` right after a push** can fail (still rechecking) or 504; `tools/dev/merge.sh` retries. From the main
   checkout it prints "'main' is already used by worktree": harmless.
@@ -103,6 +109,10 @@ Each of these cost time once. Add a line when something new does.
 
 ## Browser tests (`frontend/e2e/`)
 
+- **The board's mouse-drag tests can flake under a full run** (2026-11-18, on #415, which doesn't touch the board):
+  `board.spec.ts` "onto its own column does nothing" (~:284) once and "while dragging, the columns keep their width"
+  (~:555) once, each passing alone. The second was 45 px off (225 → 180), so it may be a real one-frame race in the
+  width freeze: `fix-board-drag-width-race`. Rerun with `tools/dev/e2e_only.sh` before blaming the PR.
 - **A `test.fail` can fail the run by passing:** "Expected to fail, but passed" means the known bug didn't happen that
   time (`fix-double-save-locked`'s double click at `companies.spec.ts` ~:596 is racy; 2026-11-12). Rerun the browser
   tests (`tools/dev/e2e_only.sh`) before blaming the PR. A fix can also turn another bug's `test.fail` green for good
