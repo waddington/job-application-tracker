@@ -148,6 +148,20 @@ describe("DockedPanel", () => {
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
+  it("lets go of focus that fell to the page once the page is pressed, or for a shortcut", () => {
+    render(<Page />);
+    fireEvent.click(screen.getByRole("button", { name: "Open A" }));
+    Object.defineProperty(document, "activeElement", { configurable: true, get: () => document.body });
+    try {
+      fireEvent.keyDown(document.body, { key: "c", ctrlKey: true });
+      fireEvent.pointerDown(screen.getByRole("button", { name: "Open B" }));
+      fireEvent.keyDown(document.body, { key: "Escape" });
+    } finally {
+      delete (document as { activeElement?: Element }).activeElement;
+    }
+    expect(screen.getByRole("dialog", { name: "Application" })).toBeInTheDocument();
+  });
+
   it("leaves an Escape on the page itself alone", () => {
     render(<Page />);
     fireEvent.click(screen.getByRole("button", { name: "Open A" }));

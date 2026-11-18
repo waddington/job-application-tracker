@@ -130,10 +130,17 @@ export function DockedPanel({ opened, onClose, title, closeLabel, contentKey, ch
       });
     };
     // Firefox fires no focusout when the focused element is removed, so focus can sit on <body> with the panel
-    // still owning it. The next key then brings it back to the heading, and an Escape closes the panel, unless
-    // another dialog is open over the page.
+    // still owning it. The next Escape, Tab or arrow key then brings it back to the heading, and an Escape closes
+    // the panel, unless another dialog is open over the page. A press anywhere else on the page lets go of it (focus
+    // already on <body> stays there, so no focusout says so).
+    const onPointerDown = (e: PointerEvent) => {
+      const at = e.target instanceof Element ? e.target : null;
+      if (at && (panel.current?.contains(at) || at.closest('[role="menu"], [role="dialog"]'))) return;
+      ownsFocus.current = false;
+    };
     const onKeyDown = (e: globalThis.KeyboardEvent) => {
       if (!ownsFocus.current || document.activeElement !== document.body) return;
+      if (e.ctrlKey || e.metaKey || e.altKey || !REFOCUS_KEYS.test(e.key)) return;
       const otherDialog = [...document.querySelectorAll('[aria-modal="true"]')].some(
         (d) => d !== panel.current,
       );
@@ -145,9 +152,11 @@ export function DockedPanel({ opened, onClose, title, closeLabel, contentKey, ch
     };
     document.addEventListener("focusout", onFocusOut, true);
     document.addEventListener("keydown", onKeyDown, true);
+    document.addEventListener("pointerdown", onPointerDown, true);
     return () => {
       document.removeEventListener("focusout", onFocusOut, true);
       document.removeEventListener("keydown", onKeyDown, true);
+      document.removeEventListener("pointerdown", onPointerDown, true);
     };
   }, [shown]);
 
@@ -236,6 +245,8 @@ function pageHeading(): HTMLElement | null {
 }
 
 const TABBABLE = "a[href], button, input, select, textarea, [tabindex]";
+/** The keys that bring lost focus back to the panel: the ones that move around it or close it. */
+const REFOCUS_KEYS = /^(Escape|Tab|Arrow(Up|Down|Left|Right))$/;
 
 /** Keeps Tab and Shift+Tab going round the panel's own controls (the overlay's focus trap). */
 function trapTab(node: HTMLElement, e: KeyboardEvent) {
