@@ -122,6 +122,8 @@ test.describe("an application's page", () => {
       [`/companies/${app.company_id}`, "Add person"],
     ] as const) {
       await page.goto(path);
+      // The text is measured in the page's font, so wait for it rather than measure the fallback.
+      await page.evaluate(() => document.fonts.ready);
       // 1,100 px: the side column at its 320 px floor; 1,440 px: 378 px; 1,920 px: 420 px beside two main columns.
       for (const width of [1100, 1440, 1920]) {
         await page.setViewportSize({ width, height: 1000 });

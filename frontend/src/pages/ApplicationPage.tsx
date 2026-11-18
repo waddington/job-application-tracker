@@ -120,7 +120,9 @@ function DetailsCard({ app }: { app: ApplicationDetail }) {
   );
 }
 
-/** A control in a wrapping row: they share the row equally, down to 11rem each, then take a line each. */
+/** A control in a wrapping row: they share the row equally, down to 11rem each, then take a line each. In the side
+ * column (at most 420 px, 366 px inside the card) that's always a line each, since "Choose a contact" needs it; side
+ * by side only when the page stacks. */
 const SHARE = { flex: "1 1 11rem" };
 
 function PeopleCard({ app }: { app: ApplicationDetail }) {
@@ -314,7 +316,7 @@ export function ApplicationPage() {
             top={<ApplicationSummarySkeleton />}
             main={[250, 287]}
             second={[209, 176]}
-            side={[219, 163, 316]}
+            side={[219, 163, 450]}
           />
         </Loading>
       ) : (
