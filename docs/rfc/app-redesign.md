@@ -53,7 +53,10 @@ and takes clicks; picking another item swaps what the panel shows. Phones keep a
 the page beside the menu and the panel was about 100 px wide (the lead's call; Kai can change it).
 
 **Pages.**
-- **Today in three columns** from 1,200 px: Your move, Coming up, Waiting on them. Narrower screens stack as now.
+- **Today in three columns** from 1,200 px: Your move, Coming up, Waiting on them. Narrower screens stack as now. *As
+  built (#412):* laid out by the page's own width (container queries), since the docked panel takes 440-540 px of
+  the window: three columns from 1,200 px of page (about a 1,490 px window), Your move beside the other two from
+  880 px, stacked below that. Three at a 1,200 px window left the side columns about 260 px wide, too cramped.
 - **The Applications board fills the window** beside the menu (it escapes the cap, a 16 px gutter), its columns
   sharing the width down to **about 180 px** each instead of a fixed 250 px.
 - **Record pages** (an application, company, person, agency or role), from 1,280 px: the main cards flow in two
