@@ -82,7 +82,16 @@ Each of these cost time once. Add a line when something new does.
 - **Run `checks.sh` from the worktree root** (it refuses elsewhere). Wait for a PR's checks with a background `until`
   loop on `mergeStateStatus` (or `merge.sh`), never a foreground `sleep`. A piped e2e run can exit 0 on failure: read
   the pass and fail counts. Don't write "(#N)" in `bump.py`'s entry: it appends it.
-- **`checks.sh` keeps only the last 25 lines** of a failing check: read `frontend/test-results/*/error-context.md`.
+- **`checks.sh` keeps only the last 25 lines** of a failing check: read `frontend/test-results/*/error-context.md`,
+  or rerun with `tools/dev/e2e_only.sh > var/e2e.log 2>&1` to keep the whole error (a later run overwrites
+  `test-results/`).
+- **`ship.sh` takes the worktree's name** (`app-redesign-forms`), not its path; given a path it leaves the worktree
+  ("missing or locked") and you remove it by hand.
+- **A read-only reviewer can still move your worktree:** one ran `git checkout <commit>` in the PR's worktree, so the
+  lead's next commit landed on a detached HEAD and never reached the PR. Tell reviewers never to check out or switch;
+  run `git status -sb` before committing in a worktree a reviewer has used.
+- **Merging main into a branch makes its running checks moot:** stop that run and check once on the final commit
+  (after the merge and the bump) instead of twice.
 - **A flaky `test.fail`** (`fix-offer-kind-pin-flaky`) can block a merge: rerun just the browser suite
   (`tools/dev/e2e_only.sh`) when everything else passed and the failure isn't the PR's.
 - **CI:** only the website builds on GitHub; `mergeStateStatus` is UNSTABLE until it passes.
@@ -98,6 +107,8 @@ Each of these cost time once. Add a line when something new does.
   time (`fix-double-save-locked`'s double click at `companies.spec.ts` ~:596 is racy; 2026-11-12). Rerun the browser
   tests (`tools/dev/e2e_only.sh`) before blaming the PR. A fix can also turn another bug's `test.fail` green for good
   (#314 fixed `fix-person-saved-before-new-company`): rerun that spec a few times (`--repeat-each=3`) to tell which.
+- **`companies.spec.ts`'s "still being made keeps them at it" pair (~:448, ~:467) fails now and then under a full run**
+  and passes alone: it's a real race in the app (`fix-person-new-org-race`), not the PR, until that's fixed.
 - `fixtures.ts` starts a server per test file on seeded demo data. Any console error, uncaught exception or failed request
   fails the test unless `problems.allow(/…/)` (keep it narrow). Tests in a file share data: unique names, make what you
   need through the API, don't rely on counts.
