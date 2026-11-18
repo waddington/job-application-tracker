@@ -1,4 +1,4 @@
-import { Alert, Anchor, Badge, Button, Card, Grid, Group, Stack, Table, Text, Title } from "@mantine/core";
+import { Alert, Anchor, Badge, Button, Card, Group, Table, Text, Title } from "@mantine/core";
 import { IconPencil, IconPlus, IconUsers } from "@tabler/icons-react";
 import { useParams, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
@@ -12,6 +12,7 @@ import { useUpdateAgency } from "../api/peopleHooks";
 import { ApplicationDrawer } from "../components/ApplicationDrawer";
 import { BackLink, Page } from "../components/Page";
 import { RecordSkeleton } from "../components/PageSkeleton";
+import { RecordLayout } from "../components/RecordLayout";
 import { TimelineButton } from "../components/TimelineButton";
 import { AttachmentsCard } from "../components/Attachments";
 import { LinksCard } from "../components/Links";
@@ -44,7 +45,10 @@ export function AgencyPage() {
         <Alert color="red">{t("agency.loadFailed")}</Alert>
       </Page>
     );
-  if (!data) return <RecordSkeleton back={back} actions={3} span={7} main={[175]} side={[155, 120, 96]} />;
+  if (!data)
+    return (
+      <RecordSkeleton back={back} actions={3} main={[252]} second={[117, 159, 137]} side={[219, 30, 120]} />
+    );
   const { agency, recruiters, applications } = data;
 
   return (
@@ -92,8 +96,8 @@ export function AgencyPage() {
           />
         )}
       </Group>
-      <Grid gap="lg">
-        <Grid.Col span={{ base: 12, md: 7 }}>
+      <RecordLayout
+        main={[
           <Card withBorder>
             <Title order={4} mb="sm">
               {t("agency.rolesThrough", { name: agency.name })}
@@ -148,10 +152,15 @@ export function AgencyPage() {
                 </Table.Tbody>
               </Table>
             )}
-          </Card>
-        </Grid.Col>
-        <Grid.Col span={{ base: 12, md: 5 }}>
-          <Stack>
+          </Card>,
+          <>
+            <NotesCard entity={`agency:${agency.id}`} />
+            <LinksCard entityType="agency" entityId={agency.id} />
+            <AttachmentsCard entityType="agency" entityId={agency.id} />
+          </>,
+        ]}
+        side={
+          <>
             <TodosCard entityType="agency" entityId={agency.id} />
             <Group justify="space-between">
               <Title order={4}>{t("agency.recruiters")}</Title>
@@ -172,12 +181,9 @@ export function AgencyPage() {
                 {t("agency.noRecruiters")}
               </Text>
             )}
-            <NotesCard entity={`agency:${agency.id}`} />
-            <LinksCard entityType="agency" entityId={agency.id} />
-            <AttachmentsCard entityType="agency" entityId={agency.id} />
-          </Stack>
-        </Grid.Col>
-      </Grid>
+          </>
+        }
+      />
       <ApplicationDrawer id={openId} onClose={() => setOpenId(null)} />
       <ContactFormModal
         key={editing?.id ?? "new"}

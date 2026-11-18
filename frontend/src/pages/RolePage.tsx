@@ -1,4 +1,4 @@
-import { Alert, Anchor, Badge, Button, Card, Grid, Group, Stack, Table, Text, Title } from "@mantine/core";
+import { Alert, Anchor, Badge, Button, Card, Group, Stack, Table, Text, Title } from "@mantine/core";
 import { IconExternalLink, IconPencil, IconTargetArrow } from "@tabler/icons-react";
 import { Link, useParams, useRouter } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
@@ -14,6 +14,7 @@ import { Markdown } from "../components/Markdown";
 import { NotesCard } from "../components/Notes";
 import { BackLink, Page } from "../components/Page";
 import { RecordSkeleton } from "../components/PageSkeleton";
+import { RecordLayout } from "../components/RecordLayout";
 import { pay, RoleActions, RoleFormModal } from "../components/Roles";
 import { StageBadge } from "../components/StageBadge";
 import { TodosCard } from "../components/Todos";
@@ -78,7 +79,16 @@ export function RolePage() {
       </Page>
     );
   if (!role)
-    return <RecordSkeleton back={back} lines={[29]} actions={2} main={[180, 130]} side={[195, 117, 134]} />;
+    return (
+      <RecordSkeleton
+        back={back}
+        lines={[29]}
+        actions={2}
+        main={[206]}
+        second={[117, 159, 137]}
+        side={[219]}
+      />
+    );
   const status = roleBadge(role);
   const money = pay(role);
   const applications = (rows ?? []).filter((r) => r.role_id === role.id);
@@ -125,84 +135,93 @@ export function RolePage() {
       </Group>
       {editing && <RoleFormModal opened onClose={() => setEditing(false)} role={role} />}
 
-      <Grid gap="lg">
-        <Grid.Col span={{ base: 12, md: 8 }}>
-          <Stack>
-            <Card withBorder>
-              <Stack gap="xs">
-                <Title order={4}>{t("page.about")}</Title>
-                {money && <Fact label={t("page.facts.pay")}>{money}</Fact>}
-                {terms.length > 0 && (
-                  <Fact label={t("page.facts.terms")}>{terms.join(t("page.termsSeparator"))}</Fact>
-                )}
-                {role.location && <Fact label={t("page.facts.location")}>{role.location}</Fact>}
-                {role.url && /^https?:\/\//i.test(role.url) && (
-                  <Fact label={t("page.facts.jobAd")}>
-                    <Anchor href={role.url} target="_blank" rel="noreferrer noopener" size="sm">
-                      <Group gap={4} wrap="nowrap">
-                        {role.url.replace(/^https?:\/\//, "").replace(/\/$/, "")}
-                        <IconExternalLink size={14} />
-                      </Group>
-                    </Anchor>
-                  </Fact>
-                )}
-                {role.contact_id && (
-                  <Fact label={t("page.facts.from")}>
-                    <Trans
-                      t={t}
-                      i18nKey={
-                        role.agency_name && role.agency_id
-                          ? callOf(role)
-                            ? "page.fromPersonAgencyCall"
-                            : "page.fromPersonAgency"
-                          : callOf(role)
-                            ? "page.fromPersonCall"
-                            : "page.fromPerson"
-                      }
-                      components={{
-                        person: (
-                          <Anchor component={Link} to={`/people/${role.contact_id}`} size="sm">
-                            <PersonName id={role.contact_id} name={role.contact_name ?? ""} />
-                          </Anchor>
-                        ),
-                        agency: (
-                          <Anchor component={Link} to={`/agencies/${role.agency_id}`} size="sm">
-                            {role.agency_name}
-                          </Anchor>
-                        ),
-                        // A component, not a value: <Trans> would read a "<" you typed as markup.
-                        call: <>{callOf(role)}</>,
-                      }}
-                    />
-                  </Fact>
-                )}
-                <Fact label={t("page.facts.added")}>{formatDate(role.created_at.slice(0, 10))}</Fact>
-                {role.status === "passed" && (
-                  <Fact label={t("page.facts.passed")}>
-                    {role.decision_reason
-                      ? t("page.passedWhy", {
-                          when: role.decided_on ? formatDate(role.decided_on) : t("page.passedYes"),
-                          reason: role.decision_reason,
-                        })
-                      : role.decided_on
-                        ? formatDate(role.decided_on)
-                        : t("page.passedYes")}
-                  </Fact>
-                )}
-                {role.description ? (
-                  <div>
-                    <Text size="sm" fw={600} mb={4}>
-                      {t("page.whatTheySaid")}
-                    </Text>
-                    <Markdown>{role.description}</Markdown>
-                  </div>
-                ) : (
-                  <Text size="sm" c="dimmed">
-                    {t("page.noDescription")}
+      <RecordLayout
+        main={[
+          <Card withBorder>
+            <Stack gap="xs">
+              <Title order={4}>{t("page.about")}</Title>
+              {money && <Fact label={t("page.facts.pay")}>{money}</Fact>}
+              {terms.length > 0 && (
+                <Fact label={t("page.facts.terms")}>{terms.join(t("page.termsSeparator"))}</Fact>
+              )}
+              {role.location && <Fact label={t("page.facts.location")}>{role.location}</Fact>}
+              {role.url && /^https?:\/\//i.test(role.url) && (
+                <Fact label={t("page.facts.jobAd")}>
+                  <Anchor href={role.url} target="_blank" rel="noreferrer noopener" size="sm">
+                    <Group gap={4} wrap="nowrap">
+                      {role.url.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+                      <IconExternalLink size={14} />
+                    </Group>
+                  </Anchor>
+                </Fact>
+              )}
+              {role.contact_id && (
+                <Fact label={t("page.facts.from")}>
+                  <Trans
+                    t={t}
+                    i18nKey={
+                      role.agency_name && role.agency_id
+                        ? callOf(role)
+                          ? "page.fromPersonAgencyCall"
+                          : "page.fromPersonAgency"
+                        : callOf(role)
+                          ? "page.fromPersonCall"
+                          : "page.fromPerson"
+                    }
+                    components={{
+                      person: (
+                        <Anchor component={Link} to={`/people/${role.contact_id}`} size="sm">
+                          <PersonName id={role.contact_id} name={role.contact_name ?? ""} />
+                        </Anchor>
+                      ),
+                      agency: (
+                        <Anchor component={Link} to={`/agencies/${role.agency_id}`} size="sm">
+                          {role.agency_name}
+                        </Anchor>
+                      ),
+                      // A component, not a value: <Trans> would read a "<" you typed as markup.
+                      call: <>{callOf(role)}</>,
+                    }}
+                  />
+                </Fact>
+              )}
+              <Fact label={t("page.facts.added")}>{formatDate(role.created_at.slice(0, 10))}</Fact>
+              {role.status === "passed" && (
+                <Fact label={t("page.facts.passed")}>
+                  {role.decision_reason
+                    ? t("page.passedWhy", {
+                        when: role.decided_on ? formatDate(role.decided_on) : t("page.passedYes"),
+                        reason: role.decision_reason,
+                      })
+                    : role.decided_on
+                      ? formatDate(role.decided_on)
+                      : t("page.passedYes")}
+                </Fact>
+              )}
+              {role.description ? (
+                <div>
+                  <Text size="sm" fw={600} mb={4}>
+                    {t("page.whatTheySaid")}
                   </Text>
-                )}
-              </Stack>
-            </Card>
+                  <Markdown>{role.description}</Markdown>
+                </div>
+              ) : (
+                <Text size="sm" c="dimmed">
+                  {t("page.noDescription")}
+                </Text>
+              )}
+            </Stack>
+          </Card>,
+          <>
+            <NotesCard entity={`role:${role.id}`} />
+            <LinksCard entityType="role" entityId={role.id} />
+            <AttachmentsCard entityType="role" entityId={role.id} empty={t("page.filesEmpty")} />
+          </>,
+        ]}
+        side={
+          // To-dos, then what you made of it: as an application's page has its role beside it.
+          <>
+            <TodosCard entityType="role" entityId={role.id} />
             {applications.length > 0 && (
               <Card withBorder>
                 <Title order={4} mb="sm">
@@ -250,17 +269,9 @@ export function RolePage() {
                 </Table>
               </Card>
             )}
-            <NotesCard entity={`role:${role.id}`} />
-          </Stack>
-        </Grid.Col>
-        <Grid.Col span={{ base: 12, md: 4 }}>
-          <Stack>
-            <TodosCard entityType="role" entityId={role.id} />
-            <AttachmentsCard entityType="role" entityId={role.id} empty={t("page.filesEmpty")} />
-            <LinksCard entityType="role" entityId={role.id} />
-          </Stack>
-        </Grid.Col>
-      </Grid>
+          </>
+        }
+      />
     </Page>
   );
 }
