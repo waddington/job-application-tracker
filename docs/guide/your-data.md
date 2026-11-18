@@ -26,6 +26,9 @@ version.
 The data folder must be **outside** the code repo; `jat` refuses a folder inside it, so your
 job search can never end up in the public code.
 
+On Windows, keep the data folder outside OneDrive (for example `C:\Users\<you>\job-search-data`):
+OneDrive can hold files open while syncing, which interferes with SQLite database writes and note saving.
+
 ## What's in the folder
 
 ```
