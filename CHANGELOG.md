@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.24.41 (2026-11-18)
+
+- The app's new look, part eight (b): a person's, an agency's and a role's page use the same record layout as an application's and a company's, so all five lay their cards out by the room the page has. A stage badge in a record page's applications table now wraps rather than being cut short or pushing the table out of its card (#421).
+
 ## 1.24.40 (2026-11-18)
 
 - The app's new look, part eight: an application's page and a company's page lay their cards out by the room the page has. On a wide page the main cards sit in two columns with the to-dos, role and people in a narrow column beside them (an application's summary across the top); with less room the main cards share one column beside that side column, and on a phone everything stacks (#415).
