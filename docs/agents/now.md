@@ -1,89 +1,82 @@
 # Now: state and live plan
 
-Snapshot 2026-11-15, after #384 (main at `ce51a7e`, v1.24.28). Refresh this file before each compaction. Before
+Snapshot 2026-11-18, after #406 (main at `83c74041`, v1.24.36). Refresh this file before each compaction. Before
 trusting it, check `gh pr list`, `git worktree list`, `git log --oneline -5` and `docs/ROADMAP.yaml`.
 
 ## State
 
-- Released up to **v1.24.28**. Branches on GitHub: `main`, `worktree-app-redesign-concepts` (draft #354, not for
+- Released up to **v1.24.36**. Branches on GitHub: `main`, `worktree-app-redesign-concepts` (draft #354, not for
   merging), the contributor's forks for #359 and #365, and this refresh until it merges.
-- **The redesign build goes one task at a time on Kai's word.** After the theme (#382), Kai paused ("pause after this
-  PR is done, ill continue it another time"), then said "do the next 1 task" → the frame (#384). Start the next only
-  when Kai says so; the agreed scope is under *Next*.
+- **The redesign:** parts 1-4b are done (the theme, the frame, cards and lists, forms), and the loading-state chain
+  it needed (parts 2-6) is too. **Paused:** waiting for Kai's go. The next in order is `app-redesign-dock` (part
+  5); the rest is under *Next*.
 - **Open PRs:**
-  - **#354** DO NOT MERGE: the redesign concepts, round 3, with concept 11 picked. It's the reference implementation
-    (read its files) and stays open until `app-redesign-wrap-up`; worktree `.claude/worktrees/agent-a1abf04926d779406`
-    (locked). Its demo servers (5183, 8893) are shut down at Kai's request: "you can shutdown the current redesign
-    demo that showed the different options". Don't restart them unless Kai asks.
-  - **#359** (`windows-support`, the milestone): on hold. A comment was posted at Kai's request asking the author to
-    merge main and update it (conflicts; snapshots off on Windows; no `&&` in PowerShell 5.1; `llms.txt`). When they
-    push: review it fully, carry it, walk its PowerShell steps on the VM. A minor bump (a new supported platform).
+  - **#354** DO NOT MERGE: the redesign concepts (concept 11 picked). The reference implementation (read its files in
+    `.claude/worktrees/agent-a1abf04926d779406`); stays open until `app-redesign-wrap-up`. Its demo servers (5183,
+    8893) are off at Kai's request; don't restart them unless Kai asks.
+  - **#359** (`windows-support`, the milestone): on hold until its author merges main and updates it (comment posted at
+    Kai's request). When they push: review it fully, carry it, walk its PowerShell steps on the VM. A minor bump.
   - **#365** (`windows-snapshots`): on hold (Kai).
-- **Dependabot alerts:** 1 open (`minimatch`). The astro alerts closed after #356.
-- Kai's tracker on 8770 has run since before v1.24.22 and needs a restart (Python changed); the main checkout's
-  frontend is rebuilt.
+- **Dependabot alerts:** 2 open, both build-time only, with no patched version yet: #39 `picomatch` (high, ReDoS, the
+  website's and frontend's Astro/Vite/Vitest tooling) and #33 `minimatch` (medium). Evaluated for Kai 2026-11-17:
+  neither is reachable when the app runs (the app ships no Node; the globs come from our own config). Left open so the
+  fix arrives as a Dependabot PR; Kai hasn't asked to dismiss them.
+- **Running:** the PM dashboard on 8767 (restarted 2026-11-18 after a session restart). Kai's tracker on 8770 was down
+  after that restart; Kai runs it (`uv run jat serve` in the main checkout).
 - The user-level after-compaction hook is still **not** in `~/.claude/settings.json` (JSON under *Waiting on Kai*).
 
-## Done since v1.24.17 (main `9f3dcb9`)
+## Done since v1.24.28 (main `ce51a7e`)
 
 | Version | PR | What |
 |---|---|---|
-| 1.24.18 | #368 | Carrying #362: scripts read and write UTF-8 |
-| 1.24.19 | #370 | Carrying #363: the encoding check's edge cases |
-| 1.24.20 | #371 | Carrying #360: the `tzdata_only` fixture |
-| 1.24.21 | #373 | Dev-tooling tests skip on Windows (`windows-dev-tooling` is separate backlog) |
-| 1.24.22 | #374 | Carrying #361: a typed `/health` |
-| 1.24.23 | #375 | Carrying #358: the Windows test-run checklist, symlink skips |
-| 1.24.24 | #376 | Carrying #357: locked-file retry (6 attempts, 50/100/200/400/800 ms, winerror 5/32/33 on Windows only, a coded `file_locked` 409 with no path, logging, restore rollback) |
-| 1.24.25 | #378 | Carrying #364: the Windows suite has 0 failures (1170 passed, 319 skipped on the VM) |
-| 1.24.26 | #356 | Dependabot's Astro 7.4.7, done on its own branch; the repo's Node moved to 22.23.5 (Astro 7.4.2+ needs ≥ 22.23.4). #379 opened, then closed for it |
-| 1.24.27 | #382 | The redesign's theme (roadmap part 2) (plum, pastel stages, Inter and JetBrains Mono, soft cards, pill buttons, plum-tinted dark mode). Kai saw the demo and said \"looks good ship it\" |
-| 1.24.28 | #384 | The redesign's frame (roadmap part 3): one background drifting through five tints over ten minutes (stepped every 6 s for CPU, 0.18%), pages full width up to 2,400 px from the menu, a readable 75ch for notes, the restyled menu and page titles. Recorded `fix-tablet-header-overflow` |
+| 1.24.29 | #387 | `loading-state-failed-loads`: Timeline and Weekly activity show a skeleton, and "Couldn't load this." with Retry |
+| 1.24.30 | #395 | `loading-state-silent-cards`: To-dos, rounds, Files and Links get skeletons and Retry; Add round waits for the rounds. Also the live-data rule in working-with-kai.md |
+| 1.24.31 | #396 | `loading-state-page-skeletons`: ten list pages show a skeleton, not a spinner (CLS on Documents 0.102 → 0, Insights 0.139 → 0.005); split, with the record pages as their own task |
+| 1.24.32 | #399 | `loading-state-page-skeletons-records`: the five record pages; a failed record keeps its back link |
+| 1.24.33 | #401 | `loading-state-card-spinners`: Insights' cards, the quick view, Offers and Notes cards, NoteBody, WhereUsed (Insights' Conversations tab CLS 0.255 → 0) |
+| 1.24.34 | #402 | `app-redesign-components` (part 4): roomy cards, `variant="well"` for cards holding cards, pill stage badges, segmented pastel bars, Today's dark tiles (hover contrast ≥ 4.8) |
+| 1.24.35 | #405 | `fix-calendar-day-number-apart`: the calendar's day numbers sit above their dots on a wide screen (a regression from #384's full width). Kai checked it on a demo first |
+| 1.24.36 | #403 | `app-redesign-forms` (part 4b): dialogs, input outlines ≥ 3.36:1, red delete actions, table rows, hints under one-line boxes (fixes `fix-new-application-fields-misaligned`), dropdowns open below a hint (`clearHint` in theme.ts), the offer dialog's dates two a row |
 
-Internal: #369 (`checks.sh --no-e2e` accepts a version-only bump, via the new `tools/dev/scope.sh`), #372
-(`fix-scope-tests-windows` recorded; contributor rules), #377 (`fix-pnpm-version-mismatch-install` recorded), #380
-(the redesign plan `docs/rfc/app-redesign.md` and P12's tasks, the pick of 11, the Dependabot and approved-comment
-rules), this refresh.
+Internal (roadmap only, no release): #383 and #385 (notes), and the ideas and bugs below: #386, #388, #389, #390, #391,
+#392, #393, #394, #397, #398, #400, #406. #404 was closed, folded into #405.
 
-## Kai's asks this round (2026-11-15)
+## Kai's asks this round (2026-11-15 to 2026-11-18)
 
-1. Review the contributor PRs in the planned order (#362, #363, #360, then #358, #361, #357, then #364, #359) with
-   Kai's sorting rules → all carried and released except #359 (on hold) and #365 (on hold).
-2. "use agents so as to not consume your own context window" → builders and reviewers as subagents.
-3. "thank you notes are fine, i dont need to see them, keep them brief".
-4. Don't run the VM and the browser tests at the same time (gotchas.md *Windows VM*).
-5. Speed up the browser tests: option 1 → #369; 2 and 3 → roadmap; 4 → `e2e-seed-once` (next).
-6. Restrict the dev-only tooling tests on Windows → #373; "the new roadmap item is not part of the current windows
-   support plan" (`windows-dev-tooling`, backlog).
-7. "those 357 suggestions are fine" → #376 with those numbers.
-8. "hold for 359", then "you can post that comment" → posted on #359.
-9. "look at pr 356 … review and fix and merge/release" → #356; "for dependabot PRs you dont need to carry them" → done
-   on its branch; #379 closed.
-10. Redesign rounds 2 and 3 → "i like 11" → "go for 11, plan it out, create the roadmap items. we'll also need to
-    regenerate screenshots…" → #380 → "before starting the build we will do a compact … you will finish the plan, i
-    will compact, then i will tell you to build" → #381.
-11. "build, sequentially" → #382. "only do up to and including redesign 4*, dont start 5", then "continue up to and
-    include 4*, and also do the things those require, but dont start 5 and its requirements", "yes include skeletons"
-    (see *Next*). "you can shutdown the current redesign demo" → done. Then "pause after this PR is done, ill continue
-    it another time. but we will see this 1 in-progress PR through" → #382 merged, the build paused, #383.
-12. "do the next 1 task" → #384. "i dont need to approve the screenshots, your reviews are fine" → recorded here and in
-    working-with-kai.md.
+1. The redesign, one task at a time on Kai's word, each paused after (this session only, not a standing rule: "that
+   note about one task at a time is just for this session so dont put that in a note"). Done this round: the
+   loading-state parts 2-6, `app-redesign-components` and `app-redesign-forms` ("do app-redesign-components then
+   app-redesign-forms"), with the record pages split out ("definitely split it") and part 6 added so the redesign
+   picks it up ("ensure it gets picked up in the redesign initiative").
+2. "i dont want you editing any live data …" → working-with-kai.md (#395). CLAUDE.md still says Claude may fill in data
+   when Kai asks; I offered to point that line at the rule, no answer yet.
+3. New ideas, all `planned` in P7: `insights-timing-patterns`, `cv-link-finder` (with Kai's follow-up on links, files
+   the card misses and no CV), `interview-type-tidy`, `linkedin-messages-import` (batches optional; agents change data
+   only through an MCP-style layer), `recruiter-first-message-date`, `search-waves`, `added-toast-link`,
+   `recruiters-sort`, `person-cv-sent`, `reapply`, `reply-buttons-clearer`, `settings-page`, `update-check` (decided:
+   an opt-in `config.toml` setting, off by default, later in the Settings page; decisions.md),
+   `general-tracker-discovery` and `calendar-ui-improve`. A PWA was discussed and dropped ("forget it").
+4. Bugs Kai found: the New application boxes misaligned → "fold that bug into the app-redesign-forms task" (fixed in
+   #403); the calendar's day numbers → "have an agent work on this UI bug now", "dont merge the calendar fix until i
+   review a locally running dev version", then "the ui fix is good enough for now … you can merge and release
+   yourself" (#405).
+5. Questions answered, nothing built: Heard back vs They've replied (→ `reply-buttons-clearer`); deleting an Interested
+   application sends its role back to To decide; SPA vs PWA (it's already a SPA); the security alerts.
+6. "evaluate the new security vulnerability reported on github" → answered (see *State*).
 
 ## Next
 
-- **The redesign build, one task at a time on Kai's word.** The scope Kai set, one PR at a time, then stop:
-  1. `app-redesign-shell` → done (#384);
-  2. `loading-state-failed-loads`;
-  3. `loading-state-silent-cards`;
-  4. `loading-state-page-skeletons`;
-  5. `app-redesign-components`, which depends on the loading-state chain;
-  6. `app-redesign-forms`. Its roadmap task now lists what #382's review left for it.
-  Don't start `app-redesign-dock` (part 5) or anything only it needs. Kai no longer approves these PRs' screenshots ("i dont need
-  to approve the screenshots, your reviews are fine", working-with-kai.md): each merges and releases after the review
-  cycle and the checks, and Kai gets a line on what shipped. New images go to Kai before they're applied.
+- **The redesign, on Kai's word:** `app-redesign-dock` (part 5, one larger PR: the side panel on
+  Applications, Today, a company and an agency), then `app-redesign-today`, `-applications`, `-records`,
+  `-records-people`, `-people`, `-schedule`, `-rest`, `-phone-nav`, `-dark`, then the images (`-docs`, `-gif-card`,
+  `-website-shots`, each shown to Kai before it's applied) and `-wrap-up`. Kai doesn't approve the redesign PRs'
+  screenshots (working-with-kai.md): a demo server for the reviewer, then merge and release after the cycle.
 - `e2e-seed-once` (next).
 - #359 when its author updates it.
-- **Bugs:** 59 open (10 medium, 49 low); `fix-double-save-locked` still needs a decision.
+- **Bugs:** 61 open (11 medium, 50 low). Recorded this round: `fix-tablet-header-overflow`, `fix-guide-role-actions`,
+  `fix-role-form-label-wrap`, `fix-contact-detail-row-phone`, and `fix-person-new-org-race` (a recurrence of
+  `fix-person-saved-before-new-company`, with its likely cause). Fixing waits for Kai. `fix-double-save-locked` still
+  needs a decision.
 
 **How work runs** (keep doing it this way unless Kai says otherwise): one builder agent per change in its own worktree,
 Opus reviewers for data safety or structure, Sonnet or Haiku for small and docs PRs, every fix commit re-reviewed; the
@@ -91,27 +84,35 @@ lead bumps, merges and ships. Roadmap-only PRs: `uv run pytest -q tests/pm`.
 
 ## Waiting on Kai (don't start)
 
-- **The go for each next redesign task** (one at a time; the last was #384).
-- **Restart the tracker** (running since before v1.24.22).
-- **New backlog bugs and tasks:** `fix-merge-people-notes-half-relinked`, `fix-note-held-open-not-found`,
-  `fix-pnpm-version-mismatch-install`, `orphan-files-sweep`, `scripts-lf-endings`, `tz-spring-forward-test`;
-  `e2e-rebalance-slow-files`, `pytest-parallel`.
+- **The go for the next redesign task** (`app-redesign-dock`).
+- **Start the tracker** if it's still down after the session restart.
+- **Bugs to pick:** the five above and the older backlog (`fix-merge-people-notes-half-relinked`,
+  `fix-note-held-open-not-found`, `fix-pnpm-version-mismatch-install`, …); tasks `orphan-files-sweep`,
+  `scripts-lf-endings`, `tz-spring-forward-test`, `e2e-rebalance-slow-files` and `pytest-parallel`.
 - **The user-level hook:** add to `~/.claude/settings.json` next to `"env"` (the auto-mode check refuses this edit):
   ```json
   "hooks": { "SessionStart": [ { "matcher": "compact", "hooks": [ { "type": "command",
     "command": "/home/kai/Documents/Projects/job-application-tracker/tools/dev/after_compact.sh --user", "timeout": 30 } ] } ] },
   ```
-- **Decisions:** `fix-double-save-locked`; `i18n-zh-cn-offer-word`, `i18n-zh-cn-brand-name`; MCP §14; `hosted-mcp`'s
-  open questions; the GitHub repo description (for-any-job and "simple" wording) when those tasks run.
-- **Restore `worktree-pr-screenshots`?** (from #291's head `a283908`); useful for the redesign's PRs.
+- **Decisions:**
+  - `fix-double-save-locked`;
+  - `i18n-zh-cn-offer-word` and `i18n-zh-cn-brand-name`;
+  - MCP §14 and `hosted-mcp`'s open questions;
+  - the GitHub repo description, when those tasks run;
+  - whether to dismiss the two build-time Dependabot alerts;
+  - whether CLAUDE.md's "fill in data when Kai asks" should point at the live-data rule.
+- **Restore `worktree-pr-screenshots`?** (from #291's head `a283908`).
 - **Repo gaps offered for contributors, no answer:** CONTRIBUTING asks contributors to update `CHANGELOG.md` though Kai
   asked them to leave it; PRs get no automatic checks.
-- **Left alone** (Kai, 2026-11-02): `notes-documents-improve`, `timeline-improve`, `people-you-meet`.
+- **Left alone:** `notes-documents-improve`, `timeline-improve` and `people-you-meet` (Kai, 2026-11-02); the Claude Code
+  permission-rule warnings for `git -C *` in the user settings (Kai asked to ignore them, 2026-11-17).
 
 ## Noticed, not promised
 
 - `docs-contributor-prs` is still `building` on the roadmap with no branch: check whether it's done.
 - The website's hero demo shows an old app version; `app-redesign-website-shots` retakes it.
+- The quick view's summary grows 28 px when a later request answers (CLS 0.031, seen in #401); worth a look in the
+  redesign's dock part.
 - A CNY role's pay reads "2800 CNY/天": `formatMoney` has symbols only for GBP, USD and EUR (now `generic-money`).
 - Ghost and star marks are missing in the Timeline *About* select and to-do "about" text.
 - `tools/pm/yamlish.py` and `scripts/i18n/translate/pages.json` aren't formatter-clean (neither is in the checks).
