@@ -48,12 +48,22 @@ sizes, timings) and its behaviour, not its selectors: each part is built into th
 **Panels.** The app's one side drawer, the application panel (`ApplicationDrawer`), **docks**: it slides in under the
 header, opaque, with no overlay, and the page (the board included) shrinks to make room rather than being covered. It
 opens from Applications (list and board), Today, a company's page and an agency's page. The page behind still scrolls
-and takes clicks; picking another item swaps what the panel shows. Phones keep a full-screen overlay.
+and takes clicks; picking another item swaps what the panel shows. Phones keep a full-screen overlay. *As built
+(#408):* it docks from 992 px; below that, small tablets get the phone's full-screen overlay too, since at 768 px
+the page beside the menu and the panel was about 100 px wide (the lead's call; Kai can change it).
 
 **Pages.**
-- **Today in three columns** from 1,200 px: Your move, Coming up, Waiting on them. Narrower screens stack as now.
+- **Today in three columns** from 1,200 px: Your move, Coming up, Waiting on them. Narrower screens stack as now. *As
+  built (#412):* laid out by the page's own width (container queries), since the docked panel takes 440-540 px of
+  the window: three columns from 1,200 px of page (about a 1,490 px window), Your move beside the other two from
+  880 px, stacked below that. Three at a 1,200 px window left the side columns about 260 px wide, too cramped.
 - **The Applications board fills the window** beside the menu (it escapes the cap, a 16 px gutter), its columns
-  sharing the width down to **about 180 px** each instead of a fixed 250 px.
+  sharing the width down to **about 180 px** each instead of a fixed 250 px. *As built (#413):* each column is 180
+  to 360 px (a few columns stop at 360 rather than stretching across a 4K screen), laid out by the board's own
+  width, so beside the docked panel they share what's left; closed-stage columns share like the others. While a
+  card is dragged the columns keep their widths, and the closed stages that appear for the drop come in after them
+  at 200 px, so nothing shifts under the pointer. Only the board passes the cap: the title and filters keep it, so
+  the List/Board switch stays put. The list stays at the 2,400 px cap, on a soft card.
 - **Record pages** (an application, company, person, agency or role), from 1,280 px: the main cards flow in two
   columns, the side cards (to-dos, role, people) in a narrow third (about 420 px); an application's summary spans the top.
 - **Notes** as a grid of note cards (notes still open in their editor dialog). **Documents**: the CV files and each

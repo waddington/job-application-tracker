@@ -111,6 +111,7 @@ export function AgencyPage() {
                       onClick={() => setOpenId(a.id)}
                       onKeyDown={(e) => e.key === "Enter" && setOpenId(a.id)}
                       tabIndex={0}
+                      data-panel-opener={a.id}
                       style={{ cursor: "pointer" }}
                     >
                       <Table.Td>

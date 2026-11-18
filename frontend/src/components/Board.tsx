@@ -12,13 +12,14 @@ import {
   type Announcements,
   type UniqueIdentifier,
 } from "@dnd-kit/core";
-import { Anchor, Badge, Card, Group, Paper, ScrollArea, Stack, Switch, Text } from "@mantine/core";
+import { Anchor, Badge, Card, Group, Paper, ScrollArea, Skeleton, Stack, Switch, Text } from "@mantine/core";
 import { useLocalStorage } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useRef, useState, type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 
+import classes from "./Board.module.css";
 import { PersonMarks } from "./GhostMark";
 import type { ApplicationRow } from "../api/client";
 import { i18n } from "../i18n";
@@ -119,7 +120,13 @@ function CardBody({ row, link = true }: { row: ApplicationRow; link?: boolean })
         </Badge>
       )}
       <Group gap={6} mt={6} justify="space-between" wrap="nowrap">
-        <Text size="xs" c={row.stale ? "red" : "dimmed"} fw={row.stale ? 600 : undefined}>
+        {/* On one line in a narrow column; who it came through is cut short instead. */}
+        <Text
+          size="xs"
+          c={row.stale ? "red" : "dimmed"}
+          fw={row.stale ? 600 : undefined}
+          style={{ whiteSpace: "nowrap", flex: "none" }}
+        >
           {ago(row.days_since_activity)}
         </Text>
         {via && (
@@ -148,6 +155,7 @@ function DraggableCard({ row, onOpen }: { row: ApplicationRow; onOpen: (id: stri
         borderLeft: row.stale ? "3px solid var(--mantine-color-red-6)" : undefined,
       }}
       aria-label={t("board.card", { company: row.company_name, role: row.role_title })}
+      data-panel-opener={row.id} // focus comes back here when the quick view closes, even after a move
       {...attributes}
       {...listeners}
       onClick={() => onOpen(row.id)}
@@ -166,13 +174,19 @@ function DraggableCard({ row, onOpen }: { row: ApplicationRow; onOpen: (id: stri
   );
 }
 
+/** The width a closed stage's column comes in at when it only shows for a drag. */
+const REVEALED_WIDTH = 200;
+
 function StageColumn({
   column,
   dropState,
+  width,
   onOpen,
 }: {
   column: Column;
   dropState: "idle" | "suggested" | "allowed" | "blocked";
+  /** Set while a card is dragged: the column's width stays put (see Board.module.css). */
+  width?: number;
   onOpen: (id: string) => void;
 }) {
   const { t } = useTranslation("applications");
@@ -191,11 +205,16 @@ function StageColumn({
     <Paper
       ref={setNodeRef}
       variant="well"
-      w={closed ? 200 : 250}
-      miw={closed ? 200 : 250}
+      className={classes.column}
+      data-frozen={width !== undefined || undefined}
       p="xs"
       radius="lg"
-      style={{ border, opacity: dropState === "blocked" ? 0.45 : 1, transition: "opacity 120ms" }}
+      style={{
+        border,
+        opacity: dropState === "blocked" ? 0.45 : 1,
+        transition: "opacity 120ms",
+        ...(width !== undefined && ({ "--board-column-width": `${width}px` } as CSSProperties)),
+      }}
       aria-label={t("board.column", { title: columnTitle(column) })}
     >
       <Group justify="space-between" mb="xs" wrap="nowrap">
@@ -226,6 +245,9 @@ export function Board({
 }) {
   const { t } = useTranslation("applications");
   const [active, setActive] = useState<ApplicationRow | null>(null);
+  // While dragging: the columns' widths when the card was picked up, and which columns were showing then.
+  const [frozen, setFrozen] = useState<{ width: number; shown: Set<string> } | null>(null);
+  const columnsRef = useRef<HTMLDivElement>(null);
   const [showClosed, setShowClosed] = useState(false);
   // Remembered: a column per interview round, or one per stage.
   const [byRound, setByRound] = useLocalStorage<boolean>({
@@ -250,11 +272,20 @@ export function Board({
     return column ? columnKey(column) : undefined;
   };
 
-  const onDragStart = (event: DragStartEvent) =>
+  const onDragStart = (event: DragStartEvent) => {
+    // Every column has the one flex rule (.column in Board.module.css: the same basis, minimum and maximum), so
+    // they are all the same width and the first one says what they all are.
+    const width = columnsRef.current?.firstElementChild?.getBoundingClientRect().width;
+    if (width) setFrozen({ width, shown: new Set(columns.map(columnKey)) });
     setActive((event.active.data.current?.row as ApplicationRow) ?? null);
+  };
+  const stopDragging = () => {
+    setActive(null);
+    setFrozen(null);
+  };
   const onDragEnd = (event: DragEndEvent) => {
     const row = event.active.data.current?.row as ApplicationRow | undefined;
-    setActive(null);
+    stopDragging();
     if (!row) return;
     const over = event.over ? String(event.over.id) : undefined;
     const plan = planDrop(workflow, row, over, ownColumn(row.id));
@@ -270,7 +301,7 @@ export function Board({
   };
 
   return (
-    <Stack gap="xs">
+    <Stack gap="xs" className={classes.board}>
       <Group gap="lg">
         <Switch
           label={t("board.showClosed")}
@@ -289,15 +320,22 @@ export function Board({
         sensors={sensors}
         onDragStart={onDragStart}
         onDragEnd={onDragEnd}
-        onDragCancel={() => setActive(null)}
+        onDragCancel={stopDragging}
         accessibility={{ announcements: announcements(rows, titles) }}
       >
-        <ScrollArea type="auto" offsetScrollbars>
-          <Group align="flex-start" wrap="nowrap" gap="sm" pb="sm">
+        <ScrollArea type="auto" offsetScrollbars="x" classNames={{ content: classes.scroller }}>
+          <Group ref={columnsRef} align="flex-start" wrap="nowrap" gap="sm" pb="sm">
             {columns.map((column) => (
               <StageColumn
                 key={columnKey(column)}
                 column={column}
+                width={
+                  !frozen
+                    ? undefined
+                    : frozen.shown.has(columnKey(column))
+                      ? frozen.width
+                      : Math.min(frozen.width, REVEALED_WIDTH)
+                }
                 onOpen={onOpen}
                 dropState={
                   !active || columnKey(column) === ownColumn(active.id)
@@ -316,7 +354,7 @@ export function Board({
         </ScrollArea>
         <DragOverlay dropAnimation={null}>
           {active && (
-            <Card withBorder mod="nested" shadow="md" w={228}>
+            <Card withBorder mod="nested" shadow="md">
               <CardBody row={active} link={false} />
             </Card>
           )}
@@ -324,5 +362,16 @@ export function Board({
       </DndContext>
       {move.dialog}
     </Stack>
+  );
+}
+
+/** The board while it loads: columns that share the width as the real ones do. */
+export function BoardSkeleton() {
+  return (
+    <Group className={classes.board} gap="sm" wrap="nowrap" align="flex-start" style={{ overflow: "hidden" }}>
+      {Array.from({ length: 5 }, (_, i) => (
+        <Skeleton key={i} className={classes.column} height={420} radius="md" />
+      ))}
+    </Group>
   );
 }

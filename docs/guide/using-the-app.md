@@ -18,7 +18,8 @@ links to what changed in that release on GitHub, in a new tab. If the running tr
 page are different versions, a sentence under it says so and what to do (see
 [Troubleshooting](troubleshooting.md#the-sidebar-says-the-server-and-this-page-are-different-versions)).
 
-Pages fill the window beside the sidebar, up to 2,400 pixels wide, so a wide screen is used whole. Behind
+Pages fill the window beside the sidebar, up to 2,400 pixels wide (the Applications board has no limit), so a
+wide screen is used whole. Behind
 every page, the background fades very slowly through five soft tints (lilac, butter, mint, sky and apricot,
 or darker twins in dark mode), once round every ten minutes; it carries on where it was when you change page
 or reload. If your system is set to reduce motion, it stays lilac.
@@ -110,8 +111,11 @@ applied too.
 
 Everything that needs you, in one place, sorted by what you do about it. At the top, one line:
 active applications, interviews in the next two weeks and offers to answer (each opens its
-page), with the pipeline of active applications by stage underneath. Then three groups; on a
-wide screen *Your move* is on the left and the other two sit beside it:
+page), with the pipeline of active applications by stage underneath. Then three groups, laid out by
+the room the page has: on a wide screen they sit side by side as three columns; with a little less room,
+*Your move* is on the left and the other two are stacked beside it; on a smaller screen they stack one under
+the other. The [quick view](#applications-list-and-board) open beside the page takes some of that room, so
+with it open they stack on most screens, and only a very wide one keeps two or three columns:
 
 **Your move**: things to do now, in this order:
 
@@ -160,7 +164,8 @@ anything you're waiting on) the buttons stay faint until you point at the tile o
 on a touch screen they always show. On an application: set a follow-up date (tomorrow, in 3 days, next week), **snooze** it
 (3 days, 1 week, 2 weeks) so it stops nagging, or mark it **Ghosted**. A snoozed application,
 one with a follow-up date in the future, or one with an interview booked ahead never counts as
-gone quiet. Click an application's name for its quick view.
+gone quiet. Click an application's name for its quick view, a panel beside Today (see
+[Applications](#applications-list-and-board)).
 
 At the bottom, folded away: **Recent activity** (the last two weeks of the
 [Timeline](#timeline), leaving out companies, agencies and people being added) and **How it
@@ -242,9 +247,21 @@ The **list** has search (company, role, recruiter) and filters: stage, route, ag
 *Needs chasing*, and *Archived* (shows only archived applications). Click a row for a quick
 view; open the full page from there.
 
+**The quick view** is a panel beside the page, under the header. The page (the board too) moves
+over to make room rather than going under it, so you can keep scrolling, and clicking another row
+or card shows that one in the panel instead. Its **×**, or Escape while you're in it, closes it,
+and you're back on the row or card you opened it from (even if it has moved to another column; if
+it has gone from the page, on the page's title). In a window narrower than 992 pixels (a phone or a
+small tablet) it fills the screen instead. Today, a company's page and an agency's page open the
+same quick view.
+
 The **board** shows a column per stage. Drag a card to move it; the usual next stages are
 highlighted while you drag. Closed stages (Rejected, Withdrawn…) are hidden unless you
 switch on *Show closed stages*, but appear while you drag so you can drop a card on them. Cards show the current interview round.
+The board fills the window beside the sidebar (or beside the quick view, when it's open), and its
+columns share that width, from 180 to 360 pixels each; when they don't all fit at 180, it scrolls
+sideways, and dragging a card to the edge scrolls it along. While you drag, the columns stay as they
+were, and the closed stages come in after them.
 
 The round's purple badge, on board cards, list rows and the quick view, names the round, with its
 day once booked: "Round 2 · Technical · Thu 12 Nov" (still, once that day has passed, until you mark
@@ -550,14 +567,16 @@ meetings** on their page:
 Calls show under *Coming up* on Today, on the Timeline, and in
 search. Interview rounds for an application stay on the application's page.
 
-An **agency page** shows its recruiters and every role it put you forward for. Applications
+An **agency page** shows its recruiters and every role it put you forward for (click one for its
+[quick view](#applications-list-and-board) beside the page). Applications
 for the same job through two routes (say, directly and via an agency) show a **duplicate
 warning**.
 
 ## Companies
 
 A list of companies with how many applications and how many need chasing. A **company
-page** has its applications, roles (with whether you've applied, passed or still have to
+page** has its applications (click one for its [quick view](#applications-list-and-board) beside
+the page), roles (with whether you've applied, passed or still have to
 decide, and **Add role**), people (**Add person** for the people you talk to there),
 an *About* box, notes, links and files. **Edit** at the top renames it or sets its website,
 and **Timeline** opens the Timeline filtered to it, over all time (its applications, roles,

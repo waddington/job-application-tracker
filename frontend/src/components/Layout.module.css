@@ -40,6 +40,21 @@
 .navLink[data-active]:hover {
   background-color: var(--jat-surface);
 }
+/*
+ * The dock (docs/rfc/app-redesign.md §2, Panels): where a side panel goes, under the header and beside the page,
+ * which makes room for it (AppShell pads the page by the dock's width, sliding both over 350 ms, at once under
+ * reduced motion). The page's background shows round the panel's card. While it's empty it's hidden, so an empty
+ * landmark isn't left about.
+ */
+.dock {
+  padding: 4px 12px 12px;
+  background: transparent;
+  border: none;
+}
+.dock:empty {
+  visibility: hidden;
+}
+
 /* Groups sit apart by space alone, no rule between them. */
 .group {
   margin-top: 9px;
