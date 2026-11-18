@@ -83,8 +83,8 @@ Each of these cost time once. Add a line when something new does.
   loop on `mergeStateStatus` (or `merge.sh`), never a foreground `sleep`. A piped e2e run can exit 0 on failure: read
   the pass and fail counts. Don't write "(#N)" in `bump.py`'s entry: it appends it.
 - **`checks.sh` keeps only the last 25 lines** of a failing check: read `frontend/test-results/*/error-context.md`,
-  or rerun with `tools/dev/e2e_only.sh > var/e2e.log 2>&1` to keep the whole error (a later run overwrites
-  `test-results/`).
+  before a later run overwrites it. `e2e_only.sh` ends in `tail -15` too; for the whole output run the suite through
+  pnpm: `pnpm --dir frontend e2e > var/e2e.log 2>&1`.
 - **`ship.sh` takes the worktree's name** (`app-redesign-forms`), not its path; given a path it leaves the worktree
   ("missing or locked") and you remove it by hand.
 - **A read-only reviewer can still move your worktree:** one ran `git checkout <commit>` in the PR's worktree, so the

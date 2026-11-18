@@ -8,7 +8,7 @@ trusting it, check `gh pr list`, `git worktree list`, `git log --oneline -5` and
 - Released up to **v1.24.36**. Branches on GitHub: `main`, `worktree-app-redesign-concepts` (draft #354, not for
   merging), the contributor's forks for #359 and #365, and this refresh until it merges.
 - **The redesign:** parts 1-4b are done (the theme, the frame, cards and lists, forms), and the loading-state chain
-  it needed (parts 2-6) is too. **Paused:** Kai picks each next task. The next in order is `app-redesign-dock` (part
+  it needed (parts 2-6) is too. **Paused:** waiting for Kai's go. The next in order is `app-redesign-dock` (part
   5); the rest is under *Next*.
 - **Open PRs:**
   - **#354** DO NOT MERGE: the redesign concepts (concept 11 picked). The reference implementation (read its files in
@@ -66,7 +66,7 @@ Internal (roadmap only, no release): #383 and #385 (notes), and the ideas and bu
 
 ## Next
 
-- **The redesign, on Kai's word, one task at a time:** `app-redesign-dock` (part 5, one larger PR: the side panel on
+- **The redesign, on Kai's word:** `app-redesign-dock` (part 5, one larger PR: the side panel on
   Applications, Today, a company and an agency), then `app-redesign-today`, `-applications`, `-records`,
   `-records-people`, `-people`, `-schedule`, `-rest`, `-phone-nav`, `-dark`, then the images (`-docs`, `-gif-card`,
   `-website-shots`, each shown to Kai before it's applied) and `-wrap-up`. Kai doesn't approve the redesign PRs'
