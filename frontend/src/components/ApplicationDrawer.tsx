@@ -4,7 +4,6 @@ import {
   Badge,
   Button,
   Divider,
-  Drawer,
   Group,
   Menu,
   SegmentedControl,
@@ -38,6 +37,7 @@ import { i18n } from "../i18n";
 import { stageName } from "../utils/stageName";
 import { ago, formatDate, formatDateTime } from "../utils/time";
 import { AtAGlance } from "./AtAGlance";
+import { DockedPanel } from "./DockedPanel";
 import { DuplicateWarning } from "./DuplicateWarning";
 import { RoundBadge } from "./Interviews";
 import { ButtonsSkeleton, LineSkeleton } from "./PageSkeleton";
@@ -334,11 +334,21 @@ export function ApplicationLoadError({ error }: { error: unknown }) {
 
 export { LogActivity };
 
+/**
+ * The quick view: an application in the panel docked beside the page, which makes room for it (a full-screen
+ * overlay on a phone). Opening another application while it's open swaps what it shows.
+ */
 export function ApplicationDrawer({ id, onClose }: { id: string | null; onClose: () => void }) {
   const { t } = useTranslation("applications");
   const { data: app, isLoading, isError, error } = useApplication(id);
   return (
-    <Drawer opened={!!id} onClose={onClose} position="right" size="lg" title={t("summary.drawerTitle")}>
+    <DockedPanel
+      opened={!!id}
+      onClose={onClose}
+      title={t("summary.drawerTitle")}
+      closeLabel={t("summary.closeDrawer")}
+      contentKey={id}
+    >
       {isError ? (
         <ApplicationLoadError error={error} />
       ) : isLoading || !app ? (
@@ -370,7 +380,7 @@ export function ApplicationDrawer({ id, onClose }: { id: string | null; onClose:
           <ApplicationTimeline app={app} />
         </Stack>
       )}
-    </Drawer>
+    </DockedPanel>
   );
 }
 

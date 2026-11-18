@@ -1,0 +1,42 @@
+/*
+ * The docked panel (DockedPanel.tsx): a lifted card filling Layout's dock beside the page, opaque, its body
+ * scrolling under a header that stays put. The dock itself, and its slide, are Layout's (Layout.module.css).
+ */
+.panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  border-radius: var(--mantine-radius-lg);
+  background-color: var(--jat-surface);
+  box-shadow: 0 18px 50px -24px rgb(var(--jat-shadow) / 0.35);
+}
+:where([data-mantine-color-scheme="dark"]) .panel {
+  border: 1px solid var(--jat-ink-faint);
+}
+
+.header {
+  flex: none;
+  padding: 20px 20px 12px var(--jat-panel-padding, 26px);
+}
+
+.title {
+  margin: 0;
+}
+/* Focus lands on the heading so a screen reader reads where you are; it isn't something you act on. */
+.title:focus {
+  outline: none;
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 4px var(--jat-panel-padding, 26px) var(--jat-panel-padding, 26px);
+}
+@media (max-width: 62em) {
+  .panel {
+    --jat-panel-padding: 20px;
+  }
+}

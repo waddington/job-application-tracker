@@ -337,7 +337,7 @@ export function themeFor(lang: string) {
         ...dialog,
         defaultProps: { ...dialog.defaultProps, radius: "var(--jat-dialog-radius)" },
       }),
-      // The application's side panel keeps its square edge against the window; it docks later (RFC §4 #5).
+      // A side panel on a phone (DockedPanel's full-screen overlay); wider screens dock it beside the page.
       Drawer: Drawer.extend(dialog),
       // Every box you type in: an outline you can see (theme.module.css).
       Input: Input.extend({ classNames: { wrapper: classes.input } }),

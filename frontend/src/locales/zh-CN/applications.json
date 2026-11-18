@@ -67,6 +67,7 @@
   },
   "summary": {
     "drawerTitle": "申请",
+    "closeDrawer": "关闭",
     "needsChasing": "待催问",
     "archived": "已归档",
     "alsoApplied": "你还投递过这个职位",

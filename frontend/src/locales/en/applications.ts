@@ -79,9 +79,10 @@ export default {
       cancelled: "Cancelled. {{card}} stays where it was.",
     },
   },
-  // The quick view (a drawer) and the top of the application page.
+  // The quick view (a panel beside the page) and the top of the application page.
   summary: {
     drawerTitle: "Application",
+    closeDrawer: "Close", // the quick view's close button, for screen readers
     needsChasing: "Needs chasing",
     archived: "Archived",
     alsoApplied: "Also applied for this job",
