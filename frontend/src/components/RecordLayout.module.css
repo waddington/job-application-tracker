@@ -1,0 +1,50 @@
+/* A record's page (docs/rfc/app-redesign.md §2, Pages). It lays out by the room the page has, not the window's
+   width (container queries), since the docked panel can take 540 px of a wide window:
+   - narrow: one column, in order: the summary, the main cards, then the side cards;
+   - from 760 px of page: the main cards in one column with the side cards beside them (at least 320 px);
+   - from 1,280 px (about a 1,570 px window with the panel closed): the main cards in two columns and the side
+     cards in a narrower third, 420 px; each main column is then at least about 400 px.
+   The summary, if any, spans the top from 760 px. Every column starts level under it, and each card is as tall as
+   its content: nothing stretches to the tallest column. */
+.room {
+  container-type: inline-size;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--mantine-spacing-md) var(--mantine-spacing-lg);
+  align-items: start;
+}
+
+/* The two main columns, one above the other until the page is wide. */
+.mains,
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-md);
+  min-width: 0; /* a long name or a table wraps or scrolls in its card rather than widening the column */
+}
+
+@container (min-width: 760px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 0.5fr);
+  }
+  .summary {
+    grid-column: 1 / -1;
+  }
+}
+
+@container (min-width: 1280px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 420px;
+  }
+  /* The wrapper steps aside, so its two columns become columns of the grid (the DOM order stays). */
+  .mains {
+    display: contents;
+  }
+  /* A page with only one main column gives it both. */
+  .column:only-child {
+    grid-column: span 2;
+  }
+}

@@ -4,7 +4,6 @@ import {
   Badge,
   Button,
   Card,
-  Grid,
   Group,
   Stack,
   Table,
@@ -20,6 +19,7 @@ import { useTranslation } from "react-i18next";
 import { PersonMarks, PersonName } from "../components/GhostMark";
 import { BackLink, Page } from "../components/Page";
 import { RecordSkeleton } from "../components/PageSkeleton";
+import { RecordLayout } from "../components/RecordLayout";
 import { RecruiterLine } from "../components/RecruiterLine";
 import type { Schemas } from "../api/client";
 import { useCompanySummary, useUpdateCompany } from "../api/detailHooks";
@@ -96,7 +96,8 @@ export function CompanyPage() {
         <Alert color="red">{t("company.loadFailed")}</Alert>
       </Page>
     );
-  if (!data) return <RecordSkeleton back={back} actions={3} main={[125, 180, 96]} side={[195, 145]} />;
+  if (!data)
+    return <RecordSkeleton back={back} actions={3} main={[148, 198]} second={[209, 176]} side={[195, 145]} />;
   const { company, applications, contacts } = data;
 
   return (
@@ -149,9 +150,9 @@ export function CompanyPage() {
           />
         )}
       </Group>
-      <Grid gap="lg">
-        <Grid.Col span={{ base: 12, md: 8 }}>
-          <Stack>
+      <RecordLayout
+        main={[
+          <>
             <Card withBorder>
               <Title order={4} mb="sm">
                 {t("company.applications")}
@@ -221,13 +222,15 @@ export function CompanyPage() {
             <Card withBorder>
               <Description key={company.id} company={company} />
             </Card>
+          </>,
+          <>
             <NotesCard entity={`company:${company.id}`} />
             <LinksCard entityType="company" entityId={company.id} />
             <AttachmentsCard entityType="company" entityId={company.id} />
-          </Stack>
-        </Grid.Col>
-        <Grid.Col span={{ base: 12, md: 4 }}>
-          <Stack>
+          </>,
+        ]}
+        side={
+          <>
             <TodosCard entityType="company" entityId={company.id} />
             <RolesCard
               title={t("places.roles")}
@@ -265,14 +268,14 @@ export function CompanyPage() {
                 )}
               </Stack>
             </Card>
-            <ContactFormModal
-              opened={addingPerson}
-              onClose={() => setAddingPerson(false)}
-              defaultCompanyId={company.id}
-            />
-          </Stack>
-        </Grid.Col>
-      </Grid>
+          </>
+        }
+      />
+      <ContactFormModal
+        opened={addingPerson}
+        onClose={() => setAddingPerson(false)}
+        defaultCompanyId={company.id}
+      />
       <ApplicationDrawer id={openId} onClose={() => setOpenId(null)} />
     </Page>
   );

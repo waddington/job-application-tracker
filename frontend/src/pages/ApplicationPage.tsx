@@ -4,7 +4,6 @@ import {
   Button,
   Card,
   Divider,
-  Grid,
   Group,
   Select,
   SimpleGrid,
@@ -38,6 +37,7 @@ import { LinksCard } from "../components/Links";
 import { BackLink, Page } from "../components/Page";
 import { ButtonsSkeleton, ColumnsSkeleton } from "../components/PageSkeleton";
 import { Loading } from "../components/QueryState";
+import { RecordLayout } from "../components/RecordLayout";
 import { TodosCard } from "../components/Todos";
 import { NotesCard } from "../components/Notes";
 import { relationLabel, relationOptions, type Relation } from "../api/peopleHooks";
@@ -298,19 +298,26 @@ export function ApplicationPage() {
       ) : !app ? (
         <Loading gap="md">
           {/* The summary (role, company, badges, buttons, route lines), then the first cards. */}
-          <ColumnsSkeleton top={<ApplicationSummarySkeleton />} main={[250, 287]} side={[195, 139, 309]} />
+          <ColumnsSkeleton
+            top={<ApplicationSummarySkeleton />}
+            main={[250, 287]}
+            second={[209, 176]}
+            side={[195, 139, 309]}
+          />
         </Loading>
       ) : (
-        <Grid gap="lg">
-          <Grid.Col span={{ base: 12, md: 8 }}>
-            <Stack>
-              <ApplicationSummary app={app} />
+        <RecordLayout
+          summary={<ApplicationSummary app={app} />}
+          // Where it stands and what happens next, then what's kept with it and what's happened.
+          main={[
+            <>
               <AtAGlance app={app} />
               {/* keyed by id, not updated_at: other changes (archive, moves) keep unsaved edits */}
               <DetailsCard key={app.id} app={app} />
               <InterviewsCard applicationId={app.id} />
-              <SentDocumentsCard app={app} />
               <OffersCard applicationId={app.id} roleId={app.role_id} />
+            </>,
+            <>
               <NotesCard entity={`application:${app.id}`} />
               <LinksCard entityType="application" entityId={app.id} />
               <AttachmentsCard
@@ -318,6 +325,7 @@ export function ApplicationPage() {
                 entityId={app.id}
                 inherited={{ entityType: "role", entityId: app.role_id, label: t("page.fromRole") }}
               />
+              <SentDocumentsCard app={app} />
               <Card withBorder>
                 <Stack gap="sm">
                   <Title order={4}>{t("log.title")}</Title>
@@ -330,16 +338,16 @@ export function ApplicationPage() {
                   <ApplicationTimeline app={app} />
                 </Stack>
               </Card>
-            </Stack>
-          </Grid.Col>
-          <Grid.Col span={{ base: 12, md: 4 }}>
-            <Stack>
+            </>,
+          ]}
+          side={
+            <>
               <TodosCard entityType="application" entityId={app.id} />
               <RoleCard app={app} />
               <PeopleCard app={app} />
-            </Stack>
-          </Grid.Col>
-        </Grid>
+            </>
+          }
+        />
       )}
     </Page>
   );

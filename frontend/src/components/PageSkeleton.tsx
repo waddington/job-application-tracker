@@ -12,6 +12,7 @@ import type { ReactNode } from "react";
 
 import { Page } from "./Page";
 import { Loading } from "./QueryState";
+import { RecordLayout } from "./RecordLayout";
 
 /**
  * The shapes a page's list takes while it loads, inside QueryState's `skeleton` (or `Loading`), under
@@ -87,16 +88,22 @@ type Columns = {
   /** The heights of the first cards in the main column, and in the side one. */
   main: number[];
   side: number[];
+  /**
+   * The heights of the first cards in the second main column, for a page in RecordLayout: given, the skeleton
+   * takes that layout too (the summary spanning the top, `span` unused).
+   */
+  second?: number[];
   /** How many of the grid's 12 columns the main one takes (on a wide screen). */
   span?: number;
   /** What comes before the main column's cards (an application's summary). */
   top?: ReactNode;
 };
 
-/** A record page's two columns while it loads: the first cards of each, as tall as the real ones. */
-export function ColumnsSkeleton({ main, side, span = 8, top }: Columns) {
+/** A record page's columns while it loads: the first cards of each, as tall as the real ones. */
+export function ColumnsSkeleton({ main, side, second, span = 8, top }: Columns) {
   const cards = (heights: number[]) =>
     heights.map((height, i) => <Skeleton key={i} height={height} radius="xl" />);
+  if (second) return <RecordLayout summary={top} main={[cards(main), cards(second)]} side={cards(side)} />;
   return (
     <Grid gap="lg">
       <Grid.Col span={{ base: 12, md: span }}>
