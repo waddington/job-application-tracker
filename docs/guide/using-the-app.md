@@ -361,11 +361,11 @@ screen they stack one under the other, in that order.
   and take-home briefs and repos; *Rescheduled* on one that moved; **Done** on an open round,
   **Didn't happen** once its time has passed, and **Reschedule** on a booked one (see
   [Interviews](#interviews)).
-- **Documents sent**: which version of your CV and cover letter went with it.
 - **Offer**: pay and terms, and revised offers (see [Offers](#offers)).
 - **Notes**, **Links** (job ads, Google Docs, repos) and **Files** (PDFs, images, exported
   emails). **Files** also lists the role's files (the job description) under *From the role*;
   the *Role* card's title opens the [role's page](#roles-to-decide).
+- **Documents sent**: which version of your CV and cover letter went with it.
 - **People**: who's involved, and as what (agency recruiter, internal recruiter / talent,
   hiring manager, interviewer, referrer, other). Pick someone you already have and **Link
   person**, or **New person** to add someone and link them in one go (they start at the
