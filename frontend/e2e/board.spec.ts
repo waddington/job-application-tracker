@@ -148,6 +148,37 @@ test.describe("opening a card", () => {
     ).toBeVisible();
   });
 
+  test("the quick view docks beside the board, which makes room, and another card swaps it", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1400, height: 1000 }); // narrower than the page's cap, so it shrinks
+    const contoso = card(page, "Contoso", "Senior Backend Engineer");
+    await contoso.click();
+    const panel = page.getByRole("dialog", { name: "Application" });
+    await expect(panel.getByRole("heading", { name: "Senior Backend Engineer" })).toBeVisible();
+    await expect(async () => {
+      const box = await panel.boundingBox();
+      const board = await page.locator("main > *").first().boundingBox();
+      expect(box!.x + box!.width).toBeLessThanOrEqual(1400); // slid in
+      expect(box!.x + box!.width).toBeGreaterThan(1380);
+      expect(board!.x + board!.width).toBeLessThanOrEqual(box!.x);
+    }).toPass({ timeout: 5_000 });
+    await card(page, "Litware", "Senior Software Engineer").click();
+    await expect(panel.getByRole("heading", { name: "Senior Software Engineer" })).toBeVisible();
+    await expect(page.getByRole("dialog")).toHaveCount(1);
+  });
+
+  test("dragging a card with the quick view open moves it", async ({ page, request }) => {
+    await addCard(page, request, "Drag Open Ltd", "Drag Open");
+    await card(page, "Contoso", "Senior Backend Engineer").click();
+    const panel = page.getByRole("dialog", { name: "Application" });
+    await expect(panel.getByRole("heading", { name: "Senior Backend Engineer" })).toBeVisible();
+    await drag(page, card(page, "Drag Open Ltd", "Drag Open"), "Screen", "Drag Open Ltd");
+    await expect.poll(() => stageOf(request, "Drag Open")).toBe("screen");
+    await expect(column(page, "Screen").getByLabel("Drag Open Ltd: Drag Open")).toBeVisible();
+    await expect(panel.getByRole("heading", { name: "Senior Backend Engineer" })).toBeVisible();
+  });
+
   test("the recruiter's name opens their page, not the quick view, and moves nothing", async ({ page }) => {
     const moves = watchMoves(page);
     await card(page, "Contoso", "Senior Backend Engineer").getByRole("link", { name: "Alex Morgan" }).click();
