@@ -707,5 +707,11 @@ test.describe("where the three groups sit", () => {
     // Nothing runs off the side or scrolls sideways.
     for (const box of await boxes(page)) expect(box.x + box.width).toBeLessThanOrEqual(2560);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    // Each card fills its column, however short its rows are.
+    for (const id of ["#your-move", "#coming-up", "#waiting-on-them"]) {
+      const group = (await page.locator(id).boundingBox())!;
+      const card = (await page.locator(`${id} > .mantine-Card-root`).boundingBox())!;
+      expect(Math.abs(card.width - group.width)).toBeLessThan(1);
+    }
   });
 });
