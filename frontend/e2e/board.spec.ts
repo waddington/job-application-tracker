@@ -414,6 +414,104 @@ test.describe("dragging with the mouse", () => {
   });
 });
 
+/** Where each column sits: its left and right edges and width. */
+const columnBoxes = (page: Page) =>
+  page.getByLabel(/ column$/).evaluateAll((els) =>
+    els.map((e) => {
+      const r = e.getBoundingClientRect();
+      const px = (n: number) => Math.round(n); // sub-pixel layout differs between frames
+      return { title: e.getAttribute("aria-label"), x: px(r.x), right: px(r.right), width: px(r.width) };
+    }),
+  );
+/** The same columns in the same places, give or take a pixel. */
+const sameAs = (now: Awaited<ReturnType<typeof columnBoxes>>, then: Awaited<ReturnType<typeof columnBoxes>>) => {
+  expect(now.map((b) => b.title)).toEqual(then.map((b) => b.title));
+  now.forEach((b, i) => {
+    expect(Math.abs(b.x - then[i]!.x)).toBeLessThanOrEqual(1);
+    expect(Math.abs(b.width - then[i]!.width)).toBeLessThanOrEqual(1);
+  });
+};
+const allAbout = (widths: number[], width: number) =>
+  widths.forEach((w) => expect(Math.abs(w - width)).toBeLessThan(1.5));
+
+test.describe("the board fills the window", () => {
+  test("its columns share the width beside the menu, as far as 16 px from the edge", async ({ page }) => {
+    await page.setViewportSize({ width: 1800, height: 1000 });
+    await expect(async () => {
+      const boxes = await columnBoxes(page);
+      expect(boxes).toHaveLength(7);
+      const width = boxes[0]!.width;
+      expect(width).toBeGreaterThan(200); // wider than the 180 px they can shrink to, so it's sharing
+      expect(width).toBeLessThanOrEqual(360);
+      allAbout(
+        boxes.map((b) => b.width),
+        width,
+      );
+      expect(Math.abs(boxes.at(-1)!.right - (1800 - 16))).toBeLessThan(2); // the last ends at the gutter
+    }).toPass({ timeout: 5_000 });
+    // Nothing to scroll sideways.
+    const viewport = page.locator(".mantine-ScrollArea-viewport").filter({ has: column(page, "Applied") });
+    expect(await viewport.evaluate((e) => e.scrollWidth - e.clientWidth)).toBeLessThanOrEqual(1);
+  });
+
+  test("on a very wide screen it passes the page's cap, but no column stretches past 360 px", async ({
+    page,
+  }) => {
+    // 3,800 px: the page's 2,400 px cap would stop well short of the window's edge.
+    const boxes = await columnBoxes(page);
+    allAbout(
+      boxes.map((b) => b.width),
+      360,
+    );
+    const content = await page.locator("main > *").first().boundingBox();
+    expect(content!.x + content!.width).toBeGreaterThan(3800 - 20);
+    expect(boxes[0]!.x).toBeLessThan(300); // starts beside the menu, not centred
+    for (let i = 1; i < boxes.length; i++) expect(boxes[i]!.x - boxes[i - 1]!.right).toBeLessThan(16);
+  });
+
+  test("with the quick view open, the columns share the room left beside it", async ({ page }) => {
+    await page.setViewportSize({ width: 2560, height: 1000 });
+    await card(page, "Contoso", "Senior Backend Engineer").click();
+    const panel = page.getByRole("dialog", { name: "Application" });
+    await expect(panel.getByRole("heading", { name: "Senior Backend Engineer" })).toBeVisible();
+    await expect(async () => {
+      const dock = (await panel.boundingBox())!;
+      expect(dock.x + dock.width).toBeGreaterThan(2540); // slid in
+      const boxes = await columnBoxes(page);
+      const width = boxes[0]!.width;
+      expect(width).toBeGreaterThanOrEqual(180);
+      allAbout(
+        boxes.map((b) => b.width),
+        width,
+      );
+      const right = boxes.at(-1)!.right;
+      expect(right).toBeLessThanOrEqual(dock.x);
+      expect(right).toBeGreaterThan(dock.x - 40); // up to the panel, not short of it
+    }).toPass({ timeout: 5_000 });
+  });
+
+  test("while dragging, the columns keep their width and the closed stages come in after them", async ({
+    page,
+    request,
+  }) => {
+    await page.setViewportSize({ width: 1920, height: 1000 });
+    await addCard(page, request, "Hold Width Ltd", "Hold Width");
+    const before = await columnBoxes(page);
+    const box = (await card(page, "Hold Width Ltd", "Hold Width").boundingBox())!;
+    await page.mouse.move(box.x + box.width / 2, box.y + 15);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width / 2 + 12, box.y + 25, { steps: 4 });
+    await expect(column(page, "Rejected")).toBeVisible();
+    const during = await columnBoxes(page);
+    sameAs(during.slice(0, before.length), before);
+    expect(during.find((b) => b.title === "Rejected column")!.x).toBeGreaterThan(before.at(-1)!.right);
+    await page.keyboard.press("Escape");
+    await page.mouse.up();
+    await expect(column(page, "Rejected")).toBeHidden();
+    sameAs(await columnBoxes(page), before);
+  });
+});
+
 test.describe("at a normal window width", () => {
   test.use({ viewport: { width: 1400, height: 1000 } });
 
@@ -425,12 +523,15 @@ test.describe("at a normal window width", () => {
     await page.mouse.move(box.x + box.width / 2, box.y + 15);
     await page.mouse.down();
     await page.mouse.move(box.x + box.width / 2 + 12, box.y + 25, { steps: 4 });
+    // The last column starts well off-screen: at 1,400 px even the open stages' columns, at their
+    // narrowest (180 px), run past the window's edge, and the closed ones come in after them.
+    const far = column(page, "Ghosted");
+    expect((await far.boundingBox())!.x).toBeGreaterThan(1400 + 180);
     await page.mouse.move(1380, box.y + 40, { steps: 10 }); // the right-hand edge
-    await expect(said(page)).toContainText(/Drag Far Ltd is over (Rejected|Withdrawn|Ghosted)\./, {
-      timeout: 15_000,
-    });
+    // Scrolled to the end: past Rejected (whose drop would ask for feedback) to the last column.
+    await expect(said(page)).toContainText("Drag Far Ltd is over Ghosted.", { timeout: 15_000 });
     await page.mouse.up();
-    await expect.poll(() => stageOf(request, "Drag Far")).toMatch(/rejected|withdrawn|ghosted/);
+    await expect.poll(() => stageOf(request, "Drag Far")).toBe("ghosted");
   });
 });
 
