@@ -5,7 +5,7 @@
 UTC), `git log` of `worktree-app-redesign-dock`, `gh pr view 408`, `docs/rfc/app-redesign.md` §2, §7 and §8.
 
 From the request to build it (09:36:37) to the start of the last full checks run (11:16:55) took **100 minutes**. The
-merge comes after that run, which takes about 11-12 minutes, so the request-to-merge time is about **112 minutes**. A clean
+merge followed that run at 11:28:46, so the request-to-merge time was **112 minutes**. A clean
 run of the same process (build, one review, one short fix round, one full checks run) would take about
 **50 minutes**.
 
@@ -27,7 +27,7 @@ run of the same process (build, one review, one short fix round, one full checks
 | 12 | Version bump to 1.24.37 | 11:02:49 | 11:02:55 | 0.1 min | Lead |
 | 13 | Full checks: **failed**, 1 of 779 browser tests (`docked-panel.spec.ts:161`) | 11:03:01 | 11:13:23 | 10.4 min | Lead |
 | 14 | Fix round 5: the regression the Firefox fix caused, then re-review (clean) | 11:13:27 | 11:17:15 | 4 min | Lead, Sonnet |
-| 15 | Full checks again, then merge and release | 11:16:55 | ~11:28 | ~11.5 min | Lead |
+| 15 | Full checks again, then merge and release | 11:16:55 | 11:28:46 | 12 min | Lead |
 
 **Correction to the expected outline:** the lead didn't stop the builder's full checks run part-way. The first run
 (step 3) finished and passed. At 10:23 the lead told the builder not to start a *second* full run after fix round 1,
