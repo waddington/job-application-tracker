@@ -1,14 +1,14 @@
 import { CloseButton, Group } from "@mantine/core";
-import { useFocusTrap, useMediaQuery, useMergedRef } from "@mantine/hooks";
+import { useMediaQuery } from "@mantine/hooks";
 import {
   createContext,
   useContext,
   useEffect,
-  useEffectEvent,
   useId,
   useLayoutEffect,
   useRef,
   useState,
+  type KeyboardEvent,
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
@@ -74,13 +74,12 @@ export function DockedPanel({ opened, onClose, title, closeLabel, contentKey, ch
     return div;
   });
   const panel = useRef<HTMLDivElement>(null);
-  const trap = useFocusTrap(shown && overlay);
-  const panelRef = useMergedRef(panel, trap);
   const heading = useRef<HTMLHeadingElement>(null);
   const opener = useRef<HTMLElement | null>(null);
   const openerKey = useRef<string | null>(null);
   const wasOpen = useRef(false);
-  const close = useEffectEvent(() => onClose());
+  /** Whether focus is in the panel, or in a menu or dialog opened from it (React's focus events reach the panel). */
+  const ownsFocus = useRef(false);
 
   // The contents' one element goes in the dock or over the page, and away while closed. Moving it takes focus
   // out of it, so focus goes back to where it was.
@@ -110,23 +109,26 @@ export function DockedPanel({ opened, onClose, title, closeLabel, contentKey, ch
     };
   }, [shown, overlay]);
 
-  // Escape with focus nowhere closes it too: on the page's body (as after a button that had it was disabled while
-  // it saved), or on something hidden (Move to…'s menu, closed after a move, can stay in the page faded to
-  // nothing with focus on a part of itself, whose own handler would take the key first). An Escape from inside is handled on
-  // the panel.
+  // Focus the panel had that's lost because what had it went away (Move to…'s menu, which unmounts after a move
+  // with focus still in it) comes back to the heading, so Escape and the keyboard go on working there. Focus that
+  // leaves for somewhere else, or for nowhere while what had it is still there (a click on the page), is let go.
   useEffect(() => {
     if (!shown) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== "Escape" || e.isComposing) return;
-      const target = e.target;
-      const nowhere =
-        target === document.body ||
-        target === document.documentElement ||
-        (target instanceof Element && target.checkVisibility?.({ opacityProperty: true }) === false);
-      if (nowhere) close();
+    const onFocusOut = (e: FocusEvent) => {
+      const left = e.target;
+      if (e.relatedTarget !== null || !ownsFocus.current) {
+        ownsFocus.current = false; // the panel's onFocus sets it again if focus moved within it
+        return;
+      }
+      setTimeout(() => {
+        const now = document.activeElement;
+        if (now && now !== document.body) return;
+        if (left instanceof Node && left.isConnected) ownsFocus.current = false;
+        else heading.current?.focus({ preventScroll: true });
+      });
     };
-    document.addEventListener("keydown", onKey, true);
-    return () => document.removeEventListener("keydown", onKey, true);
+    document.addEventListener("focusout", onFocusOut, true);
+    return () => document.removeEventListener("focusout", onFocusOut, true);
   }, [shown]);
 
   // On opening, and on each swap to another item: remember what opened it, then focus the heading.
@@ -163,12 +165,21 @@ export function DockedPanel({ opened, onClose, title, closeLabel, contentKey, ch
   return createPortal(
     shown ? (
       <div
-        ref={panelRef}
+        ref={panel}
         role="dialog"
         aria-modal={overlay}
         aria-labelledby={titleId}
         className={`${classes.panel} ${overlay ? classes.overlay : classes.docked}`}
+        onFocus={() => {
+          ownsFocus.current = true;
+        }}
         onKeyDown={(e) => {
+          // Over the page, Tab goes round the panel's controls (it never moves focus by itself, so crossing
+          // 992 px leaves it where it was).
+          if (overlay && e.key === "Tab" && panel.current) {
+            trapTab(panel.current, e);
+            return;
+          }
           // Escape from inside the panel; one from a menu or dialog opened from it (rendered elsewhere in the
           // page, but bubbling through React) is theirs to handle.
           if (e.key !== "Escape" || e.nativeEvent.isComposing || e.defaultPrevented) return;
@@ -178,13 +189,7 @@ export function DockedPanel({ opened, onClose, title, closeLabel, contentKey, ch
         }}
       >
         <Group className={classes.header} justify="space-between" wrap="nowrap" gap="sm">
-          <h2
-            ref={heading}
-            id={titleId}
-            tabIndex={-1}
-            data-autofocus
-            className={`${theme.dialogTitle} ${classes.title}`}
-          >
+          <h2 ref={heading} id={titleId} tabIndex={-1} className={`${theme.dialogTitle} ${classes.title}`}>
             {title}
           </h2>
           <CloseButton aria-label={closeLabel} onClick={onClose} />
@@ -196,10 +201,41 @@ export function DockedPanel({ opened, onClose, title, closeLabel, contentKey, ch
   );
 }
 
-/** The page's own heading (or the page itself), for focus when what opened the panel has gone. */
+/**
+ * The page's own heading (or the page itself), for focus when what opened the panel has gone. It's made
+ * focusable only until focus leaves it, so the page's markup is left as it was.
+ */
 function pageHeading(): HTMLElement | null {
   const main = document.querySelector("main");
   const found = main?.querySelector<HTMLElement>("h1, h2") ?? main;
-  if (found && !found.hasAttribute("tabindex")) found.setAttribute("tabindex", "-1");
+  if (found && !found.hasAttribute("tabindex")) {
+    found.setAttribute("tabindex", "-1");
+    found.addEventListener("blur", () => found.removeAttribute("tabindex"), { once: true });
+  }
   return found ?? null;
+}
+
+const TABBABLE = "a[href], button, input, select, textarea, [tabindex]";
+
+/** Keeps Tab and Shift+Tab going round the panel's own controls (the overlay's focus trap). */
+function trapTab(node: HTMLElement, e: KeyboardEvent) {
+  if (!(e.target instanceof Node) || !node.contains(e.target)) return; // a menu opened from it moves its own way
+  const items = [...node.querySelectorAll<HTMLElement>(TABBABLE)].filter(
+    (el) => el.tabIndex >= 0 && !el.hasAttribute("disabled") && el.getClientRects().length > 0,
+  );
+  const first = items[0];
+  const last = items.at(-1);
+  if (!first || !last) {
+    e.preventDefault();
+    return;
+  }
+  const active = document.activeElement as HTMLElement | null;
+  const at = active ? items.indexOf(active) : -1;
+  if (e.shiftKey && at <= 0) {
+    e.preventDefault();
+    last.focus();
+  } else if (!e.shiftKey && (at === -1 || active === last)) {
+    e.preventDefault();
+    first.focus();
+  }
 }
