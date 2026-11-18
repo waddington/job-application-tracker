@@ -646,9 +646,24 @@ test.describe("where the three groups sit", () => {
     );
     expect(Math.max(...tops) - Math.min(...tops)).toBeLessThan(1);
     // A waiting row's name shows whole: its status drops under it rather than cutting it short.
-    const name = page.locator("#waiting-on-them [data-panel-opener]").first().locator("p").first();
-    await expect(name).toBeVisible();
-    expect(await name.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+    const names = page.locator("#waiting-on-them [data-panel-opener] > p:first-child");
+    await expect(names.first()).toBeVisible();
+    const cut = await names.evaluateAll((els) =>
+      els.filter((el) => el.scrollWidth > el.clientWidth).map((el) => el.textContent),
+    );
+    expect(cut).toEqual([]);
+    // Nor does the status run over it.
+    const overlaps = await names.evaluateAll((els) =>
+      els.flatMap((el) => {
+        const name = el.getBoundingClientRect();
+        const status = el
+          .closest("[data-panel-opener]")!
+          .parentElement!.nextElementSibling!.getBoundingClientRect();
+        const sameLine = status.top < name.bottom && name.top < status.bottom;
+        return sameLine && status.left < name.right ? [el.textContent] : [];
+      }),
+    );
+    expect(overlaps).toEqual([]);
   });
 
   test("Your move beside the other two at mid widths", async ({ page }) => {

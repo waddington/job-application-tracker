@@ -193,7 +193,8 @@ function AppLine({
         <UnstyledButton
           onClick={() => onOpen(row.id)}
           data-panel-opener={row.id}
-          style={{ display: "block", minWidth: 0 }}
+          // A button shrinks to fit its text otherwise, so a long name ran under the status instead of truncating.
+          style={{ display: "block", width: "100%", minWidth: 0 }}
           aria-label={t("rows.open", { company: row.company_name })}
         >
           <Text fw={600} size="sm" truncate="end">
