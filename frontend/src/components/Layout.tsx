@@ -12,10 +12,10 @@ import {
   useComputedColorScheme,
   useMantineColorScheme,
 } from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
+import { useDisclosure, useReducedMotion } from "@mantine/hooks";
 import { IconDownload, IconMoon, IconSun, IconTarget } from "@tabler/icons-react";
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
-
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { isActive, NAV, NAV_GROUP_KEYS, NAV_GROUPS } from "../nav";
@@ -23,6 +23,7 @@ import theme from "../theme.module.css";
 import classes from "./Layout.module.css";
 import { ApiStatus } from "./ApiStatus";
 import { AppVersion } from "./AppVersion";
+import { DockContext } from "./DockedPanel";
 import { HeaderSearch } from "./HeaderSearch";
 import { HelpButton, LanguageSwitch, NewApplicationButton } from "./HeaderButtons";
 
@@ -41,17 +42,29 @@ function ColorSchemeToggle() {
   );
 }
 
+// The dock's width with its margin, from 992 px (md, DockedPanel's OVERLAY_QUERY): narrower until 1,200 px, so the
+// page keeps some room. Below 992 px the panel covers the screen instead.
+const DOCK_WIDTH = { base: 440, lg: 540 };
+
 export function Layout() {
   const { t } = useTranslation();
   const [opened, { toggle, close }] = useDisclosure();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  // The dock beside the page, where a page's side panel (DockedPanel) goes; while one shows, the page makes room.
+  const [dock, setDock] = useState<HTMLElement | null>(null);
+  const [docked, setDocked] = useState(false);
+  const slot = useMemo(() => ({ target: dock, setDocked }), [dock]);
+  const reduceMotion = useReducedMotion();
 
   return (
     <AppShell
       header={{ height: 56 }}
       navbar={{ width: 230, breakpoint: "sm", collapsed: { mobile: !opened } }}
+      aside={{ width: DOCK_WIDTH, breakpoint: "md", collapsed: { mobile: true, desktop: !docked } }}
       padding={{ base: "md", sm: 28 }}
-      classNames={{ header: classes.header, navbar: classes.navbar }}
+      transitionDuration={reduceMotion ? 0 : 350}
+      transitionTimingFunction="cubic-bezier(0.22, 0.61, 0.24, 1)"
+      classNames={{ header: classes.header, navbar: classes.navbar, aside: classes.dock }}
     >
       <AppShell.Header>
         <Group h="100%" px="md" justify="space-between">
@@ -130,9 +143,13 @@ export function Layout() {
         </Stack>
       </AppShell.Navbar>
 
-      <AppShell.Main>
-        <Outlet />
-      </AppShell.Main>
+      <DockContext.Provider value={slot}>
+        <AppShell.Main>
+          <Outlet />
+        </AppShell.Main>
+      </DockContext.Provider>
+      {/* After the page, so Tab goes from the page into the panel and on, with no trap. */}
+      <AppShell.Aside ref={setDock} />
     </AppShell>
   );
 }

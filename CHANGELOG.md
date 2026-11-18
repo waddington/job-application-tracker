@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.24.37 (2026-11-18)
+
+- The app's new look, part five: an application's quick view docks beside the page on Applications (list and board), Today, a company's page and an agency's page, and the page makes room for it. It stays open while you scroll or click around, another row or card swaps what it shows, and Escape or × closes it with focus back where you were. Below 992 px wide it opens full screen over the page (#408).
+
 ## 1.24.36 (2026-11-17)
 
 - The app's new look, part four: dialogs, forms and tables. Input outlines are easier to see, delete actions read red, a field's hint sits under its box so the boxes in a row line up (New application, the offer dialog and an application's dates), a dropdown opens below the hint, and the offer dialog's dates show in full (#403).
