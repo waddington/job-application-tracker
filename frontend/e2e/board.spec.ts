@@ -168,6 +168,22 @@ test.describe("opening a card", () => {
     await expect(page.getByRole("dialog")).toHaveCount(1);
   });
 
+  test("after a move from the quick view, closing it gives focus to the card in its new column", async ({
+    page,
+    request,
+  }) => {
+    await addCard(page, request, "Panel Move Ltd", "Panel Move");
+    await card(page, "Panel Move Ltd", "Panel Move").click();
+    const panel = page.getByRole("dialog", { name: "Application" });
+    await panel.getByRole("button", { name: "Move to…" }).click();
+    await page.getByRole("menuitem", { name: "Screen" }).click();
+    await expect.poll(() => stageOf(request, "Panel Move")).toBe("screen");
+    await expect(column(page, "Screen").getByLabel("Panel Move Ltd: Panel Move")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(panel).toBeHidden();
+    await expect(column(page, "Screen").getByLabel("Panel Move Ltd: Panel Move")).toBeFocused();
+  });
+
   test("dragging a card with the quick view open moves it", async ({ page, request }) => {
     await addCard(page, request, "Drag Open Ltd", "Drag Open");
     await card(page, "Contoso", "Senior Backend Engineer").click();

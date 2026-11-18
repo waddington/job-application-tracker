@@ -2,10 +2,10 @@ import type { APIRequestContext, Locator, Page } from "@playwright/test";
 
 import { expect, test } from "./fixtures";
 
-// The application panel (the quick view) docks beside the page on a tablet or desktop: the page makes room
-// rather than going under it, still scrolls and takes clicks, and another row swaps what it shows. On a phone
-// it's a full-screen overlay (docs/rfc/app-redesign.md §2, Panels; §8). The board's own tests (board.spec.ts)
-// drag with it open.
+// The application panel (the quick view) docks beside the page from 992 px: the page makes room rather than
+// going under it, still scrolls and takes clicks, and another row swaps what it shows. Narrower (a phone or a
+// small tablet) it's a full-screen overlay (docs/rfc/app-redesign.md §2, Panels; §8). The board's own tests
+// (board.spec.ts) drag with it open, and move a card from it.
 
 const CONTOSO = ["Senior Backend Engineer", "Contoso"] as const;
 const LITWARE = ["Senior Software Engineer", "Litware"] as const;
@@ -93,7 +93,7 @@ test.describe("on the Applications list", () => {
     await expect(listRow(page, ...CONTOSO)).toBeFocused();
   });
 
-  test("the page behind still scrolls, and Tab goes on from the panel into the page", async ({ page }) => {
+  test("the page behind still scrolls, and there's no focus trap", async ({ page }) => {
     await page.setViewportSize({ width: 1400, height: 500 });
     await listRow(page, ...CONTOSO).click();
     await madeRoom(page, content(page));
@@ -102,10 +102,52 @@ test.describe("on the Applications list", () => {
     await page.mouse.wheel(0, 300);
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(before);
     await expect(panel(page)).toBeInViewport();
-    // No focus trap: the panel's last control isn't where Tab stops.
-    await panel(page).getByRole("link", { name: "Open full page" }).focus();
-    for (let i = 0; i < 40; i += 1) await page.keyboard.press("Tab");
-    expect(await panel(page).evaluate((p) => p.contains(document.activeElement))).toBe(false);
+    // The panel follows the page: Shift+Tab from its heading goes back into the page.
+    await expect(panelHeading(page)).toBeFocused();
+    await page.keyboard.press("Shift+Tab");
+    expect(await page.evaluate(() => !!document.activeElement?.closest("main"))).toBe(true);
+  });
+
+  test("after a move made from it with the keyboard, Escape still closes it", async ({ page, request }) => {
+    const made = await request.post("/api/v1/applications/quick", {
+      data: {
+        company_name: "Key Move Ltd",
+        role_title: "Key Move",
+        route: "direct",
+        stage: "applied",
+        tags: [],
+      },
+    });
+    expect(made.ok()).toBe(true);
+    const { id } = await made.json();
+    const stage = async () => (await (await request.get(`/api/v1/applications/${id}`)).json()).stage;
+    await page.reload();
+    await listRow(page, "Key Move", "Key Move Ltd").focus();
+    await page.keyboard.press("Enter");
+    await panel(page).getByRole("button", { name: "Move to…" }).focus();
+    await page.keyboard.press("Enter");
+    const screen = page.getByRole("menuitem", { name: "Screen" });
+    await expect(screen).toBeVisible();
+    await page.keyboard.press("ArrowDown"); // the first of the usual next stages
+    await expect(screen).toBeFocused();
+    await page.keyboard.press("Enter");
+    await expect.poll(stage).toBe("screen");
+    await expect(panel(page).getByText("Applied → Screen")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(panel(page)).toBeHidden();
+  });
+
+  test("its contents keep their state when the window crosses 992 px", async ({ page }) => {
+    await page.setViewportSize({ width: 1100, height: 900 });
+    await listRow(page, ...CONTOSO).click();
+    const note = panel(page).getByPlaceholder("What happened?");
+    await note.fill("Half a thought");
+    await page.setViewportSize({ width: 800, height: 900 });
+    await expect(panel(page)).toHaveAttribute("aria-modal", "true");
+    await expect(note).toHaveValue("Half a thought");
+    await page.setViewportSize({ width: 1100, height: 900 });
+    await expect(panel(page)).toHaveAttribute("aria-modal", "false");
+    await expect(note).toHaveValue("Half a thought");
   });
 });
 
@@ -149,22 +191,30 @@ test.describe("under reduced motion", () => {
   });
 });
 
-test.describe("on a phone", () => {
-  test.use({ viewport: { width: 390, height: 844 } });
+for (const [what, width] of [
+  ["a phone", 390],
+  ["a small tablet", 800],
+] as const) {
+  test.describe(`on ${what}`, () => {
+    test.use({ viewport: { width, height: 844 } });
 
-  test("it's a full-screen overlay", async ({ page }) => {
-    await page.goto("/");
-    // From the keyboard: at this width the tile's stage badge sits over the end of the name's button.
-    await page.getByLabel("Open Coho Winery").first().focus();
-    await page.keyboard.press("Enter");
-    await expect(panel(page).getByRole("button", { name: "Move to…" })).toBeVisible();
-    await expect(panel(page)).toHaveAttribute("aria-modal", "true");
-    await expect(async () => {
-      const box = await panel(page).boundingBox();
-      expect(box?.x).toBe(0);
-      expect(box?.width).toBe(390);
-    }).toPass();
-    await page.keyboard.press("Escape");
-    await expect(panel(page)).toBeHidden();
+    test("it's a full-screen overlay, and focus comes back to the opener", async ({ page }) => {
+      await page.goto("/");
+      // From the keyboard: on a phone the tile's stage badge sits over the end of the name's button.
+      const opener = page.getByLabel("Open Coho Winery").first();
+      await opener.focus();
+      await page.keyboard.press("Enter");
+      await expect(panel(page).getByRole("button", { name: "Move to…" })).toBeVisible();
+      await expect(panel(page)).toHaveAttribute("aria-modal", "true");
+      await expect(panelHeading(page)).toBeFocused();
+      await expect(async () => {
+        const box = await panel(page).boundingBox();
+        expect(box?.x).toBe(0);
+        expect(box?.width).toBe(width);
+      }).toPass();
+      await page.keyboard.press("Escape");
+      await expect(panel(page)).toBeHidden();
+      await expect(opener).toBeFocused();
+    });
   });
-});
+}
