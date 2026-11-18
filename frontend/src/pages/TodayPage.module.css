@@ -85,6 +85,11 @@
      header's hint wraps under its title. */
   .groups {
     grid-template-rows: auto auto;
+    row-gap: var(--mantine-spacing-sm); /* the one row boundary is header to card; columns keep xl */
+  }
+  /* Level tops, but each card ends where its rows do rather than stretching to the tallest. */
+  .bucket > :last-child {
+    align-self: start;
   }
   .bucket {
     display: grid;

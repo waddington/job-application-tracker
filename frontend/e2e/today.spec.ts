@@ -639,12 +639,16 @@ test.describe("where the three groups sit", () => {
     await expect.poll(() => arrangement(page)).toBe("three");
     expect(await narrowest(page)).toBeGreaterThanOrEqual(350);
     // The cards start level, though Coming up's hint wraps under its title.
-    const tops = await Promise.all(
+    const cards = await Promise.all(
       ["#your-move", "#coming-up", "#waiting-on-them"].map(
-        async (id) => (await page.locator(`${id} > .mantine-Card-root`).boundingBox())!.y,
+        async (id) => (await page.locator(`${id} > .mantine-Card-root`).boundingBox())!,
       ),
     );
+    const tops = cards.map((c) => c.y);
     expect(Math.max(...tops) - Math.min(...tops)).toBeLessThan(1);
+    // …and each ends where its rows do, not stretched to the tallest (Your move has the most here).
+    const [move, ahead] = cards;
+    expect(ahead!.height).toBeLessThan(move!.height - 50);
     // A waiting row's name shows whole: its status drops under it rather than cutting it short.
     const names = page.locator("#waiting-on-them [data-panel-opener] > p:first-child");
     await expect(names.first()).toBeVisible();
