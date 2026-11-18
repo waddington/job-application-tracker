@@ -92,6 +92,28 @@ const cutBadges = (page: Page) =>
       labels.filter((l) => l.scrollWidth > l.clientWidth + 0.5).map((l) => l.textContent),
     );
 
+/**
+ * Gives every stage badge in the columns' tables a long name (a stage can be renamed), then returns the tables that
+ * run past their card, hide their last column or cut a badge short.
+ */
+const longStagesSpill = (page: Page) =>
+  page.evaluate(async () => {
+    const labels = document.querySelectorAll("[data-record-part] td .mantine-Badge-label");
+    for (const label of labels) label.textContent = "Second technical interview with the panel";
+    await new Promise(requestAnimationFrame);
+    const bad: string[] = labels.length ? [] : ["no stage badges in a table"];
+    for (const table of document.querySelectorAll<HTMLElement>("[data-record-part] table")) {
+      const card = table.closest(".mantine-Card-root")!.getBoundingClientRect();
+      const title = table.closest(".mantine-Card-root")!.querySelector("h4")?.textContent;
+      if (table.getBoundingClientRect().right > card.right + 0.5) bad.push(`${title}: past its card`);
+      for (const cell of table.querySelectorAll("tr > td:last-child"))
+        if (cell.getBoundingClientRect().right > card.right + 0.5) bad.push(`${title}: last column hidden`);
+      for (const label of table.querySelectorAll(".mantine-Badge-label"))
+        if (label.scrollWidth > label.clientWidth + 0.5) bad.push(`${title}: a badge cut short`);
+    }
+    return bad;
+  });
+
 /** Each column's last card ends where the column does (it's as tall as its cards: not stretched to the tallest),
  *  and each card is as wide as its column. Returns the columns that aren't. */
 const unevenColumns = (page: Page) =>
@@ -188,6 +210,8 @@ test.describe("a company's page", () => {
     await page.setViewportSize({ width: 375, height: 800 });
     await expect.poll(() => arrangement(page)).toBe("stacked");
     expect(await noSidewaysScroll(page)).toBe(0);
+    // Its applications' stages whole, beside the role names (on main, "Interviewing" was cut to 44 px here).
+    await expect.poll(() => cutBadges(page)).toEqual([]);
   });
 
   test("with the quick view open, the columns lay out by the room left", async ({ page, request }) => {
@@ -291,4 +315,20 @@ test.describe("a person's, an agency's and a role's page", () => {
       await expect(dialog).toBeHidden();
     }
   });
+});
+
+test("a renamed stage's long name wraps in its badge, its table staying inside the card", async ({
+  page,
+  request,
+}) => {
+  const { person, agency, role } = await records(request);
+  const company = `/companies/${(await firstApp(request)).company_id}`;
+  for (const width of [375, 1100]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const path of [person.path, agency.path, role.path, company]) {
+      await page.goto(path);
+      await expect(page.locator("[data-record-part] td .mantine-Badge-label").first()).toBeVisible();
+      expect(await longStagesSpill(page), `${path} at ${width} px`).toEqual([]);
+    }
+  }
 });
