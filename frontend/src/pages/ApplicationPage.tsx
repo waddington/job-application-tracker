@@ -4,7 +4,6 @@ import {
   Button,
   Card,
   Divider,
-  Grid,
   Group,
   Select,
   SimpleGrid,
@@ -38,6 +37,7 @@ import { LinksCard } from "../components/Links";
 import { BackLink, Page } from "../components/Page";
 import { ButtonsSkeleton, ColumnsSkeleton } from "../components/PageSkeleton";
 import { Loading } from "../components/QueryState";
+import { RecordLayout } from "../components/RecordLayout";
 import { TodosCard } from "../components/Todos";
 import { NotesCard } from "../components/Notes";
 import { relationLabel, relationOptions, type Relation } from "../api/peopleHooks";
@@ -120,6 +120,11 @@ function DetailsCard({ app }: { app: ApplicationDetail }) {
   );
 }
 
+/** A control in a wrapping row: they share the row equally, down to 11rem each, then take a line each. In the side
+ * column (at most 420 px, 366 px inside the card) that's always a line each, since "Choose a contact" needs it; side
+ * by side only when the page stacks. */
+const SHARE = { flex: "1 1 11rem" };
+
 function PeopleCard({ app }: { app: ApplicationDetail }) {
   const { t } = useTranslation("applications");
   const { data: contacts } = useContacts();
@@ -177,8 +182,10 @@ function PeopleCard({ app }: { app: ApplicationDetail }) {
           );
         })}
         <Divider />
-        <Group grow align="flex-end">
+        {/* Side by side when the card has room; in a narrow side column, one per line rather than cut short. */}
+        <Group wrap="wrap" align="flex-end">
           <Select
+            style={SHARE}
             label={t("people.add")}
             placeholder={t("people.choose")}
             searchable
@@ -187,6 +194,7 @@ function PeopleCard({ app }: { app: ApplicationDetail }) {
             onChange={setContactId}
           />
           <Select
+            style={SHARE}
             label={t("people.as")}
             data={relationOptions()}
             value={relation}
@@ -194,8 +202,9 @@ function PeopleCard({ app }: { app: ApplicationDetail }) {
             allowDeselect={false}
           />
         </Group>
-        <Group grow>
+        <Group wrap="wrap">
           <Button
+            style={SHARE}
             variant="light"
             disabled={!contactId || !relation}
             loading={link.isPending}
@@ -203,7 +212,12 @@ function PeopleCard({ app }: { app: ApplicationDetail }) {
           >
             {t("people.link")}
           </Button>
-          <Button variant="default" leftSection={<IconPlus size={14} />} onClick={() => setCreating(true)}>
+          <Button
+            style={SHARE}
+            variant="default"
+            leftSection={<IconPlus size={14} />}
+            onClick={() => setCreating(true)}
+          >
             {t("people.newPerson")}
           </Button>
         </Group>
@@ -298,19 +312,26 @@ export function ApplicationPage() {
       ) : !app ? (
         <Loading gap="md">
           {/* The summary (role, company, badges, buttons, route lines), then the first cards. */}
-          <ColumnsSkeleton top={<ApplicationSummarySkeleton />} main={[250, 287]} side={[195, 139, 309]} />
+          <ColumnsSkeleton
+            top={<ApplicationSummarySkeleton />}
+            main={[250, 287]}
+            second={[209, 176]}
+            side={[219, 163, 450]}
+          />
         </Loading>
       ) : (
-        <Grid gap="lg">
-          <Grid.Col span={{ base: 12, md: 8 }}>
-            <Stack>
-              <ApplicationSummary app={app} />
+        <RecordLayout
+          summary={<ApplicationSummary app={app} />}
+          // Where it stands and what happens next, then what's kept with it and what's happened.
+          main={[
+            <>
               <AtAGlance app={app} />
               {/* keyed by id, not updated_at: other changes (archive, moves) keep unsaved edits */}
               <DetailsCard key={app.id} app={app} />
               <InterviewsCard applicationId={app.id} />
-              <SentDocumentsCard app={app} />
               <OffersCard applicationId={app.id} roleId={app.role_id} />
+            </>,
+            <>
               <NotesCard entity={`application:${app.id}`} />
               <LinksCard entityType="application" entityId={app.id} />
               <AttachmentsCard
@@ -318,6 +339,7 @@ export function ApplicationPage() {
                 entityId={app.id}
                 inherited={{ entityType: "role", entityId: app.role_id, label: t("page.fromRole") }}
               />
+              <SentDocumentsCard app={app} />
               <Card withBorder>
                 <Stack gap="sm">
                   <Title order={4}>{t("log.title")}</Title>
@@ -330,16 +352,16 @@ export function ApplicationPage() {
                   <ApplicationTimeline app={app} />
                 </Stack>
               </Card>
-            </Stack>
-          </Grid.Col>
-          <Grid.Col span={{ base: 12, md: 4 }}>
-            <Stack>
+            </>,
+          ]}
+          side={
+            <>
               <TodosCard entityType="application" entityId={app.id} />
               <RoleCard app={app} />
               <PeopleCard app={app} />
-            </Stack>
-          </Grid.Col>
-        </Grid>
+            </>
+          }
+        />
       )}
     </Page>
   );

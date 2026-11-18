@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.24.40 (2026-11-18)
+
+- The app's new look, part eight: an application's page and a company's page lay their cards out by the room the page has. On a wide page the main cards sit in two columns with the to-dos, role and people in a narrow column beside them (an application's summary across the top); with less room the main cards share one column beside that side column, and on a phone everything stacks (#415).
+
 ## 1.24.39 (2026-11-18)
 
 - The app's new look, part seven: the Applications board fills the window beside the menu (or the quick view), its columns sharing the width from about 180 to 360 px each and holding still while you drag a card; the title, filters and the list stay at the usual width, and the list sits on one of the new soft cards (#413).

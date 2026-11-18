@@ -558,6 +558,9 @@ test.describe("the board fills the window", () => {
   }) => {
     await page.setViewportSize({ width: 1920, height: 1000 });
     await addCard(page, request, "Hold Width Ltd", "Hold Width");
+    // Measured once the board has taken the new window width: under a full run's load the first frames after the
+    // resize can still have the columns at 180 px (2026-11-18, fix-board-drag-width-race).
+    await expect.poll(async () => (await columnBoxes(page))[0]!.width).toBeGreaterThan(200);
     const before = await columnBoxes(page);
     const box = (await card(page, "Hold Width Ltd", "Hold Width").boundingBox())!;
     await page.mouse.move(box.x + box.width / 2, box.y + 15);
