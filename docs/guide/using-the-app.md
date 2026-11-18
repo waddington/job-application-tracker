@@ -332,7 +332,12 @@ doesn't ask (see [Customising](customising.md)).
 
 ## An application's page
 
-Everything about one application:
+Everything about one application. The summary (its stage, the buttons and the route) runs across the
+top. Under it, the cards are laid out by the room the page has: on a wide screen in three columns, with
+*At a glance*, *Details*, *Interviews* and *Offer* in the first, *Notes*, *Links*, *Files*, *Documents
+sent*, *Log activity* and the *Timeline* in the second, and *To-dos*, *Role* and *People* in a narrower
+third; with a little less room the first two make one column, with the narrow one beside it; on a smaller
+screen they stack one under the other, in that order.
 
 - **Move to…**, **Undo last move**, and its stage, current round and tags.
 - **Rejection feedback**, once it's been rejected (see [above](#rejection-feedback)).
@@ -580,7 +585,11 @@ the page), roles (with whether you've applied, passed or still have to
 decide, and **Add role**), people (**Add person** for the people you talk to there),
 an *About* box, notes, links and files. **Edit** at the top renames it or sets its website,
 and **Timeline** opens the Timeline filtered to it, over all time (its applications, roles,
-the people there and notes); agencies have the same.
+the people there and notes); agencies have the same. Like an
+[application's page](#an-applications-page), a company's page is laid out by the room it has: on a wide
+screen its applications and *About* in the first column, notes, links and files in the second, and to-dos,
+roles and people in a narrower third; with less room (the quick view open beside it, say) the first two make
+one column beside the third, and on a smaller screen everything stacks.
 
 ## Interviews
 
