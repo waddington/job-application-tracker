@@ -97,7 +97,7 @@ export function CompanyPage() {
       </Page>
     );
   if (!data)
-    return <RecordSkeleton back={back} actions={3} main={[148, 198]} second={[209, 176]} side={[195, 145]} />;
+    return <RecordSkeleton back={back} actions={3} main={[148, 198]} second={[209, 176]} side={[219, 166]} />;
   const { company, applications, contacts } = data;
 
   return (

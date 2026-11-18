@@ -120,6 +120,9 @@ function DetailsCard({ app }: { app: ApplicationDetail }) {
   );
 }
 
+/** A control in a wrapping row: they share the row equally, down to 11rem each, then take a line each. */
+const SHARE = { flex: "1 1 11rem" };
+
 function PeopleCard({ app }: { app: ApplicationDetail }) {
   const { t } = useTranslation("applications");
   const { data: contacts } = useContacts();
@@ -177,8 +180,10 @@ function PeopleCard({ app }: { app: ApplicationDetail }) {
           );
         })}
         <Divider />
-        <Group grow align="flex-end">
+        {/* Side by side when the card has room; in a narrow side column, one per line rather than cut short. */}
+        <Group wrap="wrap" align="flex-end">
           <Select
+            style={SHARE}
             label={t("people.add")}
             placeholder={t("people.choose")}
             searchable
@@ -187,6 +192,7 @@ function PeopleCard({ app }: { app: ApplicationDetail }) {
             onChange={setContactId}
           />
           <Select
+            style={SHARE}
             label={t("people.as")}
             data={relationOptions()}
             value={relation}
@@ -194,8 +200,9 @@ function PeopleCard({ app }: { app: ApplicationDetail }) {
             allowDeselect={false}
           />
         </Group>
-        <Group grow>
+        <Group wrap="wrap">
           <Button
+            style={SHARE}
             variant="light"
             disabled={!contactId || !relation}
             loading={link.isPending}
@@ -203,7 +210,12 @@ function PeopleCard({ app }: { app: ApplicationDetail }) {
           >
             {t("people.link")}
           </Button>
-          <Button variant="default" leftSection={<IconPlus size={14} />} onClick={() => setCreating(true)}>
+          <Button
+            style={SHARE}
+            variant="default"
+            leftSection={<IconPlus size={14} />}
+            onClick={() => setCreating(true)}
+          >
             {t("people.newPerson")}
           </Button>
         </Group>
@@ -302,7 +314,7 @@ export function ApplicationPage() {
             top={<ApplicationSummarySkeleton />}
             main={[250, 287]}
             second={[209, 176]}
-            side={[195, 139, 309]}
+            side={[219, 163, 316]}
           />
         </Loading>
       ) : (

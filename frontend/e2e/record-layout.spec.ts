@@ -42,6 +42,28 @@ const firstApp = async (request: APIRequestContext) => {
 const noSidewaysScroll = (page: Page) =>
   page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
 
+/** The side column's buttons and selects whose text is cut short, or that run past their card's edge. */
+const cutInSide = (page: Page) =>
+  page.locator("[data-record-part=side]").evaluate((side) => {
+    const cut: string[] = [];
+    const canvas = document.createElement("canvas").getContext("2d")!;
+    for (const label of side.querySelectorAll<HTMLElement>(".mantine-Button-label"))
+      if (label.scrollWidth > label.clientWidth + 0.5) cut.push(`button "${label.textContent}"`);
+    for (const input of side.querySelectorAll<HTMLInputElement>(".mantine-Select-input")) {
+      const style = getComputedStyle(input);
+      canvas.font = style.font;
+      const text = input.value || input.placeholder;
+      const room = input.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+      if (canvas.measureText(text).width > room) cut.push(`select "${text}"`);
+    }
+    for (const control of side.querySelectorAll<HTMLElement>("button, input")) {
+      const card = control.closest(".mantine-Card-root")!.getBoundingClientRect();
+      if (control.getBoundingClientRect().right > card.right)
+        cut.push(`past its card: ${control.outerHTML.slice(0, 80)}`);
+    }
+    return cut;
+  });
+
 test.describe("an application's page", () => {
   test("three columns on a wide page, under the summary, no column stretched to the tallest", async ({
     page,
@@ -66,6 +88,8 @@ test.describe("an application's page", () => {
         els.map((el) => el.getBoundingClientRect().width - el.parentElement!.getBoundingClientRect().width),
       );
     expect(cards.every((d) => Math.abs(d) < 1)).toBe(true);
+    // (The seed, scripts/seed_demo.py, gives this application four rounds and a timeline, so its main columns are
+    // much the taller; a seed with far fewer would need a new margin here.)
     expect(side!.height).toBeLessThan(main!.height - 200);
     // Tab goes summary, then the main cards, then the side ones: the DOM order is the reading order.
     const order = await page
@@ -85,6 +109,27 @@ test.describe("an application's page", () => {
     const { summary, main, side } = await parts(page);
     expect(summary!.y + summary!.height).toBeLessThanOrEqual(main!.y);
     expect(side!.width).toBeGreaterThanOrEqual(320);
+  });
+
+  test("the side cards' buttons and selects fit, down to the narrowest side column", async ({
+    page,
+    request,
+  }) => {
+    const app = await firstApp(request);
+    // The application's to-dos, role and people; the company's to-dos, roles and people.
+    for (const [path, last] of [
+      [`/applications/${app.id}`, "New person"],
+      [`/companies/${app.company_id}`, "Add person"],
+    ] as const) {
+      await page.goto(path);
+      // 1,100 px: the side column at its 320 px floor; 1,440 px: 378 px; 1,920 px: 420 px beside two main columns.
+      for (const width of [1100, 1440, 1920]) {
+        await page.setViewportSize({ width, height: 1000 });
+        await expect.poll(() => arrangement(page), { message: `${path} at ${width} px` }).not.toBe("stacked");
+        await expect(page.getByRole("button", { name: last })).toBeVisible();
+        await expect.poll(() => cutInSide(page), { message: `${path} at ${width} px` }).toEqual([]);
+      }
+    }
   });
 
   test("stacked on a narrow page, and nothing scrolls sideways on a phone", async ({ page, request }) => {
