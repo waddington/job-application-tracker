@@ -466,8 +466,11 @@ test.describe("the board fills the window", () => {
       boxes.map((b) => b.width),
       360,
     );
-    const content = await page.locator("main > *").first().boundingBox();
-    expect(content!.x + content!.width).toBeGreaterThan(3800 - 20);
+    const board = await page
+      .locator(".mantine-ScrollArea-root")
+      .filter({ has: column(page, "Applied") })
+      .boundingBox();
+    expect(board!.x + board!.width).toBeGreaterThan(3800 - 20); // to the 16 px gutter
     expect(boxes[0]!.x).toBeLessThan(300); // starts beside the menu, not centred
     for (let i = 1; i < boxes.length; i++) expect(boxes[i]!.x - boxes[i - 1]!.right).toBeLessThan(16);
   });
@@ -476,6 +479,54 @@ test.describe("the board fills the window", () => {
     await page.getByText("List", { exact: true }).click();
     await expect(page.getByRole("columnheader", { name: "Stage" })).toBeVisible();
     expect((await page.locator("main > *").first().boundingBox())!.width).toBe(2400);
+  });
+
+  test("the List/Board switch stays where it is between the two views", async ({ page }) => {
+    // 3,800 px: the board runs on past the cap, the title and filters don't.
+    const where = async () => (await page.getByText("List", { exact: true }).boundingBox())!;
+    const onBoard = await where();
+    expect(onBoard.x).toBeLessThan(230 + 28 + 2400);
+    await page.getByText("List", { exact: true }).click();
+    await expect(page.getByRole("columnheader", { name: "Stage" })).toBeVisible();
+    const onList = await where();
+    expect(Math.abs(onList.x - onBoard.x)).toBeLessThanOrEqual(1);
+    expect(Math.abs(onList.y - onBoard.y)).toBeLessThanOrEqual(1);
+  });
+
+  test("its scrollbar follows columns that are added, and reaches the last", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    const viewport = page.locator(".mantine-ScrollArea-viewport").filter({ has: column(page, "Applied") });
+    const scroller = page.locator(".mantine-ScrollArea-root").filter({ has: column(page, "Applied") });
+    const bar = scroller.locator(".mantine-ScrollArea-scrollbar[data-orientation=horizontal]");
+    /** The thumb's width, and what it should be: the track's share that's in view. */
+    const thumb = async () =>
+      bar.evaluate(
+        (track, el) => {
+          const view = el as HTMLElement;
+          const t = track.querySelector(".mantine-ScrollArea-thumb")!.getBoundingClientRect().width;
+          const want = (track.getBoundingClientRect().width * view.clientWidth) / view.scrollWidth;
+          return { t, want, overflow: view.scrollWidth - view.clientWidth };
+        },
+        await viewport.elementHandle(),
+      );
+    await page.getByLabel("Show closed stages").check({ force: true });
+    await expect(column(page, "Ghosted")).toBeAttached();
+    await expect(async () => {
+      const { t, want, overflow } = await thumb();
+      expect(overflow).toBeGreaterThan(500); // ten columns at 180 px don't fit
+      expect(Math.abs(t - want)).toBeLessThan(4);
+    }).toPass({ timeout: 5_000 });
+    // Drag the thumb all the way right: the last column comes fully into view.
+    const box = (await bar.locator(".mantine-ScrollArea-thumb").boundingBox())!;
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(1440, box.y + box.height / 2, { steps: 8 });
+    await page.mouse.up();
+    await expect(async () => {
+      const last = (await column(page, "Ghosted").boundingBox())!;
+      expect(last.x + last.width).toBeLessThanOrEqual(1440);
+      expect(last.x).toBeGreaterThan(230);
+    }).toPass({ timeout: 5_000 });
   });
 
   test("with the quick view open, the columns share the room left beside it", async ({ page }) => {
