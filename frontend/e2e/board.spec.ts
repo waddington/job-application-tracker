@@ -517,6 +517,8 @@ test.describe("the board fills the window", () => {
       expect(Math.abs(t - want)).toBeLessThan(4);
     }).toPass({ timeout: 5_000 });
     // Drag the thumb all the way right: the last column comes fully into view.
+    // Other tests have added cards, so the board can run below the window: bring the bar into view.
+    await bar.scrollIntoViewIfNeeded();
     const box = (await bar.locator(".mantine-ScrollArea-thumb").boundingBox())!;
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
     await page.mouse.down();
