@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.24.38 (2026-11-18)
+
+- The app's new look, part six: Today lays out by the room the page has. On a wide page Your move, Coming up and Waiting on them sit in three columns with their cards level; with less room (or with the quick view open) Your move sits beside the other two, or they stack. A row's name no longer runs under its stage badge on a phone or in a narrow column (#412).
+
 ## 1.24.37 (2026-11-18)
 
 - The app's new look, part five: an application's quick view docks beside the page on Applications (list and board), Today, a company's page and an agency's page, and the page makes room for it. It stays open while you scroll or click around, another row or card swaps what it shows, and Escape or × closes it with focus back where you were. Below 992 px wide it opens full screen over the page (#408).

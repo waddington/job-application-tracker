@@ -4,7 +4,6 @@ import {
   Badge,
   Button,
   Card,
-  Grid,
   Group,
   Progress,
   Skeleton,
@@ -63,7 +62,6 @@ import { ChaseActions } from "../components/ChaseActions";
 import { NewApplicationButton } from "../components/HeaderButtons";
 import { HowItWorks } from "../components/HowItWorks";
 import { PersonChase, waitingOrChased } from "../components/PersonChase";
-import { CardsSkeleton } from "../components/PageSkeleton";
 import { Loading, QueryState } from "../components/QueryState";
 import { StageBadge } from "../components/StageBadge";
 import { i18n } from "../i18n";
@@ -195,7 +193,8 @@ function AppLine({
         <UnstyledButton
           onClick={() => onOpen(row.id)}
           data-panel-opener={row.id}
-          style={{ display: "block", minWidth: 0 }}
+          // A button shrinks to fit its text otherwise, so a long name ran under the status instead of truncating.
+          style={{ display: "block", width: "100%", minWidth: 0 }}
           aria-label={t("rows.open", { company: row.company_name })}
         >
           <Text fw={600} size="sm" truncate="end">
@@ -254,8 +253,9 @@ function Row({
   );
   return (
     <Stack gap={4}>
-      <Group justify="space-between" wrap="nowrap" align="flex-start" gap="sm">
-        <div style={{ minWidth: 0 }}>{who}</div>
+      {/* The status drops under the name when the column can't fit both with room for a name. */}
+      <Group justify="space-between" wrap="wrap" align="flex-start" gap="sm" style={{ rowGap: 2 }}>
+        <div style={{ flex: "1 1 10em", minWidth: 0 }}>{who}</div>
         <Group gap="xs" wrap="nowrap" style={{ flexShrink: 0 }}>
           {status}
         </Group>
@@ -470,7 +470,7 @@ function Bucket({
 }) {
   const { t } = useTranslation("today");
   return (
-    <Stack gap="sm" id={id} style={{ scrollMarginTop: 72 }}>
+    <Stack gap="sm" id={id} className={classes.bucket} style={{ scrollMarginTop: 72 }}>
       <Group justify="space-between" align="baseline" gap="xs">
         <Group gap="xs">
           <Title order={3}>{title}</Title>
@@ -536,20 +536,27 @@ function RescheduleDialog({
   return <CallRescheduleDialog key={id} meeting={call} waiting={target.waiting} onClose={onClose} />;
 }
 
-/** Today's shape while it loads: the strip of numbers, then the two columns of lists. */
+/** Today's shape while it loads: the strip of numbers, then the groups of lists, laid out as the page's are. */
 function TodaySkeleton() {
   return (
     <Loading>
       <Skeleton height={93} radius="md" mb={6} />
-      <Grid gap="xl">
-        <Grid.Col span={{ base: 12, lg: 7 }}>
-          <Skeleton height={24} width={200} radius="sm" mb={12} />
-          <Skeleton height={600} radius="md" />
-        </Grid.Col>
-        <Grid.Col span={{ base: 12, lg: 5 }}>
-          <CardsSkeleton count={2} height={400} gap="xl" />
-        </Grid.Col>
-      </Grid>
+      <div className={classes.groupsRoom}>
+        <div className={classes.groups}>
+          <div>
+            <Skeleton height={24} width={200} radius="sm" mb={12} />
+            <Skeleton height={600} radius="md" />
+          </div>
+          <div className={classes.ahead}>
+            {[0, 1].map((i) => (
+              <div key={i}>
+                <Skeleton height={24} width={200} radius="sm" mb={12} />
+                <Skeleton height={400} radius="md" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     </Loading>
   );
 }
@@ -799,14 +806,15 @@ export function TodayPage() {
             </Card>
           )}
 
-          {/* Wide screens: what to do now on the left, what's ahead and who you're waiting on beside it.
+          {/* What to do now, what's ahead and who you're waiting on: three columns when the page has room,
+              Your move beside the other two at mid widths, stacked when narrow (TodayPage.module.css).
               Dimmed, but still there and usable, while it shows yesterday's lists as a new day loads. */}
-          <Grid
-            gap="xl"
-            aria-busy={isPlaceholderData || undefined}
-            style={{ opacity: isPlaceholderData ? 0.6 : undefined, transition: "opacity 150ms" }}
-          >
-            <Grid.Col span={{ base: 12, lg: 7 }}>
+          <div className={classes.groupsRoom}>
+            <div
+              className={classes.groups}
+              aria-busy={isPlaceholderData || undefined}
+              style={{ opacity: isPlaceholderData ? 0.6 : undefined, transition: "opacity 150ms" }}
+            >
               <Bucket
                 id="your-move"
                 title={t("yourMove.title")}
@@ -928,7 +936,7 @@ export function TodayPage() {
                       onOpen={setOpenId}
                       detail={t("rows.followUpDue", { date: formatDate(r.follow_up_on) })}
                       action={
-                        <Group gap={4} wrap="nowrap">
+                        <Group gap={4} wrap="wrap">
                           <FollowedUpButton row={r} />
                           <ChaseActions row={r} />
                         </Group>
@@ -946,10 +954,8 @@ export function TodayPage() {
                   ))}
                 </Section>
               </Bucket>
-            </Grid.Col>
 
-            <Grid.Col span={{ base: 12, lg: 5 }}>
-              <Stack gap="xl">
+              <div className={classes.ahead}>
                 <Bucket
                   id="coming-up"
                   title={t("comingUp.title")}
@@ -992,7 +998,7 @@ export function TodayPage() {
                           </Text>
                         }
                         action={
-                          <Group gap={4} wrap="nowrap">
+                          <Group gap={4} wrap="wrap">
                             <ApplicationWaiting
                               id={r.id}
                               since={r.awaiting_reply_since}
@@ -1024,9 +1030,9 @@ export function TodayPage() {
                     ))}
                   </Section>
                 </Bucket>
-              </Stack>
-            </Grid.Col>
-          </Grid>
+              </div>
+            </div>
+          </div>
 
           <Accordion variant="contained" multiple>
             <Accordion.Item value="recent">

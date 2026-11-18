@@ -609,3 +609,109 @@ test.describe("the recruiter on a row", () => {
     }
   });
 });
+
+// The three groups lay out by the room the page has, not the window's width (TodayPage.module.css), so the
+// docked panel taking 540 px of a wide window doesn't squeeze them into three cramped columns.
+test.describe("where the three groups sit", () => {
+  type Box = { x: number; y: number; width: number; height: number };
+  const boxes = async (page: Page): Promise<Box[]> =>
+    Promise.all(
+      ["#your-move", "#coming-up", "#waiting-on-them"].map(
+        async (id) => (await page.locator(id).boundingBox())!,
+      ),
+    );
+  /** How the groups sit: "move | ahead | waiting" side by side, "move | ahead / waiting" with Your move beside
+   * the other two, or "stacked". Groups side by side share a top. */
+  const arrangement = async (page: Page) => {
+    const [move, ahead, waiting] = await boxes(page);
+    if (move!.y === ahead!.y && ahead!.y === waiting!.y && move!.x < ahead!.x && ahead!.x < waiting!.x)
+      return "three";
+    if (move!.y === ahead!.y && ahead!.x > move!.x && waiting!.x === ahead!.x && waiting!.y > ahead!.y)
+      return "two";
+    if (move!.x === ahead!.x && ahead!.x === waiting!.x && move!.y < ahead!.y && ahead!.y < waiting!.y)
+      return "stacked";
+    return JSON.stringify({ move, ahead, waiting });
+  };
+  const narrowest = async (page: Page) => Math.min(...(await boxes(page)).map((b) => b.width));
+
+  test("three columns on a wide page", async ({ page }) => {
+    await page.setViewportSize({ width: 1600, height: 1000 });
+    await expect.poll(() => arrangement(page)).toBe("three");
+    expect(await narrowest(page)).toBeGreaterThanOrEqual(350);
+    // The cards start level, though Coming up's hint wraps under its title.
+    const cards = await Promise.all(
+      ["#your-move", "#coming-up", "#waiting-on-them"].map(
+        async (id) => (await page.locator(`${id} > .mantine-Card-root`).boundingBox())!,
+      ),
+    );
+    const tops = cards.map((c) => c.y);
+    expect(Math.max(...tops) - Math.min(...tops)).toBeLessThan(1);
+    // …and each ends where its rows do, not stretched to the tallest (Your move has the most here).
+    const [move, ahead] = cards;
+    expect(ahead!.height).toBeLessThan(move!.height - 50);
+    // A waiting row's name shows whole: its status drops under it rather than cutting it short.
+    const names = page.locator("#waiting-on-them [data-panel-opener] > p:first-child");
+    await expect(names.first()).toBeVisible();
+    const cut = await names.evaluateAll((els) =>
+      els.filter((el) => el.scrollWidth > el.clientWidth).map((el) => el.textContent),
+    );
+    expect(cut).toEqual([]);
+    // Nor does the status run over it.
+    const overlaps = await names.evaluateAll((els) =>
+      els.flatMap((el) => {
+        const name = el.getBoundingClientRect();
+        const status = el
+          .closest("[data-panel-opener]")!
+          .parentElement!.nextElementSibling!.getBoundingClientRect();
+        const sameLine = status.top < name.bottom && name.top < status.bottom;
+        return sameLine && status.left < name.right ? [el.textContent] : [];
+      }),
+    );
+    expect(overlaps).toEqual([]);
+  });
+
+  test("Your move beside the other two at mid widths", async ({ page }) => {
+    await page.setViewportSize({ width: 1300, height: 1000 });
+    await expect.poll(() => arrangement(page)).toBe("two");
+    expect(await narrowest(page)).toBeGreaterThanOrEqual(350);
+  });
+
+  test("stacked when narrow", async ({ page }) => {
+    await page.setViewportSize({ width: 900, height: 1000 });
+    await expect.poll(() => arrangement(page)).toBe("stacked");
+  });
+
+  test("with the panel docked they make do with the room left, never cramped", async ({ page }) => {
+    for (const [width, expected] of [
+      [1400, "stacked"], // 1,400 px leaves the page about 570 px beside the menu and the panel
+      [1920, "two"],
+      [2560, "three"],
+    ] as const) {
+      await page.setViewportSize({ width, height: 1000 });
+      await page.locator("[data-panel-opener]").first().click();
+      const dialog = page.getByRole("dialog");
+      await expect(dialog.getByRole("button", { name: "Move to…" })).toBeVisible();
+      await expect.poll(() => arrangement(page), { message: `at ${width} px` }).toBe(expected);
+      expect(await narrowest(page)).toBeGreaterThanOrEqual(350);
+      // The page made room: no group runs under the panel.
+      const panelLeft = (await dialog.boundingBox())!.x;
+      for (const box of await boxes(page)) expect(box.x + box.width).toBeLessThanOrEqual(panelLeft);
+      await page.keyboard.press("Escape");
+      await expect(dialog).toBeHidden();
+    }
+  });
+
+  test("a very wide screen keeps its rows readable", async ({ page }) => {
+    await page.setViewportSize({ width: 2560, height: 1000 });
+    await expect.poll(() => arrangement(page)).toBe("three");
+    // Nothing runs off the side or scrolls sideways.
+    for (const box of await boxes(page)) expect(box.x + box.width).toBeLessThanOrEqual(2560);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    // Each card fills its column, however short its rows are.
+    for (const id of ["#your-move", "#coming-up", "#waiting-on-them"]) {
+      const group = (await page.locator(id).boundingBox())!;
+      const card = (await page.locator(`${id} > .mantine-Card-root`).boundingBox())!;
+      expect(Math.abs(card.width - group.width)).toBeLessThan(1);
+    }
+  });
+});

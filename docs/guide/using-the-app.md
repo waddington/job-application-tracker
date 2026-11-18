@@ -110,8 +110,11 @@ applied too.
 
 Everything that needs you, in one place, sorted by what you do about it. At the top, one line:
 active applications, interviews in the next two weeks and offers to answer (each opens its
-page), with the pipeline of active applications by stage underneath. Then three groups; on a
-wide screen *Your move* is on the left and the other two sit beside it:
+page), with the pipeline of active applications by stage underneath. Then three groups, laid out by
+the room the page has: on a wide screen they sit side by side as three columns; with a little less room,
+*Your move* is on the left and the other two are stacked beside it; on a smaller screen they stack one under
+the other. The [quick view](#applications-list-and-board) open beside the page takes some of that room, so
+with it open they stack on most screens, and only a very wide one keeps two or three columns:
 
 **Your move**: things to do now, in this order:
 
