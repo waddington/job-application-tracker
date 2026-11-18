@@ -222,19 +222,22 @@ export function ApplicationsPage() {
           }
         />
       ) : !rows.length ? (
-        <Card withBorder p="xl">
-          <Stack align="center" gap="xs">
-            <Text fw={600}>{filtered ? t("empty.noMatch") : t("empty.none")}</Text>
-            <Text c="dimmed" size="sm">
-              {filtered ? t("empty.clearFilter") : t("empty.addFirst")}
-            </Text>
-            {!filtered && (
-              <Button mt="sm" leftSection={<IconPlus size={16} />} onClick={() => setCreating(true)}>
-                {t("empty.newApplication")}
-              </Button>
-            )}
-          </Stack>
-        </Card>
+        // Capped like the list, so it's the same card in either view however wide the window.
+        <PageCapped>
+          <Card withBorder p="xl">
+            <Stack align="center" gap="xs">
+              <Text fw={600}>{filtered ? t("empty.noMatch") : t("empty.none")}</Text>
+              <Text c="dimmed" size="sm">
+                {filtered ? t("empty.clearFilter") : t("empty.addFirst")}
+              </Text>
+              {!filtered && (
+                <Button mt="sm" leftSection={<IconPlus size={16} />} onClick={() => setCreating(true)}>
+                  {t("empty.newApplication")}
+                </Button>
+              )}
+            </Stack>
+          </Card>
+        </PageCapped>
       ) : view === "board" && workflow ? (
         <Board workflow={workflow} rows={rows} onOpen={setOpenId} />
       ) : (

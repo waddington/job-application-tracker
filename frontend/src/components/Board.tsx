@@ -368,7 +368,7 @@ export function Board({
 /** The board while it loads: columns that share the width as the real ones do. */
 export function BoardSkeleton() {
   return (
-    <Group gap="sm" wrap="nowrap" align="flex-start" style={{ overflow: "hidden" }}>
+    <Group className={classes.board} gap="sm" wrap="nowrap" align="flex-start" style={{ overflow: "hidden" }}>
       {Array.from({ length: 5 }, (_, i) => (
         <Skeleton key={i} className={classes.column} height={420} radius="md" />
       ))}
