@@ -50,12 +50,16 @@ const cutInSide = (page: Page) =>
     const canvas = document.createElement("canvas").getContext("2d")!;
     for (const label of side.querySelectorAll<HTMLElement>(".mantine-Button-label"))
       if (label.scrollWidth > label.clientWidth + 0.5) cut.push(`button "${label.textContent}"`);
-    for (const input of side.querySelectorAll<HTMLInputElement>(".mantine-Select-input")) {
+    // Selects, and text fields' placeholders (not the new to-do's: its example is meant to run on).
+    const fields = side.querySelectorAll<HTMLInputElement>(
+      ".mantine-Select-input, .mantine-TextInput-input:not([aria-label='New to-do'])",
+    );
+    for (const input of fields) {
       const style = getComputedStyle(input);
       canvas.font = style.font;
       const text = input.value || input.placeholder;
       const room = input.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
-      if (canvas.measureText(text).width > room) cut.push(`select "${text}"`);
+      if (canvas.measureText(text).width > room) cut.push(`field "${text}"`);
     }
     for (const control of side.querySelectorAll<HTMLElement>("button, input")) {
       // (An agency's Recruiters heading and its button sit in the column itself, not in a card.)
@@ -79,6 +83,14 @@ const sideFits = async (page: Page, path: string, last: string) => {
     await expect.poll(() => cutInSide(page), { message: `${path} at ${width} px` }).toEqual([]);
   }
 };
+
+/** The badges anywhere in the columns whose text is cut short (a stage squeezed by a long name beside it). */
+const cutBadges = (page: Page) =>
+  page
+    .locator("[data-record-part] .mantine-Badge-label")
+    .evaluateAll((labels) =>
+      labels.filter((l) => l.scrollWidth > l.clientWidth + 0.5).map((l) => l.textContent),
+    );
 
 /** Each column's last card ends where the column does (it's as tall as its cards: not stretched to the tallest),
  *  and each card is as wide as its column. Returns the columns that aren't. */
@@ -236,6 +248,7 @@ test.describe("a person's, an agency's and a role's page", () => {
         [1920, "three"],
         [2560, "three"],
         [1440, "two"],
+        [1100, "two"], // the side column at its 320 px floor, the main one 474 px
         [900, "stacked"],
         [375, "stacked"],
       ] as const) {
@@ -243,6 +256,7 @@ test.describe("a person's, an agency's and a role's page", () => {
         await expect.poll(() => arrangement(page), { message: `at ${width} px` }).toBe(expected);
         // Level tops are in the arrangement; each card fills its column, and no column stretches to the tallest.
         await expect.poll(() => unevenColumns(page), { message: `at ${width} px` }).toEqual([]);
+        expect(await cutBadges(page), `at ${width} px`).toEqual([]);
         expect(await noSidewaysScroll(page), `at ${width} px`).toBe(0);
       }
     });

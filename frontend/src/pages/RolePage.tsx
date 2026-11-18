@@ -248,7 +248,12 @@ export function RolePage() {
                           </Text>
                         </Table.Td>
                         <Table.Td>
-                          <StageBadge id={a.stage} stage={stages.get(a.stage)} fallback={a.stage_name} />
+                          <StageBadge
+                            id={a.stage}
+                            stage={stages.get(a.stage)}
+                            fallback={a.stage_name}
+                            whole
+                          />
                         </Table.Td>
                         <Table.Td>
                           <Text size="xs" c="dimmed">

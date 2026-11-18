@@ -247,19 +247,21 @@ export function LinksCard({ entityType, entityId }: { entityType: EntityType; en
           {(list) => list.map((link) => <LinkRow key={link.id} link={link} />)}
         </QueryState>
         <form onSubmit={submit}>
-          <Group align="flex-start" gap="xs" wrap="nowrap">
+          {/* One row in a main column; in a narrow side one (a person's page) the link takes a line of its own,
+              rather than both fields being squeezed past their placeholders. */}
+          <Group align="flex-start" gap="xs" wrap="wrap">
             <TextInput
               size="xs"
               placeholder={t("links.urlPlaceholder")}
               aria-label={t("links.url")}
-              style={{ flex: 2 }}
+              style={{ flex: "2 1 12rem" }}
               {...form.getInputProps("url")}
             />
             <TextInput
               size="xs"
               placeholder={t("links.titlePlaceholder")}
               aria-label={t("links.titleOptional")}
-              style={{ flex: 1 }}
+              style={{ flex: "1 1 8rem" }}
               {...form.getInputProps("title")}
             />
             <Button size="xs" type="submit" variant="light" loading={add.isPending}>
