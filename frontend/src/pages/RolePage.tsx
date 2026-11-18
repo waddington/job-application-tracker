@@ -85,8 +85,8 @@ export function RolePage() {
         lines={[29]}
         actions={2}
         main={[206]}
-        second={[117, 159]}
-        side={[219, 137]}
+        second={[116, 175]}
+        side={[214, 133]}
       />
     );
   const status = roleBadge(role);

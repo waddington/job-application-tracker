@@ -524,9 +524,9 @@ the interviews they were in, and your notes, links and files about them. Click a
 [Timeline](#timeline) filtered to them, over all time: calls, the roles they pitched, the
 applications and interviews they're on, and notes about them or those roles. The page is laid out by
 the room it has, as an [application's page](#an-applications-page) is: on a wide screen your calls and
-meetings and your notes in the first column, the roles they've mentioned, their applications and interviews
-in the second, and how to reach them, to-dos, links and files in a narrower third; with a little less room
-the first two make one column beside the third, and on a smaller screen everything stacks.
+meetings in the first column, the roles they've mentioned, their applications, interviews and your notes in
+the second, and how to reach them, to-dos, links and files in a narrower third; with a little less room the
+first two make one column beside the third, and on a smaller screen everything stacks.
 
 **Two records of the same person?** On the one to keep, press **Merge…** and pick the other
 (people with the same name, email address or LinkedIn profile are listed first). Everything

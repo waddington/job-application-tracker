@@ -56,9 +56,9 @@ export function PersonPage() {
         back={back}
         lines={[25, 21]}
         actions={9}
-        main={[280, 117]}
-        second={[258, 200]}
-        side={[120, 219, 159]}
+        main={[182]}
+        second={[182, 200, 117]}
+        side={[120, 214, 216]}
       />
     );
   const { contact, agency_name, company_name, applications, interviews } = data;
@@ -127,11 +127,9 @@ export function PersonPage() {
       <PossibleDuplicates person={contact} />
       <RecordLayout
         main={[
-          // Your dealings with them, then what they're part of.
-          <>
-            <MeetingsCard contactId={contact.id} name={contact.name} />
-            <NotesCard entity={`contact:${contact.id}`} />
-          </>,
+          // Your calls with them; then what they're part of, and your notes. Stacked, that's the order the
+          // page always had.
+          <MeetingsCard contactId={contact.id} name={contact.name} />,
           <>
             <RolesCard
               title={t("person.rolesTitle")}
@@ -222,6 +220,7 @@ export function PersonPage() {
                 </Stack>
               </Card>
             )}
+            <NotesCard entity={`contact:${contact.id}`} />
           </>,
         ]}
         side={

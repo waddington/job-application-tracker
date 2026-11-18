@@ -47,7 +47,7 @@ export function AgencyPage() {
     );
   if (!data)
     return (
-      <RecordSkeleton back={back} actions={3} main={[252]} second={[117, 159, 137]} side={[219, 30, 120]} />
+      <RecordSkeleton back={back} actions={3} main={[252]} second={[116, 175, 133]} side={[214, 30, 120]} />
     );
   const { agency, recruiters, applications } = data;
 
