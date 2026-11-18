@@ -424,7 +424,10 @@ const columnBoxes = (page: Page) =>
     }),
   );
 /** The same columns in the same places, give or take a pixel. */
-const sameAs = (now: Awaited<ReturnType<typeof columnBoxes>>, then: Awaited<ReturnType<typeof columnBoxes>>) => {
+const sameAs = (
+  now: Awaited<ReturnType<typeof columnBoxes>>,
+  then: Awaited<ReturnType<typeof columnBoxes>>,
+) => {
   expect(now.map((b) => b.title)).toEqual(then.map((b) => b.title));
   now.forEach((b, i) => {
     expect(Math.abs(b.x - then[i]!.x)).toBeLessThanOrEqual(1);
@@ -467,6 +470,12 @@ test.describe("the board fills the window", () => {
     expect(content!.x + content!.width).toBeGreaterThan(3800 - 20);
     expect(boxes[0]!.x).toBeLessThan(300); // starts beside the menu, not centred
     for (let i = 1; i < boxes.length; i++) expect(boxes[i]!.x - boxes[i - 1]!.right).toBeLessThan(16);
+  });
+
+  test("the list keeps the page's 2,400 px cap", async ({ page }) => {
+    await page.getByText("List", { exact: true }).click();
+    await expect(page.getByRole("columnheader", { name: "Stage" })).toBeVisible();
+    expect((await page.locator("main > *").first().boundingBox())!.width).toBe(2400);
   });
 
   test("with the quick view open, the columns share the room left beside it", async ({ page }) => {
