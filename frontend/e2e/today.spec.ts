@@ -638,6 +638,17 @@ test.describe("where the three groups sit", () => {
     await page.setViewportSize({ width: 1600, height: 1000 });
     await expect.poll(() => arrangement(page)).toBe("three");
     expect(await narrowest(page)).toBeGreaterThanOrEqual(350);
+    // The cards start level, though Coming up's hint wraps under its title.
+    const tops = await Promise.all(
+      ["#your-move", "#coming-up", "#waiting-on-them"].map(
+        async (id) => (await page.locator(`${id} > .mantine-Card-root`).boundingBox())!.y,
+      ),
+    );
+    expect(Math.max(...tops) - Math.min(...tops)).toBeLessThan(1);
+    // A waiting row's name shows whole: its status drops under it rather than cutting it short.
+    const name = page.locator("#waiting-on-them [data-panel-opener]").first().locator("p").first();
+    await expect(name).toBeVisible();
+    expect(await name.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
   });
 
   test("Your move beside the other two at mid widths", async ({ page }) => {
@@ -674,7 +685,7 @@ test.describe("where the three groups sit", () => {
   test("a very wide screen keeps its rows readable", async ({ page }) => {
     await page.setViewportSize({ width: 2560, height: 1000 });
     await expect.poll(() => arrangement(page)).toBe("three");
-    // The page stops at its 2,400 px cap and nothing scrolls sideways.
+    // Nothing runs off the side or scrolls sideways.
     for (const box of await boxes(page)) expect(box.x + box.width).toBeLessThanOrEqual(2560);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   });

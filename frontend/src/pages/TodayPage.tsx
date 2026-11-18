@@ -252,8 +252,9 @@ function Row({
   );
   return (
     <Stack gap={4}>
-      <Group justify="space-between" wrap="nowrap" align="flex-start" gap="sm">
-        <div style={{ minWidth: 0 }}>{who}</div>
+      {/* The status drops under the name when the column can't fit both with room for a name. */}
+      <Group justify="space-between" wrap="wrap" align="flex-start" gap="sm" style={{ rowGap: 2 }}>
+        <div style={{ flex: "1 1 10em", minWidth: 0 }}>{who}</div>
         <Group gap="xs" wrap="nowrap" style={{ flexShrink: 0 }}>
           {status}
         </Group>
@@ -468,7 +469,7 @@ function Bucket({
 }) {
   const { t } = useTranslation("today");
   return (
-    <Stack gap="sm" id={id} style={{ scrollMarginTop: 72 }}>
+    <Stack gap="sm" id={id} className={classes.bucket} style={{ scrollMarginTop: 72 }}>
       <Group justify="space-between" align="baseline" gap="xs">
         <Group gap="xs">
           <Title order={3}>{title}</Title>
@@ -546,8 +547,12 @@ function TodaySkeleton() {
             <Skeleton height={600} radius="md" />
           </div>
           <div className={classes.ahead}>
-            <Skeleton height={400} radius="md" />
-            <Skeleton height={400} radius="md" />
+            {[0, 1].map((i) => (
+              <div key={i}>
+                <Skeleton height={24} width={200} radius="sm" mb={12} />
+                <Skeleton height={400} radius="md" />
+              </div>
+            ))}
           </div>
         </div>
       </div>

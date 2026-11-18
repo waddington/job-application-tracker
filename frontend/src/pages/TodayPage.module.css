@@ -45,8 +45,9 @@
 
 /* Today's three groups: Your move, Coming up, Waiting on them. They lay out by the room the page has, not
    the window's width (container queries), since the docked panel can take 540 px of a wide window: one
-   stacked column when narrow; Your move beside the other two from 720 px of page; three columns side by
-   side from 900 px (what a 1,200 px window leaves beside the menu). docs/rfc/app-redesign.md §2, Pages. */
+   stacked column when narrow; Your move beside the other two from 880 px of page; three columns side by
+   side from 1,200 px (about a 1,490 px window with the panel closed), where each side column is about
+   350 px. Narrower than that, a row's name gets cut short. docs/rfc/app-redesign.md §2, Pages. */
 .groupsRoom {
   container-type: inline-size;
 }
@@ -79,5 +80,17 @@
   /* The wrapper steps aside so its two groups become columns of their own. */
   .ahead {
     display: contents;
+  }
+  /* Each group's header and card share the grid's two rows, so the three cards start level even when one
+     header's hint wraps under its title. */
+  .groups {
+    grid-template-rows: auto auto;
+  }
+  .bucket {
+    display: grid;
+    grid-row: span 2;
+    grid-template-rows: subgrid;
+    row-gap: var(--mantine-spacing-sm);
+    align-content: start;
   }
 }
