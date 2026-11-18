@@ -42,8 +42,9 @@ function ColorSchemeToggle() {
   );
 }
 
-// The dock's width with its margin: a narrower panel on a tablet, so the page keeps some room.
-const DOCK_WIDTH = { sm: 380, md: 440, lg: 540 };
+// The dock's width with its margin, from 992 px (md, DockedPanel's OVERLAY_QUERY): narrower until 1,200 px, so the
+// page keeps some room. Below 992 px the panel covers the screen instead.
+const DOCK_WIDTH = { base: 440, lg: 540 };
 
 export function Layout() {
   const { t } = useTranslation();
@@ -59,7 +60,7 @@ export function Layout() {
     <AppShell
       header={{ height: 56 }}
       navbar={{ width: 230, breakpoint: "sm", collapsed: { mobile: !opened } }}
-      aside={{ width: DOCK_WIDTH, breakpoint: "sm", collapsed: { mobile: true, desktop: !docked } }}
+      aside={{ width: DOCK_WIDTH, breakpoint: "md", collapsed: { mobile: true, desktop: !docked } }}
       padding={{ base: "md", sm: 28 }}
       transitionDuration={reduceMotion ? 0 : 350}
       transitionTimingFunction="cubic-bezier(0.22, 0.61, 0.24, 1)"

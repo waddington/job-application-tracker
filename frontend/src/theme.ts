@@ -337,7 +337,7 @@ export function themeFor(lang: string) {
         ...dialog,
         defaultProps: { ...dialog.defaultProps, radius: "var(--jat-dialog-radius)" },
       }),
-      // A side panel on a phone (DockedPanel's full-screen overlay); wider screens dock it beside the page.
+      // Any Drawer looks like the dialogs (none today: the application panel is DockedPanel, drawn its own way).
       Drawer: Drawer.extend(dialog),
       // Every box you type in: an outline you can see (theme.module.css).
       Input: Input.extend({ classNames: { wrapper: classes.input } }),
