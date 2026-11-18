@@ -273,7 +273,8 @@ export function Board({
   };
 
   const onDragStart = (event: DragStartEvent) => {
-    // The columns all share the width equally, so the first one's says what they all are.
+    // Every column has the one flex rule (.column in Board.module.css: the same basis, minimum and maximum), so
+    // they are all the same width and the first one says what they all are.
     const width = columnsRef.current?.firstElementChild?.getBoundingClientRect().width;
     if (width) setFrozen({ width, shown: new Set(columns.map(columnKey)) });
     setActive((event.active.data.current?.row as ApplicationRow) ?? null);
@@ -300,7 +301,7 @@ export function Board({
   };
 
   return (
-    <Stack gap="xs">
+    <Stack gap="xs" className={classes.board}>
       <Group gap="lg">
         <Switch
           label={t("board.showClosed")}

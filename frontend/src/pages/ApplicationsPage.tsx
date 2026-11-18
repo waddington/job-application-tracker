@@ -22,7 +22,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { PersonMarks } from "../components/GhostMark";
-import { Page } from "../components/Page";
+import { Page, PageCapped } from "../components/Page";
 import { TableSkeleton } from "../components/PageSkeleton";
 import { Pending } from "../components/QueryState";
 import { RecruiterLine } from "../components/RecruiterLine";
@@ -128,82 +128,85 @@ export function ApplicationsPage() {
   return (
     // The board fills the window; the list keeps the page's cap.
     <Page wide={view === "board"}>
-      <Group justify="space-between">
-        <Group gap="sm">
-          <IconBriefcase size={26} stroke={1.6} />
-          <Title order={2}>{t("title")}</Title>
-          {rows && (
-            <Badge variant="light" color="gray">
-              {rows.length}
-            </Badge>
-          )}
-          {isFetching && !isLoading && <Loader size="xs" />}
+      {/* The title and filters keep the cap on the board too, so the List/Board switch stays put. */}
+      <PageCapped>
+        <Group justify="space-between">
+          <Group gap="sm">
+            <IconBriefcase size={26} stroke={1.6} />
+            <Title order={2}>{t("title")}</Title>
+            {rows && (
+              <Badge variant="light" color="gray">
+                {rows.length}
+              </Badge>
+            )}
+            {isFetching && !isLoading && <Loader size="xs" />}
+          </Group>
+          <Group gap="sm">
+            <SegmentedControl
+              value={view}
+              onChange={(v) => setView(v as "list" | "board")}
+              data={[
+                { value: "list", label: t("view.list") },
+                { value: "board", label: t("view.board") },
+              ]}
+              aria-label={t("view.label")}
+            />
+          </Group>
         </Group>
-        <Group gap="sm">
-          <SegmentedControl
-            value={view}
-            onChange={(v) => setView(v as "list" | "board")}
+
+        <Group gap="sm" align="flex-end" wrap="wrap">
+          <TextInput
+            placeholder={t("filters.searchPlaceholder")}
+            leftSection={<IconSearch size={16} />}
+            value={q}
+            onChange={(e) => setQ(e.currentTarget.value)}
+            w={300}
+            aria-label={t("filters.search")}
+          />
+          <MultiSelect
+            placeholder={stage.length ? undefined : t("filters.allStages")}
+            data={(workflow?.stages ?? []).map((s) => ({ value: s.id, label: stageName(s) }))}
+            value={stage}
+            onChange={setStage}
+            clearable
+            w={240}
+            aria-label={t("filters.stages")}
+          />
+          <Select
+            placeholder={t("filters.anyRoute")}
             data={[
-              { value: "list", label: t("view.list") },
-              { value: "board", label: t("view.board") },
+              { value: "direct", label: t("routes.direct") },
+              { value: "agency", label: t("routes.recruiter") },
+              { value: "referral", label: t("routes.referral") },
             ]}
-            aria-label={t("view.label")}
+            value={route}
+            onChange={setRoute}
+            clearable
+            w={140}
+            aria-label={t("filters.route")}
+          />
+          <Select
+            placeholder={t("filters.anyAgency")}
+            data={(agencies ?? []).map((a) => ({ value: a.id, label: a.name }))}
+            value={agencyId}
+            onChange={setAgencyId}
+            clearable
+            searchable
+            w={200}
+            aria-label={t("filters.agency")}
+          />
+          <Switch
+            label={t("filters.needsChasing")}
+            checked={staleOnly}
+            onChange={(e) => setStaleOnly(e.currentTarget.checked)}
+          />
+          <Switch
+            label={t("filters.archived")}
+            checked={archived}
+            onChange={(e) => setArchived(e.currentTarget.checked)}
           />
         </Group>
-      </Group>
-
-      <Group gap="sm" align="flex-end" wrap="wrap">
-        <TextInput
-          placeholder={t("filters.searchPlaceholder")}
-          leftSection={<IconSearch size={16} />}
-          value={q}
-          onChange={(e) => setQ(e.currentTarget.value)}
-          w={300}
-          aria-label={t("filters.search")}
-        />
-        <MultiSelect
-          placeholder={stage.length ? undefined : t("filters.allStages")}
-          data={(workflow?.stages ?? []).map((s) => ({ value: s.id, label: stageName(s) }))}
-          value={stage}
-          onChange={setStage}
-          clearable
-          w={240}
-          aria-label={t("filters.stages")}
-        />
-        <Select
-          placeholder={t("filters.anyRoute")}
-          data={[
-            { value: "direct", label: t("routes.direct") },
-            { value: "agency", label: t("routes.recruiter") },
-            { value: "referral", label: t("routes.referral") },
-          ]}
-          value={route}
-          onChange={setRoute}
-          clearable
-          w={140}
-          aria-label={t("filters.route")}
-        />
-        <Select
-          placeholder={t("filters.anyAgency")}
-          data={(agencies ?? []).map((a) => ({ value: a.id, label: a.name }))}
-          value={agencyId}
-          onChange={setAgencyId}
-          clearable
-          searchable
-          w={200}
-          aria-label={t("filters.agency")}
-        />
-        <Switch
-          label={t("filters.needsChasing")}
-          checked={staleOnly}
-          onChange={(e) => setStaleOnly(e.currentTarget.checked)}
-        />
-        <Switch
-          label={t("filters.archived")}
-          checked={archived}
-          onChange={(e) => setArchived(e.currentTarget.checked)}
-        />
-      </Group>
+      </PageCapped>
 
       {rows === undefined ? (
         <Pending

@@ -12,29 +12,27 @@ export const PAGE_MAX_WIDTH = 2400;
  */
 export const READING_WIDTH = "75ch";
 
-/** The gap a `wide` page leaves on its right: 16 px, where the frame's padding is 28 px from tablets up. */
-const WIDE_GUTTER = "calc(16px - var(--app-shell-padding, 16px))";
-
 /**
  * Every page's outer wrapper: the page fills the width beside the menu, starting right after it, up to
- * 2,400 px, so a wide screen is used whole and a 4K one doesn't get 3,000 px lines. A `wide` page (the
- * Applications board) has no cap and runs to 16 px from the window's edge, or from the docked panel.
+ * 2,400 px, so a wide screen is used whole and a 4K one doesn't get 3,000 px lines. A `wide` page has no
+ * cap, for content that fills the window (the Applications board); keep its header and filters in a
+ * `PageCapped`, so they sit where they do on other pages.
  */
 export function Page({
   children,
   wide = false,
-  style,
   ...props
 }: Omit<StackProps, "maw"> & { children?: ReactNode; wide?: boolean }) {
   return (
-    <Stack
-      maw={wide ? undefined : PAGE_MAX_WIDTH}
-      style={wide ? [{ marginInlineEnd: WIDE_GUTTER }, style] : style}
-      {...props}
-    >
+    <Stack maw={wide ? undefined : PAGE_MAX_WIDTH} {...props}>
       {children}
     </Stack>
   );
+}
+
+/** Part of a `wide` page held to the usual 2,400 px cap, spaced as the page's own children are. */
+export function PageCapped({ children }: { children?: ReactNode }) {
+  return <Stack maw={PAGE_MAX_WIDTH}>{children}</Stack>;
 }
 
 /** A record page's link back to its list, above its header (and its skeleton's, while it loads). */
