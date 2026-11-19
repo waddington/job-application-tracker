@@ -1,4 +1,4 @@
-import type { Page } from "@playwright/test";
+import type { Locator, Page } from "@playwright/test";
 
 import { expect, test } from "./fixtures";
 
@@ -41,6 +41,15 @@ const lastViewEnds = (page: Page) =>
       if (["auto", "scroll"].includes(getComputedStyle(e).overflowX)) e.scrollLeft = e.scrollWidth;
     return [...root.querySelectorAll("label")].at(-1)!.getBoundingClientRect().right;
   });
+
+/** The views' sideways scroller. */
+const viewsRow = (page: Page) =>
+  page.locator(".mantine-ScrollArea-root").filter({ has: page.locator(".mantine-SegmentedControl-root") });
+
+const right = async (locator: Locator) => {
+  const box = (await locator.boundingBox())!;
+  return box.x + box.width;
+};
 
 test.describe("wide screens", () => {
   for (const width of [1440, 2560]) {
@@ -121,36 +130,51 @@ test.describe("phone width", () => {
       await expect.poll(() => picked(page)).toBe(name);
     });
 
-    test("Recruiters: a view picked with the arrow keys comes fully into view by itself", async ({
+    test("Recruiters: the last view picked with the arrow keys scrolls to the row's end, clearing the fade", async ({
       page,
     }) => {
       await page.goto("/recruiters");
       await expect(page.getByRole("link", { name: "Alex Morgan", exact: true })).toBeVisible();
       const last = page.locator(".mantine-SegmentedControl-root label").last();
-      await expect
-        .poll(async () => (await last.boundingBox())!.x + (await last.boundingBox())!.width)
-        .toBeGreaterThan(375);
+      const row = viewsRow(page);
+      await expect(row).toHaveAttribute("data-more-end");
       await page.locator(".mantine-SegmentedControl-root input:checked").focus();
       for (let i = 0; i < 6; i++) await page.keyboard.press("ArrowRight");
       await expect.poll(() => picked(page)).toBe((await last.textContent())!);
-      await expect
-        .poll(async () => (await last.boundingBox())!.x + (await last.boundingBox())!.width)
-        .toBeLessThanOrEqual(375);
+      await expect(row).not.toHaveAttribute("data-more-end");
+      await expect.poll(async () => right(last)).toBeLessThanOrEqual(await right(row));
+    });
+
+    test("Roles: switching language re-measures the views, so the fade follows", async ({ page }) => {
+      // At 420 px the views fit in Chinese, and not in English.
+      await page.setViewportSize({ width: 420, height: 800 });
+      await page.goto("/roles");
+      await expect(page.getByText("Senior Frontend Engineer")).toBeVisible();
+      const row = viewsRow(page);
+      await expect(page.locator(".mantine-SegmentedControl-root label").first()).toBeVisible();
+      await expect(row).not.toHaveAttribute("data-more-end");
+      await page.getByRole("button", { name: "语言：简体中文" }).click();
+      await page.getByRole("menuitem", { name: "English" }).click();
+      await expect(
+        page.locator(".mantine-SegmentedControl-root").getByText("To decide", { exact: true }),
+      ).toBeVisible();
+      await expect(row).toHaveAttribute("data-more-end");
     });
   });
 
-  test("Roles: a half-hidden view picked with the arrow keys comes fully into view by itself", async ({
+  test("Roles: a half-hidden view picked with the arrow keys comes into view clear of the fade", async ({
     page,
   }) => {
     await page.goto("/roles");
     await expect(page.getByText("Senior Frontend Engineer")).toBeVisible();
     const passed = page.locator(".mantine-SegmentedControl-root label").filter({ hasText: "Passed" });
+    const row = viewsRow(page);
+    expect(await right(passed)).toBeGreaterThan((await right(row)) - 24);
     await page.locator(".mantine-SegmentedControl-root input:checked").focus();
     for (let i = 0; i < 4; i++) await page.keyboard.press("ArrowRight");
     await expect.poll(() => picked(page)).toBe("Passed");
-    await expect
-      .poll(async () => (await passed.boundingBox())!.x + (await passed.boundingBox())!.width)
-      .toBeLessThanOrEqual(375);
+    // Passed ends clear of the 24 px fade at the row's end.
+    await expect.poll(async () => right(passed)).toBeLessThanOrEqual((await right(row)) - 24 + 1);
   });
 
   test("a row with more past an edge fades there, and only while there's more", async ({ page }) => {

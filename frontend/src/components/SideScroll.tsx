@@ -30,10 +30,11 @@ export function SideScroll({
     if (!e) return;
     measure();
     if (typeof ResizeObserver === "undefined") return;
-    // The space or what's in it can change size (a window resize, rows loading, a language switch).
+    // The space or what's in it can change size (a window resize, rows loading, a language switch). Mantine's content
+    // box is as wide as the space, so watch what's inside it: that's what grows past it.
     const observer = new ResizeObserver(measure);
     observer.observe(e);
-    if (e.firstElementChild) observer.observe(e.firstElementChild);
+    for (const child of e.firstElementChild?.children ?? []) observer.observe(child);
     return () => observer.disconnect();
   }, [measure]);
   return (
@@ -68,7 +69,7 @@ export function ScrollingViews(props: SegmentedControlProps) {
   }, [props.value]);
   return (
     <SideScroll maw="100%" offsetScrollbars="x">
-      <div ref={row}>
+      <div ref={row} className={classes.views}>
         <SegmentedControl {...props} />
       </div>
     </SideScroll>
