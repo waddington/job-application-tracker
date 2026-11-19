@@ -1,5 +1,9 @@
 /* A sideways-scrolling row fades out at an edge while there's more past it, so a phone (no scrollbar until you touch
    it) still shows there's more. A mask, not a colour, so it works on any card or background, light or dark. */
+/* What a picked view scrolls to stays clear of the fade, and the last one scrolls to the true end, clearing it. */
+.viewport {
+  scroll-padding-inline: 24px;
+}
 .root[data-more-end] .viewport {
   mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
 }
@@ -8,4 +12,10 @@
 }
 .root[data-more-start][data-more-end] .viewport {
   mask-image: linear-gradient(to right, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+}
+
+/* The views' wrapper takes the views' own width, so a change in it (another language, a count) is seen. */
+.views {
+  display: inline-block;
+  vertical-align: top;
 }
