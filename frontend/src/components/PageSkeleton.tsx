@@ -46,16 +46,19 @@ export function CardsSkeleton({
   count,
   height,
   cols,
+  type,
   gap = "md",
 }: {
   count: number;
   height: number;
   cols?: SimpleGridProps["cols"];
+  /** `container` when the real grid's columns follow its own width rather than the window's. */
+  type?: SimpleGridProps["type"];
   gap?: MantineSpacing;
 }) {
   const cards = Array.from({ length: count }, (_, i) => <Skeleton key={i} height={height} radius="md" />);
   return cols ? (
-    <SimpleGrid cols={cols} spacing={gap} verticalSpacing={gap}>
+    <SimpleGrid type={type} cols={cols} spacing={gap} verticalSpacing={gap}>
       {cards}
     </SimpleGrid>
   ) : (

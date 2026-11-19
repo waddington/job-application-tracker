@@ -6,6 +6,7 @@ import {
   Card,
   Group,
   Modal,
+  ScrollArea,
   SegmentedControl,
   SimpleGrid,
   Skeleton,
@@ -262,7 +263,9 @@ function PersonTile({
   );
 }
 
-const TILE_COLUMNS = { base: 1, xs: 2, md: 3, xl: 4 };
+// Laid out by the list's own width, a column for about every 280 px up to six, so a wide page shows more
+// people rather than wider tiles: 4 at a 1,440 px window (as before), 5 at 1,920, 6 at 2,560.
+const TILE_COLUMNS = { base: 1, "540px": 2, "820px": 3, "1100px": 4, "1380px": 5, "1660px": 6 };
 
 type Show = "all" | "agency" | "company" | "independent" | "inProgress" | "favourites" | "ghosted";
 
@@ -370,34 +373,37 @@ export function RecruitersPage() {
           maw="100%"
           aria-label={t("recruiters.searchLabel")}
         />
-        <SegmentedControl
-          size="xs"
-          value={show}
-          onChange={(v) => setShow(v as Show)}
-          aria-label={t("recruiters.show")}
-          data={[
-            { value: "all", label: t("recruiters.all") },
-            { value: "agency", label: t("recruiters.agencies") },
-            { value: "company", label: t("recruiters.companies") },
-            { value: "independent", label: t("recruiters.independent") },
-            {
-              value: "inProgress",
-              label: t("recruiters.inProgress", {
-                n: (contacts ?? []).filter((c) => workByPerson.has(c.id)).length,
-              }),
-            },
-            {
-              value: "favourites",
-              label: t("recruiters.favourites", { n: (contacts ?? []).filter((c) => c.favourite).length }),
-            },
-            {
-              value: "ghosted",
-              label: t("recruiters.ghosted", {
-                n: (contacts ?? []).filter((c) => c.closed_as === "ghosted").length,
-              }),
-            },
-          ]}
-        />
+        {/* Seven views, longer in some languages: on a phone they scroll sideways in their own space. */}
+        <ScrollArea scrollbars="x" maw="100%">
+          <SegmentedControl
+            size="xs"
+            value={show}
+            onChange={(v) => setShow(v as Show)}
+            aria-label={t("recruiters.show")}
+            data={[
+              { value: "all", label: t("recruiters.all") },
+              { value: "agency", label: t("recruiters.agencies") },
+              { value: "company", label: t("recruiters.companies") },
+              { value: "independent", label: t("recruiters.independent") },
+              {
+                value: "inProgress",
+                label: t("recruiters.inProgress", {
+                  n: (contacts ?? []).filter((c) => workByPerson.has(c.id)).length,
+                }),
+              },
+              {
+                value: "favourites",
+                label: t("recruiters.favourites", { n: (contacts ?? []).filter((c) => c.favourite).length }),
+              },
+              {
+                value: "ghosted",
+                label: t("recruiters.ghosted", {
+                  n: (contacts ?? []).filter((c) => c.closed_as === "ghosted").length,
+                }),
+              },
+            ]}
+          />
+        </ScrollArea>
       </Group>
       {agencyList.length > 0 && (
         <Group gap={6} align="center">
@@ -436,7 +442,7 @@ export function RecruitersPage() {
           skeleton={
             <>
               <Skeleton height={17} width={220} radius="sm" mb={6} />
-              <CardsSkeleton count={8} height={181} cols={TILE_COLUMNS} gap="sm" />
+              <CardsSkeleton count={8} height={181} cols={TILE_COLUMNS} type="container" gap="sm" />
             </>
           }
         />
@@ -453,7 +459,7 @@ export function RecruitersPage() {
               ? t("recruiters.countFavourites", { count: shown.length })
               : t("recruiters.count", { count: shown.length })}
           </Text>
-          <SimpleGrid cols={TILE_COLUMNS} spacing="sm" verticalSpacing="sm">
+          <SimpleGrid type="container" cols={TILE_COLUMNS} spacing="sm" verticalSpacing="sm">
             {shown.map((c) => (
               <PersonTile
                 key={c.id}

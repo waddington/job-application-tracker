@@ -1,4 +1,4 @@
-import { Button, Card, Group, SegmentedControl, Stack, Text, Title } from "@mantine/core";
+import { Button, Card, Group, ScrollArea, SegmentedControl, Stack, Text, Title } from "@mantine/core";
 import { IconListDetails, IconPlus } from "@tabler/icons-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -53,13 +53,15 @@ export function RolesPage() {
           {t("add")}
         </Button>
       </Group>
-      <SegmentedControl
-        value={view}
-        onChange={(v) => setView(v as View)}
-        data={VIEWS.map((v) => ({ value: v.value, label: t(v.label) }))}
-        aria-label={t("views.label")}
-        style={{ alignSelf: "flex-start" }}
-      />
+      {/* Six views don't fit a phone on one line: they scroll sideways in their own space, not the page. */}
+      <ScrollArea scrollbars="x">
+        <SegmentedControl
+          value={view}
+          onChange={(v) => setView(v as View)}
+          data={VIEWS.map((v) => ({ value: v.value, label: t(v.label) }))}
+          aria-label={t("views.label")}
+        />
+      </ScrollArea>
       {roles === undefined ? (
         <Pending
           query={rolesQuery}
