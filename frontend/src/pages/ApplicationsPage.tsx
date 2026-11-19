@@ -5,7 +5,6 @@ import {
   Group,
   Loader,
   MultiSelect,
-  ScrollArea,
   SegmentedControl,
   Select,
   Stack,
@@ -26,6 +25,7 @@ import { Page, PageCapped } from "../components/Page";
 import { TableSkeleton } from "../components/PageSkeleton";
 import { Pending } from "../components/QueryState";
 import { RecruiterLine } from "../components/RecruiterLine";
+import { SideScroll } from "../components/SideScroll";
 import type { ApplicationRow } from "../api/client";
 import {
   stageLookup,
@@ -243,7 +243,7 @@ export function ApplicationsPage() {
       ) : (
         // The list on one of the redesign's soft cards, a little tighter than the roomy default for a table.
         <Card padding="md">
-          <ScrollArea>
+          <SideScroll>
             <Table highlightOnHover verticalSpacing="sm" miw={760}>
               <Table.Thead>
                 <Table.Tr>
@@ -344,7 +344,7 @@ export function ApplicationsPage() {
                 ))}
               </Table.Tbody>
             </Table>
-          </ScrollArea>
+          </SideScroll>
         </Card>
       )}
 

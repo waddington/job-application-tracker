@@ -5,7 +5,6 @@ import {
   Card,
   Group,
   Modal,
-  ScrollArea,
   Stack,
   Table,
   Text,
@@ -23,6 +22,7 @@ import { useApplications, useCompanies } from "../api/hooks";
 import { Page } from "../components/Page";
 import { TableSkeleton } from "../components/PageSkeleton";
 import { Pending } from "../components/QueryState";
+import { SideScroll } from "../components/SideScroll";
 import text from "../text.module.css";
 
 const companyPath = (id: string) => `/companies/${id}`;
@@ -139,7 +139,7 @@ export function CompaniesPage() {
       ) : (
         // On a soft card, as the Applications list is; on a phone the table scrolls sideways inside it.
         <Card padding="md">
-          <ScrollArea>
+          <SideScroll>
             <Table highlightOnHover verticalSpacing="sm" miw={560}>
               <Table.Thead>
                 <Table.Tr>
@@ -190,7 +190,7 @@ export function CompaniesPage() {
                 })}
               </Table.Tbody>
             </Table>
-          </ScrollArea>
+          </SideScroll>
         </Card>
       )}
       <NewCompanyModal opened={creating} onClose={() => setCreating(false)} />

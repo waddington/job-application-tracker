@@ -120,5 +120,51 @@ test.describe("phone width", () => {
       await last.click();
       await expect.poll(() => picked(page)).toBe(name);
     });
+
+    test("Recruiters: a view picked with the arrow keys comes fully into view by itself", async ({
+      page,
+    }) => {
+      await page.goto("/recruiters");
+      await expect(page.getByRole("link", { name: "Alex Morgan", exact: true })).toBeVisible();
+      const last = page.locator(".mantine-SegmentedControl-root label").last();
+      await expect
+        .poll(async () => (await last.boundingBox())!.x + (await last.boundingBox())!.width)
+        .toBeGreaterThan(375);
+      await page.locator(".mantine-SegmentedControl-root input:checked").focus();
+      for (let i = 0; i < 6; i++) await page.keyboard.press("ArrowRight");
+      await expect.poll(() => picked(page)).toBe((await last.textContent())!);
+      await expect
+        .poll(async () => (await last.boundingBox())!.x + (await last.boundingBox())!.width)
+        .toBeLessThanOrEqual(375);
+    });
+  });
+
+  test("Roles: a half-hidden view picked with the arrow keys comes fully into view by itself", async ({
+    page,
+  }) => {
+    await page.goto("/roles");
+    await expect(page.getByText("Senior Frontend Engineer")).toBeVisible();
+    const passed = page.locator(".mantine-SegmentedControl-root label").filter({ hasText: "Passed" });
+    await page.locator(".mantine-SegmentedControl-root input:checked").focus();
+    for (let i = 0; i < 4; i++) await page.keyboard.press("ArrowRight");
+    await expect.poll(() => picked(page)).toBe("Passed");
+    await expect
+      .poll(async () => (await passed.boundingBox())!.x + (await passed.boundingBox())!.width)
+      .toBeLessThanOrEqual(375);
+  });
+
+  test("a row with more past an edge fades there, and only while there's more", async ({ page }) => {
+    await page.goto("/companies");
+    await expect(page.getByRole("row", { name: /Contoso/ })).toBeVisible();
+    const scroller = companiesCard(page).locator(".mantine-ScrollArea-root");
+    await expect(scroller).toHaveAttribute("data-more-end");
+    await expect(scroller).not.toHaveAttribute("data-more-start");
+    await scroller.locator(".mantine-ScrollArea-viewport").evaluate((e) => (e.scrollLeft = e.scrollWidth));
+    await expect(scroller).toHaveAttribute("data-more-start");
+    await expect(scroller).not.toHaveAttribute("data-more-end");
+    // At a desktop width the table fits: no fade.
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await expect(scroller).not.toHaveAttribute("data-more-start");
+    await expect(scroller).not.toHaveAttribute("data-more-end");
   });
 });

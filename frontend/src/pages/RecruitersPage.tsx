@@ -6,8 +6,6 @@ import {
   Card,
   Group,
   Modal,
-  ScrollArea,
-  SegmentedControl,
   SimpleGrid,
   Skeleton,
   Stack,
@@ -38,6 +36,7 @@ import { Page } from "../components/Page";
 import { CardsSkeleton } from "../components/PageSkeleton";
 import { allQueries, Pending } from "../components/QueryState";
 import { ReplyHabit } from "../components/ReplyHabit";
+import { ScrollingViews } from "../components/SideScroll";
 import type { Contact } from "../api/client";
 import { FavouriteMark, FavouriteToggle, GhostMark } from "../components/GhostMark";
 import { useAgencies, useApplications, useCompanies, useContacts } from "../api/hooks";
@@ -374,36 +373,34 @@ export function RecruitersPage() {
           aria-label={t("recruiters.searchLabel")}
         />
         {/* Seven views, longer in some languages: on a phone they scroll sideways in their own space. */}
-        <ScrollArea scrollbars="x" maw="100%">
-          <SegmentedControl
-            size="xs"
-            value={show}
-            onChange={(v) => setShow(v as Show)}
-            aria-label={t("recruiters.show")}
-            data={[
-              { value: "all", label: t("recruiters.all") },
-              { value: "agency", label: t("recruiters.agencies") },
-              { value: "company", label: t("recruiters.companies") },
-              { value: "independent", label: t("recruiters.independent") },
-              {
-                value: "inProgress",
-                label: t("recruiters.inProgress", {
-                  n: (contacts ?? []).filter((c) => workByPerson.has(c.id)).length,
-                }),
-              },
-              {
-                value: "favourites",
-                label: t("recruiters.favourites", { n: (contacts ?? []).filter((c) => c.favourite).length }),
-              },
-              {
-                value: "ghosted",
-                label: t("recruiters.ghosted", {
-                  n: (contacts ?? []).filter((c) => c.closed_as === "ghosted").length,
-                }),
-              },
-            ]}
-          />
-        </ScrollArea>
+        <ScrollingViews
+          size="xs"
+          value={show}
+          onChange={(v) => setShow(v as Show)}
+          aria-label={t("recruiters.show")}
+          data={[
+            { value: "all", label: t("recruiters.all") },
+            { value: "agency", label: t("recruiters.agencies") },
+            { value: "company", label: t("recruiters.companies") },
+            { value: "independent", label: t("recruiters.independent") },
+            {
+              value: "inProgress",
+              label: t("recruiters.inProgress", {
+                n: (contacts ?? []).filter((c) => workByPerson.has(c.id)).length,
+              }),
+            },
+            {
+              value: "favourites",
+              label: t("recruiters.favourites", { n: (contacts ?? []).filter((c) => c.favourite).length }),
+            },
+            {
+              value: "ghosted",
+              label: t("recruiters.ghosted", {
+                n: (contacts ?? []).filter((c) => c.closed_as === "ghosted").length,
+              }),
+            },
+          ]}
+        />
       </Group>
       {agencyList.length > 0 && (
         <Group gap={6} align="center">
