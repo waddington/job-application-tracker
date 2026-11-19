@@ -19,3 +19,9 @@
   display: inline-block;
   vertical-align: top;
 }
+
+/* offsetScrollbars keeps room under the views for the scrollbar; with nothing to scroll there's no bar, so no room
+   (Mantine only drops it for offsetScrollbars="present", which isn't re-measured after a language switch). */
+.root:not([data-more-start]):not([data-more-end]) .viewport {
+  padding-bottom: 0;
+}

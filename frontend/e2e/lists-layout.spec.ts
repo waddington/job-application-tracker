@@ -69,6 +69,15 @@ test.describe("wide screens", () => {
       const card = page.locator(".mantine-Card-root").filter({ hasText: "Senior Frontend Engineer" }).last();
       await expect(card).toBeVisible();
       expect(Math.abs((await card.boundingBox())!.width - (await pageWidth(page)))).toBeLessThanOrEqual(1);
+      // The views fit here, so there's no scrollbar and no room kept under them for one.
+      await expect
+        .poll(() =>
+          page
+            .locator("main .mantine-SegmentedControl-root")
+            .first()
+            .evaluate((c) => getComputedStyle(c.closest(".mantine-ScrollArea-viewport")!).paddingBottom),
+        )
+        .toBe("0px");
     });
   }
 

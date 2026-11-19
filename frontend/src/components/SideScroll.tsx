@@ -31,7 +31,8 @@ export function SideScroll({
     measure();
     if (typeof ResizeObserver === "undefined") return;
     // The space or what's in it can change size (a window resize, rows loading, a language switch). Mantine's content
-    // box is as wide as the space, so watch what's inside it: that's what grows past it.
+    // box is as wide as the space, so watch what's inside it: that's what grows past it. Only the children there when
+    // it mounts are watched, so a SideScroll's child should stay mounted (each use today does).
     const observer = new ResizeObserver(measure);
     observer.observe(e);
     for (const child of e.firstElementChild?.children ?? []) observer.observe(child);
