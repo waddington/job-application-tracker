@@ -105,7 +105,8 @@ was closed later; once every application for it has ended, its badge says how, e
 the person's and company's pages and under their calls),
 *Closed* (every application closed before any got to *Applied*: withdrawn, rejected or
 ghosted while only interested; the badge says how the latest one ended, e.g. *Withdrawn*, and
-the role links to that one), *Passed* or *All*. An application you record straight at a closed
+the role links to that one), *Passed* or *All* (on a phone, swipe along that row for the last ones).
+An application you record straight at a closed
 stage with an applied date (a past one that was rejected) counts as applied. Roles
 to decide also show under *Your move* on Today. On
 the Timeline you'll see who mentioned which role, and the ones you passed on. A role you
@@ -480,7 +481,7 @@ first. Your data repo's history still has everything until you rewrite it.
 ## People, recruiters and agencies
 
 The **Recruiters** page lists everyone as small tiles, favourites first, then A to Z by name: agency recruiters,
-people at companies and independents. Each tile has their job title, a chip for their agency
+people at companies and independents. A wider window fits more tiles across (up to six), rather than wider ones. Each tile has their job title, a chip for their agency
 or company (click it to open that page), *Waiting* or *Reply to read* if that's where things
 stand (or *Ghosted* / *Not interested*, with a **×** to take it off; someone who ghosted you
 also gets a ghost before their name), what you have in progress with them (*2 applications in progress*,
@@ -495,7 +496,8 @@ them.
   an application with them as its recruiter that's still open (at any stage that isn't closed,
   *Interested* included, and not archived), or a role they pitched that you haven't decided on yet
   (it has no application). A pitched role you've started on counts once, as its application; a
-  hiring manager or referrer on an application doesn't count, only its recruiter.
+  hiring manager or referrer on an application doesn't count, only its recruiter. On a phone, swipe along
+  the row for the ones that don't fit.
 - **Agencies**: every agency as a chip with how many people and applications in progress it
   has, including ones with nobody in them yet.
 
@@ -592,7 +594,8 @@ warning**.
 
 ## Companies
 
-A list of companies with how many applications and how many need chasing. A **company
+A list of companies with how many applications and how many need chasing (on a phone, the table
+scrolls sideways inside its card for the website). A **company
 page** has its applications (click one for its [quick view](#applications-list-and-board) beside
 the page), roles (with whether you've applied, passed or still have to
 decide, and **Add role**), people (**Add person** for the people you talk to there),
