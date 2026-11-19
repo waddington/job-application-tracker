@@ -346,8 +346,6 @@ test.describe("phone width", () => {
       await page.goto(path);
       await expect(page.getByRole("heading", { name: heading }).first()).toBeVisible();
       await page.waitForLoadState("networkidle");
-      // KNOWN BUG (fix-phone-sideways-scroll on the roadmap): expected to fail until it is fixed.
-      test.fail(name === "Roles" || name === "Companies");
       await expect.poll(() => sideways(page)).toBeLessThanOrEqual(1);
     });
   }

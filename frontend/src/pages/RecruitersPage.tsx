@@ -6,7 +6,6 @@ import {
   Card,
   Group,
   Modal,
-  SegmentedControl,
   SimpleGrid,
   Skeleton,
   Stack,
@@ -37,6 +36,7 @@ import { Page } from "../components/Page";
 import { CardsSkeleton } from "../components/PageSkeleton";
 import { allQueries, Pending } from "../components/QueryState";
 import { ReplyHabit } from "../components/ReplyHabit";
+import { ScrollingViews } from "../components/SideScroll";
 import type { Contact } from "../api/client";
 import { FavouriteMark, FavouriteToggle, GhostMark } from "../components/GhostMark";
 import { useAgencies, useApplications, useCompanies, useContacts } from "../api/hooks";
@@ -262,7 +262,9 @@ function PersonTile({
   );
 }
 
-const TILE_COLUMNS = { base: 1, xs: 2, md: 3, xl: 4 };
+// Laid out by the list's own width, a column for about every 280 px up to six, so a wide page shows more
+// people rather than wider tiles: 4 at a 1,440 px window (as before), 5 at 1,920, 6 at 2,560.
+const TILE_COLUMNS = { base: 1, "540px": 2, "820px": 3, "1100px": 4, "1380px": 5, "1660px": 6 };
 
 type Show = "all" | "agency" | "company" | "independent" | "inProgress" | "favourites" | "ghosted";
 
@@ -370,7 +372,8 @@ export function RecruitersPage() {
           maw="100%"
           aria-label={t("recruiters.searchLabel")}
         />
-        <SegmentedControl
+        {/* Seven views, longer in some languages: on a phone they scroll sideways in their own space. */}
+        <ScrollingViews
           size="xs"
           value={show}
           onChange={(v) => setShow(v as Show)}
@@ -436,7 +439,7 @@ export function RecruitersPage() {
           skeleton={
             <>
               <Skeleton height={17} width={220} radius="sm" mb={6} />
-              <CardsSkeleton count={8} height={181} cols={TILE_COLUMNS} gap="sm" />
+              <CardsSkeleton count={8} height={181} cols={TILE_COLUMNS} type="container" gap="sm" />
             </>
           }
         />
@@ -453,7 +456,7 @@ export function RecruitersPage() {
               ? t("recruiters.countFavourites", { count: shown.length })
               : t("recruiters.count", { count: shown.length })}
           </Text>
-          <SimpleGrid cols={TILE_COLUMNS} spacing="sm" verticalSpacing="sm">
+          <SimpleGrid type="container" cols={TILE_COLUMNS} spacing="sm" verticalSpacing="sm">
             {shown.map((c) => (
               <PersonTile
                 key={c.id}

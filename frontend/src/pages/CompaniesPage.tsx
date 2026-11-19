@@ -22,6 +22,7 @@ import { useApplications, useCompanies } from "../api/hooks";
 import { Page } from "../components/Page";
 import { TableSkeleton } from "../components/PageSkeleton";
 import { Pending } from "../components/QueryState";
+import { SideScroll } from "../components/SideScroll";
 import text from "../text.module.css";
 
 const companyPath = (id: string) => `/companies/${id}`;
@@ -117,12 +118,17 @@ export function CompaniesPage() {
         value={q}
         onChange={(e) => setQ(e.currentTarget.value)}
         w={300}
+        maw="100%"
         aria-label={t("companies.search")}
       />
       {companies === undefined ? (
         <Pending
           query={companiesQuery}
-          skeleton={<TableSkeleton rows={8} rowHeight={47} headHeight={37} />}
+          skeleton={
+            <Card padding="md">
+              <TableSkeleton rows={8} rowHeight={47} headHeight={37} />
+            </Card>
+          }
         />
       ) : !shown.length ? (
         <Card withBorder p="xl">
@@ -131,56 +137,61 @@ export function CompaniesPage() {
           </Text>
         </Card>
       ) : (
-        <Table highlightOnHover verticalSpacing="sm">
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>{t("companies.company")}</Table.Th>
-              <Table.Th className={text.keepWords}>{t("companies.applications")}</Table.Th>
-              <Table.Th className={text.keepWords}>{t("companies.inProgress")}</Table.Th>
-              <Table.Th>{t("companies.website")}</Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            {shown.map((c) => {
-              const s = stats.get(c.id);
-              const open = () => void navigate({ to: companyPath(c.id) });
-              return (
-                <Table.Tr
-                  key={c.id}
-                  onClick={open}
-                  onKeyDown={(e) => e.key === "Enter" && open()}
-                  tabIndex={0}
-                  style={{ cursor: "pointer" }}
-                  aria-label={t("companies.open", { name: c.name })}
-                >
-                  <Table.Td fw={600}>{c.name}</Table.Td>
-                  <Table.Td>{s?.total ?? 0}</Table.Td>
-                  <Table.Td>
-                    {s?.active ?? 0}
-                    {s?.stale ? (
-                      <Text span c="red" size="xs" ml={6} className={text.keepWords}>
-                        {t("companies.toChase", { count: s.stale })}
-                      </Text>
-                    ) : null}
-                  </Table.Td>
-                  <Table.Td>
-                    {c.website && (
-                      <Anchor
-                        href={c.website}
-                        target="_blank"
-                        rel="noreferrer"
-                        size="sm"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {c.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
-                      </Anchor>
-                    )}
-                  </Table.Td>
+        // On a soft card, as the Applications list is; on a phone the table scrolls sideways inside it.
+        <Card padding="md">
+          <SideScroll>
+            <Table highlightOnHover verticalSpacing="sm" miw={560}>
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>{t("companies.company")}</Table.Th>
+                  <Table.Th className={text.keepWords}>{t("companies.applications")}</Table.Th>
+                  <Table.Th className={text.keepWords}>{t("companies.inProgress")}</Table.Th>
+                  <Table.Th>{t("companies.website")}</Table.Th>
                 </Table.Tr>
-              );
-            })}
-          </Table.Tbody>
-        </Table>
+              </Table.Thead>
+              <Table.Tbody>
+                {shown.map((c) => {
+                  const s = stats.get(c.id);
+                  const open = () => void navigate({ to: companyPath(c.id) });
+                  return (
+                    <Table.Tr
+                      key={c.id}
+                      onClick={open}
+                      onKeyDown={(e) => e.key === "Enter" && open()}
+                      tabIndex={0}
+                      style={{ cursor: "pointer" }}
+                      aria-label={t("companies.open", { name: c.name })}
+                    >
+                      <Table.Td fw={600}>{c.name}</Table.Td>
+                      <Table.Td>{s?.total ?? 0}</Table.Td>
+                      <Table.Td>
+                        {s?.active ?? 0}
+                        {s?.stale ? (
+                          <Text span c="red" size="xs" ml={6} className={text.keepWords}>
+                            {t("companies.toChase", { count: s.stale })}
+                          </Text>
+                        ) : null}
+                      </Table.Td>
+                      <Table.Td>
+                        {c.website && (
+                          <Anchor
+                            href={c.website}
+                            target="_blank"
+                            rel="noreferrer"
+                            size="sm"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {c.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+                          </Anchor>
+                        )}
+                      </Table.Td>
+                    </Table.Tr>
+                  );
+                })}
+              </Table.Tbody>
+            </Table>
+          </SideScroll>
+        </Card>
       )}
       <NewCompanyModal opened={creating} onClose={() => setCreating(false)} />
       <Text size="xs" c="dimmed">

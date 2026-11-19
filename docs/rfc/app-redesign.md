@@ -78,6 +78,14 @@ the page beside the menu and the panel was about 100 px wide (the lead's call; K
   company: its applications | notes, links, files | to-dos, recruiters (on a phone, after the notes, links and
   files, as a company's people are). A role: about it and its application (kept out of the side, where the stage badge
   was cut short) | notes, links | to-dos, files. Only an agency's page opens the quick view of these three.
+- **The Roles, Recruiters and Companies lists** at the page's full width (2,400 px cap). *As built (#423):* the
+  Companies table on a soft card as the Applications list is (16 px padding), at least 560 px wide so on a phone it
+  scrolls sideways inside the card; the Roles list was already one card. The recruiters' tiles are laid out by the
+  list's own width (a container grid), a column for about every 280 px up to six: 4 at a 1,440 px window as before,
+  5 at 1,920, 6 at 2,560, rather than four ever-wider tiles. The Roles and Recruiters views scroll sideways in their
+  own row when they don't fit (Roles at 375 px, Recruiters in Chinese), so the page never does
+  (`fix-phone-sideways-scroll`, `fix-phone-recruiters-views-cut`); a picked view scrolls fully into view. These rows and
+  the Companies and Applications tables share one `SideScroll`, whose edge fades while there's more past it. What each list shows, filters and sorts is unchanged.
 - **Notes** as a grid of note cards (notes still open in their editor dialog). **Documents**: the CV files and each
   document as cards side by side. **Interviews**: the calendar with "still to book" beside it; the list view's cards
   side by side. Offers stays one comparison table.
