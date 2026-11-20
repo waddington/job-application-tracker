@@ -109,6 +109,11 @@ Each of these cost time once. Add a line when something new does.
 
 ## Browser tests (`frontend/e2e/`)
 
+- **Read a browser run's failed line and exit code, not its passed count.** `e2e_only.sh`'s tail can end "830 passed"
+  just under "1 failed" and "ELIFECYCLE … exit code 1"; on 2026-11-20 that was misread and #425 merged on a failure
+  (the known `fix-board-drag-width-race` flake, in a file #425 didn't touch; the board spec then passed on main).
+  Before merging, grep the output for `failed` / `ELIFECYCLE`: `e2e_only.sh` pipes into `tail`, so it exits 0 even
+  when tests fail (`fix-e2e-only-exit-status`); `checks.sh`'s FAIL lines are reliable.
 - **The board's mouse-drag tests can flake under a full run** (2026-11-18, on #415, which doesn't touch the board):
   `board.spec.ts` "onto its own column does nothing" (~:284) once and "while dragging, the columns keep their width"
   (~:555) once, each passing alone. The second was 45 px off (225 → 180), so it may be a real one-frame race in the
