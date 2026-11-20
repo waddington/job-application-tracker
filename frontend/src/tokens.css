@@ -96,14 +96,14 @@
   --jat-chart-red: #b63133;
   --jat-chart-pink: #bc426b;
 
-  /* Weekly activity's six series, in its order (added, applied, moved, interviews, calls, pitched): neighbours
-     told apart with colour-blind vision too, each 3:1 or more on a card. */
-  --jat-weekly-added: #654994;
-  --jat-weekly-applied: #c4780a;
-  --jat-weekly-moves: #3d73c5;
-  --jat-weekly-interviews: #d16b9d;
-  --jat-weekly-calls: #137c54;
-  --jat-weekly-pitched: #ac9016;
+  /* Weekly activity's six series, in its order (added, applied, moved, interviews, calls, pitched): every pair told
+     apart, with colour-blind vision too (the dataviz validator, all 15 pairs), each 3:1 or more on a card. */
+  --jat-weekly-added: #9b76e8;
+  --jat-weekly-applied: #cb7a49;
+  --jat-weekly-moves: #2752a0;
+  --jat-weekly-interviews: #8d2768;
+  --jat-weekly-calls: #206702;
+  --jat-weekly-pitched: #1f9b91;
 
   /* The website's eyebrow label. */
   --jat-eyebrow-size: 10.5px;
@@ -149,10 +149,12 @@
   --jat-chart-red: #cb4645;
   --jat-chart-pink: #d1557c;
 
-  --jat-weekly-added: #9c81d1;
-  --jat-weekly-applied: #b36e0d;
-  --jat-weekly-moves: #6393db;
-  --jat-weekly-interviews: #c04686;
-  --jat-weekly-calls: #41aa7c;
-  --jat-weekly-pitched: #907700;
+  /* Lighter than the validator's dark band in places (lavender, amber, aqua): on plum night rather than near-black,
+     that's what keeps all 15 pairs apart. */
+  --jat-weekly-added: #b199ec;
+  --jat-weekly-applied: #eaa464;
+  --jat-weekly-moves: #1a84cf;
+  --jat-weekly-interviews: #b15086;
+  --jat-weekly-calls: #5b8231;
+  --jat-weekly-pitched: #42d4cd;
 }
