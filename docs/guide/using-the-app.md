@@ -718,6 +718,10 @@ Your CVs and cover letters, each with versions ("v3 (fintech)") and the file for
 application page records which version you sent, and the Documents page shows where each
 version went. [Insights](#insights) compares how the versions do.
 
+Each document is a card with its versions and **Where it was used**, side by side with the
+others and with the *CV files you've attached* card when there is one: more columns the wider
+the window (up to four), one on a phone.
+
 **CV files you've attached.** If you've been attaching your CV as a plain file (to an
 application, to a role, or to a person, like the CV you sent a recruiter), the Documents page
 finds them: PDF and Word files (`.pdf`, `.doc`, `.docx`) named like a CV (*cv*, *resume*,
@@ -758,6 +762,12 @@ waiting.
 Markdown notes, attached to an application, company, agency or person, or on their own.
 Each is a real `.md` file in your data folder (see [Your data](your-data.md#whats-in-the-folder)),
 so you can also write and edit them in any editor. Tables, checklists and links work.
+
+The Notes page shows every note as a card, side by side in a grid: more columns the wider the
+window (up to five), one on a phone. Each card has the note's title, when it was last changed
+and its first lines; click the title to read the whole note in its card, or the pencil to open
+it in the editor. The search box (titles and text) and **All notes** / **General only** (notes not
+attached to anything) narrow the list.
 
 ## Insights
 
