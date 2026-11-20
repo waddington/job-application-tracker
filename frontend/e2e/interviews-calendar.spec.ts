@@ -36,6 +36,19 @@ const twoRounds = async (request: APIRequestContext, company: string) => {
   return { appId: id, first: "Round 1 · First chat", second: "Round 2 · Second chat" };
 };
 
+/** An application with a round that has no time yet, so Still to book shows. */
+const unbookedRound = async (request: APIRequestContext, company: string) => {
+  const app = await request.post(`${API}/applications/quick`, {
+    data: { company_name: company, role_title: "Unbooked Role", route: "direct", tags: [] },
+  });
+  expect(app.ok()).toBe(true);
+  const { id } = (await app.json()) as { id: string };
+  const made = await request.post(`${API}/applications/${id}/interviews`, {
+    data: { round: 1, title: "Time to agree", format: "video" },
+  });
+  expect(made.ok()).toBe(true);
+};
+
 const openCalendar = async (page: Page) => {
   await page.clock.setFixedTime(NOW);
   await page.goto("/interviews");
@@ -118,7 +131,9 @@ test("Year shows twelve months and the year's figures; choosing a day fills the 
 
 test("each day's number sits just above its own dot, however wide the screen", async ({ page, request }) => {
   await twoRounds(request, "Calendar Number Co");
-  for (const width of [2048, 1440, 375]) {
+  // Something to book, so from 1,920 px the calendar shares the page with it.
+  await unbookedRound(request, "Calendar Number Unbooked Co");
+  for (const width of [3800, 2560, 2048, 1920, 1440, 375]) {
     await page.setViewportSize({ width, height: 1000 });
     await openCalendar(page);
     await expect(dot(page, LATER)).toBeVisible();
@@ -141,11 +156,96 @@ test("each day's number sits just above its own dot, however wide the screen", a
   }
 });
 
+/** Where a box is, rounded: left, top, width. */
+const box = async (page: Page, selector: string) => {
+  const b = (await page.locator(selector).first().boundingBox())!;
+  return { left: Math.round(b.x), top: Math.round(b.y), width: Math.round(b.width) };
+};
+const calendarCard =
+  "main .mantine-Card-root:has(button[aria-label='Previous month'], button[aria-label='Previous year'])";
+const toBookCard = "[data-testid=to-book]";
+
+test("on a wide page Still to book sits beside the calendar, level with it; narrower, under it", async ({
+  page,
+  request,
+}) => {
+  await unbookedRound(request, "Calendar Beside Co");
+  await openCalendar(page);
+  for (const [width, beside] of [
+    [1440, false],
+    [1920, true],
+    [2560, true],
+    [3800, true],
+  ] as const) {
+    await page.setViewportSize({ width, height: 1000 });
+    await expect(page.locator(toBookCard).getByText("Calendar Beside Co")).toBeVisible();
+    await expect
+      .poll(
+        async () => {
+          const [cal, book] = [await box(page, calendarCard), await box(page, toBookCard)];
+          return beside
+            ? book.top === cal.top && book.left >= cal.left + cal.width && book.width >= 720
+            : book.left === cal.left && book.top > cal.top && book.width === cal.width;
+        },
+        { message: `at ${width} px` },
+      )
+      .toBe(true);
+    // Beside or under, nothing pushes the page sideways.
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  }
+  // A year's small months, beside it too, each keep room for their days.
+  await page.getByText("Year", { exact: true }).click();
+  for (const width of [1440, 1920, 2560, 3800]) {
+    await page.setViewportSize({ width, height: 1000 });
+    await expect
+      .poll(
+        () =>
+          page
+            .locator("section[aria-label$=' 2030']:not([aria-label^='Summary'])")
+            .evaluateAll((els) => Math.min(...els.map((e) => e.getBoundingClientRect().width))),
+        { message: `at ${width} px` },
+      )
+      .toBeGreaterThanOrEqual(200);
+  }
+});
+
+test("on a wide page the list's cards sit side by side: what's ahead, and everything earlier", async ({
+  page,
+  request,
+}) => {
+  await twoRounds(request, "Calendar List Co");
+  await page.clock.setFixedTime(NOW);
+  await page.goto("/interviews?view=list");
+  const card = (name: string) =>
+    page.locator(".mantine-Card-root").filter({ has: page.getByRole("heading", { name, exact: true }) });
+  await expect(card("Coming up").getByText("Calendar List Co").first()).toBeVisible();
+  for (const [width, beside] of [
+    [1440, false],
+    [1920, true],
+    [2560, true],
+  ] as const) {
+    await page.setViewportSize({ width, height: 1000 });
+    await expect
+      .poll(
+        async () => {
+          const ahead = (await card("Coming up").boundingBox())!;
+          const earlier = (await card("Earlier and cancelled").boundingBox())!;
+          return beside
+            ? Math.round(ahead.y) === Math.round(earlier.y) && earlier.x >= ahead.x + ahead.width
+            : Math.round(ahead.x) === Math.round(earlier.x) && earlier.y > ahead.y;
+        },
+        { message: `at ${width} px` },
+      )
+      .toBe(true);
+  }
+});
+
 test("on a phone nothing scrolls sideways; the panel is under the month and above the year", async ({
   page,
   request,
 }) => {
   const { second } = await twoRounds(request, "Calendar Phone Co");
+  await unbookedRound(request, "Calendar Phone Unbooked Co"); // Still to book's table scrolls in its card
   await page.setViewportSize({ width: 375, height: 760 });
   for (const view of ["Month", "Year"]) {
     await openCalendar(page);
