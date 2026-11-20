@@ -50,6 +50,39 @@
 
 .main {
   min-width: 0;
+  container-type: inline-size;
+}
+
+/* A year's twelve small months, a column for about every 230 px of the calendar's own width, in a count that
+   divides twelve: 1, 2 from 400 px, 3 from 680 (a 1,440 px window, as before), 4 from 1,000, 6 from 1,600. */
+.yearGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 36px;
+}
+
+@container (min-width: 400px) {
+  .yearGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@container (min-width: 680px) {
+  .yearGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@container (min-width: 1000px) {
+  .yearGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@container (min-width: 1600px) {
+  .yearGrid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
 }
 
 .panel {

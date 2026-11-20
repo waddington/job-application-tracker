@@ -22,6 +22,7 @@ import { Page } from "../components/Page";
 import { TableSkeleton } from "../components/PageSkeleton";
 import { Pending } from "../components/QueryState";
 import { RecruiterLine } from "../components/RecruiterLine";
+import { SideScroll } from "../components/SideScroll";
 import { i18n } from "../i18n";
 import { formatDate } from "../utils/time";
 
@@ -140,8 +141,9 @@ export function OffersPage() {
           <Text size="sm" c="dimmed" mb="sm">
             {t("page.explain")}
           </Text>
-          <Table.ScrollContainer minWidth={240 + 220 * offers.length}>
-            <Table withColumnBorders verticalSpacing="sm">
+          {/* One table across the page; on a phone it scrolls sideways inside its card, never the page. */}
+          <SideScroll>
+            <Table withColumnBorders verticalSpacing="sm" miw={240 + 220 * offers.length}>
               {/* Each column is an offer, headed by its company and role: names, not labels. */}
               <Table.Thead data-records>
                 <Table.Tr>
@@ -192,7 +194,7 @@ export function OffersPage() {
                 ))}
               </Table.Tbody>
             </Table>
-          </Table.ScrollContainer>
+          </SideScroll>
         </Card>
       )}
     </Page>
