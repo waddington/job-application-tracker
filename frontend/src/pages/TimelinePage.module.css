@@ -16,6 +16,11 @@
 }
 .lane:hover,
 .lane:focus-within {
+  background: var(--mantine-primary-color-light);
+}
+/* In dark mode the primary's tint is too strong behind the dots: a grey step. */
+:where([data-mantine-color-scheme="dark"]) .lane:hover,
+:where([data-mantine-color-scheme="dark"]) .lane:focus-within {
   background: var(--mantine-color-default-hover);
 }
 @media (prefers-reduced-motion: reduce) {

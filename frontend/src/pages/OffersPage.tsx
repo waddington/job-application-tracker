@@ -141,9 +141,15 @@ export function OffersPage() {
           <Text size="sm" c="dimmed" mb="sm">
             {t("page.explain")}
           </Text>
-          {/* One table across the page; on a phone it scrolls sideways inside its card, never the page. */}
+          {/* One table across the page, each offer's column at most about 420 px so a few don't stretch across a
+              wide screen; on a phone it scrolls sideways inside its card, never the page. */}
           <SideScroll>
-            <Table withColumnBorders verticalSpacing="sm" miw={240 + 220 * offers.length}>
+            <Table
+              withColumnBorders
+              verticalSpacing="sm"
+              miw={240 + 220 * offers.length}
+              maw={240 + 420 * offers.length}
+            >
               {/* Each column is an offer, headed by its company and role: names, not labels. */}
               <Table.Thead data-records>
                 <Table.Tr>
