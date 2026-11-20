@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.24.44 (2026-11-20)
+
+- The app's new look, part eleven: Notes and Documents as grids of cards that take more columns on a wider screen, Insights' charts in the new palette (checked for contrast and colour-blind separation in light and dark), and Search's results as soft rows at a reading width. Badges in Search and Insights keep their whole words on a phone (#425).
+
 ## 1.24.43 (2026-11-20)
 
 - The app's new look, part ten: Interviews, Offers and the Timeline. On a wide screen Interviews puts Still to book beside a month (a year keeps the whole width, its months in more columns) and its list in two columns; a round's badges keep their whole words. Offers stays one comparison table with each offer's column at most about 420 px, and the Timeline sits on the new cards with its lanes scrolling inside theirs on a phone (#424).
