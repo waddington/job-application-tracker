@@ -96,7 +96,7 @@ the page beside the menu and the panel was about 100 px wide (the lead's call; K
   cancelled. Narrower, both stack as before. The Year view's small months take columns by the calendar's own width
   (1, 2, 3, 4 or 6, counts that divide twelve; 3 at a 1,440 px window as before, 4 at 1,920, 6 at 2,560) rather than
   the window's. A round's status badges keep their whole word and wrap rather than being cut. The calendar's cells are unchanged; the day numbers stay over their
-  dots up to 3,800 px (#405's test, now with Still to book beside). Offers stays one table across the page, each
+  dots up to 3,800 px (#405's test, now with Still to book beside). Offers stays one comparison table, each
   offer's column at most about 420 px (left-aligned in its card), in a `SideScroll` (the edge fade) on a phone; the Interviews tables too. The Timeline: its days on one soft
   card under Coming up, each day's heading as the eyebrow; the lanes on a soft card in a `SideScroll`, the lane
   under the pointer on a faint band (the primary's light tint; a grey step in dark), with room at the end so the last dot isn't cut. What each page shows is unchanged.

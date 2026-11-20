@@ -148,7 +148,7 @@ export function OffersPage() {
               withColumnBorders
               verticalSpacing="sm"
               miw={240 + 220 * offers.length}
-              maw={240 + 420 * offers.length}
+              maw={160 + 420 * offers.length} // the labels take about 160 px, each offer about 420
             >
               {/* Each column is an offer, headed by its company and role: names, not labels. */}
               <Table.Thead data-records>
