@@ -193,19 +193,25 @@ test("on a wide page Still to book sits beside the calendar, level with it; narr
     // Beside or under, nothing pushes the page sideways.
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   }
-  // A year's small months, beside it too, each keep room for their days.
+  // A year keeps the whole width, with Still to book under it, so its small months get three columns or more
+  // rather than two narrow ones beside it.
   await page.getByText("Year", { exact: true }).click();
-  for (const width of [1440, 1920, 2560, 3800]) {
+  for (const width of [1440, 1920, 1950, 2560, 3800]) {
     await page.setViewportSize({ width, height: 1000 });
     await expect
       .poll(
-        () =>
-          page
+        async () => {
+          const [cal, book] = [await box(page, calendarCard), await box(page, toBookCard)];
+          const tops = await page
             .locator("section[aria-label$=' 2030']:not([aria-label^='Summary'])")
-            .evaluateAll((els) => Math.min(...els.map((e) => e.getBoundingClientRect().width))),
+            .evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
+          return (
+            book.top > cal.top && book.width === cal.width && tops.filter((t) => t === tops[0]).length >= 3
+          );
+        },
         { message: `at ${width} px` },
       )
-      .toBeGreaterThanOrEqual(200);
+      .toBe(true);
   }
 });
 

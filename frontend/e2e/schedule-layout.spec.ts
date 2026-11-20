@@ -57,3 +57,21 @@ test("on a wide screen the Timeline's lanes fit their card, the last dot not cut
     .toBeLessThanOrEqual(0);
   await expect(scroller).not.toHaveAttribute("data-more-end");
 });
+
+for (const width of [375, 1920]) {
+  test(`at ${width} px every badge on Interviews shows its whole word`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    for (const view of ["list", "calendar"]) {
+      await page.goto(`/interviews?view=${view}`);
+      // The demo has a round moved twice ("Rescheduled ×2"), next to its status.
+      if (view === "list") await expect(page.getByText(/Rescheduled ×2/).first()).toBeVisible();
+      else await expect(page.locator("[data-testid=to-book]")).toBeVisible();
+      const cut = await page
+        .locator("main .mantine-Badge-label")
+        .evaluateAll((els) =>
+          els.filter((e) => e.scrollWidth > e.clientWidth).map((e) => e.textContent ?? ""),
+        );
+      expect(cut, `${view} at ${width} px`).toEqual([]);
+    }
+  });
+}

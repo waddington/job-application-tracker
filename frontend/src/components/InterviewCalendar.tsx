@@ -572,7 +572,8 @@ export function InterviewCalendar({ rounds }: { rounds: Interview[] }) {
   const panelFirst = !!phone && view === "year";
 
   return (
-    <Card withBorder padding="lg" className={classes.root}>
+    // The period on the root, so the page can lay out around a month and a year differently.
+    <Card withBorder padding="lg" className={classes.root} data-period={view}>
       <Stack gap="md">
         <Group justify="space-between" gap="sm">
           <Group gap={6} wrap="nowrap">

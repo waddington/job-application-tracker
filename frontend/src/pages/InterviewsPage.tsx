@@ -75,8 +75,9 @@ function InterviewTable({ interviews, empty }: { interviews: Interview[]; empty:
                   </Text>
                 </Table.Td>
                 <Table.Td>
-                  <Group gap={4}>
-                    <Badge size="sm" variant="light" color={roundStatus(i).color} miw="max-content">
+                  {/* Each badge keeps its whole word; two that don't fit side by side wrap. */}
+                  <Group gap={4} preventGrowOverflow={false} className={classes.badges}>
+                    <Badge size="sm" variant="light" color={roundStatus(i).color}>
                       {roundStatus(i).label}
                     </Badge>
                     <RescheduledBadge interview={i} />
