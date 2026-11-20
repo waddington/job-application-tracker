@@ -50,7 +50,7 @@ export function StageTable({ stats }: { stats: Stats }) {
             {rows.map((s) => (
               <Table.Tr key={s.id}>
                 <Table.Td>
-                  <Badge variant="light" color={s.color}>
+                  <Badge variant="light" color={s.color} miw="max-content">
                     {stageName(s)}
                   </Badge>
                 </Table.Td>
@@ -150,37 +150,37 @@ const SERIES: {
     key: "added",
     label: () => i18n.t("insights:weekly.added"),
     count: (count) => i18n.t("insights:weekly.countAdded", { count }),
-    color: "gray",
+    color: "var(--jat-weekly-added)",
   },
   {
     key: "applied",
     label: () => i18n.t("insights:weekly.applied"),
     count: (count) => i18n.t("insights:weekly.countApplied", { count }),
-    color: "blue",
+    color: "var(--jat-weekly-applied)",
   },
   {
     key: "moves",
     label: () => i18n.t("insights:weekly.moves"),
     count: (count) => i18n.t("insights:weekly.countMoves", { count }),
-    color: "teal",
+    color: "var(--jat-weekly-moves)",
   },
   {
     key: "interviews",
     label: () => i18n.t("insights:weekly.interviews"),
     count: (count) => i18n.t("insights:weekly.countInterviews", { count }),
-    color: "violet",
+    color: "var(--jat-weekly-interviews)",
   },
   {
     key: "calls",
     label: () => i18n.t("insights:weekly.calls"),
     count: (count) => i18n.t("insights:weekly.countCalls", { count }),
-    color: "orange",
+    color: "var(--jat-weekly-calls)",
   },
   {
     key: "pitched",
     label: () => i18n.t("insights:weekly.pitched"),
     count: (count) => i18n.t("insights:weekly.countPitched", { count }),
-    color: "grape",
+    color: "var(--jat-weekly-pitched)",
   },
 ];
 
@@ -211,7 +211,7 @@ export function WeeklyActivity() {
         <Group gap="md">
           {SERIES.map((s) => (
             <Group key={s.key} gap={6}>
-              <Box w={10} h={10} bg={`${s.color}.6`} style={{ borderRadius: 2 }} />
+              <Box w={10} h={10} style={{ background: s.color, borderRadius: 2 }} />
               <Text size="xs">{s.label()}</Text>
             </Group>
           ))}
@@ -253,8 +253,7 @@ export function WeeklyActivity() {
                           maw={12}
                           h={`${(100 * w[s.key]) / max}%`}
                           mih={w[s.key] ? 2 : 0}
-                          bg={`${s.color}.6`}
-                          style={{ borderRadius: "2px 2px 0 0" }}
+                          style={{ background: s.color, borderRadius: "2px 2px 0 0" }}
                         />
                       ))}
                     </Group>

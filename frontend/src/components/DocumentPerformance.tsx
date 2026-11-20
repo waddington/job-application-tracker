@@ -119,7 +119,10 @@ function RangeBar({ tally }: { tally: DocumentTally }) {
           h={10}
           left={`${low}%`}
           w={`${Math.max(high - low, 2)}%`}
-          style={{ background: "var(--mantine-color-indigo-light)", borderRadius: 5 }}
+          style={{
+            background: "color-mix(in srgb, var(--jat-chart-indigo) 40%, transparent)",
+            borderRadius: 5,
+          }}
         />
         <Box
           pos="absolute"
@@ -127,7 +130,7 @@ function RangeBar({ tally }: { tally: DocumentTally }) {
           w={8}
           h={8}
           left={`calc(${tally.interview_rate * 100}% - 4px)`}
-          style={{ background: "var(--mantine-color-indigo-filled)", borderRadius: "50%" }}
+          style={{ background: "var(--mantine-primary-color-filled)", borderRadius: "50%" }}
         />
       </Box>
     </Tooltip>

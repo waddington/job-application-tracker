@@ -78,6 +78,33 @@
   --jat-bar-pink: #f2c3d7;
   --jat-bar-ink: #2a1e3f;
 
+  /* Chart marks (Insights' flow diagram), under the stage colours' names: each colour's own hue at a middle step,
+     3:1 or more on a card in both modes. Neighbouring default stages (Interviewing and Final, Offer and Accepted)
+     differ in lightness as well as hue; every node also carries its name. */
+  --jat-chart-gray: #7d768a;
+  --jat-chart-dark: #585264;
+  --jat-chart-blue: #2477c3;
+  --jat-chart-cyan: #009aae;
+  --jat-chart-indigo: #3953b6;
+  --jat-chart-violet: #8474da;
+  --jat-chart-grape: #9b50af;
+  --jat-chart-teal: #127555;
+  --jat-chart-green: #3fa04e;
+  --jat-chart-lime: #679732;
+  --jat-chart-yellow: #ba8416;
+  --jat-chart-orange: #dc7630;
+  --jat-chart-red: #b63133;
+  --jat-chart-pink: #bc426b;
+
+  /* Weekly activity's six series, in its order (added, applied, moved, interviews, calls, pitched): every pair told
+     apart, with colour-blind vision too (the dataviz validator, all 15 pairs), each 3:1 or more on a card. */
+  --jat-weekly-added: #9b76e8;
+  --jat-weekly-applied: #cb7a49;
+  --jat-weekly-moves: #2752a0;
+  --jat-weekly-interviews: #8d2768;
+  --jat-weekly-calls: #206702;
+  --jat-weekly-pitched: #1f9b91;
+
   /* The website's eyebrow label. */
   --jat-eyebrow-size: 10.5px;
   --jat-eyebrow-tracking: 0.14em;
@@ -105,4 +132,29 @@
   --jat-p-plum: rgb(201 184 240 / 0.14);
   --jat-p-plum-hover: rgb(201 184 240 / 0.22);
   --jat-i-plum: #d9cdf6;
+
+  /* The charts' steps for a card in plum night, checked against it as the light ones are against white. */
+  --jat-chart-gray: #8f889c;
+  --jat-chart-dark: #777184;
+  --jat-chart-blue: #3b84ca;
+  --jat-chart-cyan: #1da5b9;
+  --jat-chart-indigo: #516fd5;
+  --jat-chart-violet: #9185de;
+  --jat-chart-grape: #ae62c2;
+  --jat-chart-teal: #348d6b;
+  --jat-chart-green: #4bac59;
+  --jat-chart-lime: #75a541;
+  --jat-chart-yellow: #bf881e;
+  --jat-chart-orange: #d67839;
+  --jat-chart-red: #cb4645;
+  --jat-chart-pink: #d1557c;
+
+  /* Lighter than the validator's dark band in places (lavender, amber, aqua): on plum night rather than near-black,
+     that's what keeps all 15 pairs apart. */
+  --jat-weekly-added: #b199ec;
+  --jat-weekly-applied: #eaa464;
+  --jat-weekly-moves: #1a84cf;
+  --jat-weekly-interviews: #b15086;
+  --jat-weekly-calls: #5b8231;
+  --jat-weekly-pitched: #42d4cd;
 }

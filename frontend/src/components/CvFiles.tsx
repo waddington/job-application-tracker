@@ -170,7 +170,8 @@ function CvFileRow({ file, onDismiss }: { file: CvFile; onDismiss: () => void })
   const elsewhere = file.sources.filter((x) => x.kind !== "application");
   return (
     <Group justify="space-between" wrap="wrap" gap="xs" align="flex-start">
-      <div style={{ minWidth: 0, flex: 1 }}>
+      {/* At least about 16 rem: in a narrow card the buttons go under it rather than squeezing it to a word a line. */}
+      <div style={{ minWidth: 0, flex: "1 1 16rem" }}>
         <Text size="sm" fw={600}>
           {file.name}{" "}
           <Text span size="xs" c="dimmed" fw={400}>

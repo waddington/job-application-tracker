@@ -1,4 +1,4 @@
-import { Anchor, Badge, Card, Group, Highlight, Loader, Stack, Text, Title } from "@mantine/core";
+import { Anchor, Badge, Card, Group, Highlight, Loader, Stack, Text, ThemeIcon, Title } from "@mantine/core";
 import {
   IconBriefcase,
   IconBuilding,
@@ -25,6 +25,8 @@ import { eventText } from "../components/eventText";
 import { PersonMarks } from "../components/GhostMark";
 import { useSearchResults, type SearchHit } from "../api/searchHooks";
 import { i18n } from "../i18n";
+import look from "../theme.module.css";
+import classes from "./SearchPage.module.css";
 
 const KINDS = {
   application: { label: "notes:search.kinds.application", icon: IconBriefcase },
@@ -108,10 +110,19 @@ function HitRow({ hit, words }: { hit: SearchHit; words: string[] }) {
     </>
   );
   return (
-    <Group wrap="nowrap" align="flex-start" gap="sm">
-      <KindIcon size={18} stroke={1.6} style={{ marginTop: 2, flexShrink: 0 }} />
+    <Group wrap="nowrap" align="flex-start" gap="sm" className={classes.hit} data-search-hit>
+      <ThemeIcon
+        variant="light"
+        radius="xl"
+        size={32}
+        aria-hidden
+        className={classes.lift}
+        style={{ flexShrink: 0 }}
+      >
+        <KindIcon size={17} stroke={1.6} />
+      </ThemeIcon>
       <Stack gap={2} style={{ minWidth: 0 }}>
-        <Group gap="xs" wrap="nowrap">
+        <Group gap="xs" className={classes.badges}>
           {!safe ? (
             title
           ) : external ? (
@@ -123,7 +134,7 @@ function HitRow({ hit, words }: { hit: SearchHit; words: string[] }) {
               {title}
             </Anchor>
           )}
-          <Badge size="xs" variant="light" color="gray">
+          <Badge size="xs" variant="light" color="gray" className={classes.lift}>
             {known ? i18n.t(known.label) : hit.kind}
           </Badge>
           {hit.archived && (
@@ -147,6 +158,10 @@ function HitRow({ hit, words }: { hit: SearchHit; words: string[] }) {
   );
 }
 
+/** The widest Search's cards go: a reading width, left-aligned as Offers' table is, so a hit's title, badges and
+ * text stay together on a wide screen. */
+const SEARCH_WIDTH = 960;
+
 /** Search results for ?q=, from the header box (P6 `search`). */
 export function SearchPage() {
   const { t } = useTranslation("notes");
@@ -162,19 +177,24 @@ export function SearchPage() {
         {isFetching && <Loader size="xs" />}
       </Group>
       {!q ? (
-        <Text c="dimmed" size="sm">
-          <Trans t={t} i18nKey="search.intro" components={{ key: <b /> }} />
-        </Text>
+        <Card withBorder p="xl" maw={SEARCH_WIDTH}>
+          <Text c="dimmed" size="sm" ta="center">
+            <Trans t={t} i18nKey="search.intro" components={{ key: <b /> }} />
+          </Text>
+        </Card>
       ) : isError ? (
         <Text c="red">{t("search.failed")}</Text>
       ) : !hits ? null : !hits.length ? (
-        <Text c="dimmed" size="sm">
-          {t("search.none", { q })}
-        </Text>
+        <Card withBorder p="xl" maw={SEARCH_WIDTH}>
+          <Text c="dimmed" size="sm" ta="center">
+            {t("search.none", { q })}
+          </Text>
+        </Card>
       ) : (
-        <Card withBorder>
-          <Stack gap="md">
-            <Text size="xs" c="dimmed">
+        <Card withBorder maw={SEARCH_WIDTH}>
+          <Stack gap={4}>
+            {/* The count as the eyebrow, lined up with the hits' icons. */}
+            <Text className={look.eyebrow} px={12} mb={4}>
               {hits.length === 50 ? t("search.first50") : t("search.count", { count: hits.length })}
             </Text>
             {hits.map((h) => (

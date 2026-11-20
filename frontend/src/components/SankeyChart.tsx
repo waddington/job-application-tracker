@@ -6,8 +6,10 @@ import { useTranslation } from "react-i18next";
 
 import type { Flow, FlowLink, FlowNode } from "../api/insightHooks";
 import { i18n } from "../i18n";
+import { chartColor } from "../theme";
 import { stageName } from "../utils/stageName";
 import { Loading } from "./QueryState";
+import { SideScroll } from "./SideScroll";
 
 type Node = SankeyNode<FlowNode, FlowLink>;
 type Link = SankeyLink<FlowNode, FlowLink>;
@@ -165,8 +167,6 @@ function layoutAt(flow: Flow, width: number, height: number, order?: Map<string,
   );
 }
 
-const colour = (name: string) => `var(--mantine-color-${name}-6)`;
-
 // A code the API adds without text here is a type error.
 const NODE_NAMES = {
   source_recruiter: "insights:sankey.nodes.source_recruiter",
@@ -274,91 +274,98 @@ export function SankeyChart({
   const caption = hoveredLink ? linkText(hoveredLink) : hoveredNode ? nodeText(hoveredNode) : null;
 
   return (
-    <div ref={ref} style={{ overflowX: "auto" }}>
-      <svg
-        width={width}
-        height={height}
-        viewBox={`0 0 ${width} ${height}`}
-        role="img"
-        aria-label={
-          label ??
-          (unit === "role"
-            ? t("sankey.chartRoles", { count: flow.applications })
-            : t("sankey.chartApplications", { count: flow.applications }))
-        }
-        style={{ display: "block" }}
-      >
-        <g fill="none">
-          {layout.links.map((l) => {
-            const key = linkKey(l);
-            const dim = hover !== null && hover !== key && !touches(l, hover);
+    <div ref={ref}>
+      {/* On a phone the diagram scrolls sideways in its own space, an edge fading while there is more past it. */}
+      <SideScroll>
+        <svg
+          width={width}
+          height={height}
+          viewBox={`0 0 ${width} ${height}`}
+          role="img"
+          aria-label={
+            label ??
+            (unit === "role"
+              ? t("sankey.chartRoles", { count: flow.applications })
+              : t("sankey.chartApplications", { count: flow.applications }))
+          }
+          style={{ display: "block" }}
+        >
+          <g fill="none">
+            {layout.links.map((l) => {
+              const key = linkKey(l);
+              const dim = hover !== null && hover !== key && !touches(l, hover);
+              return (
+                <path
+                  key={key}
+                  d={path(l) ?? undefined}
+                  stroke={chartColor((l.source as Node).color)}
+                  strokeWidth={Math.max(1, l.width ?? 1)}
+                  strokeOpacity={dim ? 0.12 : hover === key ? 0.6 : 0.35}
+                  onMouseEnter={() => setHover(key)}
+                  onMouseLeave={() => setHover(null)}
+                >
+                  <title>{linkText(l)}</title>
+                </path>
+              );
+            })}
+          </g>
+          {layout.nodes.map((n) => {
+            const x0 = n.x0 ?? 0;
+            const x1 = n.x1 ?? 0;
+            const y0 = n.y0 ?? 0;
+            const y1 = n.y1 ?? 0;
+            // Labels sit to the right of each node; LABEL_SPACE keeps the last column's on screen.
+            // One that won't fit before the next column wraps onto more lines.
+            const next = Math.min(...layout.nodes.map((m) => m.x0 ?? 0).filter((x) => x > x1));
+            const lines = wrap(n.name, n.reached, (Number.isFinite(next) ? next - x1 : LABEL_SPACE) - 14);
             return (
-              <path
-                key={key}
-                d={path(l) ?? undefined}
-                stroke={colour((l.source as Node).color)}
-                strokeWidth={Math.max(1, l.width ?? 1)}
-                strokeOpacity={dim ? 0.12 : hover === key ? 0.6 : 0.35}
-                onMouseEnter={() => setHover(key)}
-                onMouseLeave={() => setHover(null)}
-              >
-                <title>{linkText(l)}</title>
-              </path>
+              <g key={n.id} onMouseEnter={() => setHover(n.id)} onMouseLeave={() => setHover(null)}>
+                <rect
+                  x={x0}
+                  y={y0}
+                  width={x1 - x0}
+                  height={Math.max(2, y1 - y0)}
+                  fill={chartColor(n.color)}
+                  rx={2}
+                  opacity={hover !== null && hover !== n.id && !nodeTouches(n, hover) ? 0.4 : 1}
+                >
+                  <title>{nodeText(n)}</title>
+                </rect>
+                <text
+                  x={x1 + 6}
+                  y={(y0 + y1) / 2}
+                  fontSize={12}
+                  fill="var(--mantine-color-text)"
+                  // A halo in the page colour keeps a label readable where it crosses a flow.
+                  stroke="var(--mantine-color-body)"
+                  strokeWidth={3}
+                  paintOrder="stroke"
+                  style={{ pointerEvents: "none" }}
+                >
+                  {lines.map((line, i) => {
+                    const count = i === lines.length - 1 ? ` ${n.reached}` : "";
+                    const text = count ? line.slice(0, line.length - count.length) : line;
+                    return (
+                      <tspan
+                        key={i}
+                        x={x1 + 6}
+                        dy={i === 0 ? `${0.35 - (lines.length - 1) * 0.6}em` : "1.2em"}
+                      >
+                        {text}
+                        {count && (
+                          <tspan fill="var(--mantine-color-dimmed)" fontWeight={600}>
+                            {count}
+                          </tspan>
+                        )}
+                      </tspan>
+                    );
+                  })}
+                </text>
+              </g>
             );
           })}
-        </g>
-        {layout.nodes.map((n) => {
-          const x0 = n.x0 ?? 0;
-          const x1 = n.x1 ?? 0;
-          const y0 = n.y0 ?? 0;
-          const y1 = n.y1 ?? 0;
-          // Labels sit to the right of each node; LABEL_SPACE keeps the last column's on screen.
-          // One that won't fit before the next column wraps onto more lines.
-          const next = Math.min(...layout.nodes.map((m) => m.x0 ?? 0).filter((x) => x > x1));
-          const lines = wrap(n.name, n.reached, (Number.isFinite(next) ? next - x1 : LABEL_SPACE) - 14);
-          return (
-            <g key={n.id} onMouseEnter={() => setHover(n.id)} onMouseLeave={() => setHover(null)}>
-              <rect
-                x={x0}
-                y={y0}
-                width={x1 - x0}
-                height={Math.max(2, y1 - y0)}
-                fill={colour(n.color)}
-                rx={2}
-                opacity={hover !== null && hover !== n.id && !nodeTouches(n, hover) ? 0.4 : 1}
-              >
-                <title>{nodeText(n)}</title>
-              </rect>
-              <text
-                x={x1 + 6}
-                y={(y0 + y1) / 2}
-                fontSize={12}
-                fill="var(--mantine-color-text)"
-                // A halo in the page colour keeps a label readable where it crosses a flow.
-                stroke="var(--mantine-color-body)"
-                strokeWidth={3}
-                paintOrder="stroke"
-                style={{ pointerEvents: "none" }}
-              >
-                {lines.map((line, i) => {
-                  const count = i === lines.length - 1 ? ` ${n.reached}` : "";
-                  const text = count ? line.slice(0, line.length - count.length) : line;
-                  return (
-                    <tspan key={i} x={x1 + 6} dy={i === 0 ? `${0.35 - (lines.length - 1) * 0.6}em` : "1.2em"}>
-                      {text}
-                      {count && (
-                        <tspan fill="var(--mantine-color-dimmed)" fontWeight={600}>
-                          {count}
-                        </tspan>
-                      )}
-                    </tspan>
-                  );
-                })}
-              </text>
-            </g>
-          );
-        })}
-      </svg>
+        </svg>
+      </SideScroll>
       <Text size="sm" c={caption ? undefined : "dimmed"} mt="xs">
         {caption ?? t("sankey.hint")}
       </Text>

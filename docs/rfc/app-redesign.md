@@ -100,6 +100,22 @@ the page beside the menu and the panel was about 100 px wide (the lead's call; K
   offer's column at most about 420 px (left-aligned in its card), in a `SideScroll` (the edge fade) on a phone; the Interviews tables too. The Timeline: its days on one soft
   card under Coming up, each day's heading as the eyebrow; the lanes on a soft card in a `SideScroll`, the lane
   under the pointer on a faint band (the primary's light tint; a grey step in dark), with room at the end so the last dot isn't cut. What each page shows is unchanged.
+  *As built (#425, Notes, Documents, Insights and Search):* the notes' cards and the documents' cards (the CV files card
+  first) in container grids by the list's own width, each card its own height and a row's tops level: notes a column
+  for about every 400 px up to five (2 at a 1,440 px window, 4 at 1,920, 5 at 2,560), documents about every 520 px up
+  to four (2, 3, 4). The order is unchanged, row by row; a note still opens in its card or the editor dialog. Insights'
+  flow diagrams take `--jat-chart-<colour>` tokens (tokens.css): each stage colour's own hue at a middle step, 3:1 or
+  more on a card in light and dark, neighbouring default stages apart in lightness too (an unknown colour name falls
+  back to the chart grey). Some neighbours stay close because their stage or source colours are (Declined orange and
+  Accepted green, the greys; the whole picture's sources *Through a recruiter* indigo and *Referred* grape): they rely
+  on the names every node carries. Weekly activity has six series tokens of its own (lavender, amber, blue, wine,
+  green, aqua in its order), every one of the 15 pairs apart with normal and colour-blind vision (the dataviz
+  validator, both modes) and 3:1 or more on a card; in dark three sit lighter than the validator's dark band, which
+  assumes a near-black surface, to keep the pairs apart on plum. The CV range bar is a wash of the chart indigo with a
+  plum dot. The diagrams scroll sideways in a `SideScroll` on a phone. Search: its cards at most 960 px, left-aligned;
+  each hit a soft row (the plum wash while pointed at or focused, its icon and kind badge then lifted onto the card's
+  white) with its kind's icon in a plum circle, the count as the eyebrow, the intro and "nothing matches" on a soft
+  card. Badges there, in Insights' tables and on the documents keep their whole word; a long title wraps.
 
 **Phones (below 768 px).** A glass bottom bar of four tabs (Today, Applications, Interviews, Notes) plus **More**,
 which opens a sheet with the other seven pages as an icon grid. It replaces the slide-out menu and its burger. Panels

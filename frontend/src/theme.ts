@@ -256,6 +256,13 @@ const dialog = {
  */
 export const barColor = (color: string) => `var(--jat-bar-${color}, var(--mantine-color-${color}-filled))`;
 
+/**
+ * A stage colour as a chart mark (tokens.css), at 3:1 or more on a card in either mode; a Mantine colour without one
+ * keeps Mantine's middle shade, and a name that's neither (a typo in the workflow) the chart grey.
+ */
+export const chartColor = (color: string) =>
+  `var(--jat-chart-${color}, var(--mantine-color-${color}-6, var(--jat-chart-gray)))`;
+
 /** Whether a button is the plum (primary) filled one, which carries the website's gradient. */
 const isPlumFilled = (primary: string, props: { variant?: string; color?: string }) =>
   (props.variant ?? "filled") === "filled" && (props.color === undefined || props.color === primary);

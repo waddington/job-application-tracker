@@ -367,7 +367,10 @@ describe("insights", () => {
     expect(chart.querySelectorAll("path")).toHaveLength(3);
     expect(chart.querySelectorAll("rect")).toHaveLength(4);
     // Stage colours come from the workflow.
-    expect(chart.querySelector("rect")).toHaveAttribute("fill", "var(--mantine-color-blue-6)");
+    expect(chart.querySelector("rect")).toHaveAttribute(
+      "fill",
+      "var(--jat-chart-blue, var(--mantine-color-blue-6, var(--jat-chart-gray)))",
+    );
 
     fireEvent.mouseEnter(chart.querySelectorAll("path")[1]!);
     expect(
