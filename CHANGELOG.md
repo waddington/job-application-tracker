@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.24.43 (2026-11-20)
+
+- The app's new look, part ten: Interviews, Offers and the Timeline. On a wide screen Interviews puts Still to book beside a month (a year keeps the whole width, its months in more columns) and its list in two columns; a round's badges keep their whole words. Offers stays one comparison table with each offer's column at most about 420 px, and the Timeline sits on the new cards with its lanes scrolling inside theirs on a phone (#424).
+
 ## 1.24.42 (2026-11-19)
 
 - The app's new look, part nine: the Roles, Recruiters and Companies lists. The companies table sits on one of the new cards and scrolls inside it on a phone, recruiters' tiles fill a wide screen (up to six across), and the views at the top of Roles and Recruiters scroll in their own row, so nothing pushes a phone's page sideways. A row or table with more past its edge fades there, here and on the Applications list (#423).

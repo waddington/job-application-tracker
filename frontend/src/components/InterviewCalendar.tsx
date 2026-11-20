@@ -8,7 +8,6 @@ import {
   Paper,
   Progress,
   SegmentedControl,
-  SimpleGrid,
   Stack,
   Text,
   Title,
@@ -546,7 +545,9 @@ export function InterviewCalendar({ rounds }: { rounds: Interview[] }) {
     view === "month" ? (
       <DotMonth month={first} days={days} today={today} now={now} chosen={day} onChoose={choose} large />
     ) : (
-      <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing={36} verticalSpacing={36}>
+      // The small months take columns by the calendar's own width (InterviewCalendar.module.css), since Still
+      // to book can sit beside it.
+      <div className={classes.yearGrid}>
         {months.map((m) => (
           <DotMonth
             key={m.month}
@@ -560,7 +561,7 @@ export function InterviewCalendar({ rounds }: { rounds: Interview[] }) {
             stats={m.stats}
           />
         ))}
-      </SimpleGrid>
+      </div>
     );
   const panel = (
     <div className={classes.panel}>
@@ -571,7 +572,8 @@ export function InterviewCalendar({ rounds }: { rounds: Interview[] }) {
   const panelFirst = !!phone && view === "year";
 
   return (
-    <Card withBorder padding="lg" className={classes.root}>
+    // The period on the root, so the page can lay out around a month and a year differently.
+    <Card withBorder padding="lg" className={classes.root} data-period={view}>
       <Stack gap="md">
         <Group justify="space-between" gap="sm">
           <Group gap={6} wrap="nowrap">

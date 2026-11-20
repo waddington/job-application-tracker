@@ -1,0 +1,30 @@
+/* The Timeline (docs/rfc/app-redesign.md §2, Pages): soft cards on the page's drifting background. */
+
+/* The list's days on one card, a little room between one day and the next. */
+.days > * + * {
+  margin-top: var(--mantine-spacing-lg);
+}
+
+/* A lane: its name, then its dots along the line. The lane under the pointer takes a faint band, so its dots
+   read with its name across a wide screen. */
+.lane {
+  display: flex;
+  align-items: center;
+  min-height: 28px;
+  border-radius: var(--mantine-radius-sm);
+  transition: background 120ms;
+}
+.lane:hover,
+.lane:focus-within {
+  background: var(--mantine-primary-color-light);
+}
+/* In dark mode the primary's tint is too strong behind the dots: a grey step. */
+:where([data-mantine-color-scheme="dark"]) .lane:hover,
+:where([data-mantine-color-scheme="dark"]) .lane:focus-within {
+  background: var(--mantine-color-default-hover);
+}
+@media (prefers-reduced-motion: reduce) {
+  .lane {
+    transition: none;
+  }
+}

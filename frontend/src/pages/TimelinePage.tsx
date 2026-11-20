@@ -26,6 +26,7 @@ import { Page } from "../components/Page";
 import { movedRoundText, moveLine } from "../components/eventText";
 import { PersonName } from "../components/GhostMark";
 import { QueryState } from "../components/QueryState";
+import { SideScroll } from "../components/SideScroll";
 import { timelineDetail, timelineTitle } from "../components/timelineTitle";
 import { useAgencies, useCompanies, useContacts } from "../api/hooks";
 import {
@@ -36,7 +37,9 @@ import {
   type TimelineFilters,
   type TimelineItem,
 } from "../api/timelineHooks";
+import look from "../theme.module.css";
 import { formatDay } from "../utils/format";
+import classes from "./TimelinePage.module.css";
 
 const PERIODS = [
   { value: "30", label: "timeline:period.days30" },
@@ -191,7 +194,7 @@ function ListView({ items, now }: { items: TimelineItem[]; now: string }) {
   return (
     <Stack gap="md">
       {ahead.length > 0 && (
-        <Card withBorder padding="md">
+        <Card withBorder>
           <Title order={3} size="h5" mb={4}>
             {t("comingUp")}
           </Title>
@@ -200,16 +203,21 @@ function ListView({ items, now }: { items: TimelineItem[]; now: string }) {
           ))}
         </Card>
       )}
-      {[...days].map(([day, dayItems]) => (
-        <Box key={day}>
-          <Title order={3} size="h6" c="dimmed" mb={2}>
-            {dayHeading(day, t, i18n.language)}
-          </Title>
-          {dayItems.map((item) => (
-            <TimelineRow key={item.id} item={item} />
+      {days.size > 0 && (
+        // Everything that's happened on one soft card, each day under a small mono heading.
+        <Card withBorder className={classes.days}>
+          {[...days].map(([day, dayItems]) => (
+            <Box key={day}>
+              <Title order={3} size="h6" className={look.eyebrow} mb={4}>
+                {dayHeading(day, t, i18n.language)}
+              </Title>
+              {dayItems.map((item) => (
+                <TimelineRow key={item.id} item={item} />
+              ))}
+            </Box>
           ))}
-        </Box>
-      ))}
+        </Card>
+      )}
     </Stack>
   );
 }
@@ -313,119 +321,123 @@ function LanesView({ items, now, since }: { items: TimelineItem[]; now: string; 
           {i18n.t(LANE_BY.find((b) => b.value === by)!.empty)}
         </Text>
       ) : (
-        <Card withBorder padding="sm" style={{ overflowX: "auto" }}>
-          <Box style={{ minWidth: 640 }}>
-            <Box style={{ display: "flex" }}>
-              <Box w={label} style={{ flexShrink: 0 }} />
-              <Box style={{ position: "relative", flex: 1, height: 18 }}>
-                {ticks.map((tick) => (
-                  <Text
-                    key={tick.valueOf()}
-                    size="xs"
-                    c="dimmed"
-                    style={{
-                      position: "absolute",
-                      left: `${pct(tick.toISOString())}%`,
-                      transform: "translateX(-50%)",
-                    }}
-                  >
-                    {formatDay(tick, short ? "dayMonth" : "monthYear", lang)}
-                  </Text>
-                ))}
-              </Box>
-            </Box>
-            {shown.map((lane) => {
-              const first = lane.items.at(-1)!;
-              const last = lane.items[0]!;
-              return (
-                <Box key={lane.key} style={{ display: "flex", alignItems: "center", minHeight: 28 }}>
-                  <Anchor
-                    component={Link}
-                    to={lane.href}
-                    size="sm"
-                    w={label}
-                    pr="sm"
-                    truncate
-                    style={{ flexShrink: 0 }}
-                    title={lane.label}
-                  >
-                    {lane.personId ? (
-                      <PersonName id={lane.personId} name={lane.label} size={12} />
-                    ) : (
-                      lane.label
-                    )}
-                  </Anchor>
-                  <Box style={{ position: "relative", flex: 1, height: 28 }}>
-                    <Box
+        // On a soft card; on a phone the lanes scroll sideways inside it, with a fade where there's more.
+        <Card withBorder padding="md">
+          <SideScroll>
+            {/* Room on the right for a dot at the very end (now, or the latest), so it isn't cut or faded. */}
+            <Box style={{ minWidth: 640, paddingRight: 8 }}>
+              <Box style={{ display: "flex" }}>
+                <Box w={label} style={{ flexShrink: 0 }} />
+                <Box style={{ position: "relative", flex: 1, height: 18 }}>
+                  {ticks.map((tick) => (
+                    <Text
+                      key={tick.valueOf()}
+                      size="xs"
+                      c="dimmed"
                       style={{
                         position: "absolute",
-                        top: 13,
-                        height: 2,
-                        left: `${pct(first.at)}%`,
-                        width: `${Math.max(pct(last.at) - pct(first.at), 0)}%`,
-                        background: "var(--mantine-color-default-border)",
+                        left: `${pct(tick.toISOString())}%`,
+                        transform: "translateX(-50%)",
                       }}
-                    />
-                    <Box
-                      aria-hidden
-                      style={{
-                        position: "absolute",
-                        top: 0,
-                        bottom: 0,
-                        left: `${pct(now)}%`,
-                        borderLeft: "1px dashed var(--mantine-color-red-5)",
-                      }}
-                    />
-                    <Box
-                      component="ul"
-                      aria-label={lane.label}
-                      style={{ position: "absolute", inset: 0, margin: 0, padding: 0, listStyle: "none" }}
                     >
-                      {lane.items.map((item) => {
-                        const cat = categoryOf(item.category);
-                        const date = formatDay(dayOf(item), "dayMonthYear", lang);
-                        const when = item.all_day
-                          ? date
-                          : t("dateTime", { date, time: timeOf(item, t, lang) });
-                        const title = timelineTitle(item);
-                        return (
-                          <li key={item.id}>
-                            <Tooltip label={t("lanes.dotHover", { when, title })} withArrow>
-                              <Box
-                                component="button"
-                                aria-label={t("lanes.dot", {
-                                  when,
-                                  kind: i18n.t(cat.one),
-                                  title,
-                                })}
-                                onClick={() => router.history.push(hrefOf(item))}
-                                style={{
-                                  position: "absolute",
-                                  top: 8,
-                                  left: `calc(${pct(item.at)}% - 6px)`,
-                                  width: 12,
-                                  height: 12,
-                                  padding: 0,
-                                  borderRadius: "50%",
-                                  border: isAhead(item, now)
-                                    ? `2px solid var(--mantine-color-${cat.color}-6)`
-                                    : "2px solid var(--mantine-color-body)",
-                                  background: isAhead(item, now)
-                                    ? "var(--mantine-color-body)"
-                                    : `var(--mantine-color-${cat.color}-6)`,
-                                  cursor: "pointer",
-                                }}
-                              />
-                            </Tooltip>
-                          </li>
-                        );
-                      })}
+                      {formatDay(tick, short ? "dayMonth" : "monthYear", lang)}
+                    </Text>
+                  ))}
+                </Box>
+              </Box>
+              {shown.map((lane) => {
+                const first = lane.items.at(-1)!;
+                const last = lane.items[0]!;
+                return (
+                  <Box key={lane.key} className={classes.lane}>
+                    <Anchor
+                      component={Link}
+                      to={lane.href}
+                      size="sm"
+                      w={label}
+                      pr="sm"
+                      truncate
+                      style={{ flexShrink: 0 }}
+                      title={lane.label}
+                    >
+                      {lane.personId ? (
+                        <PersonName id={lane.personId} name={lane.label} size={12} />
+                      ) : (
+                        lane.label
+                      )}
+                    </Anchor>
+                    <Box style={{ position: "relative", flex: 1, height: 28 }}>
+                      <Box
+                        style={{
+                          position: "absolute",
+                          top: 13,
+                          height: 2,
+                          left: `${pct(first.at)}%`,
+                          width: `${Math.max(pct(last.at) - pct(first.at), 0)}%`,
+                          background: "var(--mantine-color-default-border)",
+                        }}
+                      />
+                      <Box
+                        aria-hidden
+                        style={{
+                          position: "absolute",
+                          top: 0,
+                          bottom: 0,
+                          left: `${pct(now)}%`,
+                          borderLeft: "1px dashed var(--mantine-color-red-5)",
+                        }}
+                      />
+                      <Box
+                        component="ul"
+                        aria-label={lane.label}
+                        style={{ position: "absolute", inset: 0, margin: 0, padding: 0, listStyle: "none" }}
+                      >
+                        {lane.items.map((item) => {
+                          const cat = categoryOf(item.category);
+                          const date = formatDay(dayOf(item), "dayMonthYear", lang);
+                          const when = item.all_day
+                            ? date
+                            : t("dateTime", { date, time: timeOf(item, t, lang) });
+                          const title = timelineTitle(item);
+                          return (
+                            <li key={item.id}>
+                              <Tooltip label={t("lanes.dotHover", { when, title })} withArrow>
+                                <Box
+                                  component="button"
+                                  aria-label={t("lanes.dot", {
+                                    when,
+                                    kind: i18n.t(cat.one),
+                                    title,
+                                  })}
+                                  onClick={() => router.history.push(hrefOf(item))}
+                                  style={{
+                                    position: "absolute",
+                                    top: 8,
+                                    left: `calc(${pct(item.at)}% - 6px)`,
+                                    width: 12,
+                                    height: 12,
+                                    padding: 0,
+                                    borderRadius: "50%",
+                                    border: isAhead(item, now)
+                                      ? `2px solid var(--mantine-color-${cat.color}-6)`
+                                      : "2px solid var(--mantine-color-body)",
+                                    background: isAhead(item, now)
+                                      ? "var(--mantine-color-body)"
+                                      : `var(--mantine-color-${cat.color}-6)`,
+                                    cursor: "pointer",
+                                  }}
+                                />
+                              </Tooltip>
+                            </li>
+                          );
+                        })}
+                      </Box>
                     </Box>
                   </Box>
-                </Box>
-              );
-            })}
-          </Box>
+                );
+              })}
+            </Box>
+          </SideScroll>
         </Card>
       )}
       {lanes.length > LANE_LIMIT && (
@@ -485,7 +497,7 @@ function useTimelineSearch() {
 function TimelineSkeleton({ view }: { view: "list" | "lanes" }) {
   if (view === "lanes")
     return (
-      <Card withBorder padding="sm">
+      <Card withBorder padding="md">
         <Skeleton height={12} width={160} ml={220} mb="sm" radius="sm" />
         {[0, 1, 2, 3, 4].map((i) => (
           <Group key={i} gap="sm" wrap="nowrap" h={28}>
@@ -496,7 +508,7 @@ function TimelineSkeleton({ view }: { view: "list" | "lanes" }) {
       </Card>
     );
   return (
-    <Stack gap="md">
+    <Card withBorder className={classes.days}>
       {[0, 1].map((day) => (
         <Box key={day}>
           <Skeleton height={12} width={120} mb={6} radius="sm" />
@@ -509,7 +521,7 @@ function TimelineSkeleton({ view }: { view: "list" | "lanes" }) {
           ))}
         </Box>
       ))}
-    </Stack>
+    </Card>
   );
 }
 

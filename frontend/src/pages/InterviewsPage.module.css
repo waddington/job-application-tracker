@@ -1,0 +1,51 @@
+/* The Interviews page (docs/rfc/app-redesign.md §2, Pages). It lays out by the room the page has, not the window's
+   width (container queries), as Today and a record's page do. From 1,600 px of page (about a 1,890 px window):
+   - a month's calendar with Still to book beside it, at least 720 px so its table fits without scrolling; the
+     calendar keeps the rest, its days then at least about 65 px wide (a 1,920 px window). A year keeps the width;
+   - the list's cards in two columns: what's ahead (Needs a new time, Coming up) beside everything earlier.
+   Narrower, everything stacks as before. Each card is as tall as its content, and the columns start level. */
+.room {
+  container-type: inline-size;
+}
+
+.arrange {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--mantine-spacing-md);
+  align-items: start;
+}
+
+/* The list's ahead column: its cards one under the other, spaced as the page's own. */
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-md);
+  min-width: 0; /* a table scrolls in its card rather than widening the column */
+}
+
+.arrange > * {
+  min-width: 0;
+}
+
+/* A round's status badges keep their whole word (a badge cuts its label short when squeezed); they wrap instead. */
+.badges > * {
+  min-width: max-content;
+}
+
+@container (min-width: 1600px) {
+  .arrange[data-arrange="calendar"] {
+    grid-template-columns: minmax(0, 1.5fr) minmax(720px, 1fr);
+  }
+  /* Only beside a month: beside it, a year's small months would get two narrow columns and six rows, so a year
+     keeps the whole width (up to six columns) with Still to book under it. */
+  .arrange[data-arrange="calendar"]:has([data-period="year"]) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  /* Nothing to book: the calendar keeps the whole width. */
+  .arrange[data-arrange="calendar"] > :only-child {
+    grid-column: 1 / -1;
+  }
+  .arrange[data-arrange="list"] {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}

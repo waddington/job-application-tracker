@@ -14,9 +14,11 @@ import { bothQueries, Pending } from "../components/QueryState";
 import { RescheduledBadge, wasText } from "../components/Reschedule";
 import { RecruiterLine } from "../components/RecruiterLine";
 import { RoundActions } from "../components/RoundActions";
+import { SideScroll } from "../components/SideScroll";
 import { toBook } from "../utils/calendar";
 import { roundLabel } from "../utils/rounds";
 import text from "../text.module.css";
+import classes from "./InterviewsPage.module.css";
 import { formatDateTime } from "../utils/time";
 
 function InterviewTable({ interviews, empty }: { interviews: Interview[]; empty: string }) {
@@ -30,8 +32,8 @@ function InterviewTable({ interviews, empty }: { interviews: Interview[]; empty:
   }
   return (
     // On a phone the row is wider than the card: it scrolls sideways, so its buttons can be reached.
-    <Table.ScrollContainer minWidth={640}>
-      <Table highlightOnHover>
+    <SideScroll>
+      <Table highlightOnHover miw={640}>
         <Table.Thead>
           <Table.Tr>
             <Table.Th>{t("page.when")}</Table.Th>
@@ -73,7 +75,8 @@ function InterviewTable({ interviews, empty }: { interviews: Interview[]; empty:
                   </Text>
                 </Table.Td>
                 <Table.Td>
-                  <Group gap={4}>
+                  {/* Each badge keeps its whole word; two that don't fit side by side wrap. */}
+                  <Group gap={4} preventGrowOverflow={false} className={classes.badges}>
                     <Badge size="sm" variant="light" color={roundStatus(i).color}>
                       {roundStatus(i).label}
                     </Badge>
@@ -88,7 +91,7 @@ function InterviewTable({ interviews, empty }: { interviews: Interview[]; empty:
           })}
         </Table.Tbody>
       </Table>
-    </Table.ScrollContainer>
+    </SideScroll>
   );
 }
 
@@ -96,7 +99,8 @@ type View = "calendar" | "list";
 
 /**
  * Every interview round across applications: a calendar (the first choice), with the rounds still to
- * book under it; or the list, what's coming up, then everything else, newest first.
+ * book under it (beside it on a wide page); or the list, what's coming up, then everything else, newest
+ * first (side by side on a wide page).
  */
 export function InterviewsPage() {
   const { t } = useTranslation("interviews");
@@ -160,40 +164,48 @@ export function InterviewsPage() {
           }
         />
       ) : view === "calendar" ? (
-        <>
-          <InterviewCalendar rounds={all} />
-          {unbooked.length > 0 && (
-            <Card withBorder>
-              <Title order={4} mb="sm">
-                {t("calendar.toBook")}
-              </Title>
-              <InterviewTable interviews={unbooked} empty="" />
-            </Card>
-          )}
-        </>
+        // On a wide page, Still to book sits beside the calendar (InterviewsPage.module.css).
+        <div className={classes.room}>
+          <div className={classes.arrange} data-arrange="calendar">
+            <InterviewCalendar rounds={all} />
+            {unbooked.length > 0 && (
+              <Card withBorder data-testid="to-book">
+                <Title order={4} mb="sm">
+                  {t("calendar.toBook")}
+                </Title>
+                <InterviewTable interviews={unbooked} empty="" />
+              </Card>
+            )}
+          </div>
+        </div>
       ) : (
-        <>
-          {waiting.length > 0 && (
+        // On a wide page, what's ahead beside everything earlier.
+        <div className={classes.room}>
+          <div className={classes.arrange} data-arrange="list">
+            <div className={classes.column}>
+              {waiting.length > 0 && (
+                <Card withBorder>
+                  <Title order={4} mb="sm">
+                    {t("page.needsNewTime")}
+                  </Title>
+                  <InterviewTable interviews={waiting} empty="" />
+                </Card>
+              )}
+              <Card withBorder>
+                <Title order={4} mb="sm">
+                  {t("page.comingUp")}
+                </Title>
+                <InterviewTable interviews={upcoming ?? []} empty={t("page.comingUpEmpty")} />
+              </Card>
+            </div>
             <Card withBorder>
               <Title order={4} mb="sm">
-                {t("page.needsNewTime")}
+                {t("page.earlier")}
               </Title>
-              <InterviewTable interviews={waiting} empty="" />
+              <InterviewTable interviews={rest} empty={t("page.earlierEmpty")} />
             </Card>
-          )}
-          <Card withBorder>
-            <Title order={4} mb="sm">
-              {t("page.comingUp")}
-            </Title>
-            <InterviewTable interviews={upcoming ?? []} empty={t("page.comingUpEmpty")} />
-          </Card>
-          <Card withBorder>
-            <Title order={4} mb="sm">
-              {t("page.earlier")}
-            </Title>
-            <InterviewTable interviews={rest} empty={t("page.earlierEmpty")} />
-          </Card>
-        </>
+          </div>
+        </div>
       )}
     </Page>
   );
