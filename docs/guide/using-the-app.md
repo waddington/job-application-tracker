@@ -233,7 +233,8 @@ Archived applications are included.
   agencies and people added, other. Everything but *Companies, agencies and people added* is
   ticked to start with;
   **Everything**, **Usual** and **None** set them in one go.
-- **List** groups entries by day. **Lanes** draws rows against time: dots for what happened
+- **List** groups entries by day, on one card under *Coming up*. **Lanes** draws rows against time (on a
+  phone they scroll sideways inside their card): dots for what happened
   (hollow for what's ahead) and a dashed line for now. By default it's **one row per role**,
   so a role's whole story reads left to right: the call it came up on, the pitch, then its
   application's stage moves, interviews and offers, or passing on it. Switch to one row per
@@ -614,7 +615,7 @@ Every interview round across all applications, as a **Calendar** (what the page 
 `/interviews?view=list` or `?view=calendar` opens one directly.
 
 **Calendar.** **Month** shows one month of dots, Monday first. **Year** shows the twelve months of
-the year, small, each with how many rounds were held, are awaiting their outcome, are coming up, and how many companies (hover
+the year, small (in as many columns as fit), each with how many rounds were held, are awaiting their outcome, are coming up, and how many companies (hover
 over a figure for its words). Your choice is remembered. The arrows go back or forward a month or a
 year, and **Today** comes back to now and today's rounds. Going from Year to Month opens the month
 of the day you chose.
@@ -635,11 +636,13 @@ Reschedule and edit buttons as the list.
 Above the calendar, the month's or year's figures: rounds held, awaiting outcome (if any), coming
 up, cancelled and rescheduled (if any), and how many companies they're with (not counting cancelled
 rounds). Under them, how the number of rounds that weren't cancelled compares with the month or year
-before. Under the calendar, **Still to book** lists the open rounds with no time yet and those that
-need a new time, with their buttons. On a phone the panel goes under the month, or above the year's
-twelve months.
+before. **Still to book** lists the open rounds with no time yet and those that need a new time, with their
+buttons: under the calendar, or beside it on a wide screen (about 1,900 pixels across or more), where
+the calendar keeps its day panel beside it. On a phone the panel goes under the month, or above the
+year's twelve months.
 
-**List.** What's coming up, then everything earlier or cancelled. On each row:
+**List.** What's coming up, then everything earlier or cancelled; on a wide screen the two sit side
+by side, with *Needs a new time* (if any) above what's coming up. On each row:
 
 - **Done** (an open round, booked or not, before or after its time, so a take-home handed in early counts) asks
   for the debrief and the questions asked, then marks it done; **Didn't happen** (once its time has
@@ -706,7 +709,8 @@ revised offer after negotiating: the newest one counts.
 
 The **Offers** page puts them side by side, best first, with a *worth a year* figure:
 salary + bonus + equity estimate + employer pension, or the day rate × 220 working days. It
-compares like with like only roughly: read the rows, not just the total.
+compares like with like only roughly: read the rows, not just the total. On a phone the table
+scrolls sideways inside its card.
 
 ## Documents
 

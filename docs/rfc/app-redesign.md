@@ -88,7 +88,18 @@ the page beside the menu and the panel was about 100 px wide (the lead's call; K
   the Companies and Applications tables share one `SideScroll`, whose edge fades while there's more past it. What each list shows, filters and sorts is unchanged.
 - **Notes** as a grid of note cards (notes still open in their editor dialog). **Documents**: the CV files and each
   document as cards side by side. **Interviews**: the calendar with "still to book" beside it; the list view's cards
-  side by side. Offers stays one comparison table.
+  side by side. Offers stays one comparison table. *As built (#424):* Interviews lays out by the page's own width
+  (container queries), as Today does: from 1,600 px of page (about a 1,890 px window) Still to book sits beside the
+  calendar, at least 720 px wide so its table fits, the calendar taking the rest (1.5 : 1) and keeping its day panel
+  (340 px) beside the days inside its own card; with nothing to book the calendar keeps the whole width. The list's
+  cards go in two columns from the same width: what's ahead (Needs a new time, Coming up) beside Earlier and
+  cancelled. Narrower, both stack as before. The Year view's small months take columns by the calendar's own width
+  (1, 2, 3, 4 or 6, counts that divide twelve; 3 at a 1,440 px window as before) rather than the window's, so beside
+  Still to book they don't shrink to slivers. The calendar's cells are unchanged; the day numbers stay over their
+  dots up to 3,800 px (#405's test, now with Still to book beside). Offers stays one table across the page, its
+  table in a `SideScroll` (the edge fade) on a phone; the Interviews tables too. The Timeline: its days on one soft
+  card under Coming up, each day's heading as the eyebrow; the lanes on a soft card in a `SideScroll`, the lane
+  under the pointer on a faint band, with room at the end so the last dot isn't cut. What each page shows is unchanged.
 
 **Phones (below 768 px).** A glass bottom bar of four tabs (Today, Applications, Interviews, Notes) plus **More**,
 which opens a sheet with the other seven pages as an icon grid. It replaces the slide-out menu and its burger. Panels
