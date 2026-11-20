@@ -128,6 +128,31 @@ test.describe("phone width", () => {
       await expect.poll(() => cutBadges(page), { message: tab }).toEqual([]);
     }
   });
+
+  test("Search: a long title wraps inside its card, its badges whole beside or under it", async ({
+    page,
+    request,
+  }) => {
+    await request.post("/api/v1/notes", {
+      data: {
+        title: "Longtitleword: what to ask the platform engineering panel about on-call and deploys",
+        body: "",
+      },
+    });
+    // Two hits: "Adventure Works · Backend Engineer (Go)" was clipped at the card's edge here, and the long note.
+    for (const q of ["backend", "Longtitleword"]) {
+      await page.goto(`/search?q=${q}`);
+      await expect(page.locator("[data-search-hit]").first()).toBeVisible();
+      const spill = await page.locator("main .mantine-Card-root").evaluate((card) => {
+        const edge = card.getBoundingClientRect().right;
+        return [...card.querySelectorAll("[data-search-hit] a")]
+          .filter((a) => a.getBoundingClientRect().right > edge)
+          .map((a) => a.textContent);
+      });
+      expect(spill, q).toEqual([]);
+      expect(await cutBadges(page), q).toEqual([]);
+    }
+  });
 });
 
 test.describe("Insights' charts", () => {
@@ -162,20 +187,20 @@ test.describe("Insights' charts", () => {
       expect(series).toEqual(
         scheme === "light"
           ? [
-              "rgb(101, 73, 148)",
-              "rgb(196, 120, 10)",
-              "rgb(61, 115, 197)",
-              "rgb(209, 107, 157)",
-              "rgb(19, 124, 84)",
-              "rgb(172, 144, 22)",
+              "rgb(155, 118, 232)",
+              "rgb(203, 122, 73)",
+              "rgb(39, 82, 160)",
+              "rgb(141, 39, 104)",
+              "rgb(32, 103, 2)",
+              "rgb(31, 155, 145)",
             ]
           : [
-              "rgb(156, 129, 209)",
-              "rgb(179, 110, 13)",
-              "rgb(99, 147, 219)",
-              "rgb(192, 70, 134)",
-              "rgb(65, 170, 124)",
-              "rgb(144, 119, 0)",
+              "rgb(177, 153, 236)",
+              "rgb(234, 164, 100)",
+              "rgb(26, 132, 207)",
+              "rgb(177, 80, 134)",
+              "rgb(91, 130, 49)",
+              "rgb(66, 212, 205)",
             ],
       );
     });

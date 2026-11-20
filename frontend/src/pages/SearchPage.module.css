@@ -10,7 +10,14 @@
   background: var(--jat-row-hover);
 }
 
-/* A hit's kind and archived badges keep their whole word, going under a long title rather than being cut. */
-.badges > * {
+/* A hit's icon and kind badge are on the plum's wash themselves: lifted onto the card's surface while the row is. */
+.hit:hover .lift,
+.hit:focus-within .lift {
+  background: var(--jat-surface);
+}
+
+/* A hit's kind and archived badges keep their whole word, going under a long title rather than being cut (only the
+   badges: the title wraps). */
+.badges > :global(.mantine-Badge-root) {
   min-width: max-content;
 }
