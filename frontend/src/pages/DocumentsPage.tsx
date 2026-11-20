@@ -2,12 +2,14 @@ import {
   ActionIcon,
   Anchor,
   Badge,
+  Box,
   Button,
   Card,
   FileButton,
   Group,
   Modal,
   SegmentedControl,
+  SimpleGrid,
   Skeleton,
   Stack,
   Text,
@@ -154,12 +156,12 @@ function VersionRow({ version }: { version: DocumentVersion }) {
   return (
     <Group justify="space-between" wrap="nowrap">
       <div style={{ minWidth: 0 }}>
-        <Group gap={6} wrap="nowrap">
+        <Group gap={6}>
           <Text size="sm" fw={600}>
             {version.label}
           </Text>
           {version.used_in > 0 && (
-            <Badge size="xs" variant="light">
+            <Badge size="xs" variant="light" miw="max-content">
               {t("version.sentTimes", { times: version.used_in })}
             </Badge>
           )}
@@ -257,11 +259,12 @@ function DocumentCard({ doc }: { doc: DocumentItem }) {
   return (
     <Card withBorder>
       <Stack gap="sm">
-        <Group justify="space-between" wrap="nowrap">
+        {/* In a narrow card its buttons go under the name rather than squeezing it. */}
+        <Group justify="space-between" align="flex-start" gap="xs">
           <Group gap="xs">
             <IconFileText size={20} stroke={1.6} />
             <Title order={4}>{doc.name}</Title>
-            <Badge variant="light" color="gray">
+            <Badge variant="light" color="gray" miw="max-content">
               {documentKind(doc.kind)}
             </Badge>
           </Group>
@@ -316,6 +319,13 @@ function DocumentCard({ doc }: { doc: DocumentItem }) {
   );
 }
 
+/**
+ * The CV files waiting to be sorted and each document as cards side by side (docs/rfc/app-redesign.md §2, Pages),
+ * laid out by the page's own width: a column for about every 520 px up to four, so 2 at a 1,440 px window, 3 at
+ * 1,920 and 4 at 2,560. Each card keeps its own height and a row's cards start level.
+ */
+const DOCUMENT_COLUMNS = { base: 1, "1000px": 2, "1560px": 3, "2100px": 4 };
+
 /** CVs and cover letters, with every version and where each was sent (PRD FR14). */
 export function DocumentsPage() {
   const { t } = useTranslation("documents");
@@ -333,18 +343,30 @@ export function DocumentsPage() {
           {t("page.new")}
         </Button>
       </Group>
-      <CvFilesCard />
-      {documents === undefined ? (
-        <Pending query={query} skeleton={<CardsSkeleton count={3} height={160} />} />
-      ) : documents.length ? (
-        documents.map((doc) => <DocumentCard key={doc.id} doc={doc} />)
-      ) : (
-        <Card withBorder p="xl">
-          <Text ta="center" c="dimmed">
-            {t("page.empty")}
-          </Text>
-        </Card>
-      )}
+      <SimpleGrid
+        type="container"
+        cols={DOCUMENT_COLUMNS}
+        style={{ alignItems: "start" }}
+        data-documents-grid
+      >
+        <CvFilesCard />
+        {documents === undefined ? (
+          <Box style={{ gridColumn: "1 / -1" }}>
+            <Pending
+              query={query}
+              skeleton={<CardsSkeleton count={3} height={160} cols={DOCUMENT_COLUMNS} type="container" />}
+            />
+          </Box>
+        ) : documents.length ? (
+          documents.map((doc) => <DocumentCard key={doc.id} doc={doc} />)
+        ) : (
+          <Card withBorder p="xl" style={{ gridColumn: "1 / -1" }}>
+            <Text ta="center" c="dimmed">
+              {t("page.empty")}
+            </Text>
+          </Card>
+        )}
+      </SimpleGrid>
       {creating && <NewDocumentModal onClose={() => setCreating(false)} />}
     </Page>
   );

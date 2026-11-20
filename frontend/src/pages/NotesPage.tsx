@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 
 import { useNotes } from "../api/noteHooks";
 import { NoteEditorModal } from "../components/NoteEditorModal";
-import { NotesList } from "../components/Notes";
+import { NOTE_COLUMNS, NotesList } from "../components/Notes";
 import { Page } from "../components/Page";
 import { CardsSkeleton } from "../components/PageSkeleton";
 import { Pending } from "../components/QueryState";
@@ -55,9 +55,12 @@ export function NotesPage() {
         />
       </Group>
       {notes === undefined ? (
-        <Pending query={query} skeleton={<CardsSkeleton count={4} height={88} gap="sm" />} />
+        <Pending
+          query={query}
+          skeleton={<CardsSkeleton count={4} height={88} gap="sm" cols={NOTE_COLUMNS} type="container" />}
+        />
       ) : (
-        <NotesList notes={notes} empty={debouncedQ.trim() ? t("page.noMatches") : t("page.none")} />
+        <NotesList notes={notes} empty={debouncedQ.trim() ? t("page.noMatches") : t("page.none")} grid />
       )}
       {adding && <NoteEditorModal opened onClose={() => setAdding(false)} note={null} />}
     </Page>

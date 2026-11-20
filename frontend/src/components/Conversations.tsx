@@ -74,7 +74,7 @@ function Outcomes({ tally }: { tally: Tally }) {
   return (
     <Group gap={4}>
       {shown.map(([key, , text, color]) => (
-        <Badge key={key} size="sm" variant="light" color={color}>
+        <Badge key={key} size="sm" variant="light" color={color} miw="max-content">
           {text}
         </Badge>
       ))}
@@ -204,6 +204,7 @@ function WhoTable({ data }: { data: Conversations }) {
                           {r.closed_as && (
                             <Badge
                               size="xs"
+                              miw="max-content"
                               variant="light"
                               color={r.closed_as === "ghosted" ? "dark" : "gray"}
                             >

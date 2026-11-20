@@ -1,0 +1,16 @@
+/* Search's results (docs/rfc/app-redesign.md §2, Pages): each hit a soft row on the results' card, on the plum's wash
+   while you point at it or Tab to its link, as a table's rows are. */
+.hit {
+  padding: 10px 12px;
+  border-radius: var(--mantine-radius-md);
+}
+
+.hit:hover,
+.hit:focus-within {
+  background: var(--jat-row-hover);
+}
+
+/* A hit's kind and archived badges keep their whole word, going under a long title rather than being cut. */
+.badges > * {
+  min-width: max-content;
+}

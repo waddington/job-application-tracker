@@ -3,6 +3,7 @@ import {
   Button,
   Card,
   Group,
+  SimpleGrid,
   Skeleton,
   Stack,
   Text,
@@ -116,14 +117,44 @@ function EditExisting({ id, onClose }: { id: string; onClose: () => void }) {
   return <NoteEditorModal key={id} opened onClose={onClose} note={data as Note} />;
 }
 
-/** A list of notes, each expandable to its rendered Markdown, with edit and delete. */
-export function NotesList({ notes, empty }: { notes: NoteSummary[]; empty: string }) {
+/**
+ * The Notes page's grid, laid out by the list's own width (docs/rfc/app-redesign.md §2, Pages): a column for about
+ * every 400 px up to five, so 2 at a 1,440 px window, 4 at 1,920 and 5 at 2,560. Each card keeps its own height (an
+ * opened note grows alone) and a row's cards start level.
+ */
+export const NOTE_COLUMNS = { base: 1, "720px": 2, "1200px": 3, "1560px": 4, "2100px": 5 };
+
+/**
+ * A list of notes, each expandable to its rendered Markdown, with edit and delete: one under another, or as a grid
+ * of cards (`grid`, the Notes page), in the same order either way, row by row.
+ */
+export function NotesList({
+  notes,
+  empty,
+  grid = false,
+}: {
+  notes: NoteSummary[];
+  empty: string;
+  grid?: boolean;
+}) {
   const [editing, setEditing] = useState<string | null>(null);
+  const items = notes.map((n) => <NoteItem key={n.id} note={n} onEdit={setEditing} />);
   return (
     <Stack gap="xs">
-      {notes.map((n) => (
-        <NoteItem key={n.id} note={n} onEdit={setEditing} />
-      ))}
+      {grid && notes.length ? (
+        <SimpleGrid
+          type="container"
+          cols={NOTE_COLUMNS}
+          spacing="sm"
+          verticalSpacing="sm"
+          style={{ alignItems: "start" }}
+          data-notes-grid
+        >
+          {items}
+        </SimpleGrid>
+      ) : (
+        items
+      )}
       {!notes.length && (
         <Text size="sm" c="dimmed">
           {empty}

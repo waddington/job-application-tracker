@@ -45,7 +45,7 @@ function Outcomes({ s }: { s: Score }) {
       {parts
         .filter(([, n]) => n > 0)
         .map(([key, , text, color]) => (
-          <Badge key={key} size="sm" variant="light" color={color}>
+          <Badge key={key} size="sm" variant="light" color={color} miw="max-content">
             {text}
           </Badge>
         ))}
