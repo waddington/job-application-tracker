@@ -369,7 +369,7 @@ describe("insights", () => {
     // Stage colours come from the workflow.
     expect(chart.querySelector("rect")).toHaveAttribute(
       "fill",
-      "var(--jat-chart-blue, var(--mantine-color-blue-6))",
+      "var(--jat-chart-blue, var(--mantine-color-blue-6, var(--jat-chart-gray)))",
     );
 
     fireEvent.mouseEnter(chart.querySelectorAll("path")[1]!);
