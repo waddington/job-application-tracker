@@ -637,8 +637,8 @@ Above the calendar, the month's or year's figures: rounds held, awaiting outcome
 up, cancelled and rescheduled (if any), and how many companies they're with (not counting cancelled
 rounds). Under them, how the number of rounds that weren't cancelled compares with the month or year
 before. **Still to book** lists the open rounds with no time yet and those that need a new time, with their
-buttons: under the calendar, or beside it on a wide screen (about 1,900 pixels across or more), where
-the calendar keeps its day panel beside it. On a phone the panel goes under the month, or above the
+buttons: under the calendar, or beside a month on a wide screen (about 1,900 pixels across or more),
+where the calendar keeps its day panel beside it. A year always keeps the whole width. On a phone the panel goes under the month, or above the
 year's twelve months.
 
 **List.** What's coming up, then everything earlier or cancelled; on a wide screen the two sit side
@@ -709,8 +709,8 @@ revised offer after negotiating: the newest one counts.
 
 The **Offers** page puts them side by side, best first, with a *worth a year* figure:
 salary + bonus + equity estimate + employer pension, or the day rate × 220 working days. It
-compares like with like only roughly: read the rows, not just the total. On a phone the table
-scrolls sideways inside its card.
+compares like with like only roughly: read the rows, not just the total. On a wide screen each offer's column stops at
+about 420 pixels; on a phone the table scrolls sideways inside its card.
 
 ## Documents
 
