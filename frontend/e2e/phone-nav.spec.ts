@@ -1,10 +1,10 @@
-import type { Page } from "@playwright/test";
+import type { Locator, Page } from "@playwright/test";
 
 import { expect, test } from "./fixtures";
 
 // The phone's bottom bar and More sheet (docs/rfc/app-redesign.md §2, Phones).
 
-test.use({ viewport: { width: 375, height: 800 } });
+test.use({ viewport: { width: 375, height: 800 }, hasTouch: true });
 
 const REST = ["Roles", "Recruiters", "Companies", "Offers", "Documents", "Insights", "Timeline"];
 const BAR = "#root nav:has(> button)"; // not the hidden side menu, nor the sheet's (in a portal)
@@ -182,8 +182,74 @@ test("the end of every page, and what's scrolled or focused, stay clear of the b
     window.scrollBy(0, box.top + box.height / 2 - top);
   }, y);
   expect(await bottom()).toBeGreaterThan(y);
-  await link.evaluate((el) => el.focus({ preventScroll: true })); // as Firefox does for what's partly in view
+  await link.evaluate((el) => {
+    el.focus({ preventScroll: true }); // Tab, as Firefox does it for what's partly in view: without a scroll
+    el.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab", bubbles: true }));
+  });
   await expect.poll(bottom).toBeLessThanOrEqual(y);
+});
+
+test("a press on what's half under the bar scrolls nothing", async ({ page, request }) => {
+  const data = { name: "Half Covered Co", description: "A line of text\n".repeat(9) };
+  const { id } = (await (await request.post("/api/v1/companies", { data })).json()) as { id: string };
+  /** Puts it with `shown` px above the bar, presses there and lets go a moment later, a pixel along. */
+  const press = async (field: Locator, shown: number) => {
+    await expect(field).toBeVisible();
+    await page.waitForLoadState("networkidle");
+    const to = (await barTop(page)) - shown;
+    await field.evaluate((el, top) => {
+      document.querySelector<HTMLElement>("main > *")!.style.marginTop = "800px";
+      window.scrollBy(0, el.getBoundingClientRect().top - top);
+    }, to);
+    const before = await scrollY(page);
+    await page.mouse.move(80, to + shown / 2);
+    await page.mouse.down();
+    await page.evaluate(() => new Promise(requestAnimationFrame));
+    await page.mouse.move(81, to + shown / 2);
+    await page.mouse.up();
+    expect(await scrollY(page)).toBe(before);
+  };
+  await page.goto(`/companies/${id}`);
+  const about = page.getByLabel("About", { exact: true });
+  await press(about, 28);
+  const [start, end] = await about.evaluate((el: HTMLTextAreaElement) => [
+    el.selectionStart,
+    el.selectionEnd,
+  ]);
+  expect(end).toBeLessThan(15); // still on the first line
+  expect(end - start).toBeLessThanOrEqual(1);
+  await page.reload();
+  await press(page.locator("main label", { hasText: /^About$/ }), 8); // a label's focus comes with the click
+
+  await page.goto("/applications?view=list");
+  const stages = page.locator('main input[aria-label="Stages"]');
+  await press(stages, 8);
+  await expect(page.getByRole("option").first()).toBeVisible();
+  // Picking from it isn't typing: in a short window too, the bar stays.
+  await page.getByRole("option").first().click();
+  await page.setViewportSize({ width: 375, height: 350 });
+  await page.evaluate(() => new Promise(requestAnimationFrame));
+  await expect(stages).toBeFocused();
+  await expect(bar(page)).toBeInViewport();
+});
+
+test("in a short window it's back when the box you typed in goes away", async ({ page, request }) => {
+  // No focusout, as in Firefox when what has focus is removed.
+  await page.addInitScript(() => addEventListener("focusout", (e) => e.stopImmediatePropagation(), true));
+  await request.post("/api/v1/todos", { data: { text: "Edited away" } });
+  await page.setViewportSize({ width: 667, height: 375 });
+  await today(page);
+  for (const key of ["Enter", "Escape"]) {
+    await page.getByRole("button", { name: "Edit to-do: Edited away" }).click();
+    await expect(bar(page)).not.toBeInViewport();
+    await page.keyboard.press(key);
+    await expect(bar(page)).toBeInViewport();
+  }
+  await bar(page).getByRole("link", { name: "Notes" }).click();
+  await page.getByLabel("Search notes").fill("call");
+  await expect(bar(page)).not.toBeInViewport();
+  await page.goBack();
+  await expect(bar(page)).toBeInViewport();
 });
 
 test("dialogs, menus, toasts and the full-screen quick view are over the bar", async ({ page }) => {
@@ -196,9 +262,10 @@ test("dialogs, menus, toasts and the full-screen quick view are over the bar", a
   await expect(page.getByRole("menu")).toBeVisible();
   expect(await layer("[role=menu]")).toBeGreaterThan(level);
   await page.keyboard.press("Escape");
+  await expect(page.locator("html")).not.toHaveCSS("scroll-padding-bottom", "auto"); // a key brings it back
 
   const inBar = () => bar(page).evaluate((nav) => nav.contains(document.activeElement));
-  await page.getByRole("button", { name: "New application" }).first().click();
+  await page.locator("header").getByRole("button", { name: "New application" }).press("Enter");
   const dialog = page.getByRole("dialog", { name: "New application" });
   await expect(dialog).toBeVisible();
   expect(await onTop(page)).toBe(false);
@@ -228,20 +295,23 @@ test("in a short window it makes way while you type, and not under your press", 
   await box.fill("Pressed under the bar");
   await expect(bar(page)).toBeInViewport(); // a tall window keeps it
   await page.setViewportSize({ width: 375, height: 350 });
-  await expect(bar(page)).not.toBeInViewport();
   const add = page.locator("form").filter({ has: box }).getByRole("button", { name: "Add", exact: true });
-  await add.evaluate((el) => window.scrollBy(0, el.getBoundingClientRect().top - (350 - 48)));
-  const { x, y, width, height } = (await add.boundingBox())!;
-  expect(y + height / 2).toBeGreaterThan(350 - 72); // where the bar comes back to
-  await page.mouse.click(x + width / 2, y + height / 2, { delay: 120 });
-  await expect(page.getByRole("checkbox", { name: "Pressed under the bar" })).toBeAttached();
-  await page.getByRole("heading", { name: "Your move" }).click();
-  await expect(bar(page)).toBeInViewport();
+  // A tap, and a press held for longer than the bar waits to come back.
+  for (const held of [0, 600]) {
+    await box.fill(`Pressed for ${held}`);
+    await expect(bar(page)).not.toBeInViewport();
+    await add.evaluate((el) => window.scrollBy(0, el.getBoundingClientRect().top - (350 - 48)));
+    const { x, y, width, height } = (await add.boundingBox())!;
+    expect(y + height / 2).toBeGreaterThan(350 - 72); // where the bar comes back to
+    if (held) await page.mouse.click(x + width / 2, y + height / 2, { delay: held });
+    else await page.touchscreen.tap(x + width / 2, y + height / 2);
+    await expect(page.getByRole("checkbox", { name: `Pressed for ${held}` })).toBeAttached();
+    await page.getByRole("heading", { name: "Your move" }).click();
+    await expect(bar(page)).toBeInViewport();
+  }
 });
 
 test.describe("the board", () => {
-  test.use({ hasTouch: true });
-
   test("scrolls under a finger, and a mouse drag over the bar", async ({ page, request }) => {
     const app = { role_title: "Bar Drag", route: "direct", stage: "applied", tags: [] };
     for (let n = 0; n < 8; n++) {
