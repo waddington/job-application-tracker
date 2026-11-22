@@ -6,18 +6,19 @@ file before each compaction. Before trusting it, check `gh pr list`, `git worktr
 
 ## Kai's current request
 
-Nothing is in flight. Kai is compacting ("update the compact docs then remind me of the proceddure", 2026-11-22).
+"do website-shots then wrap-up for app redesign" (2026-11-22): items 1 and 2 below, in that order, one PR each. Then
+report and wait.
 
-- **v1.24.49 is released** and **Kai has uploaded the social card** (checked: GitHub serves the approved file).
-- **Kai's tracker still reported 1.24.48** when this was written, so check it after the compaction and repeat the restart
-  reminder if it still does.
+- **In flight:** `app-redesign-website-shots`, branch `worktree-app-redesign-website-shots`. Kai sees every image on a
+  compare page before any is committed.
+- **v1.24.49 is released**, Kai's tracker reports it, and **Kai has uploaded the social card** (checked: GitHub serves
+  the approved file).
 - **The website still shows the old look:** Kai saw it ("the website still shows old gifs", then "ah thats another task
   to do"). It has no GIFs: they're the animated captures, which `app-redesign-website-shots` retakes.
 
-**Nothing below starts without Kai's word** (Kai's scope wins over the delivery loop): after the compaction, give the
-state in a few lines, recommend the first item, and wait.
+**Nothing from item 3 on starts without Kai's word** (Kai's scope wins over the delivery loop).
 
-## Next, when Kai gives the word
+## Next
 
 1. **`app-redesign-website-shots`** ("do website shots", 3 h): the 11 captures in `website/src/assets/{hero,demo,story}`
    from the demo app, light mode.
