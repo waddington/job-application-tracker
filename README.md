@@ -304,7 +304,7 @@ and rebuild the database from it with `jat restore`.
 
 **How do I back it up?** It's automatic if the data folder is a git repo: every change is
 snapshotted, and `jat push` sends it to your private remote. For a single file to keep
-anywhere, click *Download a backup* in the sidebar (or run `jat archive`): a zip with your
+anywhere, click *Download a backup* in the sidebar (on a phone, in *More*), or run `jat archive`: a zip with your
 data, notes and files. Unzip it and run `jat init` on the folder to get everything back.
 See [Your data](docs/guide/your-data.md).
 
