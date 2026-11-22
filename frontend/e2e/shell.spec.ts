@@ -468,8 +468,8 @@ test.describe("more of the frame", () => {
         for (const path of ["/interviews", "/applications"]) {
           await page.goto(path);
           await expect(page.locator("main h2").first()).toBeVisible();
-          for (const width of [320, 375, 390, 600, 767]) {
-            await page.setViewportSize({ width, height: 800 });
+          for (const width of [305, 320, 375, 390, 600, 767]) {
+            await page.setViewportSize({ width, height: 800 }); // 305: 320 with a scrollbar
             // Whatever's there: a fix may fold some of them away.
             const controls = page.locator("header").locator("a, button, input").filter({ visible: true });
             await expect(async () => {
