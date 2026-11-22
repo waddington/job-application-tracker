@@ -50,6 +50,11 @@ where things run. Quotes are Kai's words.
   `planned` (Backlog) unless Kai says to build it. With nothing up next: report the backlog and wait.
 - **Docs:** "ensure docs are up to date, readme, images, etc". **Images and GIFs go to Kai before they're applied:** "i
   want to see the new gif(s) before you apply them".
+- **DAST where relevant** (Kai, 2026-11-22: "make a note in this repo to check for DAST where relevant"): the Dick and
+  Swastika Test, for imagery nobody meant (genitals, hate symbols, rude words from crops, truncation or translation).
+  Run it on anything visual that's new or redrawn before Kai sees it or it's published: screenshots, GIFs, the social
+  card, logos and icons, charts, illustrations, the website. Look at it small, blurred, as silhouettes, rotated,
+  mirrored and cropped as it'll be shown, and have a reviewer with fresh eyes look too. Say in the PR that it was done.
 - **Visibility:** after each merge, fast-forward main, rebuild the frontend there, and say in a line what's live.
   **Every release needs Kai to restart the tracker** (Ctrl+C, `uv run jat serve` in the main checkout), frontend-only
   ones too, so always say so: the rebuilt page shows a version warning while the server reports the old version
