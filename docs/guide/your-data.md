@@ -71,7 +71,7 @@ snapshots are off for now, it's there for your own commits).
 - See what's been saved: `git -C ~/job-search-data log --oneline`.
 - Change the delay: `[snapshot] debounce_seconds` in [`config.toml`](customising.md#snapshot-timing).
 
-If the folder isn't a git repo, snapshots are off and the app still works; the sidebar's
+If the folder isn't a git repo, snapshots are off and the app still works; the sidebar's (on a phone, More's)
 connection tooltip says "data dir isn't a git repo". On Windows, snapshots are off for now
 even in a git repo ([why](troubleshooting.md#windows)).
 
@@ -113,7 +113,7 @@ whole job search.
 
 For a copy to keep anywhere (a USB stick, cloud storage, an email to yourself):
 
-- In the app: **Download a backup** at the bottom of the sidebar.
+- In the app: **Download a backup** at the bottom of the sidebar (on a phone, of **More**).
 - From the command line: `uv run jat archive` (writes `./jat-backup-YYYY-MM-DD.zip`; use
   `-o PATH` to choose where; it never overwrites an existing file).
 

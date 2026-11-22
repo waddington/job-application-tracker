@@ -125,6 +125,14 @@ The sidebar's footer (whether the app is connected, *Download a backup*, the ver
 warning) is behind the burger on a phone today, so with the burger gone it moves to **the bottom of the More sheet**.
 That's the default chosen for this plan (the concept hid the footer on phones); Kai can change it.
 
+*As built (#427):* the bar is mostly surface (88%) over a blur, so its ink reads over anything; the current tab's
+icon sits on plum, and More is current for the other seven and their record pages. More carries a red dot, described
+to screen readers, while the app is offline or the versions differ. Dismissing the sheet returns focus to More;
+choosing a page, or any change of address (Back), closes it with focus on the page; past 768 px it goes. The page's
+end, scroll padding and a nudge for focus (Firefox leaves what's partly in view) keep things clear of the bar. Under
+500 px tall it makes way while you type. It's inert under the full-screen quick view. The header is one row from
+320 px: a globe-only language button and the search taking what's left, up to 160 px.
+
 ## 3. How it lands
 
 - **No feature flag and no switch.** Each PR changes the real theme, layout and components on `main`; the dev-only

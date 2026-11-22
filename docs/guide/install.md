@@ -66,7 +66,7 @@ new folder outside the code, such as `C:\jat-test`, and use it in place of `<fol
 5. **Add an application:** press **New application** at the top and save a made-up one.
 6. **Add a note:** on the application's page, press **Add note** in the Notes card and save it.
 7. **Add a file:** on the same page, **Upload** a file in the Files card.
-8. **Download a backup:** at the bottom of the sidebar, press **Download a backup**, and check the
+8. **Download a backup:** at the bottom of the sidebar (on a phone, of **More**), press **Download a backup**, and check the
    zip opens and holds your note and file.
 9. **Weekly activity:** on **Insights**, **Weekly activity** shows this week's application.
 10. **The tests:** run `uv run pytest -q` from the code folder. On Windows the tests of the
