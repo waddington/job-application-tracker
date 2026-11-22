@@ -6,25 +6,20 @@ file before each compaction. Before trusting it, check `gh pr list`, `git worktr
 
 ## Kai's current request
 
-Nothing is in flight. Kai is compacting ("update the compact docs then remind me of the proceddure", 2026-11-22).
+"do website-shots then wrap-up for app redesign" (2026-11-22): items 1 and 2 below, in that order, one PR each. Then
+report and wait.
 
-- **v1.24.49 is released** and **Kai has uploaded the social card** (checked: GitHub serves the approved file).
-- **Kai's tracker still reported 1.24.48** when this was written, so check it after the compaction and repeat the restart
-  reminder if it still does.
-- **The website still shows the old look:** Kai saw it ("the website still shows old gifs", then "ah thats another task
-  to do"). It has no GIFs: they're the animated captures, which `app-redesign-website-shots` retakes.
+- **`app-redesign-website-shots` is #442, v1.24.50:** Kai approved the images ("looks good", 2026-11-22). It retakes
+  the website's captures (it has no GIFs: they're animated captures). Ship it if it's still open.
+- **Then `app-redesign-wrap-up`.**
+- **Kai has uploaded the social card** (checked: GitHub serves the approved file).
 
-**Nothing below starts without Kai's word** (Kai's scope wins over the delivery loop): after the compaction, give the
-state in a few lines, recommend the first item, and wait.
+**Nothing from item 3 on starts without Kai's word** (Kai's scope wins over the delivery loop).
 
-## Next, when Kai gives the word
+## Next
 
-1. **`app-redesign-website-shots`** ("do website shots", 3 h): the 11 captures in `website/src/assets/{hero,demo,story}`
-   from the demo app, light mode.
-   - `AppDemo.astro` puts HTML overlays at pixel positions on them and still draws some old indigo (`#4c6ef5`,
-     `#dbe4ff`): re-check each overlay and change the colours.
-   - A compare page first: Kai sees every image, after DAST, before any is committed.
-   - Then a website PR (`tools/dev/checks.sh --website`). Recipe: gotchas.md, *Website*.
+1. **`app-redesign-website-shots`:** done in #442. Its review left two small website bugs for Kai to pick:
+   `fix-website-board-dates` and `fix-website-story-phone-crop`.
 2. **`app-redesign-wrap-up`** ("wrap up", 30 min): close #354, its branch and worktree; the RFC becomes built. That
    finishes the redesign.
 3. **Offered on 2026-11-22, no answer yet:**
@@ -40,7 +35,7 @@ state in a few lines, recommend the first item, and wait.
 
 ## State
 
-- **Released up to v1.24.49.** The redesign has 22 of its 24 tasks done, counting the five `loading-state-*` parts.
+- **Released up to v1.24.50 once #442 ships.** The redesign has 23 of its 24 tasks done, counting the five `loading-state-*` parts.
 - **Open PRs:**
   - **#414** DO NOT MERGE: board concepts for per-round columns beside the quick view (`?board=N`). Parked for Kai
     ("park it for now, ill review another time"); its servers (5190, 8886) are off, its worktree kept

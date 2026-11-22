@@ -226,7 +226,9 @@ app after a release, or every capture shows the version warning (gotchas.md).
   `demo/` (today, board, role, insights, chrome) and `story/` (recruiters, interviews, offers, notes). The hero demo
   (`AppDemo.astro`) places HTML overlays at pixel positions on the app's screenshots, so each overlay is re-checked
   against the new layout; `Features.astro` uses `hero/today-light.png` and `demo/insights.png` from the same folders.
-  A website PR runs `tools/dev/checks.sh --website`.
+  A website PR runs `tools/dev/checks.sh --website`. *As built (#442):* the board's moving cards are cut from its
+  screenshot rather than redrawn, so they can't keep an old look; the Chinese window shows the Chinese demo data, as
+  the README does; the Today, Insights and phone Notes crops moved for the new layout.
 - `readme-visuals` (backlog) waits for these.
 
 ## 6. Text and languages

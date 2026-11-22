@@ -1,8 +1,9 @@
 ---
 // The app in use, inside the hero's front window (docs/rfc/website-redesign.md §11, part 3). Light-mode screenshots
-// of the demo app (made-up data) sit on a 1440 x 900 stage at the app's own pixel positions; the moving parts are
-// rebuilt in HTML on top: a to-do ticked, a board card dragged to the next stage, a stage changed, the Sankey
-// drawing in. A cursor drives it on a loop, at twice the pace of the concept it comes from.
+// of the demo app (made-up data) sit on a 1440 x 900 stage at the app's own pixel positions, with the moving parts
+// on top: a to-do ticked, a board card (cut from the screenshot) dragged to the next stage, a stage changed, the
+// Sankey drawing in. A cursor drives it on a loop, at twice the pace of the concept it comes from.
+// Retaking a screenshot means measuring the positions below again.
 // Decorative only: hidden from assistive tech, nothing focusable; the window's still screenshot keeps the honest
 // description. It stays hidden (and its images unloaded) until the script starts it: never without JavaScript or
 // under reduced motion, and it plays only while on screen in a visible tab.
@@ -13,54 +14,13 @@ import board from "../../assets/demo/board.png";
 import role from "../../assets/demo/role.png";
 import insights from "../../assets/demo/insights.png";
 
-type Card = {
-  co: string;
-  role: string;
-  when: string;
-  extra?: string;
-  late?: boolean;
-  tag?: string;
-  id?: string;
-};
-// The board's columns at their x in the screenshot, with the app's light stage badges.
-const columns: { x: number; label: string; badge: string; h: number; cards: Card[] }[] = [
-  {
-    x: 246,
-    label: "Interested",
-    badge: "background:#f1f3f5;color:#495057",
-    h: 134,
-    cards: [{ co: "Northwind Traders", role: "Lead Engineer", when: "2 days ago" }],
-  },
-  {
-    x: 508,
-    label: "Applied",
-    badge: "background:#e7f5ff;color:#1971c2",
-    h: 430,
-    cards: [
-      { co: "Adventure Works", role: "Backend Engineer (Go)", when: "3 days ago", id: "drag" },
-      { co: "Coho Winery", role: "Full-stack Engineer", when: "9 days ago", extra: "★ Jordan Lee" },
-      { co: "Fabrikam", role: "Staff Platform Engineer", when: "12 days ago", tag: "Reply to read" },
-      { co: "Coho Winery", role: "Senior Full-stack Engineer", when: "2 weeks ago", late: true },
-    ],
-  },
-  { x: 770, label: "Screen", badge: "background:#e3fafc;color:#0c8599", h: 134, cards: [] },
-  {
-    x: 1032,
-    label: "Interviewing",
-    badge: "background:#edf2ff;color:#4263eb",
-    h: 173,
-    cards: [
-      {
-        co: "Contoso",
-        role: "Senior Backend Engineer",
-        when: "9 days ago",
-        extra: "Alex Morgan",
-        tag: "Round 3 · System design test · Sat 14 Nov",
-        id: "open",
-      },
-    ],
-  },
-  { x: 1294, label: "Final", badge: "background:#f3f0ff;color:#7048e8", h: 112, cards: [] },
+// The Applied column's cards where the board's screenshot has them: the first is dragged, the rest move up.
+const APPLIED_X = 461;
+const applied = [
+  { top: 305, h: 107 },
+  { top: 422, h: 90 },
+  { top: 522, h: 129 },
+  { top: 660, h: 107 },
 ];
 const img = {
   widths: [720, 1020, 1440],
@@ -86,7 +46,8 @@ const [boardImg, roleImg, insightsImg] = await Promise.all([board, role, insight
 <div class="demo" data-demo aria-hidden="true">
   <div class="stage" data-stage>
     <Image src={chrome} {...img} data-first />
-    <span class="hl" data-hl></span>
+    <span class="hl shade" data-hl></span>
+    <span class="hl fill" data-hl></span>
     <div class="vp">
       <div class="pg on" data-page="today">
         <div class="pin" data-scroll>
@@ -103,42 +64,34 @@ const [boardImg, roleImg, insightsImg] = await Promise.all([board, role, insight
       <div class="pg" data-page="board">
         <div class="pin">
           <img {...boardImg} sizes={img.sizes} alt="" decoding="async" data-later="board" />
-          <div class="board">
-            {columns.map((c) => (
-              <div class="col" style={`left:${c.x}px;height:${c.h}px`}>
-                <span class="badge" style={c.badge}>
-                  {c.label}
-                </span>
-                <span class="count" data-count={c.label}>
-                  {c.cards.length}
-                </span>
-              </div>
-            ))}
-            {columns.flatMap((c) => {
-              let y = 276;
-              return c.cards.map((card) => {
-                const h = card.tag ? (card.id === "open" ? 120 : 103) : 80;
-                const top = y;
-                y += h + 11;
-                return (
-                  <div
-                    class:list={["card", { late: card.late }]}
-                    style={`left:${c.x + 12}px;top:${top}px;height:${h}px`}
-                    data-card={card.id}
-                    data-col={c.label}
-                  >
-                    <b>{card.co}</b>
-                    <span>{card.role}</span>
-                    {card.tag && <span class:list={["tag", { round: card.id === "open" }]}>{card.tag}</span>}
-                    <span class="when">
-                      <span class:list={{ red: card.late }}>{card.when}</span>
-                      {card.extra && <span>{card.extra}</span>}
-                    </span>
-                  </div>
-                );
-              });
-            })}
+          <div class="well applied">
+            <i data-well="Applied" />
           </div>
+          <div class="well screen">
+            <i data-well="Screen" />
+          </div>
+          <span class="count applied" data-count="Applied">
+            4
+          </span>
+          <span class="count screen" data-count="Screen">
+            0
+          </span>
+          {applied.map((c, i) => (
+            <div
+              class="card"
+              style={`left:${APPLIED_X}px;top:${c.top}px;height:${c.h}px`}
+              data-card={i === 0 ? "drag" : "below"}
+            >
+              <img
+                {...boardImg}
+                sizes={img.sizes}
+                style={`position:absolute;left:${-APPLIED_X}px;top:${-c.top}px`}
+                alt=""
+                decoding="async"
+                data-later="board"
+              />
+            </div>
+          ))}
         </div>
       </div>
       <div class="pg" data-page="role">
@@ -151,11 +104,13 @@ const [boardImg, roleImg, insightsImg] = await Promise.all([board, role, insight
             Final
           </span>
           <div class="menu" data-menu>
-            <span>Screen</span>
-            <span class="current">Interviewing</span>
+            <small>Usual next</small>
             <span class="pick">Final</span>
             <span>Offer</span>
+            <span>Declined</span>
             <span>Rejected</span>
+            <span>Withdrawn</span>
+            <span>Ghosted</span>
           </div>
         </div>
       </div>
@@ -182,11 +137,11 @@ const [boardImg, roleImg, insightsImg] = await Promise.all([board, role, insight
 <script>
   type Pos = [number, number];
   // The sidebar highlight's y for each page, and what the address bar shows.
-  const SIDEBAR: Record<string, number> = { today: 66, board: 181, role: 181, insights: 568 };
+  const SIDEBAR: Record<string, number> = { today: 66, board: 181, role: 181, insights: 570 };
   const URLS: Record<string, string> = {
     today: "/",
     board: "/applications?view=board",
-    role: "/applications/01a1d032-7337-7ae3-947b-f5f3dc69ad1c",
+    role: "/applications/01a204ed-07e1-78d3-b28a-efef20462196",
     insights: "/insights",
   };
   // Twice the concept's pace: holds on a screen halve, movement speeds up by the square root, so it stays smooth.
@@ -208,7 +163,9 @@ const [boardImg, roleImg, insightsImg] = await Promise.all([board, role, insight
     const ripple = $("[data-ripple]");
     const toastEl = $("[data-toast]");
     const card = $("[data-card='drag']");
-    const below = $$("[data-col='Applied']").filter((c) => c !== card);
+    const below = $$("[data-card='below']");
+    const wells = $$("[data-well]");
+    const highlight = $$("[data-hl]");
     const pages = new Map($$("[data-page]").map((p) => [p.dataset.page!, p]));
     const reduce = matchMedia("(prefers-reduced-motion: reduce)");
 
@@ -262,23 +219,28 @@ const [boardImg, roleImg, insightsImg] = await Promise.all([board, role, insight
       next.classList.toggle("fade", fade);
       next.classList.add("on");
       current = name;
-      place($("[data-hl]"), `translateY(${SIDEBAR[name]}px)`, 420, "cubic-bezier(.3,.7,.2,1)");
+      for (const el of highlight)
+        place(el, `translateY(${SIDEBAR[name]}px)`, 420, "cubic-bezier(.3,.7,.2,1)");
       if (url) url.textContent = URLS[name];
     }
-    // Loads a later screen's image (once).
+    // Loads a later screen's image (once), and the pieces cut from it.
     function load(name: string) {
-      const i = demo.querySelector<HTMLImageElement>(`img[data-later='${name}']`);
-      if (i && !i.srcset) {
+      for (const i of demo.querySelectorAll<HTMLImageElement>(`img[data-later='${name}']`)) {
+        if (i.srcset) continue;
         i.srcset = i.dataset.srcset!;
         i.src = i.dataset.src!;
       }
     }
     // Puts the moved pieces back; run while their pages are hidden, so nothing snaps in view.
     function resetPieces() {
-      for (const el of [card, ...below, ...$$("[data-todo]"), $("[data-scroll]")]) {
+      const moved = [card, ...below, ...wells, ...$$("[data-todo]"), $("[data-scroll]")];
+      for (const el of moved) {
         place(el, "", 0);
         el.classList.remove("on", "lift");
       }
+      // Once that has landed (the one read), their own CSS transitions come back for the next time round.
+      void stage.offsetWidth;
+      for (const el of moved) el.style.transition = "";
       place(pages.get("role")!.querySelector<HTMLElement>("[data-scroll]")!, "", 0);
       $("[data-count='Applied']").textContent = "4";
       $("[data-count='Screen']").textContent = "0";
@@ -290,7 +252,7 @@ const [boardImg, roleImg, insightsImg] = await Promise.all([board, role, insight
       $("[data-cover]").classList.remove("on");
       for (const [name, p] of pages) p.classList.toggle("on", name === "today");
       current = "today";
-      place($("[data-hl]"), `translateY(${SIDEBAR.today}px)`, 0);
+      for (const el of highlight) place(el, `translateY(${SIDEBAR.today}px)`, 0);
       if (url) url.textContent = URLS.today;
       toastEl.classList.remove("on");
     }
@@ -327,7 +289,7 @@ const [boardImg, roleImg, insightsImg] = await Promise.all([board, role, insight
         await pause(900);
         await to([700, 560]);
         await scroll("today", 520, 1500);
-        await to([285, 366]);
+        await to([303, 433]);
         await click();
         $$("[data-todo]").forEach((el) => el.classList.add("on"));
         toast("To-do done · Undo");
@@ -339,31 +301,36 @@ const [boardImg, roleImg, insightsImg] = await Promise.all([board, role, insight
         go("board");
         load("role");
         await pause(1000);
-        await to([640, 312]);
+        await to([540, 350]);
         cursor.classList.add("down");
         card.classList.add("lift");
         await pause(250);
-        place(card, "translate(262px, -4px) rotate(2deg)", move(1100));
-        await to([902, 308], 1100);
-        place(card, "translate(262px, 0)", move(260));
+        place(card, "translate(192px, -4px) rotate(2deg)", move(1100));
+        await to([732, 346], 1100);
+        place(card, "translate(192px, 0)", move(260));
         card.classList.remove("lift");
         cursor.classList.remove("down");
-        below.forEach((c) => place(c, "translateY(-91px)", move(520), "cubic-bezier(.3,.7,.2,1)"));
+        // The rest of Applied moves up; its well shortens by that card and Screen's grows to hold it.
+        const settle = (el: HTMLElement, y: number) =>
+          place(el, `translateY(${y}px)`, move(520), "cubic-bezier(.3,.7,.2,1)");
+        below.forEach((c) => settle(c, -117));
+        settle(wells[0], -117);
+        settle(wells[1], 47);
         $("[data-count='Applied']").textContent = "3";
         $("[data-count='Screen']").textContent = "1";
         toast("Adventure Works moved to Screen · Undo");
         await pause(1400);
         // Contoso: open it, move it on to Final, read down the page.
-        await to([1150, 300]);
+        await to([920, 340]);
         await click();
         go("role");
         load("insights");
         await pause(1100);
-        await to([300, 243]);
+        await to([308, 252]);
         await click();
         $("[data-menu]").classList.add("on");
         await pause(500);
-        await to([300, 358], 600);
+        await to([300, 326], 600);
         await click();
         $("[data-menu]").classList.remove("on");
         $("[data-badge-old]").classList.add("gone");
@@ -371,9 +338,9 @@ const [boardImg, roleImg, insightsImg] = await Promise.all([board, role, insight
         toast("Contoso moved to Final");
         await pause(1100);
         await to([1000, 600], 800);
-        await scroll("role", 1150, 2600);
+        await scroll("role", 1250, 2600);
         await pause(700);
-        await scroll("role", 1900, 1400);
+        await scroll("role", 2100, 1400);
         await pause(600);
         // Insights: the Sankey draws in.
         await to([78, 589], 1000);
@@ -432,7 +399,14 @@ const [boardImg, roleImg, insightsImg] = await Promise.all([board, role, insight
     bottom: 0;
     aspect-ratio: 1440 / 900;
     overflow: hidden;
-    background: #fff;
+    /* The app's colours in light: its page, a board column over it, its ink and muted ink. */
+    --page: #f4f1fb;
+    --well: #f9f7fd;
+    --app-ink: #2a1e3f;
+    --app-muted: rgb(42 30 63 / 0.7);
+    background: var(--page);
+    /* A picture of the app: forced colours would turn the sidebar's highlight into a blank block. */
+    forced-color-adjust: none;
     display: none;
     opacity: 0;
     transition: opacity 0.5s;
@@ -453,10 +427,11 @@ const [boardImg, roleImg, insightsImg] = await Promise.all([board, role, insight
     transform: scale(var(--k, 0.5));
     transform-origin: 0 0;
     font-family: "Inter Variable", system-ui, sans-serif;
-    color: #495057;
+    color: var(--app-ink);
     -webkit-font-smoothing: antialiased;
   }
-  .stage :global(img) {
+  /* Outweighs the hero window's own rule for images: the pieces cut from the board need the full 1440 px. */
+  .demo .stage :global(img) {
     display: block;
     width: 1440px;
     max-width: none;
@@ -468,26 +443,32 @@ const [boardImg, roleImg, insightsImg] = await Promise.all([board, role, insight
     left: 10px;
     top: 0;
     width: 209px;
-    height: 40px;
-    border-radius: 4px;
-    background: #dbe4ff;
-    mix-blend-mode: multiply;
+    height: 41px;
+    border-radius: 999px;
     transform: translateY(66px);
+  }
+  .hl.shade {
+    box-shadow: 0 8px 22px -12px rgb(42 30 63 / 0.35);
+  }
+  /* White, lighter than the page under it: dodging lifts the lilac to white and leaves the ink dark. */
+  .hl.fill {
+    background: #101010;
+    mix-blend-mode: color-dodge;
   }
   /* The content area right of the sidebar and under the header; each page is a full screenshot shifted into it. */
   .vp {
     position: absolute;
-    left: 231px;
-    top: 57px;
-    width: 1209px;
-    height: 843px;
+    left: 230px;
+    top: 56px;
+    width: 1210px;
+    height: 844px;
     overflow: hidden;
-    background: #fff;
+    background: var(--page);
   }
   .pg {
     position: absolute;
-    left: -231px;
-    top: -57px;
+    left: -230px;
+    top: -56px;
     width: 1440px;
     opacity: 0;
     visibility: hidden;
@@ -519,7 +500,7 @@ const [boardImg, roleImg, insightsImg] = await Promise.all([board, role, insight
   }
   .pin {
     position: relative;
-    background: #fff;
+    background: var(--page);
   }
 
   /* Today: the to-do being ticked. */
@@ -530,12 +511,12 @@ const [boardImg, roleImg, insightsImg] = await Promise.all([board, role, insight
     opacity: 0;
   }
   .check {
-    left: 276px;
-    top: 877px;
-    width: 19px;
-    height: 19px;
-    border-radius: 4px;
-    background: #4c6ef5;
+    left: 297px;
+    top: 947px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--app-ink);
     display: grid;
     place-items: center;
     transform: scale(0.6);
@@ -552,22 +533,22 @@ const [boardImg, roleImg, insightsImg] = await Promise.all([board, role, insight
     stroke-linejoin: round;
   }
   .strike {
-    left: 305px;
-    top: 886px;
-    width: 410px;
+    left: 327px;
+    top: 955px;
+    width: 408px;
     height: 1.5px;
-    background: #868e96;
+    background: var(--app-muted);
     opacity: 1;
     transform: scaleX(0);
     transform-origin: 0 50%;
     transition: transform 0.5s 0.1s cubic-bezier(0.3, 0.7, 0.2, 1);
   }
   .dim {
-    left: 300px;
-    top: 862px;
-    width: 420px;
-    height: 46px;
-    background: #f1f3f5;
+    left: 325px;
+    top: 941px;
+    width: 416px;
+    height: 45px;
+    background: #f3f0fa;
     transition: opacity 0.6s 0.4s;
   }
   .check:global(.on) {
@@ -581,92 +562,64 @@ const [boardImg, roleImg, insightsImg] = await Promise.all([board, role, insight
     opacity: 0.5;
   }
 
-  /* The board, rebuilt so a card can really move. */
-  .board::before {
-    content: "";
+  /* The board: the two columns that change are covered below their headers and redrawn, the cards cut from it. */
+  .well {
     position: absolute;
-    left: 240px;
-    top: 226px;
+    top: 300px;
+    width: 180px;
+    height: 492px;
+    overflow: hidden;
+    background: var(--page);
+  }
+  .well i {
+    position: absolute;
+    left: 0;
     right: 0;
-    height: 674px;
-    background: #fff;
+    top: -130px;
+    border-radius: 0 0 26px 26px;
+    background: var(--well);
   }
-  .col {
-    position: absolute;
-    top: 234px;
-    width: 250px;
-    border-radius: 6px;
-    background: #f8f9fa;
-    box-shadow: inset 0 0 0 1px #e9ecef;
+  /* Wider than its column, over the shadows its cards cast in the screenshot. */
+  .well.applied {
+    left: 438px;
+    width: 204px;
   }
-  .badge {
-    position: absolute;
-    left: 11px;
-    top: 11px;
-    padding: 3px 8px;
-    border-radius: 3px;
-    font-size: 11.5px;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
+  .well.applied i {
+    left: 12px;
+    right: 12px;
+    height: 608px;
+  }
+  .well.screen {
+    left: 642px;
+  }
+  .well.screen i {
+    height: 206px;
   }
   .count {
     position: absolute;
-    right: 12px;
-    top: 10px;
-    font-size: 13px;
-    color: #868e96;
+    top: 275px;
+    width: 14px;
+    background: var(--well);
+    color: var(--app-muted);
+    font-size: 12px;
+    line-height: 20px;
+    text-align: right;
+  }
+  .count.applied {
+    left: 605px;
+  }
+  .count.screen {
+    left: 797px;
   }
   .card {
     position: absolute;
-    width: 226px;
-    padding: 10px 11px;
-    border-radius: 6px;
-    background: #fff;
-    border: 1px solid #dee2e6;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    font-size: 13px;
-    color: #868e96;
+    width: 158px;
+    overflow: hidden;
+    border-radius: 20px;
+    box-shadow: 0 18px 50px -24px rgb(42 30 63 / 0.28);
     transition:
       box-shadow 0.25s,
       scale 0.25s;
-  }
-  .card.late {
-    border-left: 3px solid #fa5252;
-  }
-  .card b {
-    font-size: 15px;
-    font-weight: 600;
-    color: #000;
-  }
-  .when {
-    margin-top: auto;
-    display: flex;
-    justify-content: space-between;
-  }
-  .red {
-    color: #fa5252;
-    font-weight: 600;
-  }
-  .tag {
-    align-self: flex-start;
-    margin: 4px 0 2px;
-    padding: 2px 7px;
-    border-radius: 999px;
-    background: #fff4e6;
-    color: #e8590c;
-    font-size: 10.5px;
-    font-weight: 700;
-    text-transform: uppercase;
-  }
-  .tag.round {
-    background: #f3f0ff;
-    color: #7048e8;
-    text-transform: none;
-    border-radius: 12px;
-    padding: 4px 9px;
   }
   .card:global(.lift) {
     z-index: 3;
@@ -677,14 +630,15 @@ const [boardImg, roleImg, insightsImg] = await Promise.all([board, role, insight
   /* A role: its stage changes. */
   .stage-badge {
     position: absolute;
-    left: 246px;
-    top: 191px;
-    width: 108px;
+    left: 258px;
+    top: 203px;
+    width: 107px;
     height: 20px;
     display: grid;
     place-items: center;
-    border-radius: 3px;
-    font-size: 11.5px;
+    border-radius: 999px;
+    font-size: 11px;
+    letter-spacing: 0.25px;
     font-weight: 700;
     text-transform: uppercase;
     transition:
@@ -692,12 +646,12 @@ const [boardImg, roleImg, insightsImg] = await Promise.all([board, role, insight
       transform 0.45s cubic-bezier(0.3, 1.3, 0.4, 1);
   }
   .stage-badge.old {
-    background: #dbe4ff;
-    color: #4263eb;
+    background: #e4defa;
+    color: #2f2466;
   }
   .stage-badge.new {
-    background: #e5dbff;
-    color: #7048e8;
+    background: #ece2f8;
+    color: #45236b;
     opacity: 0;
     transform: translateY(8px);
   }
@@ -710,18 +664,16 @@ const [boardImg, roleImg, insightsImg] = await Promise.all([board, role, insight
   }
   .menu {
     position: absolute;
-    left: 246px;
-    top: 264px;
-    width: 190px;
+    left: 258px;
+    top: 278px;
+    width: 109px;
     padding: 5px;
-    border-radius: 6px;
+    border-radius: 18px;
     background: #fff;
-    border: 1px solid #dee2e6;
-    box-shadow: 0 16px 40px rgb(42 30 63 / 0.18);
+    box-shadow: 0 22px 56px -24px rgb(42 30 63 / 0.34);
     display: flex;
     flex-direction: column;
     font-size: 14px;
-    color: #212529;
     opacity: 0;
     transform: translateY(-6px) scale(0.98);
     transform-origin: top left;
@@ -729,15 +681,22 @@ const [boardImg, roleImg, insightsImg] = await Promise.all([board, role, insight
       opacity 0.2s,
       transform 0.25s;
   }
+  .menu small,
   .menu span {
-    padding: 7px 10px;
-    border-radius: 4px;
+    padding-inline: 12px;
   }
-  .menu .current {
-    color: #adb5bd;
+  .menu small {
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 28px;
+    color: var(--app-muted);
+  }
+  .menu span {
+    line-height: 35px;
+    border-radius: 18px;
   }
   .menu .pick {
-    background: #f1f3f5;
+    background: #f3f0fa;
   }
   .menu:global(.on) {
     opacity: 1;
@@ -747,10 +706,10 @@ const [boardImg, roleImg, insightsImg] = await Promise.all([board, role, insight
   /* Insights: a white curtain slides off the Sankey, left to right. */
   .cover {
     position: absolute;
-    left: 262px;
-    top: 270px;
-    width: 1150px;
-    height: 445px;
+    left: 283px;
+    top: 318px;
+    width: 1106px;
+    height: 444px;
     background: #fff;
     transform-origin: 100% 50%;
   }

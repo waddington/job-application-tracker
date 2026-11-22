@@ -133,7 +133,7 @@ const formats: ("avif" | "webp")[] = ["avif", "webp"];
     width: 170%;
     max-width: none;
     height: auto;
-    transform: translate(-16%, -13%);
+    transform: translate(-16%, -8.5%);
   }
   @keyframes features-float {
     to {
@@ -175,16 +175,16 @@ const formats: ("avif" | "webp")[] = ["avif", "webp"];
   .panel-text .h2 {
     margin-bottom: 18px;
   }
-  /* The screenshot's sidebar and header are cropped off: content starts 231 px in and 57 px down of 1440 x 900. */
-  /* Cropped to the Sankey itself: 1209 x 658 of the screenshot, from 231 px in and 57 px down. */
+  /* Cropped to the Sankey itself, without the sidebar and header: 1208 x 713 of the 1440 x 900 screenshot, from
+     232 px in and 57 px down. */
   .sankey {
     position: relative;
     align-self: center;
-    aspect-ratio: 1209 / 658;
+    aspect-ratio: 1208 / 713;
     margin: 56px 0;
     border-radius: 18px 0 0 18px;
     overflow: hidden;
-    background: #fff;
+    background: #f4f1fb;
     box-shadow: 0 40px 80px -30px rgb(var(--shadow-rgb) / 0.45);
   }
   .sankey :global(img) {
