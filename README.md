@@ -104,16 +104,16 @@ quiet. Heard back, follow up, snooze or mark Ghosted in one click.
 went, add the roles they mentioned, then apply, mark interested or pass on each. Every person has a page
 like this, and its **Timeline** button shows their calls, pitches, applications and notes over time.
 
-![A recruiter's page: where things stand with them, Timeline, Edit and Merge buttons, a booked video call with an agenda, a past call with the three roles it brought up, and the roles they've mentioned](docs/screenshots/person.png)
+![A recruiter's page: where things stand with them and how fast they usually reply, Timeline, Edit and Merge buttons, a booked video call with an agenda, a past call with the three roles it brought up, and the roles they've mentioned](docs/screenshots/person.png)
 
 **Roles to decide.** Everything you might go for, before you apply. **Apply** makes the
 application through whoever pitched it; **Interested** tracks it without applying yet; **Pass**
 keeps your reason. Each role has its own page:
 drop the job description on it and it follows the role onto your application.
 
-![Roles to decide: two pitched roles with pay, source and Apply or Pass buttons](docs/screenshots/roles.png)
+![Roles to decide: three pitched roles with pay, source and Apply, Interested or Pass buttons](docs/screenshots/roles.png)
 
-![A role's page: pay and terms, the recruiter and call it came from, notes, to-dos and the job description PDF](docs/screenshots/role.png)
+![A role's page: pay and terms, the recruiter and call it came from, notes, to-dos, files and links](docs/screenshots/role.png)
 
 **Timeline of everything.** Calls, roles pitched and passed, stage moves, messages,
 interviews, offers and notes, as a list by day or as lanes against time: one row per role, so
@@ -154,11 +154,11 @@ to applications, roles or recruiters as plain files? It spots identical ones and
 <td width="50%"><b>Recruiter CRM</b>: agencies, recruiters and every way to reach them<br><img src="docs/screenshots/recruiters.png" width="100%" alt="Recruiters as tiles, A to Z, with agency chips and contact details"></td>
 </tr>
 <tr>
-<td width="50%"><b>CV and cover-letter versions</b>, and where each one was sent<br><img src="docs/screenshots/documents.png" width="100%" alt="A CV with two versions, one sent"></td>
+<td width="50%"><b>CV and cover-letter versions</b>, and where each one was sent<br><img src="docs/screenshots/documents.png" width="100%" alt="Documents as cards: a CV with two versions, a cover letter, a portfolio, and CV files you've attached"></td>
 <td width="50%"><b>Offers side by side</b>: a salary package against a contract day rate, worth-a-year first<br><img src="docs/screenshots/offers.png" width="100%" alt="Two offers compared: a permanent salary package and a contract day rate"></td>
 </tr>
 <tr>
-<td width="50%"><b>Search everything</b> (press <kbd>/</kbd>): applications, people, notes, debriefs, calls, emails<br><img src="docs/screenshots/search.png" width="100%" alt="Search results for system design: an interview round, a timeline entry and a link"></td>
+<td width="50%"><b>Search everything</b> (press <kbd>/</kbd>): applications, people, notes, debriefs, calls, emails<br><img src="docs/screenshots/search.png" width="100%" alt="Search results for Alex: a person, a note, timeline entries, applications and a link"></td>
 <td width="50%"></td>
 </tr>
 </table>

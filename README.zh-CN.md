@@ -75,11 +75,11 @@
 
 **招聘顾问、和他们的通话，以及他们推荐的职位。** 约一次带议程的通话，记下聊得怎么样，添加对方提到的职位，然后逐个投递、标为感兴趣或放弃。每位联系人都有这样一个页面，页面上的**时间线**按钮会按时间顺序列出和对方的通话、推荐、申请和笔记。
 
-![一位招聘顾问的页面：和对方目前的进展，时间线、编辑和合并按钮，一个已预约、带议程的视频通话，一个提到三个职位的过往通话，以及对方提到过的职位](docs/screenshots/zh-CN/person.png)
+![一位招聘顾问的页面：和对方目前的进展以及对方通常多久回复，时间线、编辑和合并按钮，一个已预约、带议程的视频通话，一个提到三个职位的过往通话，以及对方提到过的职位](docs/screenshots/zh-CN/person.png)
 
 **待决定的职位。** 投递之前，所有你可能会考虑的职位。**投递**会通过推荐它的人创建申请；**感兴趣**先记录下来，暂不投递；**放弃**会保留你的理由。每个职位都有自己的页面：把职位描述拖到页面上，之后它会跟着这个职位进入你的申请。
 
-![待决定的职位：两个推荐来的职位，带薪资、来源以及投递和放弃按钮](docs/screenshots/zh-CN/roles.png)
+![待决定的职位：三个推荐来的职位，带薪资、来源以及投递、感兴趣和放弃按钮](docs/screenshots/zh-CN/roles.png)
 
 ![一个职位的页面：薪资和条款、它来自哪位招聘顾问的哪次通话、一条待办，以及放笔记、文件和链接的地方](docs/screenshots/zh-CN/role.png)
 
@@ -109,11 +109,11 @@
 <td width="50%"><b>招聘顾问 CRM</b>：猎头公司、招聘顾问，以及联系他们的每一种方式<br><img src="docs/screenshots/zh-CN/recruiters.png" width="100%" alt="按名字排序的招聘顾问卡片，带猎头公司标签和联系方式"></td>
 </tr>
 <tr>
-<td width="50%"><b>简历和求职信的版本</b>，以及每个版本发给了哪里<br><img src="docs/screenshots/zh-CN/documents.png" width="100%" alt="一份有两个版本的简历，其中一个已发送"></td>
+<td width="50%"><b>简历和求职信的版本</b>，以及每个版本发给了哪里<br><img src="docs/screenshots/zh-CN/documents.png" width="100%" alt="卡片形式的文档：一份有两个版本的简历、一封求职信和一份作品集"></td>
 <td width="50%"><b>Offer 并排对比</b>：正式岗的薪资方案对比合同工的日薪，年度总值排在最前<br><img src="docs/screenshots/zh-CN/offers.png" width="100%" alt="两个 Offer 的对比：一个正式岗薪资方案和一个合同工日薪"></td>
 </tr>
 <tr>
-<td width="50%"><b>全局搜索</b>（按 <kbd>/</kbd>）：申请、联系人、笔记、复盘、通话、邮件<br><img src="docs/screenshots/zh-CN/search.png" width="100%" alt="搜索“系统设计”的结果：一个面试轮次、一条时间线记录和一个链接"></td>
+<td width="50%"><b>全局搜索</b>（按 <kbd>/</kbd>）：申请、联系人、笔记、复盘、通话、邮件<br><img src="docs/screenshots/zh-CN/search.png" width="100%" alt="搜索“支付”的结果：一份申请、公司、一条待办、一条笔记和一次通话"></td>
 <td width="50%"></td>
 </tr>
 </table>
