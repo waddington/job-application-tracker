@@ -64,36 +64,34 @@ const [boardImg, roleImg, insightsImg] = await Promise.all([board, role, insight
       <div class="pg" data-page="board">
         <div class="pin">
           <img {...boardImg} sizes={img.sizes} alt="" decoding="async" data-later="board" />
-          <div class="board">
-            <div class="well applied">
-              <i data-well="Applied" />
-            </div>
-            <div class="well screen">
-              <i data-well="Screen" />
-            </div>
-            <span class="count applied" data-count="Applied">
-              4
-            </span>
-            <span class="count screen" data-count="Screen">
-              0
-            </span>
-            {applied.map((c, i) => (
-              <div
-                class="card"
-                style={`left:${APPLIED_X}px;top:${c.top}px;height:${c.h}px`}
-                data-card={i === 0 ? "drag" : "below"}
-              >
-                <img
-                  {...boardImg}
-                  sizes={img.sizes}
-                  style={`position:absolute;left:${-APPLIED_X}px;top:${-c.top}px`}
-                  alt=""
-                  decoding="async"
-                  data-later="board"
-                />
-              </div>
-            ))}
+          <div class="well applied">
+            <i data-well="Applied" />
           </div>
+          <div class="well screen">
+            <i data-well="Screen" />
+          </div>
+          <span class="count applied" data-count="Applied">
+            4
+          </span>
+          <span class="count screen" data-count="Screen">
+            0
+          </span>
+          {applied.map((c, i) => (
+            <div
+              class="card"
+              style={`left:${APPLIED_X}px;top:${c.top}px;height:${c.h}px`}
+              data-card={i === 0 ? "drag" : "below"}
+            >
+              <img
+                {...boardImg}
+                sizes={img.sizes}
+                style={`position:absolute;left:${-APPLIED_X}px;top:${-c.top}px`}
+                alt=""
+                decoding="async"
+                data-later="board"
+              />
+            </div>
+          ))}
         </div>
       </div>
       <div class="pg" data-page="role">
@@ -235,10 +233,14 @@ const [boardImg, roleImg, insightsImg] = await Promise.all([board, role, insight
     }
     // Puts the moved pieces back; run while their pages are hidden, so nothing snaps in view.
     function resetPieces() {
-      for (const el of [card, ...below, ...wells, ...$$("[data-todo]"), $("[data-scroll]")]) {
+      const moved = [card, ...below, ...wells, ...$$("[data-todo]"), $("[data-scroll]")];
+      for (const el of moved) {
         place(el, "", 0);
         el.classList.remove("on", "lift");
       }
+      // Once that has landed (the one read), their own CSS transitions come back for the next time round.
+      void stage.offsetWidth;
+      for (const el of moved) el.style.transition = "";
       place(pages.get("role")!.querySelector<HTMLElement>("[data-scroll]")!, "", 0);
       $("[data-count='Applied']").textContent = "4";
       $("[data-count='Screen']").textContent = "0";
@@ -403,6 +405,8 @@ const [boardImg, roleImg, insightsImg] = await Promise.all([board, role, insight
     --app-ink: #2a1e3f;
     --app-muted: rgb(42 30 63 / 0.7);
     background: var(--page);
+    /* A picture of the app: forced colours would turn the sidebar's highlight into a blank block. */
+    forced-color-adjust: none;
     display: none;
     opacity: 0;
     transition: opacity 0.5s;
@@ -426,7 +430,8 @@ const [boardImg, roleImg, insightsImg] = await Promise.all([board, role, insight
     color: var(--app-ink);
     -webkit-font-smoothing: antialiased;
   }
-  .stage :global(img) {
+  /* Outweighs the hero window's own rule for images: the pieces cut from the board need the full 1440 px. */
+  .demo .stage :global(img) {
     display: block;
     width: 1440px;
     max-width: none;
