@@ -166,6 +166,18 @@ def test_a_committed_change_undone_on_disk_still_counts(repo: Path, path: str):
     assert path in out.stdout
 
 
+@pytest.mark.parametrize("path", ["pyproject.toml", "website/package.json"])
+def test_a_version_file_deleted_from_git_but_left_on_disk_is_no_bump(repo: Path, path: str):
+    git(repo, "rm", "-q", "--cached", path)
+    git(repo, "commit", "-qm", "drop it")
+    out = subprocess.run(["bash", str(SCOPE), "--no-e2e"], cwd=repo, capture_output=True, text=True, env=ENV)
+    if path.startswith("website/"):
+        assert "website's checks run too" in out.stdout
+    else:
+        assert out.returncode == 2
+        assert path in out.stdout
+
+
 def test_checks_reads_the_words_scope_prints():
     words = "the website's checks run too"
     assert words in SCOPE.read_text()

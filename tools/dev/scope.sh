@@ -60,7 +60,7 @@ LC_ALL=C sort -z -u -o "$names" "$names" || { echo "$mode: couldn't sort the cha
 # Is this one of the version files, changed only by the bump's line? It's read from disk, so it must be committed
 # as it is there.
 version_line_only() {
-  [[ "$1" =~ $bump ]] && [ -f "$1" ] && [ ! -L "$1" ] && git diff --quiet HEAD -- "$1" &&
+  [[ "$1" =~ $bump ]] && kept_file "$1" && git diff --quiet HEAD -- "$1" &&
     ! git diff --summary "$base" -- "$1" | grep -q "mode change" &&
     git show "$base:$1" 2>/dev/null | python3 "$DEV/version_only.py" "$1" "$old" "$new"
 }
@@ -80,7 +80,7 @@ while IFS= read -r -d '' f; do
   if [ -n "$icons" ] && [[ "$f" =~ $icons ]] && kept_file "$f"; then continue; fi
   if [[ "$f" =~ $bump ]]; then
     if version_line_only "$f"; then continue; fi
-    echo "$mode: $f changes more than its version line ($old → $new)"
+    echo "$mode: $f changes more than its version line ($old → $new), or its bump isn't committed"
   else
     echo "$mode: $f $off"
   fi
