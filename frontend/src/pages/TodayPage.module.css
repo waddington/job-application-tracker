@@ -1,6 +1,8 @@
 /* Each row is a soft tile; its buttons stay faint until you point at it (or tab into it), so
-   the page reads as a calm list and the actions show up where you're looking. */
+   the page reads as a calm list and the actions show up where you're looking. As faint as still reads at
+   4.5:1 in each scheme (contrast.test.ts checks). */
 .rows {
+  --today-faint: 0.76;
   --today-tint: var(--mantine-color-gray-1);
   --today-tint-strong: var(--mantine-color-gray-2);
   display: flex;
@@ -10,6 +12,7 @@
 /* In dark mode a card is dark-6: a tile sits halfway to dark-5, and takes dark-5 on hover or focus.
    (dark-4 would drop dimmed and red text under 4.5:1; theme.test.tsx checks.) */
 :where([data-mantine-color-scheme="dark"]) .rows {
+  --today-faint: 0.75;
   --today-tint: color-mix(in srgb, var(--mantine-color-dark-5) 50%, var(--mantine-color-dark-6));
   --today-tint-strong: var(--mantine-color-dark-5);
 }
@@ -25,7 +28,7 @@
 }
 
 .actions {
-  opacity: 0.55;
+  opacity: var(--today-faint, 1);
   transition: opacity 120ms;
 }
 .rows > *:hover .actions,

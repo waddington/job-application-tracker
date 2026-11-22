@@ -331,7 +331,8 @@ export function OffersCard({ applicationId, roleId }: { applicationId: string; r
       ) : (
         <Stack gap="sm">
           {offers.map((o, i) => (
-            <Card key={o.id} withBorder opacity={i === 0 ? 1 : 0.6}>
+            // An earlier offer sinks into the well rather than fading, so its text still reads at 4.5:1.
+            <Card key={o.id} withBorder variant={i === 0 ? undefined : "well"}>
               <Group justify="space-between" wrap="nowrap" align="flex-start">
                 <Stack gap={4}>
                   <Group gap="xs">
