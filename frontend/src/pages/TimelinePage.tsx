@@ -62,7 +62,7 @@ const LANE_BY = [
 const laneColor = (color: string) => `var(--jat-dot-${color}, var(--mantine-color-${color}-6))`;
 
 // Companies, agencies and people being added is bookkeeping: off unless you ask for it.
-const DEFAULT_CATEGORIES =CATEGORIES.filter((c) => c.value !== "added").map((c) => c.value as string);
+const DEFAULT_CATEGORIES = CATEGORIES.filter((c) => c.value !== "added").map((c) => c.value as string);
 
 /** The calendar day an item belongs to, in your time zone (all-day items keep their date). */
 export const dayOf = (item: TimelineItem) =>
