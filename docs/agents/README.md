@@ -27,6 +27,7 @@ tells the session to read these by full path; in a fresh session, `CLAUDE.md` sa
 | UI text and translations | `CONTRIBUTING.md` *Text in the UI*, `docs/rfc/i18n.md` (incl. "Learned so far"), `docs/guide/adding-a-language.md` |
 | The Chinese translation | `docs/rfc/zh-cn.md`, the glossary `docs/i18n/zh-CN.md`, `scripts/i18n/translate/README.md`, `.claude/workflows/i18n-*.js` |
 | Browser tests | `frontend/e2e/fixtures.ts`, a neighbouring spec, [gotchas.md](gotchas.md) *Browser tests* |
+| A redesign or layout PR, or why one ran slow | `docs/rfc/app-redesign.md` (its "As built" notes), `docs/retros/` |
 | A bug fix by a subagent | `tools/dev/briefs/bug-fix.md` |
 | A PR from an outside contributor | [contributor-prs.md](contributor-prs.md): security first, two reviews and the plan, the Windows VM, author or carry or backlog, carrying, the note before merging |
 | Testing on real Windows | Kai's Windows 11 VM, `ssh winvm`. Its own README, in Kai's `windows-vm` project (not in this repo; Kai's user-level `CLAUDE.md` names it), covers starting and stopping it, resetting it to its clean snapshot and PowerShell's quirks: read it first. How this repo runs there: [gotchas.md](gotchas.md) *Windows VM* |

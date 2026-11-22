@@ -20,7 +20,9 @@ Each of these cost time once. Add a line when something new does.
   browser tests fail with `spawnSync uv ENOENT`).
 - **Don't test a script by running it with odd arguments** from a checkout's root: `checks.sh` with a bad argument once
   started a full check run (it now refuses), and `e2e_only.sh` started the browser suite. Test guards from a subfolder.
-- **Killing by PID is refused**; stop your own background jobs with TaskStop. `pkill -f` can match its own shell.
+- **Stopping what you started:** TaskStop for background jobs; for a server started in the same command, keep its pid
+  (`… & SP=$!`, then `kill $SP`; killing by pid is refused in some isolated sessions). `pkill -f` can match its own
+  shell: write the pattern as `"[s]erve --port 8884"`.
 - **A session restart stops background jobs** (PM dashboard, demo and dev servers): restart the dashboard at once.
 - **Never give a one-off agent a `name`**: it becomes a teammate that never reports back by itself.
 - **Isolated agents** (`isolation: "worktree"`) can't write to the job folder; their worktrees stay locked after they
@@ -109,6 +111,9 @@ Each of these cost time once. Add a line when something new does.
 
 ## Browser tests (`frontend/e2e/`)
 
+- **A Vite dev server proxies `/api` to 8770, Kai's live tracker, by default:** always start it with
+  `JAT_API_URL=http://127.0.0.1:<demo port>`, and check it serves demo companies before showing or testing it. On a port
+  other than 5173 its writes are refused (`fix-dev-proxy-other-port-writes`).
 - **Read a browser run's failed line and exit code, not its passed count.** `e2e_only.sh`'s tail can end "830 passed"
   just under "1 failed" and "ELIFECYCLE … exit code 1"; on 2026-11-20 that was misread and #425 merged on a failure
   (the known `fix-board-drag-width-race` flake, in a file #425 didn't touch; the board spec then passed on main).
@@ -148,6 +153,14 @@ Each of these cost time once. Add a line when something new does.
 
 ## Frontend and unit tests
 
+- **Headless Chrome hides scrollbars**, so a layout that wraps at a 970 px window passes at 970. To match a real
+  browser, launch with `ignore_default_args=["--hide-scrollbars"]`, or test 15 px narrower.
+- **Firefox fires no focusout when the focused element is removed**, and the browser tests are Chromium only: check
+  focus and Escape work in Firefox by hand (`uv run --with playwright==1.54.0 python`, `p.firefox`).
+- **A grep of `frontend/src` doesn't show Mantine's CSS** (a card's `touch-action: manipulation` comes from Paper): check
+  computed styles or `node_modules/@mantine/core/styles` before saying a style isn't set.
+- **Nothing moves or scrolls on a pointer press:** a scroll on focus under a press selected text that typing then
+  deleted (found in #427's review).
 - No `Date.now()` or `dayjs()` in render: `useToday()`, `useNow()`. Never read `e.currentTarget.value` inside a state
   updater (React clears it first).
 - CSS modules: no `light-dark()` (the build drops it); use a custom property overridden under
