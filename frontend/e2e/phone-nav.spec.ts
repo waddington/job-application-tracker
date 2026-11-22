@@ -201,11 +201,11 @@ test("a press on what's half under the bar scrolls nothing", async ({ page, requ
       document.querySelector<HTMLElement>("main > *")!.style.marginTop = "800px";
       window.scrollBy(0, el.getBoundingClientRect().top - top);
     }, to);
-    const before = await scrollY(page);
-    await page.mouse.move(80, to + shown / 2);
+    const [before, x] = [await scrollY(page), (await field.boundingBox())!.x + 16]; // in it, however narrow
+    await page.mouse.move(x, to + shown / 2);
     await page.mouse.down();
     await page.evaluate(() => new Promise(requestAnimationFrame));
-    await page.mouse.move(81, to + shown / 2);
+    await page.mouse.move(x + 1, to + shown / 2);
     await page.mouse.up();
     expect(await scrollY(page)).toBe(before);
   };
@@ -293,7 +293,6 @@ test("in a short window it makes way while you type, and not under your press", 
   await expect(bar(page)).toBeInViewport(); // a tall window keeps it
   await page.setViewportSize({ width: 375, height: 350 });
   const add = page.locator("form").filter({ has: box }).getByRole("button", { name: "Add", exact: true });
-  // A tap, and a press held for longer than the bar waits to come back.
   for (const held of [0, 600]) {
     await box.fill(`Pressed for ${held}`);
     await expect(bar(page)).not.toBeInViewport();
@@ -306,6 +305,7 @@ test("in a short window it makes way while you type, and not under your press", 
     await page.getByRole("heading", { name: "Your move" }).click();
     await expect(bar(page)).toBeInViewport();
   }
+  await expect(bar(page)).toHaveCSS("transition-delay", "0.3s"); // what a tap in Firefox needs
 });
 
 test("the board scrolls under a finger, and a mouse drag over the bar", async ({ page, request }) => {
