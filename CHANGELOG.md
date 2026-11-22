@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.24.49 (2026-11-22)
+
+- The app's icon is plum to violet, and the README's demo GIFs and the social card have the new look. The card now also says No internet needed (#439).
+
 ## 1.24.48 (2026-11-22)
 
 - The README's screenshots show the app's new look, in English and Chinese, and their descriptions say what's in them (#438).
