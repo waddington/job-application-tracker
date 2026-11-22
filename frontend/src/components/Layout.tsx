@@ -88,42 +88,40 @@ export function Layout() {
         </Group>
       </AppShell.Header>
 
-      {/* On a phone the bar at the bottom takes its place, so there's one menu and one footer at a time. */}
-      {!phone && (
-        <AppShell.Navbar p="xs" aria-label={t("nav.label")}>
-          {NAV_GROUPS.map((group, n) => {
-            const items = NAV.filter((item) => item.group === group);
-            // A heading that only repeats its one item's name ("Today") says nothing.
-            const heading = !(items.length === 1 && t(items[0]!.labelKey) === t(NAV_GROUP_KEYS[group]));
-            return (
-              <div
-                key={group}
-                role="group"
-                aria-label={t(NAV_GROUP_KEYS[group])}
-                className={n > 0 ? classes.group : undefined}
-              >
-                {heading && (
-                  <Text className={theme.eyebrow} px="sm" pt={6} pb={2}>
-                    {t(NAV_GROUP_KEYS[group])}
-                  </Text>
-                )}
-                {items.map((item) => (
-                  <NavLink
-                    key={item.path}
-                    component={Link}
-                    to={item.path}
-                    label={t(item.labelKey)}
-                    leftSection={<item.icon size={18} stroke={1.6} />}
-                    className={classes.navLink}
-                    active={isActive(item, pathname)}
-                  />
-                ))}
-              </div>
-            );
-          })}
-          <MenuFooter mt="auto" p="xs" />
-        </AppShell.Navbar>
-      )}
+      {/* Not shown on a phone: the bottom bar takes its place, and the footer goes in its sheet (one at a time). */}
+      <AppShell.Navbar p="xs" aria-label={t("nav.label")} visibleFrom="sm">
+        {NAV_GROUPS.map((group, n) => {
+          const items = NAV.filter((item) => item.group === group);
+          // A heading that only repeats its one item's name ("Today") says nothing.
+          const heading = !(items.length === 1 && t(items[0]!.labelKey) === t(NAV_GROUP_KEYS[group]));
+          return (
+            <div
+              key={group}
+              role="group"
+              aria-label={t(NAV_GROUP_KEYS[group])}
+              className={n > 0 ? classes.group : undefined}
+            >
+              {heading && (
+                <Text className={theme.eyebrow} px="sm" pt={6} pb={2}>
+                  {t(NAV_GROUP_KEYS[group])}
+                </Text>
+              )}
+              {items.map((item) => (
+                <NavLink
+                  key={item.path}
+                  component={Link}
+                  to={item.path}
+                  label={t(item.labelKey)}
+                  leftSection={<item.icon size={18} stroke={1.6} />}
+                  className={classes.navLink}
+                  active={isActive(item, pathname)}
+                />
+              ))}
+            </div>
+          );
+        })}
+        {!phone && <MenuFooter mt="auto" p="xs" />}
+      </AppShell.Navbar>
 
       <DockContext.Provider value={slot}>
         <AppShell.Main>

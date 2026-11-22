@@ -84,13 +84,9 @@ describe("the frame", () => {
     mockApi({ "/api/v1/health": { ...HEALTH, version: "0.0.1" } });
     renderAt("/no-such-page");
 
-    const bar = await screen.findByRole("navigation", { name: "Main navigation" });
-    expect(
-      within(bar)
-        .getAllByRole("link")
-        .map((link) => link.textContent),
-    ).toEqual(["Today", "Applications", "Interviews", "Notes"]);
-    const more = within(bar).getByRole("button", { name: "More" });
+    const more = await screen.findByRole("button", { name: "More" });
+    const tabs = within(more.closest("nav")!).getAllByRole("link"); // the side menu is hidden by CSS alone
+    expect(tabs.map((a) => a.textContent)).toEqual(["Today", "Applications", "Interviews", "Notes"]);
     expect(more).toHaveAttribute("aria-expanded", "false");
     await waitFor(() => expect(more).toHaveAccessibleDescription(/^The server is v0\.0\.1/));
   });

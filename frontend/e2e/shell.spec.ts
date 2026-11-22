@@ -311,16 +311,13 @@ test.describe("not found", () => {
 test.describe("phone width", () => {
   test.use({ viewport: { width: 390, height: 800 } });
 
-  test("the menu is behind a button, and closes after choosing", async ({ page }) => {
+  test("the menu is a bar along the bottom (phone-nav.spec.ts has the rest)", async ({ page }) => {
     await opened(page);
-    const toggle = page.getByRole("button", { name: "Toggle navigation" });
-    await expect(toggle).toBeVisible();
-    await expect(item(page, "Notes")).not.toBeInViewport();
-    await toggle.click();
+    await expect(item(page, "Today")).toHaveAttribute("aria-current", "page");
     await expect(item(page, "Notes")).toBeInViewport();
     await item(page, "Notes").click();
     await expect(page.getByRole("heading", { name: "Notes", level: 2 })).toBeVisible();
-    await expect(item(page, "Notes")).not.toBeInViewport();
+    await expect(item(page, "Notes")).toHaveAttribute("aria-current", "page");
   });
 
   test("New application is a small button, and works", async ({ page }) => {
@@ -352,10 +349,13 @@ test.describe("phone width", () => {
 });
 
 test.describe("wide screens", () => {
-  test("the menu is always there, with no button for it", async ({ page }) => {
+  test("the side menu is always there from 768 px, with no bottom bar", async ({ page }) => {
     await opened(page);
-    await expect(item(page, "Notes")).toBeInViewport();
-    await expect(page.getByRole("button", { name: "Toggle navigation" })).toBeHidden();
+    for (const width of [1400, 768]) {
+      await page.setViewportSize({ width, height: 800 });
+      await expect(item(page, "Timeline")).toBeInViewport();
+      await expect(page.getByRole("button", { name: "More", exact: true })).toHaveCount(0);
+    }
   });
 });
 
@@ -462,21 +462,28 @@ test.describe("more of the frame", () => {
   test.describe("at phone width", () => {
     test.use({ viewport: { width: 390, height: 800 } });
 
-    // KNOWN BUG (fix-phone-header-overflow on the roadmap): expected to fail until it is fixed.
-    test.fail("the header's contents stay in the header", async ({ page }) => {
-      await opened(page);
-      // Whatever's there: a fix may fold some of them away.
-      const controls = page.locator("header").locator("a, button, input").filter({ visible: true });
-      expect(await controls.count()).toBeGreaterThan(0);
-      for (const box of await controls.evaluateAll((all) =>
-        all.map((el) => {
-          const { right, bottom } = el.getBoundingClientRect();
-          return { right, bottom };
-        }),
-      )) {
-        expect(box.bottom).toBeLessThanOrEqual(56);
-        expect(box.right).toBeLessThanOrEqual(390);
-      }
-    });
+    for (const lang of ["en", "zh-CN"]) {
+      test(`the header's contents stay in the header, clear of the title (${lang})`, async ({ page }) => {
+        await page.addInitScript((code) => localStorage.setItem("jat.language", code), lang);
+        for (const path of ["/interviews", "/applications"]) {
+          await page.goto(path);
+          await expect(page.locator("main h2").first()).toBeVisible();
+          for (const width of [320, 375, 390, 600, 767]) {
+            await page.setViewportSize({ width, height: 800 });
+            // Whatever's there: a fix may fold some of them away.
+            const controls = page.locator("header").locator("a, button, input").filter({ visible: true });
+            await expect(async () => {
+              expect(await controls.count()).toBeGreaterThan(0);
+              for (const box of await Promise.all((await controls.all()).map((el) => el.boundingBox()))) {
+                expect(box!.y + box!.height).toBeLessThanOrEqual(56);
+                expect(box!.x + box!.width).toBeLessThanOrEqual(width);
+              }
+              expect((await page.locator("main h2").first().boundingBox())!.y).toBeGreaterThanOrEqual(56);
+              expect((await page.getByRole("search").boundingBox())!.width).toBeGreaterThanOrEqual(90);
+            }).toPass({ timeout: 5000 });
+          }
+        }
+      });
+    }
   });
 });
