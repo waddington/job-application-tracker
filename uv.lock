@@ -184,7 +184,7 @@ wheels = [
 
 [[package]]
 name = "job-application-tracker"
-version = "1.24.49"
+version = "1.24.50"
 source = { editable = "." }
 dependencies = [
     { name = "alembic" },
