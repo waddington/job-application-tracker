@@ -128,8 +128,9 @@ Product decisions Kai has made or accepted. Don't re-litigate them; change one o
 - As built (the lead's calls, reported to Kai): layouts follow the page's own width, not the window's (container
   queries), as the docked panel takes 440-540 px; so three columns start at about a 1,490 px window on Today. Board
   columns are 180-360 px.
-- The social card keeps the four No's, also says it works offline (once `fix-offline-requests-paused` has shipped),
-  and Kai picks from every option rendered as an image (2026-11-22).
+- The social card (Kai's picks, 2026-11-22: "a4 with the files lst from c1 c2", "it can be a semi transparent
+  background graphic, part of th ebg", "E2"): light, the four No's and "No internet needed.", with the data folder's
+  file list faint in two corners. The icon is I2, the website's plum-to-violet logo; the GIFs follow the card's look.
 - The side menu on desktop ("on desktop i prefer side menu"), not a top bar. Concepts 1-3 are out ("overwhelming and
   not calm"). Fonts: Inter and JetBrains Mono, as in the concepts.
 - After the dark pass (the lead's defaults, which Kai's "do docs" went ahead on, 2026-11-22): the picked segment keeps

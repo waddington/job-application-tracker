@@ -1,15 +1,21 @@
 <!doctype html>
 <!--
   The GitHub social preview (docs/social-preview.png), 1280x640. Rendered by make_card.py.
-  ?layout=b (default): "No AI. No cloud. No account. No tracking." as the headline.
-  ?layout=a: the name as the headline, with a checklist of eight points.
-  Text sizes are chosen to stay readable when GitHub and chat apps shrink the card to ~400px wide:
-  nothing important below 32px, and nothing within 48px of an edge.
+  The four No's and "No internet needed." as a statement, with the data folder's file list faint in two corners.
+  GitHub crops about 12% off the top and bottom, and chat apps shrink the card to ~400px wide: keep every line of
+  text between y 95 and 545, the list clear of the words, and the headline big. "AI" has a serifed I, or it reads
+  as "Al". Check changes with DAST (docs/agents/working-with-kai.md): an earlier cable drawing failed it.
 -->
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <style>
+      @font-face {
+        font-family: "Card Mono";
+        src: url("../../frontend/node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2")
+          format("woff2");
+        font-weight: 100 800;
+      }
       * {
         box-sizing: border-box;
         margin: 0;
@@ -21,204 +27,133 @@
         overflow: hidden;
       }
       body {
-        font-family: "Inter", system-ui, sans-serif;
-        color: #fff;
-        background:
-          radial-gradient(900px 600px at 85% 110%, #3b4fd8 0%, transparent 60%),
-          linear-gradient(135deg, #171c4f 0%, #22297a 55%, #2d3aa6 100%);
         position: relative;
+        color: #2a1e3f;
+        font-family: "Inter Display", Inter, system-ui, sans-serif;
+        background: linear-gradient(115deg, #e9e4f8 0%, #f4f1fb 40%, #fcf6f0 72%, #f2f9f5 100%);
       }
-      .shot {
+      .line {
         position: absolute;
-        border-radius: 14px;
-        overflow: hidden;
-        box-shadow: 0 30px 80px rgb(0 0 0 / 45%);
-        background: #fff;
-      }
-      .shot img {
-        display: block;
-        height: 100%;
-        object-fit: cover;
-        object-position: left top;
-      }
-      .brand {
-        display: flex;
-        align-items: center;
-        gap: 18px;
-      }
-      .brand svg {
-        width: 64px;
-        height: 64px;
-        flex: none;
-      }
-      .name {
-        font-weight: 800;
-        letter-spacing: -0.02em;
-      }
-      .muted {
-        color: #c9d1ff;
-      }
-
-      /* Layout B: the "No X" headline. */
-      .b .shot {
-        left: 985px;
-        top: 150px;
-        width: 760px;
-        height: 520px;
-        transform: rotate(-6deg);
-        opacity: 0.55;
-      }
-      .b .shot img {
-        width: 1400px;
-        margin-left: -255px;
-        margin-top: -265px;
-        height: auto;
-      }
-      .b .text {
-        position: absolute;
-        left: 72px;
-        top: 64px;
-        width: 900px;
-      }
-      .b .name {
-        font-size: 44px;
-      }
-      .b h1 {
-        margin-top: 44px;
-        font-size: 76px; /* "No account. No tracking." on one line inside the 900px column */
-        line-height: 1.05;
-        font-weight: 900;
-        letter-spacing: -0.035em;
-      }
-      .b h1 span {
-        display: block;
+        left: 0;
+        right: 0;
+        text-align: center;
         white-space: nowrap;
       }
-      .b .sub {
-        margin-top: 34px;
-        font-size: 36px;
-        line-height: 1.3;
-        font-weight: 600;
-      }
-      .b .foot {
-        position: absolute;
-        left: 72px;
-        bottom: 52px;
-        font-size: 30px;
-        font-weight: 600;
-      }
-
-      /* Layout A: the name, then a checklist. */
-      .a .shot {
-        left: 820px;
-        top: 96px;
-        width: 520px;
-        height: 448px;
-      }
-      .a .shot img {
-        width: 1400px;
-        margin-left: -255px;
-        margin-top: -265px;
-        height: auto;
-      }
-      .a .text {
-        position: absolute;
-        left: 72px;
-        top: 60px;
-        width: 720px;
-      }
-      .a .name {
-        font-size: 64px;
-        line-height: 1.02;
-      }
-      .a .tag {
-        margin-top: 22px;
-        font-size: 34px;
-        font-weight: 600;
-        line-height: 1.25;
-      }
-      .a ul {
-        list-style: none;
-        padding: 0;
-        margin-top: 36px;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px 24px;
-      }
-      .a li {
-        font-size: 34px;
-        font-weight: 800;
+      .brand {
+        top: 106px;
+        height: 52px;
         display: flex;
         align-items: center;
-        gap: 14px;
-      }
-      .a li::before {
-        content: "✓";
-        flex: none;
-        width: 42px;
-        height: 42px;
-        border-radius: 50%;
-        background: #4ade80;
-        color: #14304a;
-        font-size: 26px;
-        display: grid;
-        place-items: center;
-      }
-      .a .foot {
-        position: absolute;
-        left: 72px;
-        bottom: 48px;
-        font-size: 28px;
+        justify-content: center;
+        gap: 16px;
+        font-size: 34px;
         font-weight: 600;
+      }
+      .brand svg {
+        width: 52px;
+        height: 52px;
+        flex: none;
+      }
+      h1 {
+        top: 188px;
+        font-size: 82px;
+        line-height: 89px;
+        font-weight: 800;
+        letter-spacing: -0.025em;
+      }
+      h1 span {
+        display: block;
+      }
+      h1 em {
+        font-family: Inter, sans-serif;
+        font-style: normal;
+        font-feature-settings: "cv08" 1; /* the serifed I */
+      }
+      .offline {
+        top: 390px;
+        color: #5a4880;
+        font-size: 56px;
+        line-height: 64px;
+        font-weight: 700;
+        letter-spacing: -0.015em;
+      }
+      .foot {
+        top: 492px;
+        color: rgb(42 30 63 / 0.75);
+        font-size: 27px;
+        line-height: 34px;
+        font-weight: 500;
+      }
+      /* The list is part of the background: it fades out towards the words. */
+      .folder {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+        -webkit-mask-image: radial-gradient(
+          ellipse 590px 335px at 640px 335px,
+          rgb(0 0 0 / 0.1) 0,
+          rgb(0 0 0 / 0.1) 62%,
+          #000 100%
+        );
+      }
+      .tree {
+        position: absolute;
+        padding: 24px 30px;
+        font:
+          500 34px/52px "Card Mono",
+          monospace;
+        white-space: pre;
+        opacity: 0.27;
+        transform: rotate(-8deg);
+      }
+      .tree b {
+        color: #5a4880;
+        font-weight: 700;
+      }
+      .tree i {
+        color: rgb(42 30 63 / 0.75);
+        font-style: normal;
       }
     </style>
   </head>
   <body>
-    <template id="icon">
+    <!-- What a data folder holds (src/jat/datadir.py); keep it true. -->
+    <template id="list"><b>my-job-search/</b>
+├─ tracker.sqlite3
+├─ config.toml
+├─ notes/   <i>Markdown</i>
+├─ files/   <i>CVs, PDFs</i>
+├─ export/  <i>JSON Lines</i>
+└─ .git/    <i>optional</i></template>
+    <div class="folder" aria-hidden="true">
+      <div class="tree" style="left: -58px; top: -128px"></div>
+      <div class="tree" style="left: 996px; top: 394px"></div>
+    </div>
+
+    <div class="line brand">
       <svg viewBox="0 0 24 24" aria-hidden="true">
-        <rect width="24" height="24" rx="5" fill="#4c6ef5" />
-        <g fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <defs>
+          <linearGradient id="plum" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#4a3a68" />
+            <stop offset="1" stop-color="#2a1e3f" />
+          </linearGradient>
+        </defs>
+        <rect width="24" height="24" rx="6" fill="url(#plum)" />
+        <g fill="none" stroke="#fff" stroke-width="2">
           <circle cx="12" cy="12" r="8" />
           <circle cx="12" cy="12" r="4.5" />
           <circle cx="12" cy="12" r="1" />
         </g>
       </svg>
-    </template>
-
-    <main id="b" class="b" hidden>
-      <div class="shot"><img src="../../docs/screenshots/insights.png" alt="" /></div>
-      <div class="text">
-        <div class="brand"><span data-icon></span><span class="name">Job Application Tracker</span></div>
-        <h1><span>No AI. No cloud.</span><span>No account. No tracking.</span></h1>
-        <p class="sub">Your job search in a folder on your own machine,<br />with optional git backups.</p>
-      </div>
-      <p class="foot muted">Self-hosted · Open source · Free</p>
-    </main>
-
-    <main id="a" class="a" hidden>
-      <div class="shot"><img src="../../docs/screenshots/insights.png" alt="" /></div>
-      <div class="text">
-        <div class="brand"><span data-icon></span><span class="name">Job Application<br />Tracker</span></div>
-        <p class="tag muted">Your job search, on your own machine.</p>
-        <ul>
-          <li>No AI</li>
-          <li>No cloud</li>
-          <li>No account</li>
-          <li>No tracking</li>
-          <li>Open formats</li>
-          <li>Git backups</li>
-          <li>Self-hosted</li>
-          <li>Open source</li>
-        </ul>
-      </div>
-      <p class="foot muted">Free · Apache-2.0</p>
-    </main>
+      <span>Job Application Tracker</span>
+    </div>
+    <h1 class="line"><span>No A<em>I</em>. No cloud.</span><span>No account. No tracking.</span></h1>
+    <p class="line offline">No internet needed.</p>
+    <p class="line foot">Your job search on your own machine · Open source · Free</p>
 
     <script>
-      const layout = new URLSearchParams(location.search).get("layout") === "a" ? "a" : "b";
-      document.getElementById(layout).hidden = false;
-      const icon = document.getElementById("icon").innerHTML;
-      for (const el of document.querySelectorAll("[data-icon]")) el.outerHTML = icon;
+      const list = document.getElementById("list").innerHTML;
+      for (const el of document.querySelectorAll(".tree")) el.innerHTML = list;
     </script>
   </body>
 </html>

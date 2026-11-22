@@ -1,11 +1,11 @@
 """Build docs/social-preview.png, the card GitHub shows when the repo is shared (1280x640).
 
-    python3 scripts/social_preview/make_card.py [--layout a|b] [--out card.png]
+    python3 scripts/social_preview/make_card.py [--out card.png]
 
-Needs google-chrome (headless). The card is card.html rendered by Chrome; its screenshot is
-docs/screenshots/insights.png, the whole-picture Sankey (fictional demo data only). After
-building, upload the PNG by hand in the repo's Settings > General > Social preview; the
-website copies it as its og:image.
+Needs google-chrome (headless), the Inter and Inter Display fonts installed, and the frontend's
+packages (`pnpm --dir frontend install`, for JetBrains Mono). The card is card.html rendered by
+Chrome. After building, upload the PNG by hand in the repo's Settings > General > Social preview;
+the website copies it as its og:image.
 """
 
 from __future__ import annotations
@@ -19,15 +19,17 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 OUT = HERE.parents[1] / "docs" / "social-preview.png"
+MONO = HERE.parents[1] / "frontend" / "node_modules" / "@fontsource-variable" / "jetbrains-mono"
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--layout", choices=["a", "b"], default="b")
     parser.add_argument("--out", type=Path, default=OUT)
     args = parser.parse_args()
     if not shutil.which("google-chrome"):
         sys.exit("Missing google-chrome: install Google Chrome first.")
+    if not MONO.exists():
+        sys.exit("Missing the card's font: run `pnpm --dir frontend install` first.")
     with tempfile.TemporaryDirectory() as profile:
         subprocess.run(
             [
@@ -41,7 +43,7 @@ def main() -> None:
                 "--allow-file-access-from-files",
                 "--virtual-time-budget=3000",
                 f"--screenshot={args.out.resolve()}",
-                f"{(HERE / 'card.html').as_uri()}?layout={args.layout}",
+                (HERE / "card.html").as_uri(),
             ],
             check=True,
             capture_output=True,

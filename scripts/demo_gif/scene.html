@@ -12,42 +12,41 @@
   html, body { width: 1280px; height: 720px; overflow: hidden; }
   body {
     font-family: "Inter Display", Inter, sans-serif;
-    background:
-      radial-gradient(900px 520px at 88% 115%, rgba(116, 143, 252, 0.45), transparent 60%),
-      linear-gradient(135deg, #1b2559 0%, #2d3a8c 55%, #4c6ef5 125%);
-    color: #fff;
+    /* The social card's tints and ink (scripts/social_preview/card.html). */
+    background: linear-gradient(115deg, #e9e4f8 0%, #f4f1fb 40%, #fcf6f0 72%, #f2f9f5 100%);
+    color: #2a1e3f;
     position: relative;
   }
   .layer { position: absolute; inset: 0; will-change: transform, opacity; }
   .caption { position: absolute; left: 56px; top: 30px; right: 300px; }
   .caption h2 { font-size: 36px; font-weight: 800; letter-spacing: -0.6px; line-height: 1.1; }
-  .caption p { font-family: Inter, sans-serif; font-size: 18px; color: #dbe4ff; margin-top: 8px; font-weight: 500; }
+  .caption p { font-family: Inter, sans-serif; font-size: 18px; color: #5a4880; margin-top: 8px; font-weight: 500; }
   .frame {
     position: absolute; left: 50px; top: 132px; width: 1180px; height: 640px;
-    border-radius: 14px; overflow: hidden; background: #fff;
-    box-shadow: 0 26px 70px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.25);
+    border-radius: 22px; overflow: hidden; background: #f4f1fb;
+    box-shadow: 0 22px 60px rgba(42, 30, 63, 0.24), 0 0 0 1px rgba(42, 30, 63, 0.16);
   }
-  .bar { height: 28px; background: #eef1f6; display: flex; align-items: center; gap: 7px; padding-left: 14px; }
+  .bar { height: 28px; background: #ddd6ec; display: flex; align-items: center; gap: 7px; padding-left: 14px; }
   .bar i { width: 11px; height: 11px; border-radius: 50%; display: block; }
   .view { position: relative; width: 1180px; height: 612px; overflow: hidden; }
   .view img { position: absolute; transform-origin: 0 0; }
   .brand { position: absolute; right: 56px; top: 36px; display: flex; align-items: center; gap: 10px;
-    font-family: Inter, sans-serif; font-size: 16px; font-weight: 600; color: #dbe4ff; }
-  .logo { width: 34px; height: 34px; border-radius: 9px; background: #4c6ef5; display: grid; place-items: center;
-    box-shadow: 0 6px 16px rgba(0,0,0,0.25); }
+    font-family: Inter, sans-serif; font-size: 16px; font-weight: 600; color: #2a1e3f; }
+  .logo { width: 34px; height: 34px; border-radius: 9px; background: linear-gradient(135deg, #4a3a68, #2a1e3f);
+    display: grid; place-items: center; }
   .dots { position: absolute; right: 56px; top: 84px; display: flex; gap: 7px; }
-  .dots b { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.3); display: block; }
-  .dots b.on { background: #fff; width: 22px; border-radius: 4px; }
+  .dots b { width: 8px; height: 8px; border-radius: 50%; background: rgba(42,30,63,0.22); display: block; }
+  .dots b.on { background: #2a1e3f; width: 22px; border-radius: 4px; }
   /* The intro: like the social preview card. */
   .intro .left { position: absolute; left: 64px; top: 92px; width: 560px; }
   .intro h1 { font-size: 64px; line-height: 1.02; font-weight: 800; letter-spacing: -1.6px; margin-top: 30px; }
-  .intro .tag { font-size: 25px; line-height: 1.35; color: #dbe4ff; margin-top: 22px; font-weight: 450; }
+  .intro .tag { font-size: 25px; line-height: 1.35; color: #5a4880; margin-top: 22px; font-weight: 500; }
   .intro .chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 30px; }
-  .badge { font-family: Inter, sans-serif; font-size: 20px; font-weight: 600; color: #dbe4ff; }
+  .badge { font-family: Inter, sans-serif; font-size: 20px; font-weight: 600; color: #5a4880; }
   .intro .chip { font-family: Inter, sans-serif; font-size: 17px; font-weight: 600; padding: 8px 14px;
-    border-radius: 999px; background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.22); }
-  .intro .shot { position: absolute; left: 680px; top: 110px; width: 800px; height: 660px; border-radius: 14px;
-    overflow: hidden; background: #fff; box-shadow: 0 30px 80px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.25);
+    border-radius: 999px; background: #fff; border: 1px solid rgba(42,30,63,0.16); }
+  .intro .shot { position: absolute; left: 680px; top: 110px; width: 800px; height: 660px; border-radius: 22px;
+    overflow: hidden; background: #f4f1fb; box-shadow: 0 26px 70px rgba(42,30,63,0.26), 0 0 0 1px rgba(42,30,63,0.16);
     transform: perspective(1600px) rotateY(-9deg) rotateX(3deg); transform-origin: left center; }
   .intro .shot img { display: block; width: 1040px; margin-left: -8px; }
   /* Chinese (?lang=zh-CN): CJK fonts after Inter, and no tight tracking on Chinese characters. */
@@ -69,35 +68,34 @@
   // "{ intro" or "{ title" on its own line: make_demo_gif.py counts them that way.
   const SCENES = [
     { intro: true },
-    { title: "Know what to chase next", sub: "Replies to read, your to-dos, follow-ups and who's gone quiet, in one list",
-      img: "next-actions.png", x: 236, y: 56, w: 1020 },
+    { title: "Know what to chase next", sub: "Replies to read, your to-dos, follow-ups and who's gone quiet, all on Today",
+      img: "overview.png", x: 240, y: 72, w: 1356 },
     { title: "Every application on a Kanban board", sub: "Drag between any stages; every move is timestamped, and undo is one click",
-      img: "board.png", x: 232, y: 56, w: 1268 },
+      img: "board.png", x: 244, y: 64, w: 1264 },
     { title: "Recruiters, their calls and the roles they pitch", sub: "Book or log a call, then apply for or pass on each role",
-      img: "person.png", x: 232, y: 56, w: 1168 },
+      img: "person.png", x: 236, y: 72, w: 1160 },
     { title: "A page for every role", sub: "Pay, terms, who pitched it, your to-dos and the job description",
-      img: "role.png", x: 232, y: 56, w: 1168 },
+      img: "role.png", x: 236, y: 72, w: 1160 },
     { title: "Compare offers side by side", sub: "Salary, bonus, equity and pension, or day rate, and what each is worth a year",
-      img: "offers.png", x: 232, y: 56, w: 1168 },
-    { title: "See your funnel", sub: "A Sankey diagram from applied to offer, filtered by date and route",
-      img: "insights.png", x: 232, y: 56, w: 1168 },
+      img: "offers.png", x: 236, y: 72, w: 1160 },
+    { title: "See your funnel", sub: "A Sankey diagram of your whole search, from where each role came from to how it ended",
+      img: "insights.png", x: 236, y: 216, w: 1160 },
     { title: "One timeline across everything", sub: "Every message, call, interview and offer, by day or as lanes",
-      img: "timeline.png", x: 232, y: 56, w: 1168 },
+      img: "timeline.png", x: 236, y: 342, w: 1160 },
     { title: "Find anything", sub: "Applications, people, notes, debriefs, emails and links: press /",
-      img: "search.png", x: 232, y: 56, w: 1168 },
+      img: "search.png", x: 236, y: 72, w: 1160 },
   ];
-  // The Chinese tour: captions by scene, in order (glossary: docs/i18n/zh-CN.md). Its Next actions
-  // scene shows Today's whole page, since zh-CN/next-actions.png is only the Waiting on them column.
+  // The Chinese tour: captions by scene, in order (glossary: docs/i18n/zh-CN.md), on the same crops.
   const ZH = [
     {},
-    { title: "下一步该催问谁，一目了然", sub: "待读回复、待办、跟进和久无进展的申请，都在一个列表里",
-      img: "overview.png", x: 236, y: 56, w: 1364 },
+    { title: "下一步该催问谁，一目了然", sub: "待读回复、待办、跟进和久无进展的申请，都在“今日”里" },
     { title: "所有申请都在看板上", sub: "在任意阶段之间拖动；每次移动都有时间记录，一键就能撤销" },
     { title: "招聘顾问、通话和他们推荐的职位", sub: "约通话或记录通话，再逐个决定投递还是放弃" },
     { title: "每个职位都有自己的页面", sub: "薪资、条件、谁推荐的、你的待办和职位描述" },
     { title: "Offer 并排对比", sub: "薪资、奖金、股权和养老金，或者日薪，以及每个 Offer 的年度总值" },
-    { title: "看清你的求职漏斗", sub: "从投递到 Offer 的桑基图，可按日期和渠道筛选" },
-    { title: "一条时间线，贯穿所有事", sub: "每条消息、通话、面试和 Offer，按天列出或按泳道展示" },
+    { title: "看清你的求职漏斗", sub: "一张桑基图看清整个求职过程：每个职位从哪里来，最后怎么样了" },
+    { title: "一条时间线，贯穿所有事", sub: "每条消息、通话、面试和 Offer，按天列出或按泳道展示",
+      y: 312 }, // the filters above it take one line fewer in Chinese
     { title: "什么都找得到", sub: "申请、联系人、笔记、复盘、邮件和链接：按 / 即可搜索" },
   ];
   if (LANG === "zh-CN") ZH.forEach((o, i) => Object.assign(SCENES[i], o));
@@ -109,7 +107,7 @@
     },
     "zh-CN": {
       name: "求职申请追踪器", title: "求职申请<br/>追踪器", badge: "开源 · 自托管 · 本地优先",
-      tag: "申请、招聘顾问、面试和 Offer 集中在一处，下一步该催问谁也一目了然。",
+      tag: "申请、招聘顾问、面试和 Offer 集中在一处，<br/>下一步该催问谁也一目了然。",
       chips: ["看板", "招聘顾问管理", "今日", "Offer 对比"],
     },
   }[LANG];
@@ -176,8 +174,9 @@
   } else if (SCENES[a].intro || SCENES[b].intro) {
     // Into or out of the intro: the whole picture slides.
     const one = (i) => (SCENES[i].intro ? intro() : chrome(i) + caption(i) + frame(i));
-    add(one(a), `translateX(${-e * 100}%)`);
-    add(one(b), `translateX(${(1 - e) * 100}%)`);
+    // The intro's tilted window reaches above a feature's, so it fades rather than run under the caption.
+    add(one(a), `translateX(${-e * 100}%)`, SCENES[a].intro ? Math.max(0, 1 - e * 6) : 1);
+    add(one(b), `translateX(${(1 - e) * 100}%)`, SCENES[b].intro ? Math.min(1, e * 1.2) : 1);
   } else {
     // Between features: the screens slide past each other; the caption swaps halfway.
     add(chrome(e < 0.5 ? a : b));
