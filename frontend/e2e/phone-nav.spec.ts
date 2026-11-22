@@ -182,7 +182,7 @@ test("the end of every page, and what's scrolled or focused, stay clear of the b
     window.scrollBy(0, box.top + box.height / 2 - top);
   }, y);
   expect(await bottom()).toBeGreaterThan(y);
-  await link.focus();
+  await link.evaluate((el) => el.focus({ preventScroll: true })); // as Firefox does for what's partly in view
   await expect.poll(bottom).toBeLessThanOrEqual(y);
 });
 
