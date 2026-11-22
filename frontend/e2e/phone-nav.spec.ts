@@ -230,6 +230,20 @@ test("a press on what's half under the bar scrolls nothing", async ({ page, requ
   await expect(bar(page)).toBeInViewport();
 });
 
+test("a day tapped on Interviews brings its heading above the bar", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/interviews");
+  const heading = page.getByRole("region", { name: "Rounds on the chosen day" }).getByRole("heading").first();
+  const top = await barTop(page);
+  await heading.evaluate((el, to) => {
+    document.querySelector<HTMLElement>("main > *")!.style.marginTop = "800px";
+    window.scrollBy(0, el.getBoundingClientRect().top - to);
+  }, top + 10); // behind the bar, yet in the window
+  await page.locator("main button[data-day]").last().tap();
+  const under = () => heading.evaluate((el, at) => el.getBoundingClientRect().bottom > at, top);
+  await expect.poll(under).toBe(false);
+});
+
 test("in a short window it's back when the box you typed in goes away", async ({ page, request }) => {
   // No focusout, as in Firefox when what has focus is removed.
   await page.addInitScript(() => addEventListener("focusout", (e) => e.stopImmediatePropagation(), true));

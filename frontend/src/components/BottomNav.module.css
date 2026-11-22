@@ -7,10 +7,8 @@
 }
 
 @media not all and (min-width: 48em) {
-  /*
-   * What the keyboard or a script moves to stops above the bar. Not after a press (useKeysAboveBar), nor under a
-   * dialog: typing in a fixed box low on the screen would scroll the page behind it.
-   */
+  /* What a key or a script moves to stops above the bar. Not during a press and its click (useKeysAboveBar), nor
+     under a dialog, where typing in a fixed box low on the screen would scroll the page behind. */
   :global(:root:not([data-pressed], :has([aria-modal="true"]))) {
     scroll-padding-bottom: calc(var(--jat-bar-space) + 8px);
   }
@@ -31,11 +29,8 @@
   -webkit-backdrop-filter: blur(24px) saturate(1.5);
   backdrop-filter: blur(24px) saturate(1.5);
 }
-/*
- * A phone on its side, or a short window: out of sight while you type (:read-write isn't a readonly Select), not
- * hidden, so Tab still gets to it. It waits 0.3 s to come back and lets a press on the page through, so it never
- * lands under the press that took focus out of the box.
- */
+/* A phone on its side or a short window: out of sight while you type (not in a readonly Select), not hidden, so
+   Tab gets to it. It waits 0.3 s to come back and lets a press through, so it never lands under that press. */
 @media (max-height: 500px) {
   .bar {
     transition: transform 0s linear 0.3s;
@@ -123,7 +118,6 @@
 .footer {
   margin-top: 20px;
 }
-/* A finger's worth of target, in the sheet only. */
 .footer a {
   display: flex;
   align-items: center;

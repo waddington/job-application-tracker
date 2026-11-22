@@ -11,8 +11,7 @@ import { useVersionMismatch } from "./AppVersion";
 import classes from "./BottomNav.module.css";
 import { MenuFooter } from "./MenuFooter";
 
-/** The header's 56 px and a little space. */
-const BELOW_HEADER = 64;
+const BELOW_HEADER = 64; // the header's 56 px and a little space
 
 /**
  * The menu on a phone (docs/rfc/app-redesign.md §2, Phones): four pages, and More's sheet of the other seven and
@@ -20,7 +19,6 @@ const BELOW_HEADER = 64;
  * scroll lock away. Dismissing the sheet gives focus back to More; a change of page leaves it on the page.
  */
 export function BottomNav({ covered }: { covered: boolean }) {
-  // The quick view's Close: the same word, for the sheet's close button.
   const { t } = useTranslation(["common", "applications"]);
   const router = useRouter();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -119,17 +117,18 @@ export function BottomNav({ covered }: { covered: boolean }) {
 
 /**
  * Keeps what the keyboard moves to clear of the bar, and only that: a scroll under a press moves what's pressed.
- * So the scroll padding is off from a press until the next key (data-pressed), as a click's focus can come late
- * (a label's) or by script (a Select's). Tab also lifts: Firefox leaves some of what's partly in view.
+ * So the scroll padding is off from a press until the frame after its click (data-pressed), past the focus a click
+ * sets (a label's, a Select's), or until a key. Tab also lifts: Firefox leaves some of what's partly in view.
  */
 function useKeysAboveBar(bar: RefObject<HTMLElement | null>) {
   useEffect(() => {
     const root = document.documentElement;
     const press = () => root.setAttribute("data-pressed", "");
+    // Capture, so its frame runs before that of a click's own scroll (the calendar's, to the day's heading).
+    const clicked = () => requestAnimationFrame(() => root.removeAttribute("data-pressed"));
     const key = (e: KeyboardEvent) => {
       root.removeAttribute("data-pressed");
       if (e.key !== "Tab") return;
-      // By the next frame Tab has moved focus.
       requestAnimationFrame(() => {
         const el = document.activeElement;
         if (!bar.current || !el?.closest("main")) return;
@@ -141,9 +140,11 @@ function useKeysAboveBar(bar: RefObject<HTMLElement | null>) {
     };
     document.addEventListener("keydown", key, true);
     document.addEventListener("pointerdown", press, true);
+    document.addEventListener("click", clicked, true);
     return () => {
       document.removeEventListener("keydown", key, true);
       document.removeEventListener("pointerdown", press, true);
+      document.removeEventListener("click", clicked, true);
       root.removeAttribute("data-pressed");
     };
   }, [bar]);

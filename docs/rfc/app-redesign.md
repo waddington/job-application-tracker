@@ -127,8 +127,8 @@ That's the default chosen for this plan (the concept hid the footer on phones); 
 
 *As built (#427):* the bar is mostly surface (88%) over a blur; the current tab's icon sits on plum, More for the
 other seven and their record pages, with a red dot while offline or the versions differ. Dismissing the sheet returns
-focus to More; a change of page leaves it on the page. The page's end is clear of the bar, and so is what keys move to
-(scroll padding, and Tab lifts for Firefox); a press never scrolls the page, so the padding waits for the next key.
+focus to More; a change of page leaves it on the page. The page's end is clear of the bar, and so is what keys or a
+click's own scroll move to (scroll padding, off from a press to the frame after its click; Tab lifts for Firefox).
 Up to 500 px tall the bar makes way while you type, in CSS alone. It's inert under the quick view. One-row header.
 
 ## 3. How it lands
