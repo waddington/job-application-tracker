@@ -1,20 +1,20 @@
 # Now: state and live plan
 
-Snapshot 2026-11-22 evening, after #442 (main at `9e0929ea`, v1.24.50), written in #443. Refresh this
+Snapshot 2026-11-22 night, after #444 (main at `6346fb10`, v1.24.51), written in the skip-list PR. Refresh this
 file before each compaction. Before trusting it, check `gh pr list`, `git worktree list`, `git log --oneline -5` and
 `docs/ROADMAP.yaml`.
 
 ## Kai's current request
 
-"do readme-shorter-features and readme-visuals" (2026-11-22), then "dont merge without me, they can be the same PR
-too": **one PR on `worktree-readme-shorter-features`. NEVER merge it without Kai's word on it**, however clean the
-review and checks are (the standing merge permission doesn't cover it). It stays a draft until then.
+"yes update the skiplist" (2026-11-22): `scripts/readme_art/` joins the browser-test skip list (`skip-readme-art`).
+Then report and wait.
 
-- It's #444. Kai picked the art over four rounds (hero HA2, diagrams S2 and D1, light only, badges as they were), and
-  then: "dont merge until ive reviewed the readme as a whole". So: review and checks, then give Kai the rendered
-  READMEs on the branch, and wait.
-- With it: the "next up" lines stop naming Docker (shelved) in both READMEs and `llms.txt`.
-- The redesign is finished (#442, #443; #354 closed and removed).
+- **Done:** the README is shorter, with new artwork (#444, v1.24.51; Kai picked hero HA2 and diagrams S2 and D1 over
+  four rounds, light only, badges as they were). Kai reviewed it ("looks good, ship it") and merged it past one
+  unrelated browser-test failure ("just merge now, this is unrelated"): `fix-flaky-phone-nav-bar-drag-test`.
+- **Open notes on the art, for Kai if he wants them:** small text is unreadable on a phone; "127.0.0.1" sits under
+  "Your browser"; "with undo" means undo the last move; `jat push` sends the export, not the database file.
+- The redesign is finished (#442, #443).
 - Kai's tracker reported 1.24.49 at v1.24.50's release: check it, and repeat the restart reminder if it still does.
 
 **Nothing below starts without Kai's word** (Kai's scope wins over the delivery loop): report and wait.

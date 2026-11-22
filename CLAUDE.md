@@ -74,7 +74,8 @@ roadmap is `docs/ROADMAP.yaml`, shown by the PM dashboard (see "Project manageme
   production build on demo data, so a PR whose every changed file is in this list skips it and runs
   every other check: a draft language's text (`frontend/src/locales/<code>/` for a code in
   `DRAFT_LANGUAGES`, which only a dev server loads, and its glossary `docs/i18n/<code>.md`),
-  `scripts/i18n/`, `scripts/demo_gif/`, `scripts/social_preview/`, `.claude/workflows/`, `.claude/settings.json`, `tools/dev/`,
+  `scripts/i18n/`, `scripts/demo_gif/`, `scripts/social_preview/`, `scripts/readme_art/` (Kai, 2026-11-22: "yes update
+  the skiplist"), `.claude/workflows/`, `.claude/settings.json`, `tools/dev/`,
   Python tests (`tests/`), `website/` (it can't affect the app; its own checks run instead), the app's two icon files
   (`frontend/public/favicon.svg` and `apple-touch-icon.png`, changed but not deleted) (both Kai, 2026-11-22: "widen
   the skip list"), and docs. Anything else runs it, including `scripts/seed_demo.py` (the browser tests'
