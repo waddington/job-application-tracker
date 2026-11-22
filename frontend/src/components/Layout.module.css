@@ -73,7 +73,6 @@
   .header .headerRow {
     flex-wrap: nowrap;
     gap: 6px;
-    padding-inline: 12px;
   }
   .header .headerActions {
     flex: 1;

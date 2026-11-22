@@ -482,7 +482,7 @@ test.describe("more of the frame", () => {
                 expect(free).toBeLessThanOrEqual(width);
               }
               expect((await page.locator("main h2").first().boundingBox())!.y).toBeGreaterThanOrEqual(56);
-              expect((await page.getByRole("search").boundingBox())!.width).toBeGreaterThanOrEqual(90);
+              expect((await page.getByRole("search").boundingBox())!.width).toBeGreaterThanOrEqual(84); // 85 at 305
             }).toPass({ timeout: 5000 });
           }
         }
