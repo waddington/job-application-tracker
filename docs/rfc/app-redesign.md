@@ -1,7 +1,8 @@
 # RFC: the app redesign (concept 11)
 
-Status: concept 11 is picked (2026-11-15); this is the build plan. Building starts once Kai has seen it. The roadmap
-tasks are phase P12 in `docs/ROADMAP.yaml`; the decision is in `docs/agents/decisions.md` (*App redesign*).
+Status: **built** (2026-11-22, the last part released in v1.24.50). Concept 11 was picked on 2026-11-15; what follows
+is the plan it was built from, with "As built" notes where a part came out differently. The roadmap tasks are phase
+P12 in `docs/ROADMAP.yaml`; the decision is in `docs/agents/decisions.md` (*App redesign*).
 
 Kai, 2026-11-12: "redesign the UI of the app to match the new website … perhaps component at a time or page at a time
 … i dont much want to change the contents of pages moreso how it looks". Kai, 2026-11-15: "i like 11", then "go for
@@ -10,8 +11,8 @@ docs/guides/website/social image, etc".
 
 ## 1. How we got here
 
-Draft PR #354 (branch `worktree-app-redesign-concepts`, never merged) put the concepts behind a dev-only switch
-(`?design=N` on a Vite dev server over demo data). Three rounds:
+Draft PR #354 (never merged, closed when the build finished) put the concepts behind a dev-only switch (`?design=N`
+on a Vite dev server over demo data). Three rounds:
 
 1. Four looks in the website's style (concept 1i: pastels and plum, Inter and JetBrains Mono). Kai kept **4, Soft
    cards**; 1-3 were "overwhelming and not calm".
@@ -19,10 +20,11 @@ Draft PR #354 (branch `worktree-app-redesign-concepts`, never merged) put the co
    kept the drift, three columns, the docked panel and the side menu ("on desktop i prefer side menu").
 3. 9 (the pick so far), 10 (plus a full-width board) and 11 (plus wider sub-page layouts). **Kai picked 11.**
 
-**The reference implementation** is `?design=11` on #354's dev server: `frontend/src/design/concepts.ts` (the theme
-override and the flags), `concepts.css` (everything else, keyed on `<html data-…>`) and `BottomNav.tsx`. It is CSS
-laid over today's pages, often through Mantine's class names and `:has()`. The build takes its values (colours,
-sizes, timings) and its behaviour, not its selectors: each part is built into the component or page it belongs to.
+**The reference implementation** was `?design=11` on #354's dev server, at commit `7f52bfeb` (still readable with
+`git fetch origin pull/354/head`): `frontend/src/design/concepts.ts` (the theme override and the flags),
+`concepts.css` (everything else, keyed on `<html data-…>`) and `BottomNav.tsx`. It was CSS laid over the old pages,
+often through Mantine's class names and `:has()`. The build took its values (colours, sizes, timings) and its
+behaviour, not its selectors: each part is built into the component or page it belongs to.
 
 ## 2. The spec
 
