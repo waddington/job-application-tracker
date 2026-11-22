@@ -1,5 +1,5 @@
 import { Drawer, RemoveScroll, UnstyledButton, VisuallyHidden } from "@mantine/core";
-import { useMediaQuery, useReducedMotion } from "@mantine/hooks";
+import { useReducedMotion } from "@mantine/hooks";
 import { IconDots } from "@tabler/icons-react";
 import { Link, useRouter, useRouterState } from "@tanstack/react-router";
 import { useEffect, useId, useRef, useState, type RefObject } from "react";
@@ -11,13 +11,8 @@ import { useVersionMismatch } from "./AppVersion";
 import classes from "./BottomNav.module.css";
 import { MenuFooter } from "./MenuFooter";
 
-/** A window too short to spare the bar's height: a phone on its side, or with the keyboard up. */
-const SHORT_QUERY = "(max-height: 500px)";
 /** The header's 56 px and a little space. */
 const BELOW_HEADER = 64;
-/** What you type in. */
-const FIELD =
-  'textarea, [contenteditable="true"], input:not([type="button"], [type="checkbox"], [type="file"], [type="radio"], [type="range"], [type="reset"], [type="submit"])';
 
 /**
  * The menu on a phone (docs/rfc/app-redesign.md §2, Phones): a bar of four pages and More, whose sheet has the
@@ -33,13 +28,12 @@ export function BottomNav({ covered }: { covered: boolean }) {
   const router = useRouter();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const reduceMotion = useReducedMotion(false, { getInitialValueInEffect: false });
-  const away = useTypingInShortWindow();
   const { isError } = useHealth();
   const mismatch = useVersionMismatch();
   const problem = isError ? t("api.offline") : mismatch;
   const problemId = useId();
   const bar = useRef<HTMLElement>(null);
-  useTabAboveBar(bar);
+  useKeysAboveBar(bar);
   const more = useRef<HTMLButtonElement>(null);
   const [opened, setOpened] = useState(false);
 
@@ -83,7 +77,6 @@ export function BottomNav({ covered }: { covered: boolean }) {
         aria-label={t("nav.label")}
         // fullWidth: it keeps its width when a dialog takes the scrollbar away.
         className={`${classes.bar} ${RemoveScroll.classNames.fullWidth}`}
-        data-away={away || undefined}
         inert={covered}
       >
         {PHONE_TABS.map((item) => link(item))}
@@ -128,12 +121,16 @@ export function BottomNav({ covered }: { covered: boolean }) {
 }
 
 /**
- * Lifts what Tab moves to clear of the bar: Firefox leaves some of what's partly in view where it is, whatever
- * the scroll padding. Only for Tab: a scroll under a press would move what's being pressed.
+ * Keeps what the keyboard moves to clear of the bar, and only that: a scroll under a press moves what's pressed.
+ * So the scroll padding is off from a press until the next key (data-pressed), as a click's focus can come late
+ * (a label's) or by script (a Select's). Tab also lifts: Firefox leaves some of what's partly in view.
  */
-function useTabAboveBar(bar: RefObject<HTMLElement | null>) {
+function useKeysAboveBar(bar: RefObject<HTMLElement | null>) {
   useEffect(() => {
-    const lift = (e: KeyboardEvent) => {
+    const root = document.documentElement;
+    const press = () => root.setAttribute("data-pressed", "");
+    const key = (e: KeyboardEvent) => {
+      root.removeAttribute("data-pressed");
       if (e.key !== "Tab") return;
       // By the next frame Tab has moved focus.
       requestAnimationFrame(() => {
@@ -145,8 +142,13 @@ function useTabAboveBar(bar: RefObject<HTMLElement | null>) {
         if (by > 0) window.scrollBy(0, by);
       });
     };
-    document.addEventListener("keydown", lift);
-    return () => document.removeEventListener("keydown", lift);
+    document.addEventListener("keydown", key, true);
+    document.addEventListener("pointerdown", press, true);
+    return () => {
+      document.removeEventListener("keydown", key, true);
+      document.removeEventListener("pointerdown", press, true);
+      root.removeAttribute("data-pressed");
+    };
   }, [bar]);
 }
 
@@ -157,45 +159,4 @@ function focusPage() {
   main.setAttribute("tabindex", "-1");
   main.focus({ preventScroll: true });
   main.addEventListener("blur", () => main.removeAttribute("tabindex"), { once: true });
-}
-
-/**
- * Whether you're typing in a short window, where the bar would float over the box. It's read once a press has
- * ended: the bar coming back as a press on a button took focus out of the box would land under that press.
- */
-function useTypingInShortWindow(): boolean {
-  const short = useMediaQuery(SHORT_QUERY, false, { getInitialValueInEffect: false });
-  const [typing, setTyping] = useState(false);
-  useEffect(() => {
-    if (!short) return;
-    let pressed = false;
-    let timer: number | undefined;
-    const look = () => {
-      window.clearTimeout(timer);
-      timer = window.setTimeout(() => {
-        if (!pressed) setTyping(!!document.activeElement?.matches(FIELD));
-      });
-    };
-    const press = () => {
-      pressed = true;
-    };
-    const release = () => {
-      pressed = false;
-      look();
-    };
-    look();
-    const events = [
-      ["focusin", look],
-      ["focusout", look],
-      ["pointerdown", press],
-      ["pointerup", release],
-      ["pointercancel", release],
-    ] as const;
-    for (const [type, listener] of events) document.addEventListener(type, listener, true);
-    return () => {
-      window.clearTimeout(timer);
-      for (const [type, listener] of events) document.removeEventListener(type, listener, true);
-    };
-  }, [short]);
-  return short && typing;
 }

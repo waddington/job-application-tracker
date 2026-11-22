@@ -11,10 +11,10 @@
 
 @media not all and (min-width: 48em) {
   /*
-   * What's focused or scrolled to stops above the bar. Not under a dialog: typing in a fixed box low on the
-   * screen would scroll the page behind it.
+   * What the keyboard or a script moves to stops above the bar. Not after a press (useKeysAboveBar), nor under a
+   * dialog: typing in a fixed box low on the screen would scroll the page behind it.
    */
-  :global(:root:not(:has([aria-modal="true"]))) {
+  :global(:root:not([data-pressed], :has([aria-modal="true"]))) {
     scroll-padding-bottom: calc(var(--jat-bar-space) + 8px);
   }
 }
@@ -34,10 +34,23 @@
   -webkit-backdrop-filter: blur(24px) saturate(1.5);
   backdrop-filter: blur(24px) saturate(1.5);
 }
-/* Out of sight rather than hidden, so Tab out of the box still gets to it (which brings it back). */
-.bar[data-away] {
-  transform: translateY(calc(100% + var(--jat-bar-space)));
-  pointer-events: none;
+/*
+ * A phone on its side, or a short window: out of sight while you type (:read-write isn't a readonly Select), not
+ * hidden, so Tab still gets to it. It waits 0.3 s to come back and lets a press on the page through, so it never
+ * lands under the press that took focus out of the box.
+ */
+@media (max-height: 500px) {
+  .bar {
+    transition: transform 0s linear 0.3s;
+  }
+  :global(:root:has(main:active)) .bar {
+    pointer-events: none;
+  }
+  :global(:root:has(:read-write:focus)) .bar {
+    transform: translateY(calc(100% + var(--jat-bar-space)));
+    pointer-events: none;
+    transition: none;
+  }
 }
 
 .item {
