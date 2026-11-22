@@ -1,4 +1,5 @@
 import {
+  Alert,
   Autocomplete,
   Badge,
   Button,
@@ -12,14 +13,17 @@ import {
   Menu,
   Modal,
   MultiSelect,
+  Notification,
   NumberInput,
   Paper,
   Progress,
+  SegmentedControl,
   Select,
   Switch,
   Table,
   TagsInput,
   TextInput,
+  Timeline,
   Title,
   virtualColor,
   type CSSVariablesResolver,
@@ -150,12 +154,16 @@ export const cssVariablesResolver: CSSVariablesResolver = () => {
     "--mantine-color-teal-text": "#0b6b4f",
     "--mantine-color-blue-text": "#1a5aa3",
     "--mantine-color-default-color": "var(--jat-ink)",
+    // A grey filled button (Pass), under white at 4.5:1.
+    "--mantine-color-gray-filled": "#70777f",
   };
   const dark: Record<string, string> = {
     "--mantine-color-anchor": "var(--jat-anchor)",
     "--mantine-color-placeholder": "var(--jat-placeholder)",
   };
   for (const scheme of [light, dark]) {
+    // A field's error and its required star: the red that reads as text.
+    scheme["--mantine-color-error"] = "var(--mantine-color-red-text)";
     scheme["--mantine-color-plum-light"] = "var(--jat-p-plum)";
     scheme["--mantine-color-plum-light-hover"] = "var(--jat-p-plum-hover)";
     scheme["--mantine-color-plum-light-color"] = "var(--jat-i-plum)";
@@ -228,9 +236,14 @@ const pickerBelowHint = { ...hintBelow.defaultProps, popoverProps: { offset: bel
 /**
  * Red subtle and outline actions (Delete) in the red that reads at 4.5:1 on white, the page and the dark
  * card, not the pastel's maroon ink (which suits a red badge on its pastel), with a hover that keeps it.
+ * A light or outline colour that isn't one of the theme's (a stage's "purple" or "#800080" in config.toml) is
+ * written in ink, as it may not read in itself; its colour stays in the wash or the edge.
  */
 export const variantColorResolver: VariantColorsResolver = (input) => {
   const colors = defaultVariantColorsResolver(input);
+  const name = input.color ?? input.theme.primaryColor;
+  if (["light", "outline"].includes(input.variant) && !(name.split(".")[0]! in input.theme.colors))
+    return { ...colors, color: "var(--mantine-color-text)" };
   if (input.color !== "red" || !["subtle", "outline", "transparent"].includes(input.variant)) return colors;
   return {
     ...colors,
@@ -251,17 +264,20 @@ const dialog = {
 };
 
 /**
- * A colour's deeper pastel, as bars use it (tokens.css), for the key beside a bar; a colour without one
- * keeps Mantine's filled shade.
+ * A colour's deeper pastel, as bars and the key beside a bar use it (tokens.css); any other colour the grey
+ * one, so the ink numbers on it read.
  */
-export const barColor = (color: string) => `var(--jat-bar-${color}, var(--mantine-color-${color}-filled))`;
+export const barColor = (color: string) =>
+  `var(--jat-bar-${(PASTELS as readonly string[]).includes(color) ? color : "gray"})`;
 
 /**
  * A stage colour as a chart mark (tokens.css), at 3:1 or more on a card in either mode; a Mantine colour without one
- * keeps Mantine's middle shade, and a name that's neither (a typo in the workflow) the chart grey.
+ * keeps Mantine's middle shade, and anything that's neither (a typo in the workflow, "#800080") the chart grey.
  */
 export const chartColor = (color: string) =>
-  `var(--jat-chart-${color}, var(--mantine-color-${color}-6, var(--jat-chart-gray)))`;
+  /^[a-z]+$/i.test(color)
+    ? `var(--jat-chart-${color}, var(--mantine-color-${color}-6, var(--jat-chart-gray)))`
+    : "var(--jat-chart-gray)";
 
 /** Whether a button is the plum (primary) filled one, which carries the website's gradient. */
 const isPlumFilled = (primary: string, props: { variant?: string; color?: string }) =>
@@ -322,6 +338,9 @@ export function themeFor(lang: string) {
         }),
       }),
       Badge: Badge.extend({ defaultProps: { radius: "xl" } }),
+      Alert: Alert.extend({ classNames: { root: classes.alert } }),
+      Notification: Notification.extend({ classNames: { description: classes.toastText } }),
+      SegmentedControl: SegmentedControl.extend({ classNames: { indicator: classes.picked } }),
       // A page's title (every page's is an h2): a big, light display title. A card's own title (an h3
       // or h4 without a size of its own) is a step bigger and light too (theme.module.css).
       Title: Title.extend({
@@ -373,12 +392,19 @@ export function themeFor(lang: string) {
           },
         }),
       }),
-      // A switch's track is ringed while off; a primary one, on, has its label and thumb in the primary's
-      // contrast colour.
+      Timeline: Timeline.extend({
+        vars: (_theme, props) => ({
+          root: {
+            "--tl-icon-color": props.color ? undefined : "var(--mantine-primary-color-contrast)",
+          },
+        }),
+      }),
+      // A switch's track and thumb are ringed while off; a primary one, on, has its label and thumb in the
+      // primary's contrast colour.
       Switch: Switch.extend({
         classNames: (_theme, props) =>
           props.color
-            ? { track: classes.switchTrack }
+            ? { track: classes.switchTrack, thumb: classes.switchThumb }
             : { input: classes.switchInput, track: classes.switchTrack, thumb: classes.switchThumb },
       }),
       Select: Select.extend(oneLine),

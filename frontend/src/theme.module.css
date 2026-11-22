@@ -8,6 +8,14 @@
   border: 2px solid var(--mantine-primary-color-filled);
   font-weight: 700;
 }
+/* A weekend in the red that reads as text, and the next or last month's days dimmed but not faded: you can
+   pick them, so they read at 4.5:1 too. */
+.day[data-weekend]:not([data-outside], [data-selected], [data-disabled], :disabled) {
+  color: var(--mantine-color-red-text);
+}
+.day[data-outside]:not([data-disabled], :disabled) {
+  opacity: 1;
+}
 
 /* A page's title: the website's big, light display type (its size in theme.ts, smaller on a phone). */
 .pageTitle {
@@ -194,9 +202,32 @@ thead:not([data-records]) .th button {
 .tick:not(:checked, :indeterminate, :disabled, [data-error]) {
   border-color: var(--jat-input-border);
 }
-/* A switch that's off is a pale track: a ring in the same outline shows where it is. */
+/* A switch that's off is a pale track: a ring in the same outline shows where it is, and a darker one its
+   white thumb. */
 input:not(:checked, :disabled) + .switchTrack {
   box-shadow: inset 0 0 0 1px var(--jat-input-border);
+}
+input:not(:checked, :disabled) + * .switchThumb {
+  box-shadow: inset 0 0 0 1px var(--jat-ink-soft);
+}
+/* The picked segment, else told only by a wash on its trough: the same outline. */
+[data-mantine-color-scheme] .picked {
+  box-shadow:
+    inset 0 0 0 1px var(--jat-input-border),
+    var(--sc-shadow, 0 0 #0000);
+}
+/* A picked option's tick in a dropdown, at 3:1 or more (Mantine fades it to 40%). */
+.option:not([data-combobox-selected]) > svg {
+  opacity: 0.56;
+}
+
+/* A toast's message as dimmed text (Mantine's grey is 3.3:1), and dimmed text on an alert's wash in dark mode a
+   step lighter. */
+.toastText[data-with-title] {
+  color: var(--mantine-color-dimmed);
+}
+:where([data-mantine-color-scheme="dark"]) .alert {
+  --mantine-color-dimmed: var(--mantine-color-dark-1);
 }
 
 /* Dialogs (Modal, and the Drawer's header): a lifted card, roomy, under a see-through plum. A dialog's title
