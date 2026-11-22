@@ -94,7 +94,8 @@
     { title: "每个职位都有自己的页面", sub: "薪资、条件、谁推荐的、你的待办和职位描述" },
     { title: "Offer 并排对比", sub: "薪资、奖金、股权和养老金，或者日薪，以及每个 Offer 的年度总值" },
     { title: "看清你的求职漏斗", sub: "一张桑基图看清整个求职过程：每个职位从哪里来，最后怎么样了" },
-    { title: "一条时间线，贯穿所有事", sub: "每条消息、通话、面试和 Offer，按天列出或按泳道展示" },
+    { title: "一条时间线，贯穿所有事", sub: "每条消息、通话、面试和 Offer，按天列出或按泳道展示",
+      y: 312 }, // the filters above it take one line fewer in Chinese
     { title: "什么都找得到", sub: "申请、联系人、笔记、复盘、邮件和链接：按 / 即可搜索" },
   ];
   if (LANG === "zh-CN") ZH.forEach((o, i) => Object.assign(SCENES[i], o));
@@ -106,7 +107,7 @@
     },
     "zh-CN": {
       name: "求职申请追踪器", title: "求职申请<br/>追踪器", badge: "开源 · 自托管 · 本地优先",
-      tag: "申请、招聘顾问、面试和 Offer 集中在一处，下一步该催问谁也一目了然。",
+      tag: "申请、招聘顾问、面试和 Offer 集中在一处，<br/>下一步该催问谁也一目了然。",
       chips: ["看板", "招聘顾问管理", "今日", "Offer 对比"],
     },
   }[LANG];
@@ -173,8 +174,9 @@
   } else if (SCENES[a].intro || SCENES[b].intro) {
     // Into or out of the intro: the whole picture slides.
     const one = (i) => (SCENES[i].intro ? intro() : chrome(i) + caption(i) + frame(i));
-    add(one(a), `translateX(${-e * 100}%)`);
-    add(one(b), `translateX(${(1 - e) * 100}%)`);
+    // The intro's tilted window reaches above a feature's, so it fades rather than run under the caption.
+    add(one(a), `translateX(${-e * 100}%)`, SCENES[a].intro ? Math.max(0, 1 - e * 6) : 1);
+    add(one(b), `translateX(${(1 - e) * 100}%)`, SCENES[b].intro ? Math.min(1, e * 1.2) : 1);
   } else {
     // Between features: the screens slide past each other; the caption swaps halfway.
     add(chrome(e < 0.5 ? a : b));
