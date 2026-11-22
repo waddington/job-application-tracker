@@ -144,6 +144,8 @@ tints; the look stays, each colour moved about as far as 4.5:1 or 3:1 needs.
   are 8.1 apart under tritanopia (4.3 before); in dark the six (`#b19bf3`, `#e49b48`, `#1584d2`, `#b85f8b`,
   `#6a8628`, `#27beae`) run from 3.5:1 to 6.3:1 (3.0 to 7.9 before). In both, no kind of sight has a closer pair
   than before, and all 15 still pass the validator's separation checks.
+- Focus rings: a board card (it had none) and a lane's dot have the primary's ring; a link in text that's cut short,
+  in an alert or in a lane has it inside, where it isn't clipped.
 - Left at less than 3:1 on purpose, as each repeats the text beside it or isn't needed: a default button's and a
   tag's edge, the keys' dots and the pastel bars, the quiet days' dots, At a glance's dots.
 - `src/contrast.test.ts` holds the tokens to this, `e2e/contrast.spec.ts` what only computed styles show.

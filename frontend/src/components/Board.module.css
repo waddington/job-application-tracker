@@ -33,3 +33,9 @@
   flex: 0 0 var(--board-column-width);
   max-width: none;
 }
+
+/* A card takes focus, and Mantine's Paper has no outline: the ring everything else has. */
+.draggable:focus-visible {
+  outline: 2px solid var(--mantine-primary-color-filled);
+  outline-offset: 2px;
+}

@@ -64,3 +64,28 @@ for (const scheme of ["light", "dark"] as const) {
     expect(await reads(toast, ".mantine-Notification-root")).toBeGreaterThanOrEqual(4.5);
   });
 }
+
+test("a board's card, the link cut short in it and a Timeline dot show their focus rings", async ({
+  page,
+}) => {
+  await page.goto("/applications");
+  await page.getByText("Board", { exact: true }).click();
+  await page.keyboard.press("Shift"); // the keyboard was used last, so :focus-visible applies
+  const card = page
+    .locator("main [data-panel-opener]")
+    .filter({ has: page.locator("a") })
+    .first();
+  await card.focus();
+  await expect(card).toHaveCSS("outline-style", "solid");
+  await expect(card).toHaveCSS("outline-width", "2px");
+  await card.locator("a").focus();
+  await expect(card.locator("a")).toHaveCSS("outline-offset", "-2px"); // inside, where it isn't clipped
+
+  await page.goto("/timeline");
+  await page.getByText("Lanes", { exact: true }).click();
+  await page.keyboard.press("Shift");
+  const dot = page.locator("main li > button[aria-label]").last();
+  await dot.focus();
+  await expect(dot).toHaveCSS("outline-style", "solid"); // not the browser's own ("auto")
+  await expect(dot).toHaveCSS("outline-offset", "0px"); // within the 2 px the last one has
+});

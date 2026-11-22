@@ -1,5 +1,6 @@
 import {
   Alert,
+  Anchor,
   Autocomplete,
   Badge,
   Button,
@@ -339,6 +340,7 @@ export function themeFor(lang: string) {
       }),
       Badge: Badge.extend({ defaultProps: { radius: "xl" } }),
       Alert: Alert.extend({ classNames: { root: classes.alert } }),
+      Anchor: Anchor.extend({ classNames: { root: classes.link } }),
       Notification: Notification.extend({ classNames: { description: classes.toastText } }),
       SegmentedControl: SegmentedControl.extend({ classNames: { indicator: classes.picked } }),
       // A page's title (every page's is an h2): a big, light display title. A card's own title (an h3

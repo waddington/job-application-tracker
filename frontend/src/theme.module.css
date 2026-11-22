@@ -230,6 +230,12 @@ input:not(:checked, :disabled) + * .switchThumb {
   --mantine-color-dimmed: var(--mantine-color-dark-1);
 }
 
+/* A link in text that's cut short, or in an alert's message, has its focus ring inside it: the box around it
+   hides what's outside. */
+:is([data-truncate], [data-line-clamp], .alert) .link:focus-visible {
+  outline-offset: -2px;
+}
+
 /* Dialogs (Modal, and the Drawer's header): a lifted card, roomy, under a see-through plum. A dialog's title
    reads like a card's. */
 .dialog {

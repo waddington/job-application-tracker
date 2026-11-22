@@ -23,6 +23,16 @@
 :where([data-mantine-color-scheme="dark"]) .lane:focus-within {
   background: var(--mantine-color-default-hover);
 }
+/* Focus rings: a lane's name has no room outside it in the scroller; a dot's comes over the dots after it, and
+   close round it, as the last dot has only 2 px past it. */
+.lane a:focus-visible {
+  outline-offset: -2px;
+}
+.lane li > button:focus-visible {
+  z-index: 1;
+  outline: 2px solid var(--mantine-primary-color-filled);
+  outline-offset: 0;
+}
 @media (prefers-reduced-motion: reduce) {
   .lane {
     transition: none;

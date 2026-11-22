@@ -149,6 +149,7 @@ function DraggableCard({ row, onOpen }: { row: ApplicationRow; onOpen: (id: stri
     <Card
       ref={setNodeRef}
       withBorder
+      className={classes.draggable}
       style={{
         opacity: isDragging ? 0.4 : 1,
         cursor: "grab",
