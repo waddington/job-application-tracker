@@ -56,7 +56,8 @@ export function ApiStatus() {
             width: 8,
             height: 8,
             borderRadius: "50%",
-            background: `var(--mantine-color-${color}-6)`,
+            // Teal or yellow is all that says whether snapshots are on, so those show at 3:1 (tokens.css).
+            background: `var(--jat-status-${color}, var(--mantine-color-${color}-6))`,
             display: "inline-block",
           }}
         />

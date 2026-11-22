@@ -74,7 +74,7 @@ const FORMATS = {
 /** A round's time on the calendar: its start, else its deadline. */
 const whenOf = (r: Interview) => (r.starts_at ?? r.deadline_at)!;
 
-const dotColor = (color: string) => ({ "--dot": `var(--mantine-color-${color}-filled)` }) as CSSProperties;
+const dotColor = (color: string) => ({ "--dot": `var(--jat-day-${color})` }) as CSSProperties;
 
 /**
  * A day's colour, the status badges' colours, from the same sums as its label (so both use one clock):
@@ -347,7 +347,7 @@ function MonthStats({ s }: { s: Summary }) {
         label={t("calendar.counts.held", { count: s.held })}
       />
       <IconStat
-        icon={<IconHourglassHigh size={15} stroke={1.8} color="var(--mantine-color-orange-filled)" />}
+        icon={<IconHourglassHigh size={15} stroke={1.8} color="var(--jat-day-orange)" />}
         n={s.awaiting}
         label={t("calendar.counts.awaiting", { count: s.awaiting })}
       />

@@ -336,8 +336,8 @@ export function SankeyChart({
                   y={(y0 + y1) / 2}
                   fontSize={12}
                   fill="var(--mantine-color-text)"
-                  // A halo in the page colour keeps a label readable where it crosses a flow.
-                  stroke="var(--mantine-color-body)"
+                  // A halo in the card's colour keeps a label readable where it crosses a flow.
+                  stroke="var(--jat-surface)"
                   strokeWidth={3}
                   paintOrder="stroke"
                   style={{ pointerEvents: "none" }}
