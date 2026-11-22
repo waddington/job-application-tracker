@@ -34,8 +34,9 @@
   max-width: none;
 }
 
-/* A card takes focus, and Mantine's Paper has no outline: the ring everything else has. */
+/* A card takes focus, and Mantine's Paper has no outline: the primary's ring, inside the card, as one scrolled
+   into view is flush with the board's edge. */
 .draggable:focus-visible {
   outline: 2px solid var(--mantine-primary-color-filled);
-  outline-offset: 2px;
+  outline-offset: -2px;
 }
