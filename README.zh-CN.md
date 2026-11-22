@@ -15,7 +15,7 @@
 ![账号：无](https://img.shields.io/badge/account-none-brightgreen)
 ![遥测：无](https://img.shields.io/badge/telemetry-none-brightgreen)
 ![AI：无](https://img.shields.io/badge/AI-none-brightgreen)
-![支持 Linux 和 macOS](https://img.shields.io/badge/runs%20on-Linux%20%7C%20macOS-555)
+![支持 Linux、macOS 和 Windows](https://img.shields.io/badge/runs%20on-Linux%20%7C%20macOS%20%7C%20Windows-555)
 
 🔒 运行在 localhost · 🗂️ SQLite + 纯文本 JSONL 和 Markdown · 🔁 自动 git 快照 · 📦 Apache-2.0
 
@@ -157,7 +157,7 @@
 | 🌐 | **用你的语言**：English 和简体中文，可以在语言菜单里切换，也可以跟随浏览器语言，日期和数字按当地习惯显示；你自己录入的数据保持原样（见[语言](#-语言)） |
 | 💾 | **内置备份**：私有数据文件夹的自动 git 快照、可读的 JSON Lines 导出、一键打包所有内容的 zip（或 `jat archive`），以及一条命令就能恢复 |
 
-完整计划见[产品需求](docs/prd/tracker.md)和[路线图](docs/ROADMAP.yaml)（均为英文）：接下来是 Windows 支持、一条命令安装和 Docker。
+完整计划见[产品需求](docs/prd/tracker.md)和[路线图](docs/ROADMAP.yaml)（均为英文）：接下来是一条命令安装和 Docker。
 
 ## 🌐 语言
 
@@ -187,7 +187,7 @@
 
 > 📖 下面的内容，**[用户指南](docs/guide/README.md)**（英文）里都有更详细的说明：数据存放在哪里、应用怎样找到它，备份和恢复，在第二台电脑上使用，自定义阶段，每一条命令，以及常见问题排查。
 
-它可以在 **Linux 或 macOS** 上运行（暂不支持 Windows）。你需要 Python 3.12 到 3.14 和 [uv](https://docs.astral.sh/uv/)，以及用来构建网页界面的 Node.js 22.12+ 和 [pnpm](https://pnpm.io/)。装好这些之后，大约十分钟就能完成设置。
+它可以在 **Windows、Linux 或 macOS** 上运行。你需要 Python 3.12 到 3.14 和 [uv](https://docs.astral.sh/uv/)，以及用来构建网页界面的 Node.js 22.12+ 和 [pnpm](https://pnpm.io/)。装好这些之后，大约十分钟就能完成设置。
 
 ```bash
 git clone https://github.com/waddington/job-application-tracker.git
@@ -198,14 +198,25 @@ pnpm --dir frontend install && pnpm --dir frontend build
 
 **用演示数据试一试**（虚构的公司和人物）：
 
+在 Linux 和 macOS 上：
+
 ```bash
 uv run python scripts/seed_demo.py /tmp/jat-demo    # 需要一个新的或空的文件夹
 uv run jat --data-dir /tmp/jat-demo serve          # → http://127.0.0.1:8770
 ```
 
+在 Windows 上 (PowerShell)：
+
+```powershell
+uv run python scripts/seed_demo.py "$env:TEMP\jat-demo"
+uv run jat --data-dir "$env:TEMP\jat-demo" serve
+```
+
 想要中文的演示数据，就加上 `--lang zh-CN`（同样需要一个新的或空的文件夹）：`uv run python scripts/seed_demo.py --lang zh-CN /tmp/jat-demo-zh`，然后用 `--data-dir /tmp/jat-demo-zh` 启动。
 
 **正式使用。** 你的数据放在单独的文件夹里，与代码分开。把它设为私有 git 仓库，每一批改动完成后，应用都会提交一份可读的快照，你就能免费获得完整历史和备份。
+
+在 Linux 和 macOS 上：
 
 ```bash
 mkdir -p ~/job-search-data && git -C ~/job-search-data init
@@ -214,6 +225,18 @@ cp .env.example .env        # 然后设置 JAT_DATA_DIR=~/job-search-data（或�
 uv run jat init
 uv run jat serve            # → http://127.0.0.1:8770（保持运行）
 ```
+
+在 Windows 上 (PowerShell)：
+
+```powershell
+git init "$HOME\job-search-data"
+git -C "$HOME\job-search-data" remote add origin <your-private-repo-url>   # 可选，用于 jat push
+Copy-Item .env.example .env # 然后在 .env 中设置 JAT_DATA_DIR
+uv run jat init
+uv run jat serve            # → http://127.0.0.1:8770（保持运行）
+```
+
+在 Windows 上，建议将数据文件夹放在 OneDrive 之外（例如 `C:\Users\<you>\job-search-data`），以避免同步期间发生文件锁定问题。
 
 之后在另一个终端里运行 `uv run jat push`，就会把快照推送到你的私有远程仓库（从不强制推送）。请在仓库根目录运行 `jat`，它会在那里读取 `.env`。数据位置没有设置页面：只能用 `--data-dir` 或 `JAT_DATA_DIR` 指定（[详情](docs/guide/your-data.md#how-the-app-finds-your-data)，英文）。
 
@@ -227,7 +250,7 @@ uv run jat serve            # → http://127.0.0.1:8770（保持运行）
 
 **它用 AI 吗？** 不用。它不会调用任何 AI 服务，也不会把你的数据发送到任何地方。
 
-**能在 Windows 上运行吗？** 暂时不能：它运行在 Linux 和 macOS 上。Windows 支持、一条命令安装和 Docker 都在[路线图](docs/ROADMAP.yaml)（英文）上。
+**能在 Windows 上运行吗？** 可以：它支持 Windows、Linux 和 macOS。在 Windows 上，使用侧边栏的“下载备份”（或 jat archive）来备份你的数据；git 快照目前适用于 Linux 和 macOS。
 
 **它会抓取 LinkedIn 或招聘网站吗？** 不会。它的设计就是记录你投出的申请，不会替你搜索职位。
 
