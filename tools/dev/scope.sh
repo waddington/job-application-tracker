@@ -13,6 +13,7 @@
 #              When website/ changed beyond a bump's lines it says so, and checks.sh runs the website's checks too.
 source "$(dirname "$0")/env.sh"
 mode=$1
+icons= # only --no-e2e sets it: never one from the environment
 case "$*" in
   --website)
     ok='^(website/|docs/|CHANGELOG\.md$|CLAUDE\.md$|\.gitignore$|\.github/workflows/website\.yml$|tools/dev/|tests/dev/|tools/pm/|tests/pm/)'
@@ -51,12 +52,21 @@ bump='^(pyproject\.toml|uv\.lock|src/jat/__init__\.py|frontend/package\.json|fro
 # Out of scope: gitignored files (e.g. a local .env), which no PR can carry anyway.
 names=$(mktemp)
 trap 'rm -f "$names"' EXIT
-{ git diff --name-only -z --no-renames "$base" && git ls-files -z --others --exclude-standard; } > "$names" ||
+# All three: what's committed (the PR, even if undone on disk since), what's on disk, and untracked files.
+{ git diff --name-only -z --no-renames "$base" HEAD && git diff --name-only -z --no-renames "$base" &&
+  git ls-files -z --others --exclude-standard; } > "$names" ||
   { echo "$mode: couldn't list the changed files" >&2; exit 2; }
-# Is this one of the version files, changed only by the bump's line?
+# Is this one of the version files, changed only by the bump's line? It's read from disk, so it must be committed
+# as it is there.
 version_line_only() {
-  [[ "$1" =~ $bump ]] && [ -f "$1" ] && [ ! -L "$1" ] && ! git diff --summary "$base" -- "$1" | grep -q "mode change" &&
+  [[ "$1" =~ $bump ]] && [ -f "$1" ] && [ ! -L "$1" ] && git diff --quiet HEAD -- "$1" &&
+    ! git diff --summary "$base" -- "$1" | grep -q "mode change" &&
     git show "$base:$1" 2>/dev/null | python3 "$DEV/version_only.py" "$1" "$old" "$new"
+}
+# A regular file on disk, in the index and in the commit: `git rm --cached` leaves it on disk but not in the PR.
+kept_file() {
+  [ -f "$1" ] && [ ! -L "$1" ] && [[ "$(git ls-files -s -- "$1")" == 100* ]] &&
+    [[ "$(git ls-tree HEAD -- "$1")" == 100* ]]
 }
 bad=0
 site=0
@@ -66,7 +76,7 @@ while IFS= read -r -d '' f; do
     continue
   fi
   # An icon's picture can't break the app; a missing one can (index.html and the API docs link to it).
-  if [ -n "$icons" ] && [[ "$f" =~ $icons ]] && [ -f "$f" ] && [ ! -L "$f" ]; then continue; fi
+  if [ -n "$icons" ] && [[ "$f" =~ $icons ]] && kept_file "$f"; then continue; fi
   if [[ "$f" =~ $bump ]]; then
     if version_line_only "$f"; then continue; fi
     echo "$mode: $f changes more than its version line ($old → $new)"

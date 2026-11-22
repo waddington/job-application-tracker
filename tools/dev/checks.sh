@@ -16,10 +16,11 @@ clean_env
 # It runs again after the re-run under the lock below: on purpose, so no inherited HEAVY_TESTS_LOCKED can skip it.
 site=0
 if [ -n "$1" ]; then
-  if ! scoped=$(bash "$DEV/scope.sh" "$1"); then
-    echo "$scoped"
-    exit 2
-  fi
+  scoped=$(bash "$DEV/scope.sh" "$1")
+  rc=$?
+  if [ -n "$scoped" ]; then echo "$scoped"; fi
+  [ $rc = 0 ] || exit 2
+  # The words scope.sh prints (tests/dev/test_scope.py holds the two together).
   case "$scoped" in *"the website's checks run too"*) site=1 ;; esac
 fi
 # One heavy run at a time across worktrees, at the lowest CPU and disk priority.

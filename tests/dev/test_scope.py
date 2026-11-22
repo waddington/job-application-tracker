@@ -133,6 +133,45 @@ def test_no_e2e_refuses_a_deleted_icon(repo: Path):
     assert "--no-e2e: frontend/public/favicon.svg isn't on" in out.stdout
 
 
+def test_no_e2e_refuses_an_icon_deleted_from_git_but_left_on_disk(repo: Path):
+    git(repo, "checkout", "-q", "main")
+    write(repo, {"frontend/public/favicon.svg": "<svg/>\n"})
+    git(repo, "add", "-A")
+    git(repo, "commit", "-qm", "icon")
+    git(repo, "push", "-q", "origin", "main")
+    git(repo, "checkout", "-qB", "worktree-x")
+    git(repo, "rm", "-q", "--cached", "frontend/public/favicon.svg")
+    git(repo, "commit", "-qm", "drop the icon")
+    out = subprocess.run(["bash", str(SCOPE), "--no-e2e"], cwd=repo, capture_output=True, text=True, env=ENV)
+    assert out.returncode == 2
+    assert "frontend/public/favicon.svg" in out.stdout
+
+
+def test_an_icons_variable_in_the_environment_allows_nothing(repo: Path):
+    write(repo, {"frontend/src/App.tsx": "changed\n"})
+    git(repo, "commit", "-qam", "change")
+    for mode in ("--website", "--no-e2e"):
+        env = ENV | {"icons": "."}
+        out = subprocess.run(["bash", str(SCOPE), mode], cwd=repo, capture_output=True, text=True, env=env)
+        assert out.returncode == 2, mode
+
+
+@pytest.mark.parametrize("path", ["frontend/src/App.tsx", "pyproject.toml"])
+def test_a_committed_change_undone_on_disk_still_counts(repo: Path, path: str):
+    write(repo, {path: "changed\n"})
+    git(repo, "commit", "-qam", "change")
+    write(repo, {path: BASE[path]})
+    out = subprocess.run(["bash", str(SCOPE), "--no-e2e"], cwd=repo, capture_output=True, text=True, env=ENV)
+    assert out.returncode == 2
+    assert path in out.stdout
+
+
+def test_checks_reads_the_words_scope_prints():
+    words = "the website's checks run too"
+    assert words in SCOPE.read_text()
+    assert f'*"{words}"*' in SCOPE.with_name("checks.sh").read_text()
+
+
 @pytest.mark.parametrize(
     "path",
     [
