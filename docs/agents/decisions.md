@@ -112,19 +112,24 @@ Product decisions Kai has made or accepted. Don't re-litigate them; change one o
 
 ## App redesign (P12)
 
-- **Concept 11 is picked; building waits for Kai's go** (Kai, 2026-11-15: "i like 11", then "go for 11. plan it
-  out, create the roadmap items"). The plan is `docs/rfc/app-redesign.md`, reviewed with Kai before building starts;
-  the tasks are P12. The reference implementation is draft #354, branch `worktree-app-redesign-concepts` (never merged): `?design=11`
+- **Concept 11 is picked and being built on Kai's word, task by task** (Kai, 2026-11-15: "i like 11", then "go for 11.
+  plan it out, create the roadmap items"). The plan is `docs/rfc/app-redesign.md` (its "As built" notes say what each
+  part became); the tasks are P12. The reference implementation is draft #354, branch `worktree-app-redesign-concepts` (never merged): `?design=11`
   on its dev server, code in `frontend/src/design/`.
 - What 11 is: round 1's 4 (calm soft cards); one background on every page that fades very slowly between calm tints,
   a ten-minute cycle tied to the clock (it carries across page changes and reloads), static under reduced motion;
   pages full width up to 2,400 px, starting right after the menu; Today in three columns; side panels that slide in and
-  dock, pushing the page aside, never overlaying (the application panel on Applications list and board, Today, Company
+  dock from 992 px, pushing the page aside, and open full screen below that (the application panel on Applications list and board, Today, Company
   and Agency); a board that fills the window, columns at least about 180 px; record pages (application, company,
   person, agency, role) in two columns plus a narrow side column; Notes as a card grid; Documents as side-by-side cards;
   Interviews with the calendar beside "still to book"; on phones (below 768 px) a bottom bar of Today, Applications,
   Interviews, Notes and More (a sheet with the other seven pages, and the sidebar's footer at its bottom: the plan's
   default, Kai can change it), panels full-screen there.
+- As built (the lead's calls, reported to Kai): layouts follow the page's own width, not the window's (container
+  queries), as the docked panel takes 440-540 px; so three columns start at about a 1,490 px window on Today. Board
+  columns are 180-360 px.
+- The social card keeps the four No's, also says it works offline (once `fix-offline-requests-paused` has shipped),
+  and Kai picks from every option rendered as an image (2026-11-22).
 - The side menu on desktop ("on desktop i prefer side menu"), not a top bar. Concepts 1-3 are out ("overwhelming and
   not calm"). Fonts: Inter and JetBrains Mono, as in the concepts.
 - The look changes, not what pages hold or do. Every image (README in both languages, demo GIFs, social card, the
