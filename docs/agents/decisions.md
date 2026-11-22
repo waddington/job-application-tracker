@@ -132,6 +132,8 @@ Product decisions Kai has made or accepted. Don't re-litigate them; change one o
   and Kai picks from every option rendered as an image (2026-11-22).
 - The side menu on desktop ("on desktop i prefer side menu"), not a top bar. Concepts 1-3 are out ("overwhelming and
   not calm"). Fonts: Inter and JetBrains Mono, as in the concepts.
+- After the dark pass (the lead's defaults, which Kai's "do docs" went ahead on, 2026-11-22): the picked segment keeps
+  its thin ring, and the side menu's current page stays a soft fill, with no edge.
 - The look changes, not what pages hold or do. Every image (README in both languages, demo GIFs, social card, the
   website's captures) is retaken after the build, and Kai sees each before it's applied.
 

@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.24.48 (2026-11-22)
+
+- The README's screenshots show the app's new look, in English and Chinese, and their descriptions say what's in them (#438).
+
 ## 1.24.47 (2026-11-22)
 
 - The app keeps loading and saving when your computer loses its network with the app open. It used to pause every request until the network came back, and a save still waiting was lost if you reloaded (#437).
