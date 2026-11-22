@@ -1,0 +1,125 @@
+/*
+ * The phone's bottom bar and its More sheet (docs/rfc/app-redesign.md §2, Phones). Glass, but mostly surface, so
+ * the ink on it reads at 4.5:1 or more whatever is behind it. How much room it takes is --jat-bar-space, which
+ * the page's end and scrolling to something both leave clear (Layout.module.css has the page's).
+ */
+:global(:root) {
+  --jat-bar-height: 4rem;
+  --jat-bar-gap: 8px;
+  --jat-bar-space: calc(var(--jat-bar-height) + var(--jat-bar-gap) + env(safe-area-inset-bottom, 0px));
+}
+
+@media not all and (min-width: 48em) {
+  /*
+   * What's focused or scrolled to stops above the bar. Not under a dialog: typing in a fixed box low on the
+   * screen would scroll the page behind it.
+   */
+  :global(:root:not(:has([aria-modal="true"]))) {
+    scroll-padding-bottom: calc(var(--jat-bar-space) + 8px);
+  }
+}
+
+.bar {
+  position: fixed;
+  z-index: var(--mantine-z-index-app); /* over the page; under panels, dialogs, menus and toasts */
+  inset-inline: var(--jat-bar-gap);
+  bottom: calc(var(--jat-bar-gap) + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  height: var(--jat-bar-height);
+  padding: 4px;
+  border: 1px solid var(--jat-ink-faint);
+  border-radius: var(--mantine-radius-lg);
+  background: color-mix(in srgb, var(--jat-surface) 88%, transparent);
+  box-shadow: 0 14px 40px -18px rgb(var(--jat-shadow) / 0.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.5);
+  backdrop-filter: blur(24px) saturate(1.5);
+}
+/* Out of sight rather than hidden, so Tab out of the box still gets to it (which brings it back). */
+.bar[data-away] {
+  transform: translateY(calc(100% + var(--jat-bar-space)));
+  pointer-events: none;
+}
+
+.item {
+  display: flex;
+  flex: 1 1 auto; /* as wide as its label at least, so "Applications" is whole at 320 px */
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 2px;
+  border-radius: 20px;
+  color: var(--mantine-color-text);
+  font-size: 0.6875rem;
+  line-height: 1.15;
+  text-align: center;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.item:focus-visible {
+  outline: 2px solid var(--mantine-color-text);
+  outline-offset: -2px;
+}
+.label {
+  overflow-wrap: anywhere; /* only with much bigger text than usual */
+}
+
+.icon {
+  position: relative;
+  display: flex;
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+/* Where you are: its icon on plum and its name heavier. */
+.item[aria-current] .icon {
+  background: var(--mantine-primary-color-filled);
+  color: var(--mantine-primary-color-contrast);
+}
+.item[aria-current] .label {
+  font-weight: 600;
+}
+
+/* Something in the sheet's footer needs you. */
+.alert {
+  position: absolute;
+  top: -2px;
+  inset-inline-end: 0;
+  width: 10px;
+  height: 10px;
+  border: 1px solid var(--jat-surface);
+  border-radius: 50%;
+  background: var(--mantine-color-red-text);
+}
+
+.sheet {
+  max-height: calc(100% - 24px); /* some backdrop left to tap, however short the window */
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  border-end-start-radius: 0;
+  border-end-end-radius: 0;
+  border-start-start-radius: var(--mantine-radius-lg);
+  border-start-end-radius: var(--mantine-radius-lg);
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(4.75rem, 1fr));
+  gap: 8px;
+}
+.grid .item {
+  min-height: 4.5rem;
+  gap: 6px;
+  background: var(--jat-p-plum);
+  font-size: 0.75rem;
+}
+.footer {
+  margin-top: 20px;
+}
+/* A finger's worth of target, in the sheet only. */
+.footer a {
+  display: flex;
+  align-items: center;
+  width: fit-content;
+  min-width: 44px;
+  min-height: 44px;
+}

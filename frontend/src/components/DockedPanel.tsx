@@ -19,11 +19,13 @@ import classes from "./DockedPanel.module.css";
 
 /**
  * Where a docked panel goes: Layout's dock beside the page (an AppShell aside), and how a panel tells Layout it's
- * open, so the page makes room for it (docs/rfc/app-redesign.md §2, Panels).
+ * open: docked, so the page makes room for it, or covering the screen, so the phone's bar behind it can't be
+ * reached (docs/rfc/app-redesign.md §2, Panels and Phones).
  */
 export interface DockSlot {
   target: HTMLElement | null;
   setDocked: (docked: boolean) => void;
+  setCovered: (covered: boolean) => void;
 }
 
 export const DockContext = createContext<DockSlot | null>(null);
@@ -65,6 +67,7 @@ export function DockedPanel({ opened, onClose, title, closeLabel, contentKey, ch
   const slot = useContext(DockContext);
   const target = slot?.target ?? null;
   const setDocked = slot?.setDocked;
+  const setCovered = slot?.setCovered;
   const overlay = narrow || !slot;
   const shown = opened && (overlay || !!target);
 
@@ -99,6 +102,12 @@ export function DockedPanel({ opened, onClose, title, closeLabel, contentKey, ch
   // Docked, the page makes room, and takes it back when the panel goes (or its page does).
   useEffect(() => setDocked?.(shown && !overlay), [shown, overlay, setDocked]);
   useEffect(() => () => setDocked?.(false), [setDocked]);
+  // Over it, Layout is told before focus goes back to what opened the panel.
+  useLayoutEffect(() => {
+    if (!shown || !overlay) return;
+    setCovered?.(true);
+    return () => setCovered?.(false);
+  }, [shown, overlay, setCovered]);
 
   // Over the page, the page behind doesn't scroll.
   useEffect(() => {

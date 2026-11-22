@@ -4,13 +4,13 @@
     "homeLabel": "求职申请追踪器：今日"
   },
   "header": {
-    "toggleNav": "展开或收起导航",
     "search": "全局搜索",
     "help": "使用说明",
     "newApplication": "新建申请"
   },
   "nav": {
     "label": "主导航",
+    "more": "更多",
     "placeholder": {
       "comingSoon": "即将推出",
       "roadmapTask": "路线图任务 <task/>"

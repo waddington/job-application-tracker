@@ -2,30 +2,29 @@ import {
   ActionIcon,
   Anchor,
   AppShell,
-  Burger,
   Group,
   NavLink,
-  Stack,
   Text,
   Title,
   Tooltip,
   useComputedColorScheme,
   useMantineColorScheme,
 } from "@mantine/core";
-import { useDisclosure, useReducedMotion } from "@mantine/hooks";
-import { IconDownload, IconMoon, IconSun, IconTarget } from "@tabler/icons-react";
+import { useReducedMotion } from "@mantine/hooks";
+import { IconMoon, IconSun, IconTarget } from "@tabler/icons-react";
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { isActive, NAV, NAV_GROUP_KEYS, NAV_GROUPS } from "../nav";
 import theme from "../theme.module.css";
+import { usePhone } from "../utils/usePhone";
 import classes from "./Layout.module.css";
-import { ApiStatus } from "./ApiStatus";
-import { AppVersion } from "./AppVersion";
+import { BottomNav } from "./BottomNav";
 import { DockContext } from "./DockedPanel";
 import { HeaderSearch } from "./HeaderSearch";
 import { HelpButton, LanguageSwitch, NewApplicationButton } from "./HeaderButtons";
+import { MenuFooter } from "./MenuFooter";
 
 function ColorSchemeToggle() {
   const { t } = useTranslation();
@@ -48,34 +47,28 @@ const DOCK_WIDTH = { base: 440, lg: 540 };
 
 export function Layout() {
   const { t } = useTranslation();
-  const [opened, { toggle, close }] = useDisclosure();
+  const phone = usePhone();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   // The dock beside the page, where a page's side panel (DockedPanel) goes; while one shows, the page makes room.
   const [dock, setDock] = useState<HTMLElement | null>(null);
   const [docked, setDocked] = useState(false);
-  const slot = useMemo(() => ({ target: dock, setDocked }), [dock]);
+  const [covered, setCovered] = useState(false); // a panel over the whole screen instead
+  const slot = useMemo(() => ({ target: dock, setDocked, setCovered }), [dock]);
   const reduceMotion = useReducedMotion();
 
   return (
     <AppShell
       header={{ height: 56 }}
-      navbar={{ width: 230, breakpoint: "sm", collapsed: { mobile: !opened } }}
+      navbar={{ width: 230, breakpoint: "sm", collapsed: { mobile: true } }}
       aside={{ width: DOCK_WIDTH, breakpoint: "md", collapsed: { mobile: true, desktop: !docked } }}
       padding={{ base: "md", sm: 28 }}
       transitionDuration={reduceMotion ? 0 : 350}
       transitionTimingFunction="cubic-bezier(0.22, 0.61, 0.24, 1)"
-      classNames={{ header: classes.header, navbar: classes.navbar, aside: classes.dock }}
+      classNames={{ header: classes.header, navbar: classes.navbar, main: classes.main, aside: classes.dock }}
     >
       <AppShell.Header>
-        <Group h="100%" px="md" justify="space-between">
+        <Group h="100%" px="md" justify="space-between" className={classes.headerRow}>
           <Group gap="xs">
-            <Burger
-              opened={opened}
-              onClick={toggle}
-              hiddenFrom="sm"
-              size="sm"
-              aria-label={t("header.toggleNav")}
-            />
             <Anchor component={Link} to="/" underline="never" c="inherit" aria-label={t("app.homeLabel")}>
               <Group gap="xs" wrap="nowrap">
                 <IconTarget size={22} />
@@ -85,7 +78,7 @@ export function Layout() {
               </Group>
             </Anchor>
           </Group>
-          <Group gap="sm" wrap="nowrap">
+          <Group gap="sm" wrap="nowrap" className={classes.headerActions}>
             <NewApplicationButton compact />
             <HeaderSearch />
             <HelpButton />
@@ -95,53 +88,42 @@ export function Layout() {
         </Group>
       </AppShell.Header>
 
-      <AppShell.Navbar p="xs" aria-label={t("nav.label")}>
-        {NAV_GROUPS.map((group, n) => {
-          const items = NAV.filter((item) => item.group === group);
-          // A heading that only repeats its one item's name ("Today") says nothing.
-          const heading = !(items.length === 1 && t(items[0]!.labelKey) === t(NAV_GROUP_KEYS[group]));
-          return (
-            <div
-              key={group}
-              role="group"
-              aria-label={t(NAV_GROUP_KEYS[group])}
-              className={n > 0 ? classes.group : undefined}
-            >
-              {heading && (
-                <Text className={theme.eyebrow} px="sm" pt={6} pb={2}>
-                  {t(NAV_GROUP_KEYS[group])}
-                </Text>
-              )}
-              {items.map((item) => (
-                <NavLink
-                  key={item.path}
-                  component={Link}
-                  to={item.path}
-                  label={t(item.labelKey)}
-                  leftSection={<item.icon size={18} stroke={1.6} />}
-                  className={classes.navLink}
-                  active={isActive(item, pathname)}
-                  onClick={close}
-                />
-              ))}
-            </div>
-          );
-        })}
-        <Stack gap={4} mt="auto" p="xs">
-          <ApiStatus />
-          <Text size="xs" c="dimmed">
-            {t("footer.localFirst")}
-          </Text>
-          <Tooltip label={t("footer.backupHint")}>
-            <Anchor href="/api/v1/backup/archive" download size="xs">
-              <Group gap={4} wrap="nowrap">
-                <IconDownload size={12} /> {t("footer.backup")}
-              </Group>
-            </Anchor>
-          </Tooltip>
-          <AppVersion />
-        </Stack>
-      </AppShell.Navbar>
+      {/* On a phone the bar at the bottom takes its place, so there's one menu and one footer at a time. */}
+      {!phone && (
+        <AppShell.Navbar p="xs" aria-label={t("nav.label")}>
+          {NAV_GROUPS.map((group, n) => {
+            const items = NAV.filter((item) => item.group === group);
+            // A heading that only repeats its one item's name ("Today") says nothing.
+            const heading = !(items.length === 1 && t(items[0]!.labelKey) === t(NAV_GROUP_KEYS[group]));
+            return (
+              <div
+                key={group}
+                role="group"
+                aria-label={t(NAV_GROUP_KEYS[group])}
+                className={n > 0 ? classes.group : undefined}
+              >
+                {heading && (
+                  <Text className={theme.eyebrow} px="sm" pt={6} pb={2}>
+                    {t(NAV_GROUP_KEYS[group])}
+                  </Text>
+                )}
+                {items.map((item) => (
+                  <NavLink
+                    key={item.path}
+                    component={Link}
+                    to={item.path}
+                    label={t(item.labelKey)}
+                    leftSection={<item.icon size={18} stroke={1.6} />}
+                    className={classes.navLink}
+                    active={isActive(item, pathname)}
+                  />
+                ))}
+              </div>
+            );
+          })}
+          <MenuFooter mt="auto" p="xs" />
+        </AppShell.Navbar>
+      )}
 
       <DockContext.Provider value={slot}>
         <AppShell.Main>
@@ -150,6 +132,7 @@ export function Layout() {
       </DockContext.Provider>
       {/* After the page, so Tab goes from the page into the panel and on, with no trap. */}
       <AppShell.Aside ref={setDock} />
+      {phone && <BottomNav covered={covered} />}
     </AppShell>
   );
 }

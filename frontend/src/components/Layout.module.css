@@ -59,3 +59,47 @@
 .group {
   margin-top: 9px;
 }
+
+/* A phone (utils/usePhone.ts): room for the bottom bar, and a header of one row. */
+@media not all and (min-width: 48em) {
+  .main {
+    --app-shell-footer-offset: var(--jat-bar-space); /* AppShell's own room for something along the bottom */
+  }
+  /* The More sheet puts focus on the page when it takes you to one: for where Tab goes next, not to show. */
+  .main:focus {
+    outline: none;
+  }
+
+  .header .headerRow {
+    flex-wrap: nowrap;
+    gap: 6px;
+    padding-inline: 12px;
+  }
+  .header .headerActions {
+    flex: 1;
+    min-width: 0;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+  /* The search takes what's left, up to the width it has had on phones. */
+  .search {
+    flex: 1;
+    min-width: 0;
+    max-width: 160px;
+  }
+  .brand {
+    white-space: nowrap;
+  }
+  /* The globe alone, as wide as the buttons beside it. */
+  .header .language {
+    flex: none;
+    width: 34px;
+    padding-inline: 0;
+  }
+  .header .languageSection {
+    margin: 0;
+  }
+  .header .languageSection[data-position="right"] {
+    display: none;
+  }
+}

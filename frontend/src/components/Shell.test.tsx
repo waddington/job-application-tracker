@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 
 import { MantineProvider } from "@mantine/core";
 import { createMemoryHistory } from "@tanstack/react-router";
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { App } from "../App";
@@ -11,6 +11,7 @@ import { i18n } from "../i18n";
 import { ADD_LANGUAGE_GUIDE, PSEUDO, STORAGE_KEY } from "../i18n/language";
 import { makeRouter } from "../router";
 import { mockApi, row, WORKFLOW } from "../test/mockApi";
+import { PHONE_QUERY } from "../utils/usePhone";
 import { EditNameModal } from "./EditNameModal";
 
 // The app's frame and shared bits read their text from locales/en/common.ts (i18n-shell).
@@ -40,7 +41,7 @@ describe("the frame", () => {
 
     expect(await screen.findByRole("heading", { name: "Job Application Tracker" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Job Application Tracker: today" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Toggle navigation" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "More" })).toBeNull(); // the phone's, only there
     const search = screen.getByRole("textbox", { name: "Search everything" });
     expect(search).toHaveAttribute("placeholder", "Search everything");
     expect(screen.getAllByRole("button", { name: "New application" }).length).toBeGreaterThan(0);
@@ -72,6 +73,26 @@ describe("the frame", () => {
       "/api/v1/backup/archive",
     );
     expect(await within(menu).findByText("Connected")).toBeInTheDocument();
+  });
+
+  it("on a phone: four pages and More, which says what needs you", async () => {
+    const real = window.matchMedia;
+    vi.spyOn(window, "matchMedia").mockImplementation((query) => ({
+      ...real(query),
+      matches: query === PHONE_QUERY,
+    }));
+    mockApi({ "/api/v1/health": { ...HEALTH, version: "0.0.1" } });
+    renderAt("/no-such-page");
+
+    const bar = await screen.findByRole("navigation", { name: "Main navigation" });
+    expect(
+      within(bar)
+        .getAllByRole("link")
+        .map((link) => link.textContent),
+    ).toEqual(["Today", "Applications", "Interviews", "Notes"]);
+    const more = within(bar).getByRole("button", { name: "More" });
+    expect(more).toHaveAttribute("aria-expanded", "false");
+    await waitFor(() => expect(more).toHaveAccessibleDescription(/^The server is v0\.0\.1/));
   });
 
   it("the connection tooltip: version and schema, backups on or not", async () => {

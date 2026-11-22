@@ -7,13 +7,14 @@ export default {
     homeLabel: "Job Application Tracker: today",
   },
   header: {
-    toggleNav: "Toggle navigation",
     search: "Search everything",
     help: "How it works",
     newApplication: "New application",
   },
   nav: {
     label: "Main navigation",
+    // The phone bar's last button, and the title of the sheet of other pages it opens.
+    more: "More",
     // A page in the menu that isn't built yet (pages/Placeholder.tsx). There are none today.
     placeholder: {
       comingSoon: "Coming soon",

@@ -167,3 +167,8 @@ export const NAV: NavItem[] = [
       "Everything that happened, by day or one row per role: calls, pitches, applications and outcomes.",
   },
 ];
+
+// On a phone (BottomNav): the pages with a tab of their own, and the rest, under More, both in menu order.
+const TAB_PATHS = ["/", "/applications", "/interviews", "/notes"];
+export const PHONE_TABS: NavItem[] = NAV.filter((item) => TAB_PATHS.includes(item.path));
+export const MORE_PAGES: NavItem[] = NAV.filter((item) => !TAB_PATHS.includes(item.path));
