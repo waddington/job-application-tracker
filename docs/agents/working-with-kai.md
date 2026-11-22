@@ -61,6 +61,12 @@ where things run. Quotes are Kai's words.
   (Kai, 2026-11-22: "every release, frontend-only ones too, needs Kai to restart the tracker, so always say so").
 - **"whats taking so long":** give the time per step and offer concrete speed-ups (Kai took a website-only check mode
   and a second parallel builder, 2026-11-12). Cap long measurement loops in builders; ask for interim results.
+  "god damn hurry this one up" (2026-11-22): cut repeat sweeps and run review and checks side by side, but never drop
+  either. When asked whether a check is needed, answer honestly and offer the rule change rather than skipping it
+  (that became #440).
+- **A check that keeps failing on something unrelated:** rerun once as the gotchas allow, then stop and give Kai
+  options with a recommendation; merging past a seen failure is Kai's call each time (#439, 2026-11-22: "do
+  recommended").
 - **Explain plainly:** "you didnt explain it to me, file changes got in the way". Say what changed in plain words before
   file details. Answer a mid-turn "sitrep" briefly and honestly, then carry on. When Kai asks for links or status, give
   them in a clean final message (mid-turn text doesn't always reach Kai).

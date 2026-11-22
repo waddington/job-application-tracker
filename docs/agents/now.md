@@ -1,32 +1,46 @@
 # Now: state and live plan
 
-Snapshot 2026-11-22, as of #439 (v1.24.49), written in that PR. Refresh this
+Snapshot 2026-11-22 evening, after #439 (main at `bac5d3e0`, v1.24.49), written before a compaction. Refresh this
 file before each compaction. Before trusting it, check `gh pr list`, `git worktree list`, `git log --oneline -5` and
 `docs/ROADMAP.yaml`.
 
 ## Kai's current request
 
-**"then do gif-card"** (2026-11-22): `app-redesign-gif-card`, #439, v1.24.49. Kai approved the card, GIFs and icon
-("looks great, icon I2"). If it isn't merged and released yet, finish that; then report with the restart reminder
-and the reminder to upload the card to GitHub by hand, and wait. Nothing below starts without Kai's word.
-Its browser suite failed three times on races; Kai chose "do recommended" (2026-11-22): merge it under the widened
-skip list (#440), with every other check. Offered, no answer: "fix the board race" (it can block any app PR) and
-"cheap checks first" in `checks.sh` (stop on the first failure).
+Nothing is in flight. Kai is compacting ("update the compact docs then remind me of the proceddure", 2026-11-22).
+
+- **v1.24.49 is released** and **Kai has uploaded the social card** (checked: GitHub serves the approved file).
+- **Kai's tracker still reported 1.24.48** when this was written, so check it after the compaction and repeat the restart
+  reminder if it still does.
+- **The website still shows the old look:** Kai saw it ("the website still shows old gifs", then "ah thats another task
+  to do"). It has no GIFs: they're the animated captures, which `app-redesign-website-shots` retakes.
+
+**Nothing below starts without Kai's word** (Kai's scope wins over the delivery loop): after the compaction, give the
+state in a few lines, recommend the first item, and wait.
 
 ## Next, when Kai gives the word
 
-1. **The images, last part:** `app-redesign-website-shots`, shown to Kai (after DAST) before it's applied.
-   `AppDemo.astro` still draws some of the old indigo over the captures (`#4c6ef5`, `#dbe4ff`): change it there.
-2. **`app-redesign-wrap-up`**: close #354.
-3. **After the redesign** (Kai queued them; each depends on the wrap-up): `fix-tablet-header-overflow` (768-970 px with
+1. **`app-redesign-website-shots`** ("do website shots", 3 h): the 11 captures in `website/src/assets/{hero,demo,story}`
+   from the demo app, light mode.
+   - `AppDemo.astro` puts HTML overlays at pixel positions on them and still draws some old indigo (`#4c6ef5`,
+     `#dbe4ff`): re-check each overlay and change the colours.
+   - A compare page first: Kai sees every image, after DAST, before any is committed.
+   - Then a website PR (`tools/dev/checks.sh --website`). Recipe: gotchas.md, *Website*.
+2. **`app-redesign-wrap-up`** ("wrap up", 30 min): close #354, its branch and worktree; the RFC becomes built. That
+   finishes the redesign.
+3. **Offered on 2026-11-22, no answer yet:**
+   - **"fix the board race"** (`fix-board-drag-width-race`, about 1 h, with `fix-flaky-keyboard-add-agency-test`, 15
+     min): the race failed all three full browser runs that evening, so it can block any app PR. I recommended it first
+     of the tooling work, and it may be wanted before the next app PR.
+   - **"cheap checks first"** (20 min, not on the roadmap yet): `checks.sh` runs the quick checks first and stops on a
+     failure, so a formatting slip fails in a minute rather than 12.
+4. **After the redesign** (Kai queued them; each depends on the wrap-up): `fix-tablet-header-overflow` (768-970 px with
    a scrollbar), `fix-board-touch-drag`, `fix-slash-behind-modal`, `fix-phone-quick-view-buttons-cut`,
    `fix-phone-new-application-route-wide`.
-4. Also `next`: `e2e-seed-once` and P13's `generic-*`. #359 when its author updates it.
+5. Also `next`: `e2e-seed-once` and P13's `generic-*`. #359 when its author updates it.
 
 ## State
 
-- **Released up to v1.24.49** (with #439). The redesign has 22 of its 24 tasks done, counting the five
-  `loading-state-*` parts.
+- **Released up to v1.24.49.** The redesign has 22 of its 24 tasks done, counting the five `loading-state-*` parts.
 - **Open PRs:**
   - **#414** DO NOT MERGE: board concepts for per-round columns beside the quick view (`?board=N`). Parked for Kai
     ("park it for now, ill review another time"); its servers (5190, 8886) are off, its worktree kept
@@ -37,49 +51,45 @@ skip list (#440), with every other check. Offered, no answer: "fix the board rac
     its PowerShell steps on the VM. A minor bump.
   - **#365** (`windows-snapshots`): on hold (Kai).
 - **Running:** the PM dashboard on 8767 (a background job of the session: restart it after a session restart, from the
-  main checkout, `python3 -m tools.pm`); Kai's tracker on 8770 (Kai runs it, never stop it).
-- **Dependabot alerts:** one open, build-time only, no patched version when evaluated (#33 `minimatch`; GitHub withdrew #39).
-  Left open.
+  main checkout, `python3 -m tools.pm`); Kai's tracker on 8770 (Kai runs it in their terminal, never stop it). No demo or
+  preview servers, no agents. Port 8778 is another project of Kai's: leave it.
+- **Dependabot alerts:** one open, build-time only, no patched version when evaluated (#33 `minimatch`; GitHub withdrew
+  #39). Left open.
 
-## Done since v1.24.36
+## Done since v1.24.44
 
 | Version | PR | What |
 |---|---|---|
-| 1.24.37 | #408 | the quick view docks beside the page from 992 px, full screen below |
-| 1.24.38 | #412 | Today in three columns, by the page's own width |
-| 1.24.39 | #413 | the board fills the window (columns 180-360 px, still while dragging); the list on a card |
-| 1.24.40 | #415 | the record layout on an application and a company |
-| 1.24.41 | #421 | the record layout on a person, an agency and a role |
-| 1.24.42 | #423 | Roles, Recruiters and Companies; `SideScroll` with the edge fade |
-| 1.24.43 | #424 | Interviews, Offers and the Timeline |
-| 1.24.44 | #425 | Notes, Documents, Insights (a checked palette) and Search |
 | 1.24.45 | #427 | a bottom bar on phones, the More sheet, the phone header on one row |
 | 1.24.46 | #436 | the dark-mode and contrast pass, focus rings |
 | 1.24.47 | #437 | keeps loading and saving when the network drops |
 | 1.24.48 | #438 | the README's screenshots, both languages |
 | 1.24.49 | #439 | the demo GIFs, the social card and the icons |
 
-Internal: #407, #426 (notes); #410 and #411 (retros in `docs/retros/`, with `retro-actions` to act on them); ideas and
-bugs: #409, #416, #417, #419, #420, #422, #428 to #434; #440 (the widened browser-test skip list). #418 was closed and redone as #419 (a name from a screenshot;
-Kai: fine as it is, no purge).
+Internal: #440 (website and icon changes skip the browser tests). Earlier work: `CHANGELOG.md` and `git log`.
 
 **How work runs** (keep doing it this way unless Kai says otherwise):
 
-- One builder agent per change in its own worktree, one PR at a time. The brief settles focus, keyboard, breakpoints and
-  widths up front, asks for 375 to 2,560 px and Firefox, and has the builder run the affected specs, not the full checks.
-- An Opus reviewer who looks at the demo; Sonnet or Haiku for small and roadmap PRs; every fix commit re-reviewed.
-- The lead bumps, runs the full checks once on the final commit, reads their FAIL and `failed` lines, then merges and
-  ships. Roadmap-only PRs: `uv run pytest -q tests/pm`.
-- A builder measures in full once; after its fixes it re-measures only what changed. The review can run beside the
-  full checks, on a frozen copy of the build (#436 took too long sweeping twice; Kai: "hurry this one up").
+- One PR at a time. A small change the lead builds itself; a big one gets a builder agent in its own worktree, briefed
+  on focus, keyboard, breakpoints and widths (375 to 2,560 px, Firefox), running the affected specs, not the full
+  checks. A builder measures in full once, then only what changed.
+- An Opus reviewer for app changes and anything that guards the checks; Sonnet or Haiku for small and docs PRs; every
+  fix commit re-reviewed. The review runs beside the checks, on a frozen copy of the build.
+- The lead bumps, runs the cheap checks (format included) before the long run, runs the full checks once on the final
+  commit (or `--no-e2e` where the skip list allows), reads their FAIL and `failed` lines, then merges and ships.
+  Roadmap-only PRs: `uv run pytest -q tests/pm`.
+- Images: options on a local compare page, Kai directs in rounds, DAST before each round, nothing committed until
+  approved.
 
 ## Waiting on Kai (don't start)
 
-- **Bugs to pick:** the roadmap's phase B, five of them queued above. Raised lately, no go
-  yet: `fix-flaky-keyboard-add-agency-test`, `fix-note-preview-drops-hyphens`, `fix-search-snippet-table-pipes`, `fix-timeline-detail-raw-markdown`, `fix-custom-stage-colour-contrast`, `fix-round-waiting-after-heard-back` (the contradicting pills), `fix-e2e-only-exit-status` (maintainer tooling;
-  it let a failed run look like a pass), `fix-board-drag-width-race`, `fix-back-link-full-width`,
-  `fix-flaky-panel-keyboard-move-test`, `fix-insights-dialog-flake`, `fix-dev-proxy-other-port-writes`; and the older
-  backlog.
+- **Bugs to pick:** the roadmap's phase B, five of them queued above.
+  - Found on 2026-11-22, no go yet: `fix-timeline-detail-raw-markdown`, `fix-custom-stage-colour-contrast`,
+    `fix-search-snippet-table-pipes`, `fix-note-preview-drops-hyphens`, `fix-flaky-keyboard-add-agency-test`.
+    `fix-today-waiting-actions-clipped` also clips under *Your move* at 360 px and narrower.
+  - Raised earlier: `fix-round-waiting-after-heard-back` (the contradicting pills), `fix-e2e-only-exit-status`,
+    `fix-board-drag-width-race`, `fix-back-link-full-width`, `fix-flaky-panel-keyboard-move-test`,
+    `fix-insights-dialog-flake`, `fix-dev-proxy-other-port-writes`; and the older backlog.
 - **Backlog raised lately:** `panel-add-todo`, `board-card-round-ui`, `retro-actions`, `why-you-ended-it`,
   `calendar-ui-improve`, `timeline-list-wide`, `insights-tables-sidescroll`; tasks `orphan-files-sweep`,
   `scripts-lf-endings`, `tz-spring-forward-test`, `e2e-rebalance-slow-files` and `pytest-parallel`.
@@ -94,7 +104,9 @@ Kai: fine as it is, no purge).
   - MCP §14 and `hosted-mcp`'s open questions;
   - the GitHub repo description, when those tasks run;
   - whether to dismiss the build-time Dependabot alert #33;
-  - whether CLAUDE.md's "fill in data when Kai asks" should point at the live-data rule.
+  - whether CLAUDE.md's "fill in data when Kai asks" should point at the live-data rule;
+  - whether to rename the demo agency "Blue Yonder Recruitment" (a real software company's name, shown beside
+    "Ghosted" in screenshots; the DAST reviewer's borderline note, left as is).
 - **Restore `worktree-pr-screenshots`?** (from #291's head `a283908`).
 - **Repo gaps offered for contributors, no answer:** CONTRIBUTING asks contributors to update `CHANGELOG.md` though Kai
   asked them to leave it; PRs get no automatic checks.
@@ -104,7 +116,7 @@ Kai: fine as it is, no purge).
 ## Noticed, not promised
 
 - `docs-contributor-prs` is still `building` on the roadmap with no branch: check whether it's done.
-- The website's hero demo shows an old app version; `app-redesign-website-shots` retakes it.
+- The real offline test (Wi-Fi off) was never done: #437 was tried with the browser's offline event only.
 - The quick view's summary grows 28 px when a later request answers (CLS 0.031, seen in #401).
 - A CNY role's pay reads "2800 CNY/天": `formatMoney` has symbols only for GBP, USD and EUR (now `generic-money`).
 - Ghost and star marks are missing in the Timeline *About* select and to-do "about" text.

@@ -13,6 +13,15 @@ everything under [The prompt](#the-prompt). It's short on purpose: what must sur
 
 This repo is public: nothing here may contain Kai's job-search data (no real companies, people, salaries or notes).
 
+## The procedure
+
+1. Ask the session to refresh the notes ("update the compact docs"), and wait until it says nothing is in flight.
+2. In your own terminal, print the prompt and copy it:
+   `cd ~/Documents/Projects/job-application-tracker && sed -n '/^## The prompt/,/^---$/p' docs/COMPACTION.md`
+3. In the session, type `/compact`, a space, paste it, and send. Don't restart the session instead: that stops its
+   background jobs, the PM dashboard included.
+4. When it has compacted, send `read docs/agents and continue`.
+
 ---
 
 ## The prompt
@@ -28,6 +37,9 @@ Summarise this session so the work carries on without asking Kai anything a sens
 - Ids, paths, ports, branch names, PR numbers, commit hashes and commands, exactly.
 - Anything learned this session that isn't in `docs/agents/` yet (a new standing instruction, decision or gotcha), so it
   can be written there.
+
+**Leave out, even from the list of Kai's messages:** anything Kai asked not to be recorded, and any message, link or
+screenshot about it. Where Kai asked for something to be kept without its reason, keep it without the reason.
 
 **Drop:** tool output, diffs and file contents that are on disk; step-by-step narration; reviewer reports already
 handled; screenshots already looked at; anything `docs/agents/`, `CLAUDE.md` or the repo already records. Don't restate
