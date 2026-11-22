@@ -5,6 +5,9 @@ import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { usePhone } from "../utils/usePhone";
+import classes from "./Layout.module.css";
+
 /** The search box in the header. Enter opens the results; "/" jumps to it from anywhere. */
 export function HeaderSearch() {
   const { t } = useTranslation();
@@ -22,9 +25,12 @@ export function HeaderSearch() {
   const input = useRef<HTMLInputElement>(null);
   useHotkeys([["/", () => input.current?.focus()]]);
 
+  const phone = usePhone();
+
   return (
     <form
       role="search"
+      className={classes.search}
       onSubmit={(e) => {
         e.preventDefault();
         const q = value.trim();
@@ -36,10 +42,10 @@ export function HeaderSearch() {
         aria-label={t("header.search")}
         placeholder={t("header.search")}
         leftSection={<IconSearch size={16} />}
-        rightSection={<Kbd size="xs">/</Kbd>}
+        rightSection={phone ? null : <Kbd size="xs">/</Kbd>} // no room for the hint on a phone
         value={value}
         onChange={(e) => setValue(e.currentTarget.value)}
-        w={{ base: 160, sm: 280 }}
+        w={{ base: "100%", sm: 280 }}
       />
     </form>
   );

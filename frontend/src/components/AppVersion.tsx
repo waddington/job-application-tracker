@@ -26,19 +26,30 @@ export function compareVersions(a: string, b: string): number | null {
 }
 
 /**
- * The page's version in the menu's footer, linked to its release notes (a link only: nothing is
- * fetched from the web). When the running server is a different version, says so and what to do:
- * an older server needs restarting (the frontend was rebuilt under it); an older page needs a
- * refresh (the tab was opened before the server was updated).
+ * The sentence for a server that's a different version from the page, or null: an older server needs
+ * restarting (the frontend was rebuilt under it); an older page needs a refresh (the tab was opened
+ * before the server was updated).
  */
-export function AppVersion({ page = PAGE_VERSION }: { page?: string }) {
+export function useVersionMismatch(page: string = PAGE_VERSION): string | null {
   const { t } = useTranslation();
   const { data } = useHealth();
   // Nothing is said about the server until it has answered.
   const server = data?.version ? String(data.version) : page;
   const order = server === page ? 0 : compareVersions(server, page);
+  if (order === 0) return null;
   // Versions that differ but can't be compared: restarting the server is the usual cure.
-  const mismatch = order === 0 ? null : order !== null && order > 0 ? "pageOlder" : "serverOlder";
+  return order !== null && order > 0
+    ? t("version.pageOlder", { server, page })
+    : t("version.serverOlder", { server, page });
+}
+
+/**
+ * The page's version in the menu's footer, linked to its release notes (a link only: nothing is
+ * fetched from the web), and what to do when the running server is a different one.
+ */
+export function AppVersion({ page = PAGE_VERSION }: { page?: string }) {
+  const { t } = useTranslation();
+  const mismatch = useVersionMismatch(page);
 
   return (
     <>
@@ -56,9 +67,7 @@ export function AppVersion({ page = PAGE_VERSION }: { page?: string }) {
       <div role="status">
         {mismatch && (
           <Text size="xs" className={classes.mismatch}>
-            {mismatch === "serverOlder"
-              ? t("version.serverOlder", { server, page })
-              : t("version.pageOlder", { server, page })}
+            {mismatch}
           </Text>
         )}
       </div>

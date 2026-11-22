@@ -127,7 +127,8 @@ The app is running but the web interface hasn't been built. Run
 
 ## The page won't load, or the sidebar says "API offline"
 
-`jat serve` isn't running (or stopped). Start it again with `uv run jat serve`.
+`jat serve` isn't running (or stopped). Start it again with `uv run jat serve`. (On a phone there's
+no sidebar: **More** gets a red dot, and its sheet says this and the versions note below.)
 
 ## The sidebar says the server and this page are different versions
 

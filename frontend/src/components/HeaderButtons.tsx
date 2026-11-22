@@ -23,6 +23,7 @@ import {
   saveLanguage,
 } from "../i18n/language";
 import { HowItWorks } from "./HowItWorks";
+import classes from "./Layout.module.css";
 import { NewApplicationModal } from "./NewApplicationModal";
 
 // The header's buttons, kept apart from How it works' text (which moves with Today) so the
@@ -121,6 +122,7 @@ export function LanguageSwitch() {
           <Button
             variant="default"
             size="compact-sm"
+            classNames={{ root: classes.language, section: classes.languageSection }}
             aria-label={t("language.current", { name })}
             leftSection={<IconWorld size={16} aria-hidden />}
             rightSection={
@@ -129,7 +131,7 @@ export function LanguageSwitch() {
               </Box>
             }
           >
-            {/* No room for the name or arrow on a phone: the header only just fits. */}
+            {/* No name or arrow on a phone, so the header stays one row (Layout.module.css). */}
             <Box component="span" visibleFrom="sm">
               {name}
             </Box>

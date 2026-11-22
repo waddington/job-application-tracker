@@ -2,7 +2,10 @@
 
 A tour of every page. The sidebar has them all, in groups: *Today* (the home page),
 *Your applications* (Roles, Applications, Interviews, Offers), *People and companies*, *Files
-and notes* and *Review* (Insights, Timeline). Along
+and notes* and *Review* (Insights, Timeline). On a phone (narrower than 768 pixels) a bar along
+the bottom takes the sidebar's place: Today, Applications, Interviews, Notes and **More**, which
+opens a sheet with the other seven pages. In a very short window (a phone on its side) the bar
+gets out of the way while you type. Along
 the top, on every page:
 
 - the name, which takes you back to [Today](#today-home);
@@ -12,7 +15,8 @@ the top, on every page:
 - the [language](#language) switch;
 - light/dark mode.
 
-At the bottom of the sidebar (behind the menu button on a phone): whether the app is
+At the bottom of the sidebar (on a phone, at the bottom of **More**'s sheet, and More gets a red
+dot when the app is offline or the versions differ): whether the app is
 connected, **Download a backup**, and the version you're running, written like *v1.0.0*. The version
 links to what changed in that release on GitHub, in a new tab. If the running tracker and the
 page are different versions, a sentence under it says so and what to do (see

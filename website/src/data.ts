@@ -176,7 +176,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "How do I back it up?",
-    a: "Download a backup from the sidebar: one zip file with everything you need to restore. If you're comfortable with git, the folder can also keep its own full history and copy it to a private repo you own.",
+    a: "Download a backup from the sidebar (on a phone, from More): one zip file with everything you need to restore. If you're comfortable with git, the folder can also keep its own full history and copy it to a private repo you own.",
   },
   {
     q: "What do developers need to run it?",

@@ -20,7 +20,7 @@ function Page({ withModal = false, withMenu = false, openerRemounts = false }: P
   const [moves, setMoves] = useState(0);
   return (
     <MantineProvider>
-      <DockContext.Provider value={{ target, setDocked }}>
+      <DockContext.Provider value={{ target, setDocked, setCovered: () => {} }}>
         <main>
           <h2>The page</h2>
           <button key={moves} data-panel-opener="a" onClick={() => setId("a")}>

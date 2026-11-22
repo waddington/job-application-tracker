@@ -40,7 +40,7 @@ describe("the frame", () => {
 
     expect(await screen.findByRole("heading", { name: "Job Application Tracker" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Job Application Tracker: today" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Toggle navigation" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "More" })).toBeNull(); // the phone's, only there
     const search = screen.getByRole("textbox", { name: "Search everything" });
     expect(search).toHaveAttribute("placeholder", "Search everything");
     expect(screen.getAllByRole("button", { name: "New application" }).length).toBeGreaterThan(0);
