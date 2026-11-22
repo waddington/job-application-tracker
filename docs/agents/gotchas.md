@@ -268,6 +268,11 @@ Each of these cost time once. Add a line when something new does.
     `jat.language` set first, and every non-GET request aborted.
   - Keep each old image's size and framing unless the layout cuts something. Look at every one, then DAST.
   - A compare page in `var/review/`, served on 127.0.0.1 only, before anything is committed.
+  - Demo times follow the seeding time: at night, seed, serve and shoot in one daytime zone (`TZ=America/Chicago`,
+    Playwright's `timezone_id`).
+- **Retaking the hero demo's captures** moves every overlay in `AppDemo.astro` (measure them in the app), the role
+  URL's id, and alt text that names a day. Then film a whole loop in Chrome and Firefox, and look at each crop in
+  place at desktop and phone widths.
 - **DAST catches:** a plug on a cable heading for a socket reads as a sperm (any head with a tail aimed at an
   opening does), and "AI" in Inter reads "Al" without the serifed I (`font-feature-settings: "cv08"`).
 - **Screenshots from the demo app:** restart it after a release, or the app shows a red version-mismatch warning in
