@@ -76,7 +76,8 @@ Each of these cost time once. Add a line when something new does.
   with `git push origin --delete <branch>`.
 - **Quoting Kai: drop names from screenshots.** A roadmap detail may quote Kai's words, but Kai often names a real
   company or person from the screenshot they're describing, e.g. calling a card by its company. Replace it ("[one
-  card]") before committing: #418 pushed one to a public branch and had to be closed and redone as #419.
+  card]") before committing: #418 pushed one to a public branch and had to be closed and redone as #419 (Kai: fine as
+  it is, no purge).
 - **`gh pr edit` fails silently**: set title and body with `gh api -X PATCH …/pulls/N -f title=… -F body=@file`.
 - **`gh pr merge` right after a push** can fail (still rechecking) or 504; `tools/dev/merge.sh` retries. From the main
   checkout it prints "'main' is already used by worktree": harmless.
