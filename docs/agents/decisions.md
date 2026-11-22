@@ -158,3 +158,5 @@ Product decisions Kai has made or accepted. Don't re-litigate them; change one o
 ## Maintainer checks
 
 - `checks.sh --no-e2e` accepts a version-only bump alongside the skip list (#369, via `tools/dev/scope.sh`).
+- The skip list takes `website/` (its own checks run instead) and the app's two icon files by name (Kai, 2026-11-22:
+  "widen the skip list", after the card and icons PR waited on browser tests that don't touch them).

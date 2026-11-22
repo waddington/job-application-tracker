@@ -107,7 +107,9 @@ Each of these cost time once. Add a line when something new does.
   CHANGELOG entry), keeping main's CHANGELOG sections unchanged.
 - **`checks.sh --no-e2e` refuses `tools/pm` changes** (they aren't on the skip list): run the full checks.
 - **A PR touching the app and the website** runs `checks.sh` plus, with `pnpm --dir website`: `install
-  --frozen-lockfile`, `format:check`, `check` and `build` (`checks.sh --website` refuses app changes).
+  --frozen-lockfile`, `format:check`, `check` and `build` (`checks.sh --website` refuses app changes; `--no-e2e`
+  runs them itself when `website/` changed). Run the format check straight after editing an .astro file (#439's
+  one-line edit failed a 12-minute run).
 - **A bump costs about 14 changed lines:** leave room under the limit, counted with `git diff origin/main --shortstat
   -- . ':!uv.lock' ':!frontend/openapi.json' ':!frontend/src/api/schema.d.ts'`.
 - **`gh pr view N` without `--json` can fail** on a deprecated Projects GraphQL field: pass `--json` with the fields.
