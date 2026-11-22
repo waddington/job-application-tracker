@@ -131,7 +131,9 @@ Each of these cost time once. Add a line when something new does.
 - **The board's mouse-drag tests can flake under a full run** (2026-11-18, on #415, which doesn't touch the board):
   `board.spec.ts` "onto its own column does nothing" (~:284) once and "while dragging, the columns keep their width"
   (~:555) once, each passing alone. The second was 45 px off (225 → 180), so it may be a real one-frame race in the
-  width freeze: `fix-board-drag-width-race`. Rerun with `tools/dev/e2e_only.sh` before blaming the PR.
+  width freeze: `fix-board-drag-width-race`. Rerun with `tools/dev/e2e_only.sh` before blaming the PR. On
+  2026-11-22 ~:555 failed three full runs in a row on #439 and passed 15 of 15 alone, so a rerun may not clear it:
+  don't keep rerolling (working-with-kai.md, *A check that keeps failing*).
 - **A `test.fail` can fail the run by passing:** "Expected to fail, but passed" means the known bug didn't happen that
   time (`fix-double-save-locked`'s double click at `companies.spec.ts` ~:596 is racy; 2026-11-12). Rerun the browser
   tests (`tools/dev/e2e_only.sh`) before blaming the PR. A fix can also turn another bug's `test.fail` green for good
@@ -256,6 +258,17 @@ Each of these cost time once. Add a line when something new does.
   system Chrome: measure CLS in both, with the font delayed.
 - **`astro dev`/`astro preview` can detach** as daemons (they did here, from `pnpm dev`): stop them with `npx astro dev stop` / `npx astro preview stop`
   from the same `website/`, or they hold ports for days.
+- **The website has no GIFs:** what moves is `AppDemo.astro` over still captures (`website/src/assets/`). Only the
+  social card, the icons and `overview.png` follow the repo's files by themselves (`website/scripts/sync.mjs`).
+- **Taking a set of captures** (#438's recipe; its script wasn't committed):
+  - Seed outside the repo (`seed_demo.py` refuses a folder inside it), English and `--lang zh-CN`, in the job folder.
+  - Serve from the worktree's fresh build. Playwright with `channel="chrome"`, `color_scheme="light"`,
+    `reduced_motion="reduce"` (the still lilac background), localStorage `mantine-color-scheme-value` and
+    `jat.language` set first, and every non-GET request aborted.
+  - Keep each old image's size and framing unless the layout cuts something. Look at every one, then DAST.
+  - A compare page in `var/review/`, served on 127.0.0.1 only, before anything is committed.
+- **DAST catches:** a plug on a cable heading for a socket reads as a sperm (any head with a tail aimed at an
+  opening does), and "AI" in Inter reads "Al" without the serifed I (`font-feature-settings: "cv08"`).
 - **Screenshots from the demo app:** restart it after a release, or the app shows a red version-mismatch warning in
   every capture.
 - **Sites behind Cloudflare** refuse headless browsers; ask Kai for screenshots or let Kai pass the check in a
