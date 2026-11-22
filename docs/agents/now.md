@@ -1,6 +1,6 @@
 # Now: state and live plan
 
-Snapshot 2026-11-22, after #427 (main at `abf53df4`, v1.24.45), written as `app-redesign-dark` started. Refresh this
+Snapshot 2026-11-22, as of #436 (v1.24.46), written in that PR. Refresh this
 file before each compaction. Before trusting it, check `gh pr list`, `git worktree list`, `git log --oneline -5` and
 `docs/ROADMAP.yaml`.
 
@@ -10,10 +10,8 @@ file before each compaction. Before trusting it, check `gh pr list`, `git worktr
 delivery loop).
 
 1. **`app-redesign-phone-nav`, #427:** released as v1.24.45.
-2. **`app-redesign-dark`** (worktree `.claude/worktrees/app-redesign-dark`, demo on 8895): a builder, a reviewer, the
-   checks, a release. Its task carries #425's two colour notes. It audits the bottom bar and the More sheet too. It
-   leaves `fix-tablet-header-overflow` and the other queued bugs alone.
-3. **Stop and report**, with the restart reminder.
+2. **`app-redesign-dark`, #436:** v1.24.46. If it isn't merged and released yet, finish that first.
+3. **Stop and report**, with the restart reminder. Nothing below starts without Kai's word.
 
 ## Next, when Kai gives the word
 
@@ -32,7 +30,7 @@ delivery loop).
 
 ## State
 
-- **Released up to v1.24.45.** The redesign has 19 of its 24 tasks done (20 with dark), counting the five
+- **Released up to v1.24.46** (with #436). The redesign has 20 of its 24 tasks done, counting the five
   `loading-state-*` parts.
 - **Open PRs:**
   - **#414** DO NOT MERGE: board concepts for per-round columns beside the quick view (`?board=N`). Parked for Kai
@@ -61,6 +59,7 @@ delivery loop).
 | 1.24.43 | #424 | Interviews, Offers and the Timeline |
 | 1.24.44 | #425 | Notes, Documents, Insights (a checked palette) and Search |
 | 1.24.45 | #427 | a bottom bar on phones, the More sheet, the phone header on one row |
+| 1.24.46 | #436 | the dark-mode and contrast pass, focus rings |
 
 Internal: #407, #426 (notes); #410 and #411 (retros in `docs/retros/`, with `retro-actions` to act on them); ideas and
 bugs: #409, #416, #417, #419, #420, #422, #428 to #434. #418 was closed and redone as #419 (a name from a screenshot;
@@ -73,6 +72,8 @@ Kai: fine as it is, no purge).
 - An Opus reviewer who looks at the demo; Sonnet or Haiku for small and roadmap PRs; every fix commit re-reviewed.
 - The lead bumps, runs the full checks once on the final commit, reads their FAIL and `failed` lines, then merges and
   ships. Roadmap-only PRs: `uv run pytest -q tests/pm`.
+- A builder measures in full once; after its fixes it re-measures only what changed. The review can run beside the
+  full checks, on a frozen copy of the build (#436 took too long sweeping twice; Kai: "hurry this one up").
 
 ## Waiting on Kai (don't start)
 
