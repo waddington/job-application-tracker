@@ -7,7 +7,7 @@
 > Markdown export), with optional automatic git snapshots as backups.
 
 Status: version 1.0, ready and in daily use; versions follow semantic versioning, with a
-GitHub release for each (see CHANGELOG.md). Windows support, a one-command install and Docker are planned.
+GitHub release for each (see CHANGELOG.md). Windows support and a one-command install are planned.
 
 What it does:
 - Today, the home page (`/`; `/next-actions` redirects there): Your move (replies to read,

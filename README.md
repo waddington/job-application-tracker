@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="docs/screenshots/readme-hero.svg" width="100%" alt="Job Application Tracker: track every application, recruiter and interview. A recruiter pitched a role, you applied, an interview got booked. A job search tracker that runs on your own computer. No AI. No cloud. No account. No tracking.">
+
 # 🎯 Job Application Tracker
 
 English · [简体中文](README.zh-CN.md)
@@ -51,6 +53,8 @@ way tech hiring actually works:
   conversion and time per stage, direct vs recruiter outcomes and a scorecard for every
   recruiter and agency.
 
+<img src="docs/screenshots/readme-stages.svg" width="100%" alt="How an application moves: Interested, Applied, Screen, Interviewing, Final, Offer, Accepted; or it ends as Declined, Rejected, Withdrawn or Ghosted. Any stage to any stage, every move timestamped, with undo.">
+
 ## 🔒 Yours, and only yours
 
 - **No AI.** Nothing reads, summarises, scores or uploads your notes, CVs or emails.
@@ -64,32 +68,24 @@ way tech hiring actually works:
   automatically; `jat push` sends it to your own private remote. Or download a single zip.
 - **No scraping.** It tracks the applications *you* make; it's not a job-search engine.
 
+<img src="docs/screenshots/readme-data.svg" width="100%" alt="Where your data lives: your browser talks to the app on 127.0.0.1, which keeps everything in your folder (tracker.sqlite3, export/*.jsonl, notes/*.md, files/), all on your computer; jat push copies it to your private remote, only if you want it.">
+
 ## 📸 Screenshots
 
 *All names and companies below are made-up demo data (`scripts/seed_demo.py`).*
 
 ![A quick tour: the home page, what to chase, the Kanban board, a recruiter with calls and the roles they pitched, a role's page, offers side by side, the Sankey funnel, the Timeline and search](docs/screenshots/demo.gif)
 
-**Today, the home page.** Everything that needs you, sorted by what you do about it: **Your
-move** (replies to read, offers to answer, how did it go?, to-dos, follow-ups, roles to
-decide), **Coming up** (interviews, calls and dated to-dos) and **Waiting on them** (who
-you're waiting to hear back from, and what's gone quiet), under one line of numbers and the
-pipeline. Each item is a tile, and most keep their buttons faint until you point at them.
+**Today, the home page:** your move, what's coming up, and who you're waiting on.
 
 ![Today: active applications, interviews and offers in one line with the pipeline; Your move with replies to read, offers, a call to mark and to-dos; Coming up; and Waiting on them](docs/screenshots/overview.png)
 
-**Kanban board.** Drag applications between stages, see who's gone quiet (red) and which
-interview round each one is at.
-
-![Kanban board of job applications by stage, with interview round badges](docs/screenshots/board.png)
-
-**Insights: the whole picture.** One Sankey diagram of every role, from where it came from
-(through a recruiter, a referral, or you found it) to passing on it, deciding, or applying and
-how far it got, with what's still waiting just after each stage: deciding whether to apply,
-waiting to hear back, still interviewing, deciding on an offer. A second tab follows just
-applications, filtered by route. Date range and counts on hover for both.
-
-![Sankey diagram of a whole job search: roles through a recruiter, referred or found yourself, flowing through interested, applied, screen, interviewing, final and offer, to deciding whether to apply, waiting to hear back, still interviewing, deciding on the offer, decided not to apply, rejected, withdrawn and ghosted](docs/screenshots/insights.png)
+<table>
+<tr>
+<td width="50%"><b>Board</b>: drag between stages, see what's gone quiet<br><img src="docs/screenshots/board.png" width="100%" alt="Kanban board of job applications by stage, with interview round badges"></td>
+<td width="50%"><b>Insights</b>: your whole search in one picture<br><img src="docs/screenshots/insights.png" width="100%" alt="Sankey diagram of a whole job search: roles through a recruiter, referred or found yourself, flowing through interested, applied, screen, interviewing, final and offer, to deciding whether to apply, waiting to hear back, still interviewing, deciding on the offer, decided not to apply, rejected, withdrawn and ghosted"></td>
+</tr>
+</table>
 
 <details>
 <summary><b>More screenshots</b>: who you're waiting on, a recruiter's page, roles, the Timeline, an application, insights, CVs compared, offers and search</summary>
@@ -171,6 +167,18 @@ Version 1.0: ready and in daily use for a real job search. See the [changelog](C
 the [releases](https://github.com/waddington/job-application-tracker/releases) and the
 [user guide](docs/guide/README.md).
 
+- 📋 **Track and chase:** every application on a list or board, and who to chase today.
+- 💻 **Interviews:** rounds, take-home tasks, prep and debriefs, on a calendar.
+- 🧑‍💼 **Recruiters and people:** calls, the roles they pitched, how fast they reply.
+- 📝 **Notes and files:** Markdown notes, links, emails and every CV version you sent.
+- 📊 **Insights:** where your search goes, which CV works, which recruiters deliver.
+- 💷 **Offers:** salaries and day rates side by side, with what each is worth a year.
+- 🔒 **Private and backed up:** your own folder, git snapshots, a one-click zip.
+- 🌐 **Your language:** English and 简体中文.
+
+<details>
+<summary><b>Every feature</b>, in detail</summary>
+
 | | Feature |
 |---|---|
 | 📋 | **Applications list** with search (company, role, recruiter) and filters (stage, route, agency, "needs chasing", archived) |
@@ -204,8 +212,10 @@ the [releases](https://github.com/waddington/job-application-tracker/releases) a
 | 🌐 | **Use it in your language**: English and 简体中文 (Simplified Chinese), from the language menu or your browser's language, with dates and numbers written the local way; your own data stays as you wrote it (see [Languages](#-languages)) |
 | 💾 | **Backups built in**: automatic git snapshots of your private data folder, readable JSON Lines export, a one-click zip of everything (or `jat archive`), one-command restore |
 
+</details>
+
 The full plan is in the [product requirements](docs/prd/tracker.md) and the
-[roadmap](docs/ROADMAP.yaml): next up are Windows support, a one-command install and Docker.
+[roadmap](docs/ROADMAP.yaml), which includes Windows support and a one-command install.
 
 ## 🌐 Languages
 
@@ -288,8 +298,8 @@ separate from the code. Nothing is uploaded anywhere.
 
 **Does it use AI?** No. Nothing in it calls an AI service or sends your data anywhere.
 
-**Does it run on Windows?** Not yet: it runs on Linux and macOS. Windows support, a
-one-command install and Docker are on the [roadmap](docs/ROADMAP.yaml).
+**Does it run on Windows?** Not yet: it runs on Linux and macOS. Windows support and a
+one-command install are on the [roadmap](docs/ROADMAP.yaml).
 
 **Does it scrape LinkedIn or job boards?** No. By design, it tracks the applications you
 make and doesn't search for jobs.

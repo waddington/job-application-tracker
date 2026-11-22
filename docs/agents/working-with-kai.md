@@ -146,6 +146,7 @@ where things run. Quotes are Kai's words.
   `$CLAUDE_JOB_DIR/tmp`; a new session gets a new folder); PR bodies there. Agents in their own worktree
   can't write there: they use their worktree's `var/` or a `/tmp/jat-<task>-…` folder.
 - **Scripts:** `tools/dev/` (checks, merge main, bump, merge, ship, text snapshot, links, screenshots);
-  `scripts/i18n/translate/` and `.claude/workflows/` (translation); `scripts/demo_gif/`, `scripts/social_preview/`.
+  `scripts/i18n/translate/` and `.claude/workflows/` (translation); `scripts/demo_gif/`, `scripts/social_preview/`,
+  `scripts/readme_art/` (the README's hero and diagrams).
 - **PR body:** set with `gh api -X PATCH repos/waddington/job-application-tracker/pulls/N -F body=@file`
   (`gh pr edit` fails silently).
