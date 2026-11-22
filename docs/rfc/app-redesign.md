@@ -131,6 +131,23 @@ focus to More; a change of page leaves it on the page. The page's end is clear o
 click's own scroll move to (scroll padding, off from a press to the frame after its click; Tab lifts for Firefox).
 Up to 500 px tall the bar makes way while you type, in CSS alone. It's inert under the quick view. One-row header.
 
+*As built (#436, the dark-mode and contrast pass):* measured in a browser on every page, both schemes and all five
+tints; the look stays, each colour moved about as far as 4.5:1 or 3:1 needs.
+- Text: placeholders are ink at 63% (54% in dark); a field's error and star take the red text; a toast's message is
+  dimmed text; dimmed text on an alert is a step lighter in dark; the date picker's weekends take the red text and
+  its neighbouring months' days don't fade. Today's buttons stay faint, at 76% (75% in dark) rather than 55%, and
+  full when pointed at. An earlier offer is a well rather than faded.
+- Marks that are the only cue take tokens of their own: the star, the snapshot dot, the calendar's and the Timeline
+  lanes' dots, the CV range bar. The picked segment and the calendar's chosen day have an edge in the boxes' outline
+  colour, a switch's thumb that's off a ring, the board's drop edges the chart colours.
+- Weekly activity: in light Calls is lifted to `#556f07` and Roles pitched to `#14a1a2`, so Stage moves and Calls
+  are 8.1 apart under tritanopia (4.3 before); in dark the six (`#b19bf3`, `#e49b48`, `#1584d2`, `#b85f8b`,
+  `#6a8628`, `#27beae`) run from 3.5:1 to 6.3:1 (3.0 to 7.9 before). In both, no kind of sight has a closer pair
+  than before, and all 15 still pass the validator's separation checks.
+- Left at less than 3:1 on purpose, as each repeats the text beside it or isn't needed: a default button's and a
+  tag's edge, the keys' dots and the pastel bars, the quiet days' dots, At a glance's dots.
+- `src/contrast.test.ts` holds the tokens to this, `e2e/contrast.spec.ts` what only computed styles show.
+
 ## 3. How it lands
 
 - **No feature flag and no switch.** Each PR changes the real theme, layout and components on `main`; the dev-only
@@ -249,9 +266,9 @@ Read from `frontend/e2e/` (viewport 1,400 × 1,000 by default):
 - **Reduced motion.** The drift is off (one static lilac, or plum night in dark) under `prefers-reduced-motion:
   reduce`; so is the panel's slide and the page making room (instant).
 - **Contrast.** Text on every drift tint and on each pastel is checked at 4.5:1 (3:1 for large text and UI parts) in
-  light and dark, across the whole cycle (the tints are close, the check covers the lightest and darkest). The
-  concepts already darkened coloured text; row 14 (`app-redesign-dark`) audits every page. Focus rings stay visible on the plum buttons and
-  on tinted wells.
+  light and dark, across the whole cycle (all five tints). The concepts already darkened coloured text; row 14
+  (`app-redesign-dark`) audited every page (§2, *As built (#436)*). 3:1 is for a mark or edge that's the only cue
+  to a control, a state or a meaning. Focus rings stay visible on the plum buttons and on tinted wells.
 - The bottom bar: real buttons with `aria-current` for the page you're on, the More sheet a labelled dialog that
   closes with Escape and returns focus to More.
 

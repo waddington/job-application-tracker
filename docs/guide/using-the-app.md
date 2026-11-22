@@ -626,8 +626,9 @@ of the day you chose.
 
 A quiet day is a small grey dot. A day with rounds has a bigger dot in its status's colour, the
 same as the status badges: orange if one is awaiting its outcome, else blue if one is coming up, else
-teal if held, light grey if they were all cancelled. With two or more rounds the dot is bigger and
-shows the number. Today has a ring. Hovering over a dot, or a screen reader, says the same in words:
+teal if held, grey if they were all cancelled (each deep enough to stand out on the card, and brighter
+in dark mode). With two or more rounds the dot is bigger and shows the number. Today has a ring, and
+the day you chose a soft disc with a thin edge. Hovering over a dot, or a screen reader, says the same in words:
 "Wednesday 12 June, today: 2 rounds, 1 coming up, 1 held". A round with only a deadline (a take-home)
 sits on its deadline's day.
 
@@ -976,4 +977,6 @@ on GitHub, in a new tab. It's an ordinary link: the app itself never fetches any
 ## Dark mode
 
 The moon/sun button at the top right. In dark mode the background's tints are dark ones too (a plum night
-when it isn't drifting).
+when it isn't drifting), buttons and focus rings turn lavender, and stage colours become light text on a
+faint wash of the colour. Charts, dots and stars have steps of their own for the dark cards, so a colour
+can be a little brighter or deeper than in light mode; what each one means is the same.
