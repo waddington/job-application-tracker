@@ -87,6 +87,9 @@
     min-width: 0;
     max-width: 160px;
   }
+  .search input {
+    text-overflow: ellipsis; /* the placeholder, where it doesn't fit */
+  }
   .brand {
     white-space: nowrap;
   }
