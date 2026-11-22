@@ -235,6 +235,12 @@ input:not(:checked, :disabled) + * .switchThumb {
 :is([data-truncate], [data-line-clamp], .alert) .link:focus-visible {
   outline-offset: -2px;
 }
+/* So has what scrolls (Firefox stops at it with Tab) and a table's row that opens, which its scroller cuts. */
+.viewport:focus-visible,
+.table tr[tabindex]:focus-visible {
+  outline: 2px solid var(--mantine-primary-color-filled);
+  outline-offset: -2px;
+}
 
 /* Dialogs (Modal, and the Drawer's header): a lifted card, roomy, under a see-through plum. A dialog's title
    reads like a card's. */

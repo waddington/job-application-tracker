@@ -18,6 +18,7 @@ import {
   NumberInput,
   Paper,
   Progress,
+  ScrollArea,
   SegmentedControl,
   Select,
   Switch,
@@ -342,6 +343,7 @@ export function themeFor(lang: string) {
       Alert: Alert.extend({ classNames: { root: classes.alert } }),
       Anchor: Anchor.extend({ classNames: { root: classes.link } }),
       Notification: Notification.extend({ classNames: { description: classes.toastText } }),
+      ScrollArea: ScrollArea.extend({ classNames: { viewport: classes.viewport } }),
       SegmentedControl: SegmentedControl.extend({ classNames: { indicator: classes.picked } }),
       // A page's title (every page's is an h2): a big, light display title. A card's own title (an h3
       // or h4 without a size of its own) is a step bigger and light too (theme.module.css).

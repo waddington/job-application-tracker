@@ -65,12 +65,26 @@ for (const scheme of ["light", "dark"] as const) {
   });
 }
 
-test("a board's card, the link cut short in it and a Timeline dot show their focus rings", async ({
+test("rows, scrollers, board cards, cut-short links and Timeline dots show their focus rings", async ({
   page,
 }) => {
   await page.goto("/applications");
-  await page.getByText("Board", { exact: true }).click();
   await page.keyboard.press("Shift"); // the keyboard was used last, so :focus-visible applies
+  const row = page.locator("main tr[tabindex]").first();
+  await row.focus();
+  await expect(row).toHaveCSS("outline-style", "solid");
+  await expect(row).toHaveCSS("outline-offset", "-2px");
+  // Firefox stops at what scrolls; here it's given a tabindex to stand in for that.
+  const scroller = page.locator("main .mantine-ScrollArea-viewport").first();
+  await scroller.evaluate((el) => {
+    el.tabIndex = 0;
+    el.focus();
+  });
+  await expect(scroller).toHaveCSS("outline-style", "solid");
+  await expect(scroller).toHaveCSS("outline-offset", "-2px");
+
+  await page.getByText("Board", { exact: true }).click();
+  await page.keyboard.press("Shift");
   const card = page
     .locator("main [data-panel-opener]")
     .filter({ has: page.locator("a") })
