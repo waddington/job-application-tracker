@@ -9,6 +9,9 @@ file before each compaction. Before trusting it, check `gh pr list`, `git worktr
 **"then do gif-card"** (2026-11-22): `app-redesign-gif-card`, #439, v1.24.49. Kai approved the card, GIFs and icon
 ("looks great, icon I2"). If it isn't merged and released yet, finish that; then report with the restart reminder
 and the reminder to upload the card to GitHub by hand, and wait. Nothing below starts without Kai's word.
+Its browser suite failed three times on races; Kai chose "do recommended" (2026-11-22): merge it under the widened
+skip list (#440), with every other check. Offered, no answer: "fix the board race" (it can block any app PR) and
+"cheap checks first" in `checks.sh` (stop on the first failure).
 
 ## Next, when Kai gives the word
 
@@ -57,7 +60,7 @@ and the reminder to upload the card to GitHub by hand, and wait. Nothing below s
 | 1.24.49 | #439 | the demo GIFs, the social card and the icons |
 
 Internal: #407, #426 (notes); #410 and #411 (retros in `docs/retros/`, with `retro-actions` to act on them); ideas and
-bugs: #409, #416, #417, #419, #420, #422, #428 to #434. #418 was closed and redone as #419 (a name from a screenshot;
+bugs: #409, #416, #417, #419, #420, #422, #428 to #434; #440 (the widened browser-test skip list). #418 was closed and redone as #419 (a name from a screenshot;
 Kai: fine as it is, no purge).
 
 **How work runs** (keep doing it this way unless Kai says otherwise):
@@ -73,7 +76,7 @@ Kai: fine as it is, no purge).
 ## Waiting on Kai (don't start)
 
 - **Bugs to pick:** the roadmap's phase B, five of them queued above. Raised lately, no go
-  yet: `fix-note-preview-drops-hyphens`, `fix-search-snippet-table-pipes`, `fix-timeline-detail-raw-markdown`, `fix-custom-stage-colour-contrast`, `fix-round-waiting-after-heard-back` (the contradicting pills), `fix-e2e-only-exit-status` (maintainer tooling;
+  yet: `fix-flaky-keyboard-add-agency-test`, `fix-note-preview-drops-hyphens`, `fix-search-snippet-table-pipes`, `fix-timeline-detail-raw-markdown`, `fix-custom-stage-colour-contrast`, `fix-round-waiting-after-heard-back` (the contradicting pills), `fix-e2e-only-exit-status` (maintainer tooling;
   it let a failed run look like a pass), `fix-board-drag-width-race`, `fix-back-link-full-width`,
   `fix-flaky-panel-keyboard-move-test`, `fix-insights-dialog-flake`, `fix-dev-proxy-other-port-writes`; and the older
   backlog.
