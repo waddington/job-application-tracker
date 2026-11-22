@@ -105,10 +105,11 @@ WORDS = {
         local="全都在你的电脑上",
         alt_hero="求职申请追踪器：申请、招聘顾问、面试，全都记在一处。招聘顾问推荐了一个职位，你投递了，约好了面试。"
         "一个运行在你自己电脑上的求职追踪器。不用 AI。不上云。无需账号。不追踪你。",
-        alt_stages="一份申请怎样推进：感兴趣、已投递、初筛、面试中、终面、已获 Offer、已接受；或者以已婉拒、未通过、已撤回或"
-        "已失联结束。任意阶段之间都能移动，每次变动都记下时间，也能撤销。",
-        alt_data="你的数据存在哪里：你的浏览器连接运行在 127.0.0.1 上的这个应用，所有内容都存在你的文件夹里（tracker.sqlite3、"
-        "export/*.jsonl、notes/*.md、files/），全都在你的电脑上；需要时才用 jat push 复制到你的私有远程仓库。",
+        alt_stages="一份申请怎样推进：感兴趣、已投递、初筛、面试中、终面、已获 Offer、已接受；"
+        "或者以已婉拒、未通过、已撤回或已失联结束。任意阶段之间都能移动，每次变动都记下时间，也能撤销。",
+        alt_data="你的数据存在哪里：你的浏览器连接运行在 127.0.0.1 上的这个应用，"
+        "所有内容都存在你的文件夹里（tracker.sqlite3、export/*.jsonl、notes/*.md、files/），"
+        "全都在你的电脑上；需要时才用 jat push 复制到你的私有远程仓库。",
     ),
 }
 
@@ -176,7 +177,7 @@ class Svg:
             hb.shape(face.hb, buf, {"kern": True})
             k = size / face.upm
             prev = None
-            for info, pos in zip(buf.glyph_infos, buf.glyph_positions):
+            for info, pos in zip(buf.glyph_infos, buf.glyph_positions, strict=True):
                 name, c = face.order[info.codepoint], info.cluster
                 alone = (c < 2 or not run[c - 2].isalpha()) and (c + 1 >= len(run) or not run[c + 1].isalpha())
                 if name == "I" and prev == "A" and alone and not mono:
@@ -222,7 +223,8 @@ class Svg:
 
     def rect(self, x, y, w, h, fill, r=14, extra="") -> None:
         self.add(
-            f'<rect x="{x:.1f}" y="{y:.1f}" width="{w:.1f}" height="{h:.1f}" rx="{r}" fill="{C.get(fill, fill)}" {extra}/>'
+            f'<rect x="{x:.1f}" y="{y:.1f}" width="{w:.1f}" height="{h:.1f}" rx="{r}" '
+            f'fill="{C.get(fill, fill)}" {extra}/>'
         )
 
     def card(self, x, y, w, h) -> None:
@@ -237,12 +239,14 @@ class Svg:
         d = ' stroke-dasharray="6 7"' if dash else ""
         self.add(
             f'<path d="M{x1} {y}H{x2}" fill="none" stroke="{C["line"]}" stroke-width="2.5"{d}/>'
-            f'<path d="M{x2 - 8} {y - 7}L{x2} {y}L{x2 - 8} {y + 7}" fill="none" stroke="{C["line"]}" stroke-width="2.5"/>'
+            f'<path d="M{x2 - 8} {y - 7}L{x2} {y}L{x2 - 8} {y + 7}" fill="none" '
+            f'stroke="{C["line"]}" stroke-width="2.5"/>'
         )
 
     def logo(self, x, y, size) -> None:
         self.add(
-            f'<g transform="translate({x} {y}) scale({size / 24})"><rect width="24" height="24" rx="6" fill="url(#logo)"/>'
+            f'<g transform="translate({x} {y}) scale({size / 24})">'
+            '<rect width="24" height="24" rx="6" fill="url(#logo)"/>'
             '<g fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="8"/>'
             '<circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></g></g>'
         )
@@ -265,8 +269,8 @@ class Svg:
         alt = alt.replace("&", "&amp;").replace("<", "&lt;")
         path = OUT[self.lang] / name
         path.write_text(
-            f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {self.w} {self.h}" width="{self.w}" height="{self.h}" '
-            f'role="img"><title>{alt}</title>{css}<defs>'
+            f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {self.w} {self.h}" '
+            f'width="{self.w}" height="{self.h}" role="img"><title>{alt}</title>{css}<defs>'
             f'<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="{C["page"]}"/>'
             f'<stop offset="1" stop-color="{C["page2"]}"/></linearGradient>'
             '<linearGradient id="logo" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4a3a68"/>'
@@ -294,7 +298,7 @@ def hero(s: Svg) -> None:
         s.fade(f"no{i}", 0.3 + i * 0.25, 0, 10)
     w, h = 340, 88
     spots = [(668, 40), (740, 162), (812, 284)]
-    for i, ((x, y), (nx, ny)) in enumerate(zip(spots, spots[1:])):
+    for i, ((x, y), (nx, ny)) in enumerate(zip(spots, spots[1:], strict=False)):
         lx, ly = x + 64, y + h + 6
         s.begin(f"l{i}")
         s.add(
@@ -306,7 +310,7 @@ def hero(s: Svg) -> None:
         s.end()
         s.fade(f"l{i}", 0.95 + i * 0.7, 0, -6, 0.5)
     cards = [(t["rec"], "butter", True), (t["app"], "sky", False), (t["intv"], "mint", False)]
-    for i, ((x, y), ((mark, a, b), tone, round_)) in enumerate(zip(spots, cards)):
+    for i, ((x, y), ((mark, a, b), tone, round_)) in enumerate(zip(spots, cards, strict=True)):
         s.begin(f"c{i}")
         s.card(x, y, w, h)
         if round_:
@@ -328,7 +332,7 @@ def stages(s: Svg) -> None:
     t = s.t
     s.text(48, 64, t["flow"], 28, 300)
     tones = ["lilac", "sky", "butter", "lilac", "pink", "mint", "mint"]
-    for i, (label, tone) in enumerate(zip(t["stages"], tones)):
+    for i, (label, tone) in enumerate(zip(t["stages"], tones, strict=True)):
         x = 48 + i * 159
         s.rect(x, 92, 148, 132, "well", 22)
         s.rect(x + 10, 102, 128, 30, tone, 15)
