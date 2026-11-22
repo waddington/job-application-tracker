@@ -39,7 +39,7 @@ export function BottomNav({ covered }: { covered: boolean }) {
   const problem = isError ? t("api.offline") : mismatch;
   const problemId = useId();
   const bar = useRef<HTMLElement>(null);
-  useFocusAboveBar(bar);
+  useTabAboveBar(bar);
   const more = useRef<HTMLButtonElement>(null);
   const [opened, setOpened] = useState(false);
 
@@ -128,24 +128,25 @@ export function BottomNav({ covered }: { covered: boolean }) {
 }
 
 /**
- * Lifts what gets focus on the page clear of the bar. The scroll padding does it where the browser scrolls for
- * focus, but Firefox doesn't scroll to what's partly in view already, as a row half under the bar is.
+ * Lifts what Tab moves to clear of the bar: Firefox leaves some of what's partly in view where it is, whatever
+ * the scroll padding. Only for Tab: a scroll under a press would move what's being pressed.
  */
-function useFocusAboveBar(bar: RefObject<HTMLElement | null>) {
+function useTabAboveBar(bar: RefObject<HTMLElement | null>) {
   useEffect(() => {
-    const lift = (e: FocusEvent) => {
-      const el = e.target;
-      if (!(el instanceof HTMLElement || el instanceof SVGElement) || !el.closest("main")) return;
+    const lift = (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return;
+      // By the next frame Tab has moved focus.
       requestAnimationFrame(() => {
-        if (!bar.current || !el.matches(":focus-visible")) return;
+        const el = document.activeElement;
+        if (!bar.current || !el?.closest("main")) return;
         const { top, bottom } = el.getBoundingClientRect();
-        const under = bottom + 4 - bar.current.getBoundingClientRect().top; // 4: its focus ring
+        const under = bottom + 4 - bar.current.offsetTop; // 4: its focus ring; offsetTop: where it is, or returns to
         const by = Math.min(under, top - BELOW_HEADER); // something taller keeps its top in sight
         if (by > 0) window.scrollBy(0, by);
       });
     };
-    document.addEventListener("focusin", lift);
-    return () => document.removeEventListener("focusin", lift);
+    document.addEventListener("keydown", lift);
+    return () => document.removeEventListener("keydown", lift);
   }, [bar]);
 }
 
