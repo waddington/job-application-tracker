@@ -8,7 +8,8 @@ docs/screenshots/zh-CN/ (the only place tests/test_readme_parity.py looks for Ch
 - Original art in the website's palette (docs/rfc/website-redesign.md). Light only.
 - Text is drawn as outlines, so it looks the same everywhere: an SVG shown as an image can't load
   fonts. Inter and JetBrains Mono come from the frontend's packages (`pnpm --dir frontend install`);
-  Chinese from Noto Sans CJK (set NOTO_CJK to its .ttc if it isn't at the Debian/Ubuntu path).
+  Chinese from Noto Sans CJK's two collections, Regular and Bold. If they aren't at the Debian/Ubuntu
+  path, set NOTO_CJK to a pattern with {} where the style goes: NOTO_CJK=/path/NotoSansCJK-{}.ttc.
 - The still picture is the final state. Motion plays once, in under 5 seconds, and only when the
   reader allows motion (prefers-reduced-motion).
 - The names are the demo data's, made up (scripts/seed_demo.py).
@@ -30,7 +31,7 @@ from fontTools.varLib import instancer
 
 ROOT = Path(__file__).resolve().parents[2]
 FONTS = ROOT / "frontend" / "node_modules" / "@fontsource-variable"
-NOTO = Path(os.environ.get("NOTO_CJK", "/usr/share/fonts/opentype/noto/NotoSansCJK-{}.ttc"))
+NOTO = os.environ.get("NOTO_CJK", "/usr/share/fonts/opentype/noto/NotoSansCJK-{}.ttc")
 OUT = {"en": ROOT / "docs" / "screenshots", "zh": ROOT / "docs" / "screenshots" / "zh-CN"}
 
 C = dict(
@@ -129,11 +130,19 @@ class Face:
 
 
 def variable(path: str, weight: int) -> Face:
-    return Face(instancer.instantiateVariableFont(TTFont(FONTS / path), {"wght": weight}))
+    file = FONTS / path
+    if not file.exists():
+        raise SystemExit(f"Missing {file}: run `pnpm --dir frontend install` first.")
+    return Face(instancer.instantiateVariableFont(TTFont(file), {"wght": weight}))
 
 
 def cjk(style: str) -> Face:
-    fonts = TTCollection(str(NOTO).format(style)).fonts
+    if "{}" not in NOTO:
+        raise SystemExit("NOTO_CJK needs {} where the style goes, e.g. /path/NotoSansCJK-{}.ttc")
+    file = Path(NOTO.format(style))
+    if not file.exists():
+        raise SystemExit(f"Missing {file}: install Noto Sans CJK, or point NOTO_CJK at its collections.")
+    fonts = TTCollection(str(file)).fonts
     return Face(next(f for f in fonts if f["name"].getDebugName(1).endswith(" SC")))
 
 
