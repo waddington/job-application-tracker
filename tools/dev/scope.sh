@@ -56,6 +56,7 @@ trap 'rm -f "$names"' EXIT
 { git diff --name-only -z --no-renames "$base" HEAD && git diff --name-only -z --no-renames "$base" &&
   git ls-files -z --others --exclude-standard; } > "$names" ||
   { echo "$mode: couldn't list the changed files" >&2; exit 2; }
+LC_ALL=C sort -z -u -o "$names" "$names" || { echo "$mode: couldn't sort the changed files" >&2; exit 2; } # each once
 # Is this one of the version files, changed only by the bump's line? It's read from disk, so it must be committed
 # as it is there.
 version_line_only() {
