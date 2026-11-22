@@ -82,6 +82,7 @@ def test_no_e2e_allows_skip_list_files_and_a_version_bump(repo: Path):
         repo,
         {
             "scripts/i18n/check.py": "print('changed')\n",
+            "scripts/readme_art/make_art.py": "print('art')\n",
             "tests/test_new.py": "def test_x(): pass\n",
             "docs/guide/new.md": "# New\n",
             "README.md": "# Readme\n",
@@ -200,6 +201,7 @@ def test_checks_reads_the_words_scope_prints():
         "frontend/src/notes.md",  # Markdown counts as docs only at the top or under docs/
         "tests_x/a.py",  # lookalikes of allowed folders
         "docsx/a.md",
+        "scripts/readme_artx/a.py",
         "frontend/src/locales/fr-CAN/common.json",  # only starts like the draft code fr-CA
     ],
 )

@@ -128,7 +128,7 @@ other maintainer scripts (merging main, the version bump, merging and releasing)
 every file you changed is in this list, skip it, run the rest, and say so in the pull request: a
 draft language's text (`frontend/src/locales/<code>/` for a language in `DRAFT_LANGUAGES`, which only
 a dev server loads, and its glossary `docs/i18n/<code>.md`), `scripts/i18n/`, `scripts/demo_gif/`,
-`scripts/social_preview/`, `.claude/workflows/`, `.claude/settings.json`, the maintainer scripts
+`scripts/social_preview/`, `scripts/readme_art/`, `.claude/workflows/`, `.claude/settings.json`, the maintainer scripts
 (`tools/dev/`), Python tests (`tests/`), `website/` (run its own checks instead, with
 `pnpm --dir website`: `install --frozen-lockfile`, `format:check`, `check` and `build`), the app's two icon files
 (`frontend/public/favicon.svg` and `apple-touch-icon.png`, changed but not deleted) and docs.

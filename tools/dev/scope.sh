@@ -7,7 +7,8 @@
 #   --website: website/, docs/, the changelog, CLAUDE.md, .gitignore, the website's workflow, maintainer tooling.
 #   --no-e2e:  the browser-test skip list: a draft language's text (frontend/src/locales/<code>/ for a code in
 #              DRAFT_LANGUAGES, read from main's frontend/src/i18n/language.ts; its glossary is under docs/),
-#              scripts/i18n/, scripts/demo_gif/, scripts/social_preview/, .claude/workflows/, .claude/settings.json,
+#              scripts/i18n/, scripts/demo_gif/, scripts/social_preview/, scripts/readme_art/, .claude/workflows/,
+#              .claude/settings.json,
 #              tools/dev/, tests/, website/ (it can't affect the app), the app's two icon files (by name, and only
 #              while they still exist) and docs (docs/ and the Markdown files at the top: README, CHANGELOG, ...).
 #              When website/ changed beyond a bump's lines it says so, and checks.sh runs the website's checks too.
@@ -20,7 +21,7 @@ case "$*" in
     off="isn't a website-only file"
     ;;
   --no-e2e)
-    ok='^(docs/|[^/]+\.md$|scripts/i18n/|scripts/demo_gif/|scripts/social_preview/|\.claude/workflows/|\.claude/settings\.json$|tools/dev/|tests/|website/)'
+    ok='^(docs/|[^/]+\.md$|scripts/i18n/|scripts/demo_gif/|scripts/social_preview/|scripts/readme_art/|\.claude/workflows/|\.claude/settings\.json$|tools/dev/|tests/|website/)'
     icons='^frontend/public/(favicon\.svg|apple-touch-icon\.png)$'
     off="isn't on CLAUDE.md's browser-test skip list"
     ;;
