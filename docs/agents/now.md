@@ -6,13 +6,13 @@ file before each compaction. Before trusting it, check `gh pr list`, `git worktr
 
 ## Kai's current request
 
-**"do offlie fix"** (2026-11-22): `fix-offline-requests-paused`, #437, v1.24.47. If it isn't merged and released yet,
-finish that; then report with the restart reminder and wait (Kai's scope wins over the delivery loop). Nothing below
-starts without Kai's word.
+**"do docs"** (2026-11-22): `app-redesign-docs`, worktree `.claude/worktrees/app-redesign-docs`. The new screenshots
+go to `var/review/` there (git-ignored) with a page to compare them; **no image is committed until Kai approves the
+set.** Then review, bump, checks, release, the restart reminder, and wait. Nothing below starts without Kai's word.
 
 ## Next, when Kai gives the word
 
-1. **The images:** `app-redesign-docs`, `-gif-card`, `-website-shots`, each shown to Kai before it's applied. The social
+1. **The images:** `app-redesign-gif-card`, `-website-shots`, each shown to Kai before it's applied. The social
    card keeps the four No's, also says it works offline (only once the fix has shipped), and Kai sees every option as a
    rendered image before picking.
 2. **`app-redesign-wrap-up`**: close #354.
