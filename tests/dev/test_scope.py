@@ -93,11 +93,54 @@ def test_no_e2e_allows_skip_list_files_and_a_version_bump(repo: Path):
     (repo / "tools/dev/untracked.sh").write_text("true\n")  # untracked files count too
     out = scope(repo, "--no-e2e")
     assert out.returncode == 0, out.stdout + out.stderr
+    assert "website's checks" not in out.stdout  # a bump's lines in website/ don't call for them
+
+
+@pytest.mark.parametrize(
+    "changed",
+    [
+        {"website/src/pages/index.astro": "<p>Hi</p>\n"},
+        {"website/pnpm-lock.yaml": "lockfileVersion: '9.0'\n"},
+        # A version file with more than the bump's line
+        {"website/src/components/SiteHead.astro": BUMPED["website/src/components/SiteHead.astro"] + "<meta />\n"},
+    ],
+)
+def test_no_e2e_allows_the_website_and_asks_for_its_checks(repo: Path, changed: dict[str, str]):
+    write(repo, BUMPED | changed)
+    out = scope(repo, "--no-e2e")
+    assert out.returncode == 0, out.stdout + out.stderr
+    assert "--no-e2e: website/ changed, so the website's checks run too" in out.stdout
+
+
+def test_no_e2e_allows_the_two_icons_without_the_websites_checks(repo: Path):
+    icons = {"frontend/public/favicon.svg": "<svg/>\n", "frontend/public/apple-touch-icon.png": "png\n"}
+    write(repo, BUMPED | icons)
+    out = scope(repo, "--no-e2e")
+    assert out.returncode == 0, out.stdout + out.stderr
+    assert "website's checks" not in out.stdout
+
+
+def test_no_e2e_refuses_a_deleted_icon(repo: Path):
+    git(repo, "checkout", "-q", "main")
+    write(repo, {"frontend/public/favicon.svg": "<svg/>\n"})
+    git(repo, "add", "-A")
+    git(repo, "commit", "-qm", "icon")
+    git(repo, "push", "-q", "origin", "main")
+    git(repo, "checkout", "-qB", "worktree-x")
+    (repo / "frontend/public/favicon.svg").unlink()
+    out = scope(repo, "--no-e2e")
+    assert out.returncode == 2
+    assert "--no-e2e: frontend/public/favicon.svg isn't on" in out.stdout
 
 
 @pytest.mark.parametrize(
     "path",
     [
+        "frontend/public/other.svg",  # only the two icons, by name
+        "frontend/public/favicon.svg.bak",
+        "frontend/index.html",
+        "websitex/a.astro",
+        ".github/workflows/website.yml",
         "frontend/src/App.tsx",
         "frontend/src/locales/de/common.json",  # not a draft language
         "frontend/src/i18n/language.ts",
