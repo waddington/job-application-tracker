@@ -215,11 +215,13 @@ app after a release, or every capture shows the version warning (gotchas.md).
   the app does, not how it looks, and need no change.
 - **Demo GIF, social card and icons** (`app-redesign-gif-card`): `scripts/demo_gif/make_demo_gif.py` builds `demo.gif`
   and `--lang zh-CN` its twin from the new screenshots; `scripts/social_preview/make_card.py` builds
-  `docs/social-preview.png` from `insights.png`. Both templates are in the old indigo (`card.html`: `#3b4fd8`,
-  `#2d3aa6`, `#4c6ef5`; `scene.html`: `#4c6ef5`, `#dbe4ff`) and move to the plum palette. So do the app's icons,
-  `frontend/public/favicon.svg` (`#4c6ef5`) and `apple-touch-icon.png`. `sync.mjs` copies the card to the website's
-  `og.png` and both icons to its `public/`; Kai uploads the card to GitHub's settings by hand. The restyled templates
-  and icons are shown to Kai too.
+  `docs/social-preview.png`. Both templates were in the old indigo and moved to the redesign's palette, as did the
+  app's icons, `frontend/public/favicon.svg` and `apple-touch-icon.png`. `sync.mjs` copies the card to the website's
+  `og.png` and both icons to its `public/`; Kai uploads the card to GitHub's settings by hand. *As built (#439),
+  picked by Kai from rendered options:* the card is a light statement, the four No's and "No internet needed.", with
+  the data folder's file list faint in two corners (no screenshot now, so it no longer follows `insights.png`); the
+  GIFs use the same light tints, ink and logo; the icons are the website's logo, plum (`#4a3a68`) to violet
+  (`#8c74d8`), which unlike the card's deep plum holds up on a dark tab bar. A pulled-out cable was dropped: DAST.
 - **Website** (`app-redesign-website-shots`): `website/src/assets/hero/` (`today-light.png`, `today-zh-light.png`),
   `demo/` (today, board, role, insights, chrome) and `story/` (recruiters, interviews, offers, notes). The hero demo
   (`AppDemo.astro`) places HTML overlays at pixel positions on the app's screenshots, so each overlay is re-checked
