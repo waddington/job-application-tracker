@@ -787,7 +787,7 @@ export function TodayPage() {
                         key={stage.id}
                         label={t("numbers.stageCount", { stage: stageName(stage), count })}
                       >
-                        <Progress.Section value={(count / active.length) * 100} color={barColor(stage.color)}>
+                        <Progress.Section value={(count / active.length) * 100} color={stage.color}>
                           <Progress.Label>{count}</Progress.Label>
                         </Progress.Section>
                       </Tooltip>

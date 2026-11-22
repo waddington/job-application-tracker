@@ -7,7 +7,7 @@ Numbers in brackets are pull requests.
 
 ## 1.24.46 (2026-11-22)
 
-- The redesign's dark-mode and contrast pass: text, the marks that are a thing's only cue and keyboard focus rings are easier to see in light and dark, on every background tint. Today's faint buttons stay faint but read better, and Weekly activity's colours are easier to tell apart (#436).
+- The redesign's dark-mode and contrast pass: text, the marks that are a thing's only cue and keyboard focus rings are easier to see in light and dark, on every background tint. Today's faint buttons stay faint but read better, a picked segment and a switch that's off have a thin ring, and Weekly activity's colours are easier to tell apart (#436).
 
 ## 1.24.45 (2026-11-22)
 

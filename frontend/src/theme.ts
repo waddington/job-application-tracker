@@ -238,14 +238,9 @@ const pickerBelowHint = { ...hintBelow.defaultProps, popoverProps: { offset: bel
 /**
  * Red subtle and outline actions (Delete) in the red that reads at 4.5:1 on white, the page and the dark
  * card, not the pastel's maroon ink (which suits a red badge on its pastel), with a hover that keeps it.
- * A light or outline colour that isn't one of the theme's (a stage's "purple" or "#800080" in config.toml) is
- * written in ink, as it may not read in itself; its colour stays in the wash or the edge.
  */
 export const variantColorResolver: VariantColorsResolver = (input) => {
   const colors = defaultVariantColorsResolver(input);
-  const name = input.color ?? input.theme.primaryColor;
-  if (["light", "outline"].includes(input.variant) && !(name.split(".")[0]! in input.theme.colors))
-    return { ...colors, color: "var(--mantine-color-text)" };
   if (input.color !== "red" || !["subtle", "outline", "transparent"].includes(input.variant)) return colors;
   return {
     ...colors,
@@ -266,11 +261,10 @@ const dialog = {
 };
 
 /**
- * A colour's deeper pastel, as bars and the key beside a bar use it (tokens.css); any other colour the grey
- * one, so the ink numbers on it read.
+ * A colour's deeper pastel, as bars use it (tokens.css), for the key beside a bar; a colour without one
+ * keeps Mantine's filled shade.
  */
-export const barColor = (color: string) =>
-  `var(--jat-bar-${(PASTELS as readonly string[]).includes(color) ? color : "gray"})`;
+export const barColor = (color: string) => `var(--jat-bar-${color}, var(--mantine-color-${color}-filled))`;
 
 /**
  * A stage colour as a chart mark (tokens.css), at 3:1 or more on a card in either mode; a Mantine colour without one

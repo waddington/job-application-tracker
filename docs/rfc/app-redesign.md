@@ -149,6 +149,8 @@ tints; the look stays, each colour moved about as far as 4.5:1 or 3:1 needs.
   cut short, in an alert or in a lane.
 - Left at less than 3:1 on purpose, as each repeats the text beside it or isn't needed: a default button's and a
   tag's edge, the keys' dots and the pastel bars, the quiet days' dots, At a glance's dots.
+- A stage colour outside the 14 names keeps its own colour on badges and bars, readable or not
+  (`fix-custom-stage-colour-contrast`): swapping it for ink or grey lost what someone chose.
 - `src/contrast.test.ts` holds the tokens to this, `e2e/contrast.spec.ts` what only computed styles show.
 
 ## 3. How it lands

@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import { expect, test } from "vitest";
 import { CATEGORIES } from "./api/timelineHooks";
 import { DRIFT_TINTS } from "./drift";
-import { barColor, chartColor, cssVariablesResolver, theme, variantColorResolver } from "./theme";
+import { chartColor, cssVariablesResolver, theme, variantColorResolver } from "./theme";
 
 type RGB = number[];
 const schemes = ["light", "dark"] as const;
@@ -178,17 +178,13 @@ test.each([
   }
 });
 
-test("a stage colour that isn't one of the names still reads", () => {
-  for (const color of ["sparkly", "purple", "#800080"]) {
+test("a stage colour of your own is never swapped on its badge; a chart, which can't draw it, uses grey", () => {
+  for (const color of ["purple", "#800080", "grape.7", "blue.3"]) {
     for (const variant of ["light", "outline"]) {
-      const colors = variantColorResolver({ color, variant, theme: full });
-      expect(colors.color, `${variant} ${color}`).toBe("var(--mantine-color-text)");
-      // Its own colour stays in the wash or the edge.
-      expect(colors.background).toBe(
-        defaultVariantColorsResolver({ color, variant, theme: full }).background,
+      expect(variantColorResolver({ color, variant, theme: full }), `${variant} ${color}`).toEqual(
+        defaultVariantColorsResolver({ color, variant, theme: full }),
       );
     }
-    expect(barColor(color)).toBe("var(--jat-bar-gray)");
   }
-  expect(chartColor("#800080")).toBe("var(--jat-chart-gray)");
+  for (const color of ["#800080", "grape.7"]) expect(chartColor(color)).toBe("var(--jat-chart-gray)");
 });

@@ -977,6 +977,6 @@ on GitHub, in a new tab. It's an ordinary link: the app itself never fetches any
 ## Dark mode
 
 The moon/sun button at the top right. In dark mode the background's tints are dark ones too (a plum night
-when it isn't drifting), buttons and focus rings turn lavender, and stage colours become light text on a
+when it isn't drifting), main buttons and focus rings turn lavender, and stage colours become light text on a
 faint wash of the colour. Charts, dots and stars have steps of their own for the dark cards, so a colour
 can be a little brighter or deeper than in light mode; what each one means is the same.
