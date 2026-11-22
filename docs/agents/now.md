@@ -45,7 +45,7 @@ delivery loop).
   - **#365** (`windows-snapshots`): on hold (Kai).
 - **Running:** the PM dashboard on 8767 (a background job of the session: restart it after a session restart, from the
   main checkout, `python3 -m tools.pm`); Kai's tracker on 8770 (Kai runs it, never stop it).
-- **Dependabot alerts:** one open, build-time only, no patched version when evaluated (#33 `minimatch`; #39 is closed).
+- **Dependabot alerts:** one open, build-time only, no patched version when evaluated (#33 `minimatch`; GitHub withdrew #39).
   Left open.
 
 ## Done since v1.24.36
