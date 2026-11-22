@@ -6,12 +6,14 @@ file before each compaction. Before trusting it, check `gh pr list`, `git worktr
 
 ## Kai's current request
 
-"do website-shots then wrap-up for app redesign" (2026-11-22): **both done, so the redesign is finished.**
+"do readme-shorter-features and readme-visuals" (2026-11-22), then "dont merge without me, they can be the same PR
+too": **one PR on `worktree-readme-shorter-features`. NEVER merge it without Kai's word on it**, however clean the
+review and checks are (the standing merge permission doesn't cover it). It stays a draft until then.
 
-- `app-redesign-website-shots` was #442 (v1.24.50; Kai approved the images: "looks good").
-- `app-redesign-wrap-up` was #443. If #354, its branch or its worktree still exist, remove them (copy the worktree's
-  `var/concepts` to the main checkout's `var/app-redesign-concepts` first).
-- Kai's tracker reported 1.24.49 at the release: check it, and repeat the restart reminder if it still does.
+- Kai sees both READMEs rendered, and every picture on a compare page after DAST, before a picture is committed.
+- With it: the "next up" lines stop naming Docker (shelved) in both READMEs and `llms.txt`.
+- The redesign is finished (#442, #443; #354 closed and removed).
+- Kai's tracker reported 1.24.49 at v1.24.50's release: check it, and repeat the restart reminder if it still does.
 
 **Nothing below starts without Kai's word** (Kai's scope wins over the delivery loop): report and wait.
 
