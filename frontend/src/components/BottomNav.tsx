@@ -2,7 +2,7 @@ import { Drawer, RemoveScroll, UnstyledButton, VisuallyHidden } from "@mantine/c
 import { useMediaQuery, useReducedMotion } from "@mantine/hooks";
 import { IconDots } from "@tabler/icons-react";
 import { Link, useRouter, useRouterState } from "@tanstack/react-router";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, type RefObject } from "react";
 import { useTranslation } from "react-i18next";
 
 import { isActive, MORE_PAGES, PHONE_TABS, type NavItem } from "../nav";
@@ -13,6 +13,8 @@ import { MenuFooter } from "./MenuFooter";
 
 /** A window too short to spare the bar's height: a phone on its side, or with the keyboard up. */
 const SHORT_QUERY = "(max-height: 500px)";
+/** The header's 56 px and a little space. */
+const BELOW_HEADER = 64;
 /** What you type in. */
 const FIELD =
   'textarea, [contenteditable="true"], input:not([type="button"], [type="checkbox"], [type="file"], [type="radio"], [type="range"], [type="reset"], [type="submit"])';
@@ -36,6 +38,8 @@ export function BottomNav({ covered }: { covered: boolean }) {
   const mismatch = useVersionMismatch();
   const problem = isError ? t("api.offline") : mismatch;
   const problemId = useId();
+  const bar = useRef<HTMLElement>(null);
+  useFocusAboveBar(bar);
   const more = useRef<HTMLButtonElement>(null);
   const [opened, setOpened] = useState(false);
 
@@ -75,6 +79,7 @@ export function BottomNav({ covered }: { covered: boolean }) {
   return (
     <>
       <nav
+        ref={bar}
         aria-label={t("nav.label")}
         // fullWidth: it keeps its width when a dialog takes the scrollbar away.
         className={`${classes.bar} ${RemoveScroll.classNames.fullWidth}`}
@@ -108,7 +113,6 @@ export function BottomNav({ covered }: { covered: boolean }) {
         onClose={dismiss}
         returnFocus={false}
         position="bottom"
-        size="auto"
         title={t("nav.more")}
         closeButtonProps={{ "aria-label": t("applications:summary.closeDrawer") }}
         transitionProps={{ duration: reduceMotion ? 0 : 250 }}
@@ -121,6 +125,28 @@ export function BottomNav({ covered }: { covered: boolean }) {
       </Drawer>
     </>
   );
+}
+
+/**
+ * Lifts what gets focus on the page clear of the bar. The scroll padding does it where the browser scrolls for
+ * focus, but Firefox doesn't scroll to what's partly in view already, as a row half under the bar is.
+ */
+function useFocusAboveBar(bar: RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    const lift = (e: FocusEvent) => {
+      const el = e.target;
+      if (!(el instanceof HTMLElement || el instanceof SVGElement) || !el.closest("main")) return;
+      requestAnimationFrame(() => {
+        if (!bar.current || !el.matches(":focus-visible")) return;
+        const { top, bottom } = el.getBoundingClientRect();
+        const under = bottom + 4 - bar.current.getBoundingClientRect().top; // 4: its focus ring
+        const by = Math.min(under, top - BELOW_HEADER); // something taller keeps its top in sight
+        if (by > 0) window.scrollBy(0, by);
+      });
+    };
+    document.addEventListener("focusin", lift);
+    return () => document.removeEventListener("focusin", lift);
+  }, [bar]);
 }
 
 /** Puts focus on the page, focusable only until focus leaves it (so clicking the page doesn't focus it). */

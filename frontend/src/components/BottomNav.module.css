@@ -94,6 +94,7 @@
 }
 
 .sheet {
+  height: auto; /* as tall as what's in it: Drawer's own sizes are a fixed height */
   max-height: calc(100% - 24px); /* some backdrop left to tap, however short the window */
   padding-bottom: env(safe-area-inset-bottom, 0px);
   border-end-start-radius: 0;
