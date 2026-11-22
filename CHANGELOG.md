@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.24.46 (2026-11-22)
+
+- The redesign's dark-mode and contrast pass: text, the marks that are a thing's only cue and keyboard focus rings are easier to see in light and dark, on every background tint. Today's faint buttons stay faint but read better, and Weekly activity's colours are easier to tell apart (#436).
+
 ## 1.24.45 (2026-11-22)
 
 - The app's new look, part twelve: on a phone a bottom bar has Today, Applications, Interviews, Notes and More in place of the menu button. More opens the other pages, with the connection, Download a backup and the version under them, and shows a dot when one of those needs attention. The header fits on one row on a phone, so its buttons no longer spill out of it or cover the page's title (#427).
