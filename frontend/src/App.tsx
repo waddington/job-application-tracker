@@ -19,7 +19,15 @@ export function App({ router = defaultRouter }: { router?: typeof defaultRouter 
   // on Monday. TODO(multi-language): the first day of the week per locale (docs/rfc/i18n.md §7).
   const { i18n } = useTranslation();
   const [queryClient] = useState(
-    () => new QueryClient({ defaultOptions: { queries: { staleTime: 10_000, refetchOnWindowFocus: true } } }),
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          // "always": the server is on this machine, so losing the network says nothing about reaching it.
+          // The default ("online") holds every request back from the browser's offline event on.
+          queries: { staleTime: 10_000, refetchOnWindowFocus: true, networkMode: "always" },
+          mutations: { networkMode: "always" },
+        },
+      }),
   );
   const theme = useMemo(() => themeFor(i18n.language), [i18n.language]);
   return (

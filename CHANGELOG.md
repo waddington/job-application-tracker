@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.24.47 (2026-11-22)
+
+- The app keeps loading and saving when your computer loses its network with the app open. It used to pause every request until the network came back, and a save still waiting was lost if you reloaded (#437).
+
 ## 1.24.46 (2026-11-22)
 
 - The redesign's dark-mode and contrast pass: text, the marks that are a thing's only cue and keyboard focus rings are easier to see in light and dark, on every background tint. Today's faint buttons stay faint but read better, a picked segment and a switch that's off have a thin ring, and Weekly activity's colours are easier to tell apart (#436).

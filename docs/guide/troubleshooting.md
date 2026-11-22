@@ -130,6 +130,9 @@ The app is running but the web interface hasn't been built. Run
 `jat serve` isn't running (or stopped). Start it again with `uv run jat serve`. (On a phone there's
 no sidebar: **More** gets a red dot, and its sheet says this and the versions note below.)
 
+On the computer that runs `jat serve`, losing the internet or Wi-Fi doesn't cause this: the app keeps
+loading and saving.
+
 ## The sidebar says the server and this page are different versions
 
 The app comes in two halves that are released together: the tracker you start with `jat serve`,

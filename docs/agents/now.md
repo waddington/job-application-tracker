@@ -1,36 +1,29 @@
 # Now: state and live plan
 
-Snapshot 2026-11-22, as of #436 (v1.24.46), written in that PR. Refresh this
+Snapshot 2026-11-22, as of #437 (v1.24.47), written in that PR. Refresh this
 file before each compaction. Before trusting it, check `gh pr list`, `git worktree list`, `git log --oneline -5` and
 `docs/ROADMAP.yaml`.
 
 ## Kai's current request
 
-**"do phone-nav and dark for the redesign"** (2026-11-22): finish both, report, then wait (Kai's scope wins over the
-delivery loop).
-
-1. **`app-redesign-phone-nav`, #427:** released as v1.24.45.
-2. **`app-redesign-dark`, #436:** v1.24.46. If it isn't merged and released yet, finish that first.
-3. **Stop and report**, with the restart reminder. Nothing below starts without Kai's word.
+**"do offlie fix"** (2026-11-22): `fix-offline-requests-paused`, #437, v1.24.47. If it isn't merged and released yet,
+finish that; then report with the restart reminder and wait (Kai's scope wins over the delivery loop). Nothing below
+starts without Kai's word.
 
 ## Next, when Kai gives the word
 
-1. **`fix-offline-requests-paused`** (high, `next`, ready): when the network drops with the tab open, the app stops
-   loading and saving, and a save can be lost on reload. `networkMode: "always"` for queries and mutations in `App.tsx`,
-   proved by injection in both browsers. Kai queued it ahead of the images; I offered to move it before dark ("offline
-   before dark"), no answer: **after dark unless Kai says so.** Until it ships, Kai reloads the tab after losing the network.
-2. **The images:** `app-redesign-docs`, `-gif-card`, `-website-shots`, each shown to Kai before it's applied. The social
+1. **The images:** `app-redesign-docs`, `-gif-card`, `-website-shots`, each shown to Kai before it's applied. The social
    card keeps the four No's, also says it works offline (only once the fix has shipped), and Kai sees every option as a
    rendered image before picking.
-3. **`app-redesign-wrap-up`**: close #354.
-4. **After the redesign** (Kai queued them; each depends on the wrap-up): `fix-tablet-header-overflow` (768-970 px with
+2. **`app-redesign-wrap-up`**: close #354.
+3. **After the redesign** (Kai queued them; each depends on the wrap-up): `fix-tablet-header-overflow` (768-970 px with
    a scrollbar), `fix-board-touch-drag`, `fix-slash-behind-modal`, `fix-phone-quick-view-buttons-cut`,
    `fix-phone-new-application-route-wide`.
-5. Also `next`: `e2e-seed-once` and P13's `generic-*`. #359 when its author updates it.
+4. Also `next`: `e2e-seed-once` and P13's `generic-*`. #359 when its author updates it.
 
 ## State
 
-- **Released up to v1.24.46** (with #436). The redesign has 20 of its 24 tasks done, counting the five
+- **Released up to v1.24.47** (with #437). The redesign has 20 of its 24 tasks done, counting the five
   `loading-state-*` parts.
 - **Open PRs:**
   - **#414** DO NOT MERGE: board concepts for per-round columns beside the quick view (`?board=N`). Parked for Kai
@@ -60,6 +53,7 @@ delivery loop).
 | 1.24.44 | #425 | Notes, Documents, Insights (a checked palette) and Search |
 | 1.24.45 | #427 | a bottom bar on phones, the More sheet, the phone header on one row |
 | 1.24.46 | #436 | the dark-mode and contrast pass, focus rings |
+| 1.24.47 | #437 | keeps loading and saving when the network drops |
 
 Internal: #407, #426 (notes); #410 and #411 (retros in `docs/retros/`, with `retro-actions` to act on them); ideas and
 bugs: #409, #416, #417, #419, #420, #422, #428 to #434. #418 was closed and redone as #419 (a name from a screenshot;
@@ -77,8 +71,8 @@ Kai: fine as it is, no purge).
 
 ## Waiting on Kai (don't start)
 
-- **Bugs to pick:** 71 open at the snapshot (1 high, 16 medium, 54 low), six of them queued above. Raised lately, no go
-  yet: `fix-round-waiting-after-heard-back` (the contradicting pills), `fix-e2e-only-exit-status` (maintainer tooling;
+- **Bugs to pick:** the roadmap's phase B, five of them queued above. Raised lately, no go
+  yet: `fix-timeline-detail-raw-markdown`, `fix-custom-stage-colour-contrast`, `fix-round-waiting-after-heard-back` (the contradicting pills), `fix-e2e-only-exit-status` (maintainer tooling;
   it let a failed run look like a pass), `fix-board-drag-width-race`, `fix-back-link-full-width`,
   `fix-flaky-panel-keyboard-move-test`, `fix-insights-dialog-flake`, `fix-dev-proxy-other-port-writes`; and the older
   backlog.
