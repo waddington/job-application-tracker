@@ -1,47 +1,42 @@
 # Now: state and live plan
 
-Snapshot 2026-11-22 evening, after #439 (main at `bac5d3e0`, v1.24.49), written before a compaction. Refresh this
+Snapshot 2026-11-22 evening, after #442 (main at `9e0929ea`, v1.24.50), written in #443. Refresh this
 file before each compaction. Before trusting it, check `gh pr list`, `git worktree list`, `git log --oneline -5` and
 `docs/ROADMAP.yaml`.
 
 ## Kai's current request
 
-"do website-shots then wrap-up for app redesign" (2026-11-22): items 1 and 2 below, in that order, one PR each. Then
-report and wait.
+"do website-shots then wrap-up for app redesign" (2026-11-22): **both done, so the redesign is finished.**
 
-- **`app-redesign-website-shots` is #442, v1.24.50:** Kai approved the images ("looks good", 2026-11-22). It retakes
-  the website's captures (it has no GIFs: they're animated captures). Ship it if it's still open.
-- **Then `app-redesign-wrap-up`.**
-- **Kai has uploaded the social card** (checked: GitHub serves the approved file).
+- `app-redesign-website-shots` was #442 (v1.24.50; Kai approved the images: "looks good").
+- `app-redesign-wrap-up` was #443. If #354, its branch or its worktree still exist, remove them (copy the worktree's
+  `var/concepts` to the main checkout's `var/app-redesign-concepts` first).
+- Kai's tracker reported 1.24.49 at the release: check it, and repeat the restart reminder if it still does.
 
-**Nothing from item 3 on starts without Kai's word** (Kai's scope wins over the delivery loop).
+**Nothing below starts without Kai's word** (Kai's scope wins over the delivery loop): report and wait.
 
-## Next
+## Next, when Kai gives the word
 
-1. **`app-redesign-website-shots`:** done in #442. Its review left two small website bugs for Kai to pick:
-   `fix-website-board-dates` and `fix-website-story-phone-crop`.
-2. **`app-redesign-wrap-up`** ("wrap up", 30 min): close #354, its branch and worktree; the RFC becomes built. That
-   finishes the redesign.
-3. **Offered on 2026-11-22, no answer yet:**
+1. **Offered on 2026-11-22, no answer yet:**
    - **"fix the board race"** (`fix-board-drag-width-race`, about 1 h, with `fix-flaky-keyboard-add-agency-test`, 15
      min): the race failed all three full browser runs that evening, so it can block any app PR. I recommended it first
      of the tooling work, and it may be wanted before the next app PR.
    - **"cheap checks first"** (20 min, not on the roadmap yet): `checks.sh` runs the quick checks first and stops on a
      failure, so a formatting slip fails in a minute rather than 12.
-4. **After the redesign** (Kai queued them; each depends on the wrap-up): `fix-tablet-header-overflow` (768-970 px with
-   a scrollbar), `fix-board-touch-drag`, `fix-slash-behind-modal`, `fix-phone-quick-view-buttons-cut`,
-   `fix-phone-new-application-route-wide`.
-5. Also `next`: `e2e-seed-once` and P13's `generic-*`. #359 when its author updates it.
+2. **After the redesign** (Kai queued them, and the wrap-up they waited for is done): `fix-tablet-header-overflow`
+   (768-970 px with a scrollbar), `fix-board-touch-drag`, `fix-slash-behind-modal`,
+   `fix-phone-quick-view-buttons-cut`, `fix-phone-new-application-route-wide`.
+3. **Two small website bugs from #442's review, no go yet:** `fix-website-board-dates` and
+   `fix-website-story-phone-crop`.
+4. Also `next`: `e2e-seed-once` and P13's `generic-*`. #359 when its author updates it.
 
 ## State
 
-- **Released up to v1.24.50 once #442 ships.** The redesign has 23 of its 24 tasks done, counting the five `loading-state-*` parts.
+- **Released up to v1.24.50.** The redesign is done: all 24 tasks, counting the five `loading-state-*` parts.
 - **Open PRs:**
   - **#414** DO NOT MERGE: board concepts for per-round columns beside the quick view (`?board=N`). Parked for Kai
     ("park it for now, ill review another time"); its servers (5190, 8886) are off, its worktree kept
     (`board-rounds-concepts`). The bug is `fix-board-round-columns-cramped`; `board-card-round-ui` goes with it.
-  - **#354** DO NOT MERGE: the redesign concepts, the reference implementation (read its files in
-    `.claude/worktrees/agent-a1abf04926d779406`) until the wrap-up. Its servers are off; don't restart them unless asked.
   - **#359** (`windows-support`): on hold until its author updates it. When they push: review it fully, carry it, walk
     its PowerShell steps on the VM. A minor bump.
   - **#365** (`windows-snapshots`): on hold (Kai).
@@ -60,8 +55,9 @@ report and wait.
 | 1.24.47 | #437 | keeps loading and saving when the network drops |
 | 1.24.48 | #438 | the README's screenshots, both languages |
 | 1.24.49 | #439 | the demo GIFs, the social card and the icons |
+| 1.24.50 | #442 | the website's captures and its hero demo |
 
-Internal: #440 (website and icon changes skip the browser tests). Earlier work: `CHANGELOG.md` and `git log`.
+Internal: #440 (website and icon changes skip the browser tests), #443 (the redesign wrapped up). Earlier work: `CHANGELOG.md` and `git log`.
 
 **How work runs** (keep doing it this way unless Kai says otherwise):
 

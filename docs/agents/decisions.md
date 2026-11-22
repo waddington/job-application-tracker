@@ -112,10 +112,10 @@ Product decisions Kai has made or accepted. Don't re-litigate them; change one o
 
 ## App redesign (P12)
 
-- **Concept 11 is picked and being built on Kai's word, task by task** (Kai, 2026-11-15: "i like 11", then "go for 11.
-  plan it out, create the roadmap items"). The plan is `docs/rfc/app-redesign.md` (its "As built" notes say what each
-  part became); the tasks are P12. The reference implementation is draft #354, branch `worktree-app-redesign-concepts` (never merged): `?design=11`
-  on its dev server, code in `frontend/src/design/`.
+- **Concept 11 was picked, built task by task, and finished on 2026-11-22** (v1.24.50; Kai, 2026-11-15: "i like 11",
+  then "go for 11. plan it out, create the roadmap items"). The plan is `docs/rfc/app-redesign.md` (its "As built"
+  notes say what each part became); the tasks are P12. The concepts PR, #354, was never merged and is closed
+  (`git fetch origin pull/354/head` to read it). The app on main is the reference now.
 - What 11 is: round 1's 4 (calm soft cards); one background on every page that fades very slowly between calm tints,
   a ten-minute cycle tied to the clock (it carries across page changes and reloads), static under reduced motion;
   pages full width up to 2,400 px, starting right after the menu; Today in three columns; side panels that slide in and
