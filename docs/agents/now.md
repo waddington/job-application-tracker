@@ -10,7 +10,9 @@ file before each compaction. Before trusting it, check `gh pr list`, `git worktr
 too": **one PR on `worktree-readme-shorter-features`. NEVER merge it without Kai's word on it**, however clean the
 review and checks are (the standing merge permission doesn't cover it). It stays a draft until then.
 
-- Kai sees both READMEs rendered, and every picture on a compare page after DAST, before a picture is committed.
+- It's #444. Kai picked the art over four rounds (hero HA2, diagrams S2 and D1, light only, badges as they were), and
+  then: "dont merge until ive reviewed the readme as a whole". So: review and checks, then give Kai the rendered
+  READMEs on the branch, and wait.
 - With it: the "next up" lines stop naming Docker (shelved) in both READMEs and `llms.txt`.
 - The redesign is finished (#442, #443; #354 closed and removed).
 - Kai's tracker reported 1.24.49 at v1.24.50's release: check it, and repeat the restart reminder if it still does.
