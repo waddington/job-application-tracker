@@ -139,9 +139,7 @@ function useFileDrop(onFiles: (files: File[]) => void) {
       if (dropped.length) onFiles(dropped);
     },
   };
-  const style = dragging
-    ? { outline: "2px dashed var(--mantine-color-blue-5)", outlineOffset: -4 }
-    : undefined;
+  const style = dragging ? { outline: "2px dashed var(--jat-chart-blue)", outlineOffset: -4 } : undefined;
   return { handlers, style };
 }
 

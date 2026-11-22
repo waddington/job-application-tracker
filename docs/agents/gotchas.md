@@ -106,6 +106,13 @@ Each of these cost time once. Add a line when something new does.
 - **Carries merging in sequence:** the second takes main's version and re-bumps by hand (`bump.py` always adds a
   CHANGELOG entry), keeping main's CHANGELOG sections unchanged.
 - **`checks.sh --no-e2e` refuses `tools/pm` changes** (they aren't on the skip list): run the full checks.
+- **A PR touching the app and the website** runs `checks.sh` plus, with `pnpm --dir website`: `install
+  --frozen-lockfile`, `format:check`, `check` and `build` (`checks.sh --website` refuses app changes).
+- **A bump costs about 14 changed lines:** leave room under the limit, counted with `git diff origin/main --shortstat
+  -- . ':!uv.lock' ':!frontend/openapi.json' ':!frontend/src/api/schema.d.ts'`.
+- **`gh pr view N` without `--json` can fail** on a deprecated Projects GraphQL field: pass `--json` with the fields.
+- **A reviewer probing while the lead runs checks** uses its own copy of the build and its own port: `checks.sh`
+  rebuilds `frontend/dist` under a server.
 - **Dependabot:** push our commits onto its branch as a fast-forward (`git push origin HEAD:<dependabot branch>`),
   never force.
 

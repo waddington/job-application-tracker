@@ -36,7 +36,7 @@ export function FavouriteMark({ on, size = 14 }: { on?: boolean | null; size?: n
     >
       <IconStarFilled
         size={size}
-        style={{ verticalAlign: "-0.12em", color: "var(--mantine-color-yellow-7)" }}
+        style={{ verticalAlign: "-0.12em", color: "var(--jat-star)" }}
         aria-hidden
       />
     </span>

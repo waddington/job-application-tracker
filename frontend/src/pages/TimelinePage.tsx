@@ -58,6 +58,9 @@ const LANE_BY = [
   { value: "agency", label: "timeline:lanes.by.agency", empty: "timeline:lanes.empty.agency" },
 ] as const satisfies readonly { value: LaneBy; label: string; empty: string }[];
 
+/** A kind's dot in the lanes and their key (tokens.css), else Mantine's middle shade. */
+const laneColor = (color: string) => `var(--jat-dot-${color}, var(--mantine-color-${color}-6))`;
+
 // Companies, agencies and people being added is bookkeeping: off unless you ask for it.
 const DEFAULT_CATEGORIES = CATEGORIES.filter((c) => c.value !== "added").map((c) => c.value as string);
 
@@ -384,7 +387,7 @@ function LanesView({ items, now, since }: { items: TimelineItem[]; now: string; 
                           top: 0,
                           bottom: 0,
                           left: `${pct(now)}%`,
-                          borderLeft: "1px dashed var(--mantine-color-red-5)",
+                          borderLeft: "1px dashed var(--jat-chart-red)",
                         }}
                       />
                       <Box
@@ -418,12 +421,10 @@ function LanesView({ items, now, since }: { items: TimelineItem[]; now: string; 
                                     height: 12,
                                     padding: 0,
                                     borderRadius: "50%",
-                                    border: isAhead(item, now)
-                                      ? `2px solid var(--mantine-color-${cat.color}-6)`
-                                      : "2px solid var(--mantine-color-body)",
+                                    border: `2px solid ${isAhead(item, now) ? laneColor(cat.color) : "var(--jat-surface)"}`,
                                     background: isAhead(item, now)
-                                      ? "var(--mantine-color-body)"
-                                      : `var(--mantine-color-${cat.color}-6)`,
+                                      ? "var(--jat-surface)"
+                                      : laneColor(cat.color),
                                     cursor: "pointer",
                                   }}
                                 />
@@ -451,7 +452,12 @@ function LanesView({ items, now, since }: { items: TimelineItem[]; now: string; 
             <Box
               w={10}
               h={10}
-              style={{ borderRadius: "50%", background: `var(--mantine-color-${c.color}-6)` }}
+              // The card's ring, as the lanes' dots have: the key sits on the page's tint.
+              style={{
+                borderRadius: "50%",
+                background: laneColor(c.color),
+                boxShadow: "0 0 0 2px var(--jat-surface)",
+              }}
             />
             <Text size="xs" c="dimmed">
               {i18n.t(c.label)}

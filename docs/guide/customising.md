@@ -50,7 +50,8 @@ change it once applications use it), a display `name`, a `kind`, an optional
 gray, red, pink, grape, violet, indigo, blue, cyan, teal, green, lime, yellow, orange, dark).
 A stage's badge shows a soft pastel of that colour (for a stage that has ended, whether an offer
 or a closed one, an outline in a deep shade of it), Today's pipeline bar and its key a deeper
-pastel, and Insights' charts the colour itself.
+pastel, and Insights' charts the colour itself. Stick to those names: another value (`"#800080"`,
+`"grape.7"`) has no pastel, may be hard to read (dark mode especially), and is grey in Insights' flow charts.
 
 ```toml
 [workflow]

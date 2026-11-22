@@ -149,6 +149,7 @@ function DraggableCard({ row, onOpen }: { row: ApplicationRow; onOpen: (id: stri
     <Card
       ref={setNodeRef}
       withBorder
+      className={classes.draggable}
       style={{
         opacity: isDragging ? 0.4 : 1,
         cursor: "grab",
@@ -196,9 +197,9 @@ function StageColumn({
   // is set to configured transitions, when it's faded out).
   const border =
     dropState === "suggested"
-      ? `2px dashed var(--mantine-color-${isOver ? "teal" : "blue"}-5)`
+      ? `2px dashed var(--jat-chart-${isOver ? "teal" : "blue"})`
       : dropState === "allowed"
-        ? `1px dashed var(--mantine-color-${isOver ? "teal-5" : "gray-5"})`
+        ? `1px dashed var(--jat-chart-${isOver ? "teal" : "gray"})`
         : "1px solid transparent";
   return (
     // A soft well of the page's tint, so its cards stand out.

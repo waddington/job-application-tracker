@@ -8,7 +8,7 @@
   --jat-ink: #2a1e3f;
   --jat-ink-soft: rgb(42 30 63 / 0.7);
   --jat-ink-faint: rgb(42 30 63 / 0.12);
-  --jat-placeholder: rgb(42 30 63 / 0.56);
+  --jat-placeholder: rgb(42 30 63 / 0.63);
   --jat-anchor: #5d4a94;
   --jat-shadow: 42 30 63;
   --jat-ring: 42 30 63;
@@ -22,6 +22,26 @@
   --jat-danger-hover: #f6e0e5;
   /* A table row you point at: the plum's wash, under dimmed and coloured text at 4.5:1 or more. */
   --jat-row-hover: #ebe6f8;
+
+  /* Marks that are the only cue, each 3:1 on what it sits on: a favourite's star, and the dot that says whether
+     snapshots are on (teal) or off (yellow). */
+  --jat-star: #b77604;
+  --jat-status-teal: #13966d;
+  --jat-status-yellow: #ae7a0c;
+  /* The CVs' range bar on its track. */
+  --jat-range: #6d7ec5;
+  /* The calendar's dots: 3:1 on a card and on the chosen day's disc, their numbers 4.5:1. */
+  --jat-day-orange: #bb5b0a;
+  --jat-day-blue: #0f79cd;
+  --jat-day-teal: #058661;
+  --jat-day-gray: #7a7387;
+  --jat-day-ink: #fff;
+  /* The Timeline's lanes: Mantine's shade 6, but for those that don't show at 3:1 on a card. */
+  --jat-dot-cyan: #00a3bb;
+  --jat-dot-teal: #2c906f;
+  --jat-dot-lime: #62a227;
+  --jat-dot-yellow: #bf8914;
+  --jat-dot-orange: #f76507;
 
   /* The plum button: the website's gradient, a step lighter on hover. */
   --jat-plum-gradient: linear-gradient(180deg, #4a3a68, #2a1e3f);
@@ -102,8 +122,8 @@
   --jat-weekly-applied: #cb7a49;
   --jat-weekly-moves: #2752a0;
   --jat-weekly-interviews: #8d2768;
-  --jat-weekly-calls: #206702;
-  --jat-weekly-pitched: #1f9b91;
+  --jat-weekly-calls: #556f07;
+  --jat-weekly-pitched: #14a1a2;
 
   /* The website's eyebrow label. */
   --jat-eyebrow-size: 10.5px;
@@ -115,7 +135,7 @@
   --jat-ink: #ece8f6;
   --jat-ink-soft: rgb(236 232 246 / 0.7);
   --jat-ink-faint: rgb(236 232 246 / 0.1);
-  --jat-placeholder: rgb(236 232 246 / 0.5);
+  --jat-placeholder: rgb(236 232 246 / 0.54);
   --jat-anchor: #c9b8f0;
   --jat-shadow: 0 0 0;
   --jat-ring: 236 232 246;
@@ -124,6 +144,24 @@
   --jat-overlay: rgb(13 9 20 / 0.62);
   --jat-danger-hover: rgb(255 107 107 / 0.14);
   --jat-row-hover: rgb(201 184 240 / 0.08);
+
+  /* On plum night the brighter shades show, so the marks keep Mantine's where they can. */
+  --jat-star: #f59f00;
+  --jat-status-teal: #12b886;
+  --jat-status-yellow: #fab005;
+  --jat-range: #6b8cf4;
+  --jat-day-orange: #f76707;
+  --jat-day-blue: #258de8;
+  --jat-day-teal: #0ca678;
+  --jat-day-gray: #8f889c;
+  --jat-day-ink: #0d0914;
+  --jat-dot-cyan: #15aabf;
+  --jat-dot-teal: #12b886;
+  --jat-dot-lime: #82c91e;
+  --jat-dot-yellow: #fab005;
+  --jat-dot-orange: #fd7e14;
+  --jat-dot-violet: #7b53f5;
+  --jat-dot-dark: #cbc3dc;
 
   /* The lavender button, with dark text on it. */
   --jat-plum-gradient: linear-gradient(180deg, #d9cdf6, #c9b8f0);
@@ -151,10 +189,10 @@
 
   /* Lighter than the validator's dark band in places (lavender, amber, aqua): on plum night rather than near-black,
      that's what keeps all 15 pairs apart. */
-  --jat-weekly-added: #b199ec;
-  --jat-weekly-applied: #eaa464;
-  --jat-weekly-moves: #1a84cf;
-  --jat-weekly-interviews: #b15086;
-  --jat-weekly-calls: #5b8231;
-  --jat-weekly-pitched: #42d4cd;
+  --jat-weekly-added: #b19bf3;
+  --jat-weekly-applied: #e49b48;
+  --jat-weekly-moves: #1584d2;
+  --jat-weekly-interviews: #b85f8b;
+  --jat-weekly-calls: #6a8628;
+  --jat-weekly-pitched: #27beae;
 }
