@@ -143,8 +143,8 @@ for (const [what, status, says] of [
     const json = { status: "ok", version: "0.0.1", schema: "1", git_repo: false };
     await page.route("**/api/v1/health", (route) => route.fulfill({ status, json }));
     await today(page);
-    await expect(page.getByTestId("more-alert")).toBeVisible({ timeout: 15_000 });
-    await expect(more(page)).toHaveAccessibleDescription(says);
+    await expect(more(page)).toHaveAccessibleDescription(says, { timeout: 15_000 });
+    await expect(page.getByTestId("more-alert")).toBeVisible();
     await openSheet(page);
     await expect(sheet(page).getByText(says)).toBeVisible();
   });

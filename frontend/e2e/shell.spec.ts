@@ -474,9 +474,12 @@ test.describe("more of the frame", () => {
             const controls = page.locator("header").locator("a, button, input").filter({ visible: true });
             await expect(async () => {
               expect(await controls.count()).toBeGreaterThan(0);
+              let free = 0; // where the one before it ends: side by side, none over another
               for (const box of await Promise.all((await controls.all()).map((el) => el.boundingBox()))) {
                 expect(box!.y + box!.height).toBeLessThanOrEqual(56);
-                expect(box!.x + box!.width).toBeLessThanOrEqual(width);
+                expect(box!.x).toBeGreaterThanOrEqual(free - 0.5);
+                free = box!.x + box!.width;
+                expect(free).toBeLessThanOrEqual(width);
               }
               expect((await page.locator("main h2").first().boundingBox())!.y).toBeGreaterThanOrEqual(56);
               expect((await page.getByRole("search").boundingBox())!.width).toBeGreaterThanOrEqual(90);
