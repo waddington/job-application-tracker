@@ -58,10 +58,11 @@ const LANE_BY = [
   { value: "agency", label: "timeline:lanes.by.agency", empty: "timeline:lanes.empty.agency" },
 ] as const satisfies readonly { value: LaneBy; label: string; empty: string }[];
 
-// Companies, agencies and people being added is bookkeeping: off unless you ask for it.
 /** A kind's dot in the lanes and their key (tokens.css), else Mantine's middle shade. */
 const laneColor = (color: string) => `var(--jat-dot-${color}, var(--mantine-color-${color}-6))`;
-const DEFAULT_CATEGORIES = CATEGORIES.filter((c) => c.value !== "added").map((c) => c.value as string);
+
+// Companies, agencies and people being added is bookkeeping: off unless you ask for it.
+const DEFAULT_CATEGORIES =CATEGORIES.filter((c) => c.value !== "added").map((c) => c.value as string);
 
 /** The calendar day an item belongs to, in your time zone (all-day items keep their date). */
 export const dayOf = (item: TimelineItem) =>

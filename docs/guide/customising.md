@@ -50,8 +50,8 @@ change it once applications use it), a display `name`, a `kind`, an optional
 gray, red, pink, grape, violet, indigo, blue, cyan, teal, green, lime, yellow, orange, dark).
 A stage's badge shows a soft pastel of that colour (for a stage that has ended, whether an offer
 or a closed one, an outline in a deep shade of it), Today's pipeline bar and its key a deeper
-pastel, and Insights' charts the colour itself. Any other value (`"purple"`, `"#800080"`) isn't sure to
-read, so its badge's name is written in ink and Today's pipeline bar is grey.
+pastel, and Insights' charts the colour itself. Any other value (`"purple"`, `"#800080"`) might
+not be readable as text, so that stage's badge has its name in ink and Today's pipeline bar is grey.
 
 ```toml
 [workflow]
