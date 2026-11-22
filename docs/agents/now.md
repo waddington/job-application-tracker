@@ -31,7 +31,7 @@ again.
 1. **`fix-offline-requests-paused`** (high, `next`, ready): when the network drops with the tab open, the app stops
    loading and saving, and a save can be lost on reload. `networkMode: "always"` for queries and mutations in `App.tsx`,
    proved by injection in both browsers. Kai queued it ahead of the images; I offered to move it before dark ("offline
-   before dark"), no answer: after dark unless Kai says so. Until it ships, Kai reloads the tab after losing the network.
+   before dark"), no answer: **after dark unless Kai says so.** Until it ships, Kai reloads the tab after losing the network.
 2. **The images:** `app-redesign-docs`, `-gif-card`, `-website-shots`, each shown to Kai before it's applied. The social
    card keeps the four No's, also says it works offline (only once the fix has shipped), and Kai sees every option as a
    rendered image before picking.
@@ -43,7 +43,8 @@ again.
 
 ## State
 
-- **Released up to v1.24.44.** The redesign has 20 of its 24 tasks done (21 with #427, 22 with dark).
+- **Released up to v1.24.44.** The redesign has 18 of its 24 tasks done (19 with #427, 20 with dark), counting the five
+  `loading-state-*` parts.
 - **Open PRs:**
   - **#427**, above.
   - **#414** DO NOT MERGE: board concepts for per-round columns beside the quick view (`?board=N`). Parked for Kai
