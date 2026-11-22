@@ -1,30 +1,19 @@
 # Now: state and live plan
 
-Snapshot 2026-11-22, after #434 (main at `2fec542c`, v1.24.44), written while #427 was in its review fixes. Refresh this
+Snapshot 2026-11-22, after #427 (main at `abf53df4`, v1.24.45), written as `app-redesign-dark` started. Refresh this
 file before each compaction. Before trusting it, check `gh pr list`, `git worktree list`, `git log --oneline -5` and
-`docs/ROADMAP.yaml`: #427 may have merged since.
+`docs/ROADMAP.yaml`.
 
 ## Kai's current request
 
 **"do phone-nav and dark for the redesign"** (2026-11-22): finish both, report, then wait (Kai's scope wins over the
-delivery loop). Kai is compacting between the two, so `app-redesign-dark` starts after the compaction, without asking
-again.
+delivery loop).
 
-1. **`app-redesign-phone-nav`, #427** (draft, worktree `.claude/worktrees/app-redesign-phone-nav`, demo on 8894). If it
-   isn't merged:
-   - An Opus review at `e3e3e046` found three must_fix and a should_fix: a click's scroll that could lose text, the bar
-     staying away in Firefox, "sidebar" wording in both READMEs and on the website, and a readonly Select counting as
-     typing. Kai: "dont defer them". Fixes were pushed up to `38e4bf73`, not yet re-reviewed.
-   - Builder `a91ccc0e68046c611`, reviewer `a232684c7dbdfac2d` (SendMessage by id; start a fresh one from the PR if gone).
-   - Left: the builder's report; the re-review in Firefox and Chrome; merge main in and check the roadmap diff (it closes
-     `fix-phone-header-overflow` and `fix-phone-header-overlap`); bump to 1.24.45; `tools/dev/checks.sh` on the final
-     commit, plus the website's format check, `astro check` and build (it touches `website/src/data.ts`); merge, release,
-     stop the demo.
-   - Size: 975 changed lines at the last count. Under 1,000, or move something other than those four fixes out.
-2. **`app-redesign-dark`**: a worktree, a builder, a reviewer, the checks, a release. Its task carries #425's two colour
-   notes. It audits the bottom bar and the More sheet too. It leaves `fix-tablet-header-overflow` and the other queued
-   bugs alone.
-3. **Stop and report.**
+1. **`app-redesign-phone-nav`, #427:** released as v1.24.45.
+2. **`app-redesign-dark`** (worktree `.claude/worktrees/app-redesign-dark`, demo on 8895): a builder, a reviewer, the
+   checks, a release. Its task carries #425's two colour notes. It audits the bottom bar and the More sheet too. It
+   leaves `fix-tablet-header-overflow` and the other queued bugs alone.
+3. **Stop and report**, with the restart reminder.
 
 ## Next, when Kai gives the word
 
@@ -43,10 +32,9 @@ again.
 
 ## State
 
-- **Released up to v1.24.44.** The redesign has 18 of its 24 tasks done (19 with #427, 20 with dark), counting the five
+- **Released up to v1.24.45.** The redesign has 19 of its 24 tasks done (20 with dark), counting the five
   `loading-state-*` parts.
 - **Open PRs:**
-  - **#427**, above.
   - **#414** DO NOT MERGE: board concepts for per-round columns beside the quick view (`?board=N`). Parked for Kai
     ("park it for now, ill review another time"); its servers (5190, 8886) are off, its worktree kept
     (`board-rounds-concepts`). The bug is `fix-board-round-columns-cramped`; `board-card-round-ui` goes with it.
@@ -56,8 +44,8 @@ again.
     its PowerShell steps on the VM. A minor bump.
   - **#365** (`windows-snapshots`): on hold (Kai).
 - **Running:** the PM dashboard on 8767 (a background job of the session: restart it after a session restart, from the
-  main checkout, `python3 -m tools.pm`); Kai's tracker on 8770 (Kai runs it, never stop it); #427's demo on 8894.
-- **Dependabot alerts:** two, build-time only, no patched version when evaluated (#39 `picomatch`, #33 `minimatch`).
+  main checkout, `python3 -m tools.pm`); Kai's tracker on 8770 (Kai runs it, never stop it).
+- **Dependabot alerts:** one open, build-time only, no patched version when evaluated (#33 `minimatch`; #39 is closed).
   Left open.
 
 ## Done since v1.24.36
@@ -72,6 +60,7 @@ again.
 | 1.24.42 | #423 | Roles, Recruiters and Companies; `SideScroll` with the edge fade |
 | 1.24.43 | #424 | Interviews, Offers and the Timeline |
 | 1.24.44 | #425 | Notes, Documents, Insights (a checked palette) and Search |
+| 1.24.45 | #427 | a bottom bar on phones, the More sheet, the phone header on one row |
 
 Internal: #407, #426 (notes); #410 and #411 (retros in `docs/retros/`, with `retro-actions` to act on them); ideas and
 bugs: #409, #416, #417, #419, #420, #422, #428 to #434. #418 was closed and redone as #419 (a name from a screenshot;
@@ -105,7 +94,7 @@ Kai: fine as it is, no purge).
   - `i18n-zh-cn-offer-word` and `i18n-zh-cn-brand-name`;
   - MCP §14 and `hosted-mcp`'s open questions;
   - the GitHub repo description, when those tasks run;
-  - whether to dismiss the two build-time Dependabot alerts;
+  - whether to dismiss the build-time Dependabot alert #33;
   - whether CLAUDE.md's "fill in data when Kai asks" should point at the live-data rule.
 - **Restore `worktree-pr-screenshots`?** (from #291's head `a283908`).
 - **Repo gaps offered for contributors, no answer:** CONTRIBUTING asks contributors to update `CHANGELOG.md` though Kai

@@ -50,8 +50,10 @@ where things run. Quotes are Kai's words.
   `planned` (Backlog) unless Kai says to build it. With nothing up next: report the backlog and wait.
 - **Docs:** "ensure docs are up to date, readme, images, etc". **Images and GIFs go to Kai before they're applied:** "i
   want to see the new gif(s) before you apply them".
-- **Visibility:** after each merge, fast-forward main, rebuild the frontend there, and say in a line what's live and
-  whether Kai must restart the tracker (any backend change: Ctrl+C, `uv run jat serve`).
+- **Visibility:** after each merge, fast-forward main, rebuild the frontend there, and say in a line what's live.
+  **Every release needs Kai to restart the tracker** (Ctrl+C, `uv run jat serve` in the main checkout), frontend-only
+  ones too, so always say so: the rebuilt page shows a version warning while the server reports the old version
+  (Kai, 2026-11-22: "every release, frontend-only ones too, needs Kai to restart the tracker, so always say so").
 - **"whats taking so long":** give the time per step and offer concrete speed-ups (Kai took a website-only check mode
   and a second parallel builder, 2026-11-12). Cap long measurement loops in builders; ask for interim results.
 - **Explain plainly:** "you didnt explain it to me, file changes got in the way". Say what changed in plain words before
