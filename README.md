@@ -76,7 +76,7 @@ decide), **Coming up** (interviews, calls and dated to-dos) and **Waiting on the
 you're waiting to hear back from, and what's gone quiet), under one line of numbers and the
 pipeline. Each item is a tile, and most keep their buttons faint until you point at them.
 
-![Today: active applications, interviews and offers in one line with the pipeline; Your move with replies to read, offers, a call to mark, to-dos, a follow-up and roles to decide; Coming up; and Waiting on them](docs/screenshots/overview.png)
+![Today: active applications, interviews and offers in one line with the pipeline; Your move with replies to read, offers, a call to mark and to-dos; Coming up; and Waiting on them](docs/screenshots/overview.png)
 
 **Kanban board.** Drag applications between stages, see who's gone quiet (red) and which
 interview round each one is at.
@@ -111,7 +111,7 @@ application through whoever pitched it; **Interested** tracks it without applyin
 keeps your reason. Each role has its own page:
 drop the job description on it and it follows the role onto your application.
 
-![Roles to decide: three pitched roles with pay, source and Apply, Interested or Pass buttons](docs/screenshots/roles.png)
+![Roles to decide: three pitched roles with their source, pay where known, and Apply, Interested or Pass buttons](docs/screenshots/roles.png)
 
 ![A role's page: pay and terms, the recruiter and call it came from, notes, to-dos, files and links](docs/screenshots/role.png)
 
