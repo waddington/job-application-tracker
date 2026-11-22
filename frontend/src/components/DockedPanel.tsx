@@ -19,13 +19,12 @@ import classes from "./DockedPanel.module.css";
 
 /**
  * Where a docked panel goes: Layout's dock beside the page (an AppShell aside), and how a panel tells Layout it's
- * open: docked, so the page makes room for it, or covering the screen, so the phone's bar behind it can't be
- * reached (docs/rfc/app-redesign.md §2, Panels and Phones).
+ * open, so the page makes room for it (docs/rfc/app-redesign.md §2, Panels).
  */
 export interface DockSlot {
   target: HTMLElement | null;
   setDocked: (docked: boolean) => void;
-  setCovered: (covered: boolean) => void;
+  setCovered: (covered: boolean) => void; // over the screen, so the phone's bar behind it can't be reached
 }
 
 export const DockContext = createContext<DockSlot | null>(null);

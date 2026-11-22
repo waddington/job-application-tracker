@@ -15,12 +15,9 @@ import { MenuFooter } from "./MenuFooter";
 const BELOW_HEADER = 64;
 
 /**
- * The menu on a phone (docs/rfc/app-redesign.md §2, Phones): a bar of four pages and More, whose sheet has the
- * other seven and the menu's footer. Layout renders it only below 768 px, so growing past that takes the sheet,
- * its focus trap and its scroll lock away with it. `covered`: a full-screen quick view is over the page.
- *
- * Dismissing the sheet gives focus back to More. Going to a page from it, or any change of address while it's
- * open (Back), closes it and leaves focus on the page instead.
+ * The menu on a phone (docs/rfc/app-redesign.md §2, Phones): four pages, and More's sheet of the other seven and
+ * the menu's footer. Layout renders it only below 768 px, so growing past that takes the sheet, its trap and its
+ * scroll lock away. Dismissing the sheet gives focus back to More; a change of page leaves it on the page.
  */
 export function BottomNav({ covered }: { covered: boolean }) {
   // The quick view's Close: the same word, for the sheet's close button.

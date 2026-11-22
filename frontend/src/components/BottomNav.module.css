@@ -1,8 +1,5 @@
-/*
- * The phone's bottom bar and its More sheet (docs/rfc/app-redesign.md §2, Phones). Glass, but mostly surface, so
- * the ink on it reads at 4.5:1 or more whatever is behind it. How much room it takes is --jat-bar-space, which
- * the page's end and scrolling to something both leave clear (Layout.module.css has the page's).
- */
+/* The phone's bottom bar and More sheet (docs/rfc/app-redesign.md §2, Phones). Glass, but mostly surface, so ink
+   reads on it at 4.5:1 or more over anything. The page's end and scrolling both leave --jat-bar-space clear. */
 :global(:root) {
   --jat-bar-height: 4rem;
   --jat-bar-gap: 8px;
@@ -110,10 +107,7 @@
   height: auto; /* as tall as what's in it: Drawer's own sizes are a fixed height */
   max-height: calc(100% - 24px); /* some backdrop left to tap, however short the window */
   padding-bottom: env(safe-area-inset-bottom, 0px);
-  border-end-start-radius: 0;
-  border-end-end-radius: 0;
-  border-start-start-radius: var(--mantine-radius-lg);
-  border-start-end-radius: var(--mantine-radius-lg);
+  border-radius: var(--mantine-radius-lg) var(--mantine-radius-lg) 0 0;
 }
 .grid {
   display: grid;

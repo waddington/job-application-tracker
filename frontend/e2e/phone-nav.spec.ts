@@ -212,12 +212,9 @@ test("a press on what's half under the bar scrolls nothing", async ({ page, requ
   await page.goto(`/companies/${id}`);
   const about = page.getByLabel("About", { exact: true });
   await press(about, 28);
-  const [start, end] = await about.evaluate((el: HTMLTextAreaElement) => [
-    el.selectionStart,
-    el.selectionEnd,
-  ]);
-  expect(end).toBeLessThan(15); // still on the first line
-  expect(end - start).toBeLessThanOrEqual(1);
+  const at = await about.evaluate((el: HTMLTextAreaElement) => [el.selectionStart, el.selectionEnd]);
+  expect(at[1]).toBeLessThan(15); // still on the first line
+  expect(at[1]! - at[0]!).toBeLessThanOrEqual(1);
   await page.reload();
   await press(page.locator("main label", { hasText: /^About$/ }), 8); // a label's focus comes with the click
 
@@ -311,51 +308,49 @@ test("in a short window it makes way while you type, and not under your press", 
   }
 });
 
-test.describe("the board", () => {
-  test("scrolls under a finger, and a mouse drag over the bar", async ({ page, request }) => {
-    const app = { role_title: "Bar Drag", route: "direct", stage: "applied", tags: [] };
-    for (let n = 0; n < 8; n++) {
-      const data = { ...app, company_name: `Bar Drag ${n} Ltd` };
-      expect((await request.post("/api/v1/applications/quick", { data })).status()).toBeLessThan(300);
-    }
-    await page.goto("/applications?view=board");
-    await page.getByText("Board", { exact: true }).click();
-    const card = page.getByLabel(/^Bar Drag \d Ltd: Bar Drag$/).first();
-    await expect(card).toBeVisible();
+test("the board scrolls under a finger, and a mouse drag over the bar", async ({ page, request }) => {
+  const app = { role_title: "Bar Drag", route: "direct", stage: "applied", tags: [] };
+  for (let n = 0; n < 8; n++) {
+    const data = { ...app, company_name: `Bar Drag ${n} Ltd` };
+    expect((await request.post("/api/v1/applications/quick", { data })).status()).toBeLessThan(300);
+  }
+  await page.goto("/applications?view=board");
+  await page.getByText("Board", { exact: true }).click();
+  const card = page.getByLabel(/^Bar Drag \d Ltd: Bar Drag$/).first();
+  await expect(card).toBeVisible();
 
-    const cdp = await page.context().newCDPSession(page);
-    type Touch = "touchStart" | "touchMove" | "touchEnd";
-    const touch = (type: Touch, ...touchPoints: { x: number; y: number }[]) =>
-      cdp.send("Input.dispatchTouchEvent", { type, touchPoints });
-    await touch("touchStart", { x: 30, y: 700 });
-    for (let y = 660; y >= 300; y -= 40) await touch("touchMove", { x: 30, y });
-    await touch("touchEnd");
-    await expect.poll(() => scrollY(page)).toBeGreaterThan(0);
+  const cdp = await page.context().newCDPSession(page);
+  type Touch = "touchStart" | "touchMove" | "touchEnd";
+  const touch = (type: Touch, ...touchPoints: { x: number; y: number }[]) =>
+    cdp.send("Input.dispatchTouchEvent", { type, touchPoints });
+  await touch("touchStart", { x: 30, y: 700 });
+  for (let y = 660; y >= 300; y -= 40) await touch("touchMove", { x: 30, y });
+  await touch("touchEnd");
+  await expect.poll(() => scrollY(page)).toBeGreaterThan(0);
 
-    const said = page.locator("[id^=DndLiveRegion]");
-    const lift = async () => {
-      await card.scrollIntoViewIfNeeded();
-      const { x, y } = (await card.boundingBox())!;
-      await page.mouse.move(x + 20, y + 15);
-      await page.mouse.down();
-      await page.mouse.move(x + 32, y + 25, { steps: 4 });
-      return y;
-    };
-    await page.evaluate(() => window.scrollTo(0, 0));
-    await lift();
-    const from = await scrollY(page);
-    await page.mouse.move(180, (await barTop(page)) + 20, { steps: 10 }); // on the bar itself
-    await expect.poll(() => scrollY(page)).toBeGreaterThan(from + 100);
-    await page.keyboard.press("Escape");
-    await page.mouse.up();
-    await expect(said).toContainText("Cancelled.");
+  const said = page.locator("[id^=DndLiveRegion]");
+  const lift = async () => {
+    await card.scrollIntoViewIfNeeded();
+    const { x, y } = (await card.boundingBox())!;
+    await page.mouse.move(x + 20, y + 15);
+    await page.mouse.down();
+    await page.mouse.move(x + 32, y + 25, { steps: 4 });
+    return y;
+  };
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await lift();
+  const from = await scrollY(page);
+  await page.mouse.move(180, (await barTop(page)) + 20, { steps: 10 }); // on the bar itself
+  await expect.poll(() => scrollY(page)).toBeGreaterThan(from + 100);
+  await page.keyboard.press("Escape");
+  await page.mouse.up();
+  await expect(said).toContainText("Cancelled.");
 
-    const y = await lift();
-    await page.mouse.move(365, y + 40, { steps: 10 }); // the right-hand edge
-    await expect(said).toContainText("is over Ghosted.", { timeout: 15_000 });
-    await page.mouse.up();
-    await expect(said).toContainText("dropped on Ghosted.");
-  });
+  const y = await lift();
+  await page.mouse.move(365, y + 40, { steps: 10 }); // the right-hand edge
+  await expect(said).toContainText("is over Ghosted.", { timeout: 15_000 });
+  await page.mouse.up();
+  await expect(said).toContainText("dropped on Ghosted.");
 });
 
 for (const scheme of ["light", "dark"] as const) {
