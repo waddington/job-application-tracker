@@ -26,7 +26,7 @@ const steps: { tab: string; title: string; body: string; img: ImageMetadata; alt
     title: "Every round, on a calendar.",
     body: "Rounds, take-home tasks and calls by date, what's coming up, and what needs a new time.",
     img: interviews,
-    alt: "The Interviews calendar for November, with rounds held and one coming up on Saturday",
+    alt: "The Interviews calendar for November, with rounds held and one coming up on Tuesday",
   },
   {
     tab: "Offers",
@@ -595,6 +595,10 @@ const widths = (img: ImageMetadata) => [480, 720, 960, 1440].filter((w) => w <= 
     }
     .shot :global(img) {
       object-position: 30% top;
+    }
+    /* Notes has no sidebar to crop off, and its open note is on the left. */
+    .shot:last-child :global(img) {
+      object-position: left top;
     }
     .count {
       left: 14px;
