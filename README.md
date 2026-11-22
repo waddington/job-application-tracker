@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="docs/screenshots/readme-hero.svg" width="100%" alt="Job Application Tracker: track every application, recruiter and interview. A recruiter pitched a role, you applied, an interview got booked. A job search tracker that runs on your own computer. No AI. No cloud. No account. No tracking.">
+
 # 🎯 Job Application Tracker
 
 English · [简体中文](README.zh-CN.md)
@@ -51,6 +53,8 @@ way tech hiring actually works:
   conversion and time per stage, direct vs recruiter outcomes and a scorecard for every
   recruiter and agency.
 
+<img src="docs/screenshots/readme-stages.svg" width="100%" alt="How an application moves: Interested, Applied, Screen, Interviewing, Final, Offer, Accepted; or it ends as Declined, Rejected, Withdrawn or Ghosted. Any stage to any stage, every move timestamped, with undo.">
+
 ## 🔒 Yours, and only yours
 
 - **No AI.** Nothing reads, summarises, scores or uploads your notes, CVs or emails.
@@ -63,6 +67,8 @@ way tech hiring actually works:
 - **Simple backups.** Make the folder a git repo and every change is snapshotted
   automatically; `jat push` sends it to your own private remote. Or download a single zip.
 - **No scraping.** It tracks the applications *you* make; it's not a job-search engine.
+
+<img src="docs/screenshots/readme-data.svg" width="100%" alt="Where your data lives: your browser talks to the app on 127.0.0.1, which keeps everything in your folder (tracker.sqlite3, export/*.jsonl, notes/*.md, files/), all on your computer; jat push copies it to your private remote, only if you want it.">
 
 ## 📸 Screenshots
 
