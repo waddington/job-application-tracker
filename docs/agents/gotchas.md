@@ -285,7 +285,11 @@ Each of these cost time once. Add a line when something new does.
 ## Other
 
 - Don't pipe `pnpm format` into `tail` (it stops Prettier part way); send it to `/dev/null`.
-- Formatting rewraps lines, so an Edit from memory can miss: read the lines first.
+- Formatting rewraps lines, so an Edit from memory can miss: read the lines first. The same goes for a `sed` that
+  breaks code on purpose to prove a test: on #446 it removed only the import, the build failed, and the "failing" test
+  never ran. Check the break took (grep for what should be gone) and read the run's pass and fail counts.
+- **`lint && format --check || fix` in one line runs on past a failure**: on #444 the art script was committed with ten
+  lint errors because the chain kept going. Lint, then `git add` and commit as separate steps.
 - Headless screenshots: reduced motion, and `html{scroll-behavior:auto}` for scripted scrolling. Astro 7 `dev` runs as a
   daemon (`npx astro dev stop`); Astro drops the space before an element on the next line (add `{" "}`).
 - Reviewers find real bugs in code that passes its tests, usually false claims when a source fails: ask them to check what
