@@ -24,6 +24,7 @@ import { TableSkeleton } from "../components/PageSkeleton";
 import { Pending } from "../components/QueryState";
 import { SideScroll } from "../components/SideScroll";
 import text from "../text.module.css";
+import { foldIncludes } from "../utils/fold";
 
 const companyPath = (id: string) => `/companies/${id}`;
 const WEB_LINK = /^https?:\/\//;
@@ -94,7 +95,7 @@ export function CompaniesPage() {
     if (a.stale) s.stale += 1;
     stats.set(a.company_id, s);
   }
-  const shown = (companies ?? []).filter((c) => c.name.toLowerCase().includes(q.trim().toLowerCase()));
+  const shown = (companies ?? []).filter((c) => foldIncludes(c.name, q));
 
   return (
     <Page>

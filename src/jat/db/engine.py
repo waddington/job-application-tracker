@@ -13,6 +13,7 @@ from sqlalchemy import Connection, Engine, create_engine, event
 from sqlalchemy.orm import Session, sessionmaker
 
 from ..datadir import DB_NAME
+from ..textfold import sql_fold
 
 
 class MigrationError(RuntimeError):
@@ -41,6 +42,8 @@ def make_engine(path: Path, *, foreign_keys: bool = True, wal: bool = True) -> E
         cur.execute(f"PRAGMA journal_mode={'WAL' if wal else 'DELETE'}")
         cur.execute("PRAGMA busy_timeout=5000")
         cur.close()
+        # fold(text) in SQL: lower case without accents, as every search compares (jat.textfold).
+        dbapi_conn.create_function("fold", 1, sql_fold, deterministic=True)
 
     @event.listens_for(engine, "begin")
     def _on_begin(conn: Connection):

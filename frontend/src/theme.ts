@@ -37,6 +37,7 @@ import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import { FALLBACK } from "./i18n/language";
 import classes from "./theme.module.css";
+import { foldedOptionsFilter } from "./utils/fold";
 import { datePattern, dayjsLocale } from "./utils/format";
 
 dayjs.extend(customParseFormat);
@@ -230,7 +231,12 @@ export const clearHint = ({
 const belowHint = clearHint as unknown as number;
 
 const oneLine = {
-  defaultProps: { ...hintBelow.defaultProps, comboboxProps: { offset: belowHint } },
+  // What you type finds options without caring about accents or case, as every search does.
+  defaultProps: {
+    ...hintBelow.defaultProps,
+    comboboxProps: { offset: belowHint },
+    filter: foldedOptionsFilter,
+  },
   ...onPrimary,
 };
 const pickerBelowHint = { ...hintBelow.defaultProps, popoverProps: { offset: belowHint } };

@@ -953,6 +953,10 @@ documents, files, emails and links. Every word
 must match; case and accents don't matter. Under each result is the text around the match; from notes,
 role descriptions and call agendas and notes, it's plain text without their Markdown formatting.
 
+Case and accents don't matter in any other search box either: the search on Applications, Recruiters,
+Companies and Notes, and every list you can type into to pick something (a company, a person, a stage).
+Typing *jose* finds *José*, and *José* finds *Jose*.
+
 ## Picking dates
 
 Every calendar rings today in the app's plum (lavender in dark mode), so you can see where you

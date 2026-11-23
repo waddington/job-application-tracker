@@ -12,7 +12,6 @@ Hits whose title matches come first, then the most recently changed.
 from __future__ import annotations
 
 import re
-import unicodedata
 from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -38,13 +37,9 @@ from jat.db.models import (
     Role,
     Todo,
 )
+from jat.textfold import fold
 
 SNIPPET = 70  # characters either side of the match
-
-
-def fold(text: str) -> str:
-    """Lower case without accents: "Zürich" matches "zurich"."""
-    return "".join(c for c in unicodedata.normalize("NFKD", text.casefold()) if not unicodedata.combining(c))
 
 
 def terms(query: str) -> list[str]:

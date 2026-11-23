@@ -46,6 +46,7 @@ import { contactHref } from "../components/ContactCard";
 import { ContactFormModal } from "../components/ContactFormModal";
 import { closedLabel, UndoClosed } from "../components/PersonChase";
 import text from "../text.module.css";
+import { foldIncludes } from "../utils/fold";
 import { formatDate } from "../utils/time";
 
 const WEB_LINK = /^https?:\/\//;
@@ -311,12 +312,12 @@ export function RecruitersPage() {
     if (company) return { kind: "company", id: company.id, name: company.name };
     return null;
   };
-  const needle = q.trim().toLowerCase();
-  // Name, title, agency or company, or any detail (an email, a phone number).
+  const needle = q.trim();
+  // Name, title, agency or company, or any detail (an email, a phone number); accents and case don't matter.
   const matches = (c: Contact) =>
     !needle ||
     [c.name, c.title ?? "", whereOf(c)?.name ?? "", ...c.details.map((d) => d.value)].some((v) =>
-      v.toLowerCase().includes(needle),
+      foldIncludes(v, needle),
     );
   const shown = (contacts ?? [])
     .filter((c) => {
