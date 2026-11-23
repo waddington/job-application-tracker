@@ -13,6 +13,7 @@ from ..db.models import Application, NoteIndex
 from ..domain import applications as svc
 from ..platform import FileLocked
 from ..storage.notes import Note, NoteError, NoteStore
+from ..textfold import fold
 from . import schemas as S
 from .deps import ENTITY_MODELS, SessionDep, file_locked
 from .errors import CodedError, ErrorCode
@@ -135,14 +136,14 @@ def list_notes(request: Request, session: SessionDep, entity: str | None = None,
     elif entity:
         rows = [r for r in rows if entity in r.links]
     out = []
-    needle = (q or "").strip().lower()
+    needle = fold((q or "").strip())
     for row in rows:
         try:
             note = store.read(row.path)
         except _UNREADABLE:  # changed or vanished since the sync; skip it
             continue
         note.id = row.id
-        if needle and needle not in note.title.lower() and needle not in note.body.lower():
+        if needle and needle not in fold(note.title) and needle not in fold(note.body):
             continue
         out.append(_summary(note))
     return out

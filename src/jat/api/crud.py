@@ -4,10 +4,11 @@ from collections.abc import Callable
 
 from fastapi import APIRouter, Request, Response
 from pydantic import AnyUrl, BaseModel
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from ..textfold import folded_contains
 from .deps import SessionDep, get_or_404
 from .errors import CodedError, ErrorCode
 
@@ -39,7 +40,7 @@ def crud_router(
     def list_items(session: SessionDep, q: str | None = None, limit: int = 500, offset: int = 0):
         stmt = select(model)
         if q and search_column is not None:
-            stmt = stmt.where(func.lower(search_column).contains(q.lower(), autoescape=True))
+            stmt = stmt.where(folded_contains(search_column, q))
         return session.scalars(stmt.order_by(order_by).limit(min(limit, 1000)).offset(offset)).all()
 
     @router.get("/{item_id}", response_model=schema_out)

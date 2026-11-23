@@ -27,6 +27,7 @@ from ..domain import interviews as interviews_svc
 from ..domain import people as people_svc
 from ..domain import replies as reply_svc
 from ..domain.workflow import Workflow, WorkflowError
+from ..textfold import folded_contains
 from . import schemas as S
 from .crud import crud_router, values
 from .deps import SessionDep, WorkflowDep, get_or_404, get_workflow, require
@@ -218,7 +219,7 @@ def _unique_details(session: Session, details: list[S.ContactDetailIn], contact:
 def list_contacts(session: SessionDep, q: str | None = None, agency_id: str | None = None):
     stmt = select(Contact)
     if q:
-        stmt = stmt.where(func.lower(Contact.name).contains(q.lower(), autoescape=True))
+        stmt = stmt.where(folded_contains(Contact.name, q))
     if agency_id:
         stmt = stmt.where(Contact.agency_id == agency_id)
     replies = reply_svc.stats(session)
@@ -502,14 +503,8 @@ def list_applications(
     if company_id:
         stmt = stmt.where(Company.id == company_id)
     if q:
-        like = f"%{_escape_like(q.lower())}%"
         stmt = stmt.where(
-            or_(
-                func.lower(Role.title).like(like, escape="\\"),
-                func.lower(Company.name).like(like, escape="\\"),
-                func.lower(Agency.name).like(like, escape="\\"),
-                func.lower(Recruiter.name).like(like, escape="\\"),
-            )
+            or_(*(folded_contains(column, q) for column in (Role.title, Company.name, Agency.name, Recruiter.name)))
         )
     order = {
         "last_activity": Application.last_activity_at,
@@ -681,10 +676,6 @@ def _check_route(session: Session, merged: dict) -> dict:
             422, "The recruiter works for a different agency than the one given.", "recruiter_other_agency"
         )
     return updates
-
-
-def _escape_like(text: str) -> str:
-    return text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
 
 
 @apps.post("", response_model=S.ApplicationDetail, status_code=201)
