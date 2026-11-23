@@ -7,6 +7,10 @@ each compaction. Before trusting it, check `gh pr list`, `git worktree list`, `g
 ## Kai's current request
 
 Nothing is in flight. Kai is compacting ("then update compact docs and give me the compact procedure", 2026-11-23).
+These notes are #447, merged before the compaction; if `gh pr list` still shows it open, merge it first.
+
+**After the compaction, do this first:** check Kai's tracker (below); give Kai the state in a few lines; ask the one
+question item 1 needs, and recommend "fix the board race" (item 2) as the first thing to build; then wait.
 
 - **Kai's tracker reported 1.24.51** when this was written: v1.24.52 (#446) needs a restart. Check it after the
   compaction and repeat the reminder if it still does.
