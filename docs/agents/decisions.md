@@ -82,7 +82,14 @@ Product decisions Kai has made or accepted. Don't re-litigate them; change one o
   to developers. Docker is for self-hosters (shelved, `docs/rfc/docker.md`); the lay-person path is a one-command
   install, then Windows support, then a desktop app.
 - Promotion: Claude drafts posts and Kai posts them; posts say it's built with Claude Code.
-- Search: every word must match, accent- and case-insensitive.
+- Search: every word must match, accent- and case-insensitive. Every search box and typeable list, not just the header
+  search (Kai, 2026-11-23: "search should work with both accent and no-accent version of letter"; #446): one fold,
+  `jat/textfold.py` (a SQL function too) and `frontend/src/utils/fold.ts` (the theme's default options filter).
+- The README (#444, Kai's picks over four rounds, 2026-11-22): short, with eight one-line highlights and the full
+  feature table folded under "Every feature"; an animated hero (HA2: a recruiter's pitch becoming an application, then
+  an interview, "Track every application, recruiter and interview.") and two diagrams (the stages as board columns,
+  where the data lives), drawn by `scripts/readme_art/make_art.py`. Light only ("we will use light theme for all"),
+  the badges as they were ("badges b0").
 - English dates are day, month, year, through the dayjs patterns in `utils/format.ts`, never the browser's locale.
 
 ## Translations
