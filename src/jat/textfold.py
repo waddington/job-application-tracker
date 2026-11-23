@@ -1,7 +1,9 @@
 """Text compared without case or accents, the same way in every search: "José" matches "jose", "Zürich" "zurich".
 
 `fold` is also a SQL function on every connection (db/engine.py), so a filter can fold a column in the query:
-`folded_contains(Contact.name, q)`. The browser folds the same way (frontend/src/utils/fold.ts).
+`folded_contains(Contact.name, q)`. The browser folds the same way for Latin, Greek and Cyrillic accents
+(frontend/src/utils/fold.ts); a few other scripts' marks and Greek's final sigma differ, which only matters where
+the same text is folded on both sides, and nothing here does that.
 """
 
 from __future__ import annotations
@@ -22,5 +24,5 @@ def sql_fold(text: str | None) -> str | None:
 
 
 def folded_contains(column, query: str) -> ColumnElement[bool]:
-    """The column, folded, contains the query, folded (LIKE's wildcards in the query match themselves)."""
-    return func.fold(column).contains(fold(query), autoescape=True)
+    """The column, folded, contains the query, trimmed and folded (LIKE's wildcards in it match themselves)."""
+    return func.fold(column).contains(fold(query.strip()), autoescape=True)

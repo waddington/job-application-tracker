@@ -27,6 +27,11 @@ def test_the_other_way_round(client):
     assert [c["name"] for c in client.get("/api/v1/contacts", params={"q": "José Álv"}).json()] == ["Jose Alvarez"]
 
 
+def test_spaces_around_what_you_type_dont_count(client):
+    post(client, "/api/v1/contacts", {"name": "María José"})
+    assert [c["name"] for c in client.get("/api/v1/contacts", params={"q": " jose "}).json()] == ["María José"]
+
+
 @pytest.mark.parametrize("path", ["/api/v1/companies", "/api/v1/agencies"])
 def test_companies_and_agencies(client, path):
     post(client, path, {"name": "Café Ölrich"})
