@@ -337,6 +337,24 @@ test.describe("New application", () => {
     await expect(dialog).toBeVisible();
   });
 
+  test("accents don't matter: the list's search and Company's list find Société from societe", async ({
+    page,
+    request,
+  }) => {
+    const data = { company_name: "Société Accentuée", role_title: "Ingénieur", route: "direct", tags: [] };
+    expect((await request.post("/api/v1/applications/quick", { data })).status()).toBeLessThan(300);
+    await page.reload();
+    const search = page.getByPlaceholder(/^Search company/);
+    await search.fill("societe accentuee");
+    await expect(row(page, "Ingénieur", "Société Accentuée")).toBeVisible();
+    await expect(row(page, ...CONTOSO)).toBeHidden();
+    await search.fill("");
+
+    const dialog = await open(page);
+    await dialog.getByLabel("Company").fill("SOCIETE");
+    await expect(page.getByRole("option", { name: "Société Accentuée", exact: true })).toBeVisible();
+  });
+
   test("the Company and Role boxes line up, and Company's list opens under its hint", async ({ page }) => {
     // fix-new-application-fields-misaligned: Company has a hint and Role hasn't.
     const dialog = await open(page);

@@ -229,6 +229,26 @@ describe("recruiters", () => {
     expect(screen.getByText("No matches.")).toBeInTheDocument();
   });
 
+  it("finds a name with accents typed without them, and the other way round", async () => {
+    mockApi({
+      "/api/v1/workflow": WORKFLOW,
+      "/api/v1/agencies": agencies,
+      "/api/v1/contacts": [...contacts, person("c5", "José Álvarez", null)],
+      "/api/v1/companies": [],
+      "/api/v1/role-summaries": [],
+      "/api/v1/applications": [],
+      "/api/v1/health": {},
+    });
+    renderAt("/recruiters");
+    const search = await screen.findByLabelText("Search recruiters");
+    fireEvent.change(search, { target: { value: "jose alv" } });
+    expect(await screen.findByText("José Álvarez")).toBeInTheDocument();
+    expect(screen.queryByText("Alex Morgan")).not.toBeInTheDocument();
+    fireEvent.change(search, { target: { value: "SÁM" } });
+    expect(screen.getByText("Sam Patel")).toBeInTheDocument();
+    expect(screen.queryByText("José Álvarez")).not.toBeInTheDocument();
+  });
+
   it("adds a contact with several details", async () => {
     const calls = mockApi({
       "/api/v1/workflow": WORKFLOW,
