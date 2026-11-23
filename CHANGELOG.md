@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.24.52 (2026-11-23)
+
+- Every search box ignores accents and case: the Applications, Recruiters, Companies and Notes searches and every list you type into to pick something find José from jose, and the other way round (#446).
+
 ## 1.24.51 (2026-11-22)
 
 - A shorter README in both languages, with new artwork: an animated hero and diagrams of how an application moves and where your data lives (#444).
