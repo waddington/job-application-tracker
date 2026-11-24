@@ -134,6 +134,8 @@ Each of these cost time once. Add a line when something new does.
   `send("Emulation.setCPUThrottlingRate", { rate: 8 })` made it fail 8 of 8 without loading the PC, and logging
   the layout showed the real cause: the quick view had opened (Escape then letting go clicked the card, a real bug,
   `fix-board-drag-width-race`), not the width freeze everyone suspected. Remove the throttle before committing.
+  `board.spec.ts` ~:284 "onto its own column does nothing" also flaked once (2026-11-18) and has no Escape, so
+  that fix doesn't explain it: record a bug if it comes back.
   A rerun can't clear a flake that comes from load: don't keep rerolling (working-with-kai.md, *A check that keeps
   failing*).
 - **A `test.fail` can fail the run by passing:** "Expected to fail, but passed" means the known bug didn't happen that

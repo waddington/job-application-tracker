@@ -33,9 +33,10 @@ state in a few lines, recommend the first item, and wait.
    42", "école 42" and "ÉCOLE 42" makes three companies (people and role titles too). Ask: should "Ecole" also count
    as "École", or only case be ignored? For people I'd ignore case only (two people can share a name).
 2. **Offered on 2026-11-22, no answer yet:**
-   - **"fix the board race"** (`fix-board-drag-width-race`, about 1 h, with `fix-flaky-keyboard-add-agency-test` and
-     `fix-flaky-phone-nav-bar-drag-test`): board mouse-drag tests keep failing full runs (#439 three times, #444
-     once), so they can block any app PR. Recommended first of the tooling work.
+   - **"fix the board race"**: Kai said go on 2026-11-24 ("fix those 2 bugs now"). `fix-board-drag-width-race` is
+     #449 (a real bug: letting go after Escape opened the card). `fix-flaky-phone-nav-bar-drag-test` is next, its
+     own PR (a test bug: its second pick-up lands on the sticky top bar). `fix-flaky-keyboard-add-agency-test` stays
+     in the backlog.
    - **"cheap checks first"** (20 min, not on the roadmap yet): `checks.sh` runs the quick checks first and stops on a
      failure.
 3. **After the redesign** (Kai queued them): `fix-tablet-header-overflow`, `fix-board-touch-drag`,

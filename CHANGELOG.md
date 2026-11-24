@@ -7,7 +7,7 @@ Numbers in brackets are pull requests.
 
 ## 1.24.54 (2026-11-24)
 
-- Cancelling a board drag with Escape and then letting go of the mouse no longer opens the card's quick view. (#449).
+- Cancelling a board drag with Escape and then letting go of the mouse no longer opens the card's quick view (#449).
 
 ## 1.24.53 (2026-11-24)
 

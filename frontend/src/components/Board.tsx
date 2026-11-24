@@ -148,12 +148,24 @@ function DraggableCard({ row, onOpen }: { row: ApplicationRow; onOpen: (id: stri
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: row.id, data: { row } });
   // Letting go after a drag isn't a click that opens the card. dnd-kit only swallows that click while its
   // drag is live: after Escape cancels one, the card copy under the pointer has gone, so letting go clicked
-  // the card and opened the quick view (fix-board-drag-width-race). The next press starts afresh.
+  // the card and opened the quick view (fix-board-drag-width-race). Only that one click: the flag goes just
+  // after the drag's pointer is lifted (the click comes straight after it), and with the next press, so a later
+  // click without a press (a screen reader's, say) still opens the card.
   const dragged = useRef(false);
+  const forget = () => window.setTimeout(() => (dragged.current = false), 100);
   useDndMonitor({
-    // A pointer drag only: a keyboard one ends with no click to swallow.
+    // Not a keyboard drag: that ends with no click to swallow.
     onDragStart: ({ active, activatorEvent }) => {
-      if (active.id === row.id && activatorEvent.type.startsWith("pointer")) dragged.current = true;
+      if (active.id === row.id && !(activatorEvent instanceof KeyboardEvent)) dragged.current = true;
+    },
+    // Dropped: the pointer has just been lifted.
+    onDragEnd: ({ active }) => {
+      if (active.id === row.id && dragged.current) forget();
+    },
+    // Cancelled (Escape): the pointer may still be down; forget once it's lifted.
+    onDragCancel: ({ active }) => {
+      if (active.id === row.id && dragged.current)
+        window.addEventListener("pointerup", forget, { once: true, capture: true });
     },
   });
   return (
