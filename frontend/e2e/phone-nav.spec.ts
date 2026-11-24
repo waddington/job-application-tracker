@@ -344,7 +344,10 @@ test("the board scrolls under a finger, and a mouse drag over the bar", async ({
 
   const said = page.locator("[id^=DndLiveRegion]");
   const lift = async () => {
-    await card.scrollIntoViewIfNeeded();
+    // To the middle of the screen: "in view" isn't enough, as the sticky top bar can cover the card's top, and
+    // a press there lands on the bar, so the drag never starts (fix-flaky-phone-nav-bar-drag-test: after the
+    // first drag's scroll, the card was left under it).
+    await card.evaluate((el) => el.scrollIntoView({ block: "center" }));
     const { x, y } = (await card.boundingBox())!;
     await page.mouse.move(x + 20, y + 15);
     await page.mouse.down();

@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.24.55 (2026-11-24)
+
+- The phone bar's board-drag browser test picks the card up from the middle of the screen, so the sticky top bar can't catch the press. (#450).
+
 ## 1.24.54 (2026-11-24)
 
 - Cancelling a board drag with Escape and then letting go of the mouse no longer opens the card's quick view (#449).
