@@ -577,6 +577,32 @@ test.describe("the board fills the window", () => {
   });
 });
 
+test("letting go after Escape cancels a drag doesn't open the card; a click afterwards still does", async ({
+  page,
+  request,
+}) => {
+  // fix-board-drag-width-race: the card copy under the pointer goes with the cancel, so letting go clicked
+  // the card itself and the quick view opened, squeezing the columns (what made the width test flaky).
+  await addCard(page, request, "Let Go Ltd", "Let Go");
+  const from = card(page, "Let Go Ltd", "Let Go");
+  const box = (await from.boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, box.y + 15);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2 + 12, box.y + 25, { steps: 4 });
+  await expect(said(page)).toContainText("Let Go Ltd is over Applied.");
+  await page.keyboard.press("Escape");
+  await expect(said(page)).toContainText("Cancelled. Let Go Ltd stays where it was.");
+  await settled(page); // as a person would take a moment, long enough for the copy to go
+  await page.mouse.move(box.x + box.width / 2, box.y + 15); // back over the card itself
+  await page.mouse.up();
+  await settled(page);
+  const quickView = page.getByRole("dialog", { name: "Application" });
+  await expect(quickView).toHaveCount(0);
+
+  await from.click();
+  await expect(quickView.getByRole("heading", { name: "Let Go" })).toBeVisible();
+});
+
 test.describe("at a normal window width", () => {
   test.use({ viewport: { width: 1400, height: 1000 } });
 

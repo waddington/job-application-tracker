@@ -3,6 +3,7 @@ import {
   DragOverlay,
   KeyboardSensor,
   PointerSensor,
+  useDndMonitor,
   useDraggable,
   useDroppable,
   useSensor,
@@ -145,6 +146,16 @@ function CardBody({ row, link = true }: { row: ApplicationRow; link?: boolean })
 function DraggableCard({ row, onOpen }: { row: ApplicationRow; onOpen: (id: string) => void }) {
   const { t } = useTranslation("applications");
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: row.id, data: { row } });
+  // Letting go after a drag isn't a click that opens the card. dnd-kit only swallows that click while its
+  // drag is live: after Escape cancels one, the card copy under the pointer has gone, so letting go clicked
+  // the card and opened the quick view (fix-board-drag-width-race). The next press starts afresh.
+  const dragged = useRef(false);
+  useDndMonitor({
+    // A pointer drag only: a keyboard one ends with no click to swallow.
+    onDragStart: ({ active, activatorEvent }) => {
+      if (active.id === row.id && activatorEvent.type.startsWith("pointer")) dragged.current = true;
+    },
+  });
   return (
     <Card
       ref={setNodeRef}
@@ -159,7 +170,17 @@ function DraggableCard({ row, onOpen }: { row: ApplicationRow; onOpen: (id: stri
       data-panel-opener={row.id} // focus comes back here when the quick view closes, even after a move
       {...attributes}
       {...listeners}
-      onClick={() => onOpen(row.id)}
+      onPointerDown={(e: React.PointerEvent<HTMLDivElement>) => {
+        dragged.current = false;
+        listeners?.onPointerDown?.(e);
+      }}
+      onClick={() => {
+        if (dragged.current) {
+          dragged.current = false;
+          return;
+        }
+        onOpen(row.id);
+      }}
       // Enter opens the card; Space starts a keyboard drag (see KEYBOARD_CODES).
       onKeyDown={(e: React.KeyboardEvent<HTMLDivElement>) => {
         if (e.key === "Enter") {

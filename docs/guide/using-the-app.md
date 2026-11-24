@@ -272,7 +272,8 @@ switch on *Show closed stages*, but appear while you drag so you can drop a card
 The board fills the window beside the sidebar (or beside the quick view, when it's open), and its
 columns share that width, from 180 to 360 pixels each; when they don't all fit at 180, it scrolls
 sideways, and dragging a card to the edge scrolls it along. While you drag, the columns stay as they
-were, and the closed stages come in after them.
+were, and the closed stages come in after them. Press Escape to cancel a drag: the card stays where it was,
+and letting go of it afterwards doesn't open it.
 
 The round's purple badge, on board cards, list rows and the quick view, names the round, with its
 day once booked: "Round 2 · Technical · Thu 12 Nov" (still, once that day has passed, until you mark
