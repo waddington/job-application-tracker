@@ -1,6 +1,6 @@
-import { Alert, Button, Group, Modal, Stack, Text, Textarea } from "@mantine/core";
-import { IconPencil } from "@tabler/icons-react";
-import { useState, type ReactNode } from "react";
+import { Alert, Button, Group, Modal, Paper, Stack, Text, Textarea } from "@mantine/core";
+import { IconMessageReport, IconPencil } from "@tabler/icons-react";
+import { useId, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { ApplicationDetail } from "../api/client";
@@ -162,17 +162,32 @@ export function RejectionFeedback({ app }: { app: ApplicationDetail }) {
   const { t } = useTranslation("applications");
   const save = useSetRejectionFeedback();
   const [editing, setEditing] = useState(false);
+  const headingId = useId();
   const feedback = app.rejection_feedback ?? null;
   if (app.stage !== REJECTED && feedback === null) return null;
+  // A card of its own, with its button beside the heading, so it reads as part of being rejected rather
+  // than one more line of facts. Red while it's rejected; grey for feedback kept after an undo or a
+  // reopening, so it doesn't make an open application look rejected.
+  const accent = app.stage === REJECTED ? "var(--mantine-color-red-6)" : "var(--mantine-color-dimmed)";
   return (
-    <Stack gap={4}>
-      <Group gap="xs" justify="space-between" wrap="nowrap">
-        <Text size="sm" fw={700}>
+    <Paper
+      component="section"
+      aria-labelledby={headingId}
+      withBorder
+      radius="md"
+      p="sm"
+      maw="40rem"
+      data-testid="rejection-feedback-card"
+      style={{ borderLeft: `3px solid ${accent}` }}
+    >
+      <Group gap="xs" wrap="wrap" mb={4}>
+        <IconMessageReport size={16} color={accent} aria-hidden />
+        <Text size="sm" fw={700} id={headingId}>
           {t("rejection.heading")}
         </Text>
         <Button
           size="compact-xs"
-          variant="subtle"
+          variant={feedback === null ? "light" : "subtle"}
           leftSection={<IconPencil size={12} />}
           onClick={() => {
             save.reset(); // no error left from an earlier save
@@ -212,6 +227,6 @@ export function RejectionFeedback({ app }: { app: ApplicationDetail }) {
           }
         />
       )}
-    </Stack>
+    </Paper>
   );
 }

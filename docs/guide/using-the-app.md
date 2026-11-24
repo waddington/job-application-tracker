@@ -326,14 +326,14 @@ application where it was, with the card going back to its column.
 
 Only a move asks. Adding an application straight at Rejected (with **New application** or from
 a role) doesn't, and neither does **Undo last move** back to Rejected. For those, add the
-feedback from the *Rejection feedback* block (below).
+feedback from the *Rejection feedback* card (below).
 
 The feedback is kept exactly as you wrote it, line breaks and all, up to 10,000 characters.
 Near the limit a count shows under the box. Text over the limit isn't cut: the dialog says
 why it wasn't saved and keeps what you wrote.
 
-The feedback shows under *Rejection feedback* on the application's page and in the quick view, where
-**Add feedback** or **Edit feedback** changes it later. Emptying it there clears it.
+The feedback shows in its own *Rejection feedback* card, right under the application's stage, on its page
+and in the quick view. **Add feedback** or **Edit feedback**, beside the card's heading, changes it later. Emptying it there clears it.
 **Undo last move** and reopening the application keep it. If it's rejected again, the
 dialog opens with what's there, so you can add to it, replace it, or empty it to clear it.
 
@@ -350,8 +350,10 @@ sent*, *Log activity* and the *Timeline* in the second, and *To-dos*, *Role* and
 third; with a little less room the first two make one column, with the narrow one beside it; on a smaller
 screen they stack one under the other, in that order.
 
-- **Move to…**, **Undo last move**, and its stage, current round and tags.
-- **Rejection feedback**, once it's been rejected (see [above](#rejection-feedback)).
+- Its stage, current round and tags.
+- **Rejection feedback**, once it's been rejected, or while feedback is kept after an undo or a reopening
+  (see [above](#rejection-feedback)).
+- **Move to…** and **Undo last move**.
 - **Route**: how it came about (through a recruiter at an agency, directly, a referral), with
   the recruiter, agency or company linked to their page.
 - **At a glance**: what this application needs, by the same rules as
