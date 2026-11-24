@@ -34,9 +34,10 @@ state in a few lines, recommend the first item, and wait.
    as "École", or only case be ignored? For people I'd ignore case only (two people can share a name).
 2. **Offered on 2026-11-22, no answer yet:**
    - **"fix the board race"**: Kai said go on 2026-11-24 ("fix those 2 bugs now"). `fix-board-drag-width-race` is
-     #449 (a real bug: letting go after Escape opened the card). `fix-flaky-phone-nav-bar-drag-test` is next, its
-     own PR (a test bug: its second pick-up lands on the sticky top bar). `fix-flaky-keyboard-add-agency-test` stays
-     in the backlog.
+     #449, v1.24.54 (a real bug: letting go after Escape opened the card). `fix-flaky-phone-nav-bar-drag-test` is
+     #450 (a test bug: its second pick-up landed on the sticky top bar). `fix-flaky-keyboard-add-agency-test` stays
+     in the backlog. `board.spec.ts` ~:284 flaked again on #449's first run (dropped outside any column) and passed
+     10 of 10 under 8x throttling and the rerun: record a bug if it comes back.
    - **"cheap checks first"** (20 min, not on the roadmap yet): `checks.sh` runs the quick checks first and stops on a
      failure.
 3. **After the redesign** (Kai queued them): `fix-tablet-header-overflow`, `fix-board-touch-drag`,
