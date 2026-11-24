@@ -326,7 +326,7 @@ application where it was, with the card going back to its column.
 
 Only a move asks. Adding an application straight at Rejected (with **New application** or from
 a role) doesn't, and neither does **Undo last move** back to Rejected. For those, add the
-feedback from the *Rejection feedback* block (below).
+feedback from the *Rejection feedback* card (below).
 
 The feedback is kept exactly as you wrote it, line breaks and all, up to 10,000 characters.
 Near the limit a count shows under the box. Text over the limit isn't cut: the dialog says
@@ -350,8 +350,10 @@ sent*, *Log activity* and the *Timeline* in the second, and *To-dos*, *Role* and
 third; with a little less room the first two make one column, with the narrow one beside it; on a smaller
 screen they stack one under the other, in that order.
 
-- **Move to…**, **Undo last move**, and its stage, current round and tags.
-- **Rejection feedback**, once it's been rejected (see [above](#rejection-feedback)).
+- Its stage, current round and tags.
+- **Rejection feedback**, once it's been rejected, or while feedback is kept after an undo or a reopening
+  (see [above](#rejection-feedback)).
+- **Move to…** and **Undo last move**.
 - **Route**: how it came about (through a recruiter at an agency, directly, a referral), with
   the recruiter, agency or company linked to their page.
 - **At a glance**: what this application needs, by the same rules as

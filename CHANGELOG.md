@@ -7,7 +7,7 @@ Numbers in brackets are pull requests.
 
 ## 1.24.53 (2026-11-24)
 
-- Rejection feedback now has its own card, right under the Rejected badge on an application's page and in the quick view, with Add or Edit feedback beside its heading. (#448).
+- Rejection feedback now has its own card, right under the application's stage on its page and in the quick view, with Add or Edit feedback beside its heading (#448).
 
 ## 1.24.52 (2026-11-23)
 

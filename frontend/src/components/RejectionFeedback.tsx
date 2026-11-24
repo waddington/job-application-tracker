@@ -1,6 +1,6 @@
 import { Alert, Button, Group, Modal, Paper, Stack, Text, Textarea } from "@mantine/core";
 import { IconMessageReport, IconPencil } from "@tabler/icons-react";
-import { useState, type ReactNode } from "react";
+import { useId, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { ApplicationDetail } from "../api/client";
@@ -162,22 +162,27 @@ export function RejectionFeedback({ app }: { app: ApplicationDetail }) {
   const { t } = useTranslation("applications");
   const save = useSetRejectionFeedback();
   const [editing, setEditing] = useState(false);
+  const headingId = useId();
   const feedback = app.rejection_feedback ?? null;
   if (app.stage !== REJECTED && feedback === null) return null;
-  // A card of its own, with the rejection's red down its edge and its button beside the heading, so it
-  // reads as part of being rejected rather than one more line of facts.
+  // A card of its own, with its button beside the heading, so it reads as part of being rejected rather
+  // than one more line of facts. Red while it's rejected; grey for feedback kept after an undo or a
+  // reopening, so it doesn't make an open application look rejected.
+  const accent = app.stage === REJECTED ? "var(--mantine-color-red-6)" : "var(--mantine-color-dimmed)";
   return (
     <Paper
+      component="section"
+      aria-labelledby={headingId}
       withBorder
       radius="md"
       p="sm"
       maw="40rem"
       data-testid="rejection-feedback-card"
-      style={{ borderLeft: "3px solid var(--mantine-color-red-6)" }}
+      style={{ borderLeft: `3px solid ${accent}` }}
     >
       <Group gap="xs" wrap="wrap" mb={4}>
-        <IconMessageReport size={16} color="var(--mantine-color-red-6)" aria-hidden />
-        <Text size="sm" fw={700}>
+        <IconMessageReport size={16} color={accent} aria-hidden />
+        <Text size="sm" fw={700} id={headingId}>
           {t("rejection.heading")}
         </Text>
         <Button

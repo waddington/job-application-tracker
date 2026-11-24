@@ -257,7 +257,7 @@ test.describe("rejection feedback", () => {
     const card = page.getByTestId("rejection-feedback-card");
     const add = card.getByRole("button", { name: "Add feedback" });
     await expect(add).toBeVisible();
-    const badge = (await page.getByText("Rejected", { exact: true }).first().boundingBox())!;
+    const badge = (await page.locator(".mantine-Badge-root", { hasText: "Rejected" }).first().boundingBox())!;
     const box = (await card.boundingBox())!;
     const heading = (await card.getByText("Rejection feedback").boundingBox())!;
     const button = (await add.boundingBox())!;
@@ -268,6 +268,7 @@ test.describe("rejection feedback", () => {
     expect(box.y + box.height).toBeLessThanOrEqual(moveTo.y);
     // The button is next to the heading, not out at the page's far edge.
     expect(button.x - (heading.x + heading.width)).toBeLessThan(40);
+    expect(Math.abs(button.y + button.height / 2 - (heading.y + heading.height / 2))).toBeLessThan(10);
   });
 
   test("rejected again, it opens with what's there; emptying it clears it", async ({ page, request }) => {
@@ -276,9 +277,14 @@ test.describe("rejection feedback", () => {
     await asking(page).getByLabel("What did they say?").fill("First time");
     await asking(page).getByRole("button", { name: "Move to Rejected" }).click();
     await expect.poll(async () => (await app.read()).stage).toBe("rejected");
+    const edge = () =>
+      page.getByTestId("rejection-feedback-card").evaluate((el) => getComputedStyle(el).borderLeftColor);
+    const redEdge = await edge();
     await move(page, "Interviewing"); // they came back
     await expect.poll(async () => (await app.read()).stage).toBe("interviewing");
     await expect(shown(page)).toHaveText("First time"); // kept, and still shown while it's open again
+    // Grey now, so the open application doesn't look rejected; red again once it's rejected.
+    expect(await edge()).not.toBe(redEdge);
 
     await move(page, "Rejected");
     await expect(asking(page).getByLabel("What did they say?")).toHaveValue("First time");

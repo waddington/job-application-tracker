@@ -213,7 +213,7 @@ export function ApplicationSummary({
           </Badge>
         ))}
       </Group>
-      {/* Right under the Rejected badge it belongs to. */}
+      {/* Right under the stage: the Rejected badge it belongs to, or kept after an undo or a reopening. */}
       <RejectionFeedback app={app} />
       <DuplicateWarning duplicates={app.duplicates} title={t("summary.alsoApplied")} />
 
