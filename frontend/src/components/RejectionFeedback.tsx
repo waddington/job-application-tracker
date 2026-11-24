@@ -1,5 +1,5 @@
-import { Alert, Button, Group, Modal, Stack, Text, Textarea } from "@mantine/core";
-import { IconPencil } from "@tabler/icons-react";
+import { Alert, Button, Group, Modal, Paper, Stack, Text, Textarea } from "@mantine/core";
+import { IconMessageReport, IconPencil } from "@tabler/icons-react";
 import { useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -164,15 +164,25 @@ export function RejectionFeedback({ app }: { app: ApplicationDetail }) {
   const [editing, setEditing] = useState(false);
   const feedback = app.rejection_feedback ?? null;
   if (app.stage !== REJECTED && feedback === null) return null;
+  // A card of its own, with the rejection's red down its edge and its button beside the heading, so it
+  // reads as part of being rejected rather than one more line of facts.
   return (
-    <Stack gap={4}>
-      <Group gap="xs" justify="space-between" wrap="nowrap">
+    <Paper
+      withBorder
+      radius="md"
+      p="sm"
+      maw="40rem"
+      data-testid="rejection-feedback-card"
+      style={{ borderLeft: "3px solid var(--mantine-color-red-6)" }}
+    >
+      <Group gap="xs" wrap="wrap" mb={4}>
+        <IconMessageReport size={16} color="var(--mantine-color-red-6)" aria-hidden />
         <Text size="sm" fw={700}>
           {t("rejection.heading")}
         </Text>
         <Button
           size="compact-xs"
-          variant="subtle"
+          variant={feedback === null ? "light" : "subtle"}
           leftSection={<IconPencil size={12} />}
           onClick={() => {
             save.reset(); // no error left from an earlier save
@@ -212,6 +222,6 @@ export function RejectionFeedback({ app }: { app: ApplicationDetail }) {
           }
         />
       )}
-    </Stack>
+    </Paper>
   );
 }

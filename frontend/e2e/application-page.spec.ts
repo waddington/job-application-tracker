@@ -249,6 +249,27 @@ test.describe("rejection feedback", () => {
     await expect.poll(() => feedbackOf(app)).toBe("Heard back by phone");
   });
 
+  test("sits in its own card under the Rejected badge, with Add beside its heading", async ({
+    page,
+    request,
+  }) => {
+    await openNew(page, request, { stage: "rejected" });
+    const card = page.getByTestId("rejection-feedback-card");
+    const add = card.getByRole("button", { name: "Add feedback" });
+    await expect(add).toBeVisible();
+    const badge = (await page.getByText("Rejected", { exact: true }).first().boundingBox())!;
+    const box = (await card.boundingBox())!;
+    const heading = (await card.getByText("Rejection feedback").boundingBox())!;
+    const button = (await add.boundingBox())!;
+    // Straight after the status line, above Move to….
+    expect(box.y).toBeGreaterThan(badge.y);
+    expect(box.y - (badge.y + badge.height)).toBeLessThan(40);
+    const moveTo = (await page.getByRole("button", { name: "Move to…" }).boundingBox())!;
+    expect(box.y + box.height).toBeLessThanOrEqual(moveTo.y);
+    // The button is next to the heading, not out at the page's far edge.
+    expect(button.x - (heading.x + heading.width)).toBeLessThan(40);
+  });
+
   test("rejected again, it opens with what's there; emptying it clears it", async ({ page, request }) => {
     const app = await openNew(page, request);
     await move(page, "Rejected");
