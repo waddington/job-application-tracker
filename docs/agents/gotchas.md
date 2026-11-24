@@ -129,12 +129,15 @@ Each of these cost time once. Add a line when something new does.
   (the known `fix-board-drag-width-race` flake, in a file #425 didn't touch; the board spec then passed on main).
   Before merging, grep the output for `failed` / `ELIFECYCLE`: `e2e_only.sh` pipes into `tail`, so it exits 0 even
   when tests fail (`fix-e2e-only-exit-status`); `checks.sh`'s FAIL lines are reliable.
-- **The board's mouse-drag tests can flake under a full run** (2026-11-18, on #415, which doesn't touch the board):
-  `board.spec.ts` "onto its own column does nothing" (~:284) once and "while dragging, the columns keep their width"
-  (~:555) once, each passing alone. The second was 45 px off (225 → 180), so it may be a real one-frame race in the
-  width freeze: `fix-board-drag-width-race`. Rerun with `tools/dev/e2e_only.sh` before blaming the PR. On
-  2026-11-22 ~:555 failed three full runs in a row on #439 and passed 15 of 15 alone, so a rerun may not clear it:
-  don't keep rerolling (working-with-kai.md, *A check that keeps failing*).
+- **Reproduce a load-only flake with CPU throttling, not load** (2026-11-24): `board.spec.ts` ~:555 failed full runs
+  for a week and passed alone. In the test, `page.context().newCDPSession(page)` then
+  `send("Emulation.setCPUThrottlingRate", { rate: 8 })` made it fail 8 of 8 without loading the PC, and logging
+  the layout showed the real cause: the quick view had opened (Escape then letting go clicked the card, a real bug,
+  `fix-board-drag-width-race`), not the width freeze everyone suspected. Remove the throttle before committing.
+  `board.spec.ts` ~:284 "onto its own column does nothing" also flaked once (2026-11-18) and has no Escape, so
+  that fix doesn't explain it: record a bug if it comes back.
+  A rerun can't clear a flake that comes from load: don't keep rerolling (working-with-kai.md, *A check that keeps
+  failing*).
 - **A `test.fail` can fail the run by passing:** "Expected to fail, but passed" means the known bug didn't happen that
   time (`fix-double-save-locked`'s double click at `companies.spec.ts` ~:596 is racy; 2026-11-12). Rerun the browser
   tests (`tools/dev/e2e_only.sh`) before blaming the PR. A fix can also turn another bug's `test.fail` green for good

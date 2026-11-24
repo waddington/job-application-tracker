@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.24.54 (2026-11-24)
+
+- Cancelling a board drag with Escape and then letting go of the mouse no longer opens the card's quick view (#449).
+
 ## 1.24.53 (2026-11-24)
 
 - Rejection feedback now has its own card, right under the application's stage on its page and in the quick view, with Add or Edit feedback beside its heading (#448).

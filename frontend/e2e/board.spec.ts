@@ -577,6 +577,56 @@ test.describe("the board fills the window", () => {
   });
 });
 
+test("letting go after Escape cancels a drag doesn't open the card; a click afterwards, even without a press, still does", async ({
+  page,
+  request,
+}) => {
+  // fix-board-drag-width-race: the card copy under the pointer goes with the cancel, so letting go clicked
+  // the card itself and the quick view opened, squeezing the columns (what made the width test flaky).
+  await addCard(page, request, "Let Go Ltd", "Let Go");
+  const from = card(page, "Let Go Ltd", "Let Go");
+  const box = (await from.boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, box.y + 15);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2 + 12, box.y + 25, { steps: 4 });
+  await expect(said(page)).toContainText("Let Go Ltd is over Applied.");
+  await page.keyboard.press("Escape");
+  await expect(said(page)).toContainText("Cancelled. Let Go Ltd stays where it was.");
+  // A person takes a moment. It must be longer than the 50 ms dnd-kit keeps swallowing clicks after a drag
+  // ends, or the test would pass without the fix.
+  await settled(page);
+  await page.mouse.move(box.x + box.width / 2, box.y + 15); // back over the card itself
+  await page.mouse.up();
+  await settled(page);
+  const quickView = page.getByRole("dialog", { name: "Application" });
+  await expect(quickView).toHaveCount(0);
+
+  // A click with no press first (as a screen reader sends): only the click that ended the drag is ignored.
+  await from.evaluate((el) => (el as HTMLElement).click());
+  await expect(quickView.getByRole("heading", { name: "Let Go" })).toBeVisible();
+});
+
+test("dropped back on its own column, a card still opens on the next click without a press", async ({
+  page,
+  request,
+}) => {
+  // dnd-kit swallows the click that ends this drop, so the card's own guard never sees it: it has to forget
+  // the drag by itself, or a screen reader's click would be ignored once.
+  await addCard(page, request, "Own Drop Ltd", "Own Drop");
+  const from = card(page, "Own Drop Ltd", "Own Drop");
+  const box = (await from.boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, box.y + 15);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2 + 12, box.y + 25, { steps: 4 });
+  await expect(said(page)).toContainText("Own Drop Ltd is over Applied.");
+  await page.mouse.up();
+  await settled(page);
+  const quickView = page.getByRole("dialog", { name: "Application" });
+  await expect(quickView).toHaveCount(0);
+  await from.evaluate((el) => (el as HTMLElement).click());
+  await expect(quickView.getByRole("heading", { name: "Own Drop" })).toBeVisible();
+});
+
 test.describe("at a normal window width", () => {
   test.use({ viewport: { width: 1400, height: 1000 } });
 
