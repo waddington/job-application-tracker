@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.24.53 (2026-11-24)
+
+- Rejection feedback now has its own card, right under the Rejected badge on an application's page and in the quick view, with Add or Edit feedback beside its heading. (#448).
+
 ## 1.24.52 (2026-11-23)
 
 - Every search box ignores accents and case: the Applications, Recruiters, Companies and Notes searches and every list you type into to pick something find José from jose, and the other way round (#446).
