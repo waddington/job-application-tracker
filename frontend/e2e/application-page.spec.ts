@@ -284,7 +284,7 @@ test.describe("rejection feedback", () => {
     await expect.poll(async () => (await app.read()).stage).toBe("interviewing");
     await expect(shown(page)).toHaveText("First time"); // kept, and still shown while it's open again
     // Grey now, so the open application doesn't look rejected; red again once it's rejected.
-    expect(await edge()).not.toBe(redEdge);
+    await expect.poll(edge).not.toBe(redEdge);
 
     await move(page, "Rejected");
     await expect(asking(page).getByLabel("What did they say?")).toHaveValue("First time");
@@ -292,6 +292,7 @@ test.describe("rejection feedback", () => {
     await asking(page).getByRole("button", { name: "Move to Rejected" }).click();
     await expect.poll(async () => (await app.read()).stage).toBe("rejected");
     expect(await feedbackOf(app)).toBeNull();
+    await expect.poll(edge).toBe(redEdge);
   });
 });
 
